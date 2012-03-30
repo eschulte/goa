@@ -1,0 +1,8 @@
+# Documentation Exports
+*.html
+*.txt
+*.tex
+*.pdf
+
+# The virtual machine itself
+tune.qcow
