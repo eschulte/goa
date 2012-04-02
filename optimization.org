@@ -105,6 +105,14 @@ VM by passing the =-m 1024= flag to the call to =qemu-kvm=.
 
 This should run for a while and complete with output that looks like
 the following.
+: FFT with Blocking Transpose
+:    65536 Complex Doubles
+:    64 Processors
+:    65536 Cache lines
+:    16 Byte line size
+:    4096 Bytes per page
+: 
+: 
 :                  PROCESS STATISTICS
 :             Computation      Transpose     Transpose
 :  Proc          Time            Time        Fraction
@@ -118,5 +126,9 @@ the following.
 : Total time without initialization :         79869664
 : Overall transpose time            :         27878043
 : Overall transpose fraction        :          0.34904
-: 
-: [spawn.py] Exited with return code: 0
+
+* Evolving a Population of Variants
+Using the test script in file:src/test.sh, the experimental harness in
+file:src/optimize.lisp and the [[http://gitweb.adaptive.cs.unm.edu/software-evolution.git][software evolution]] framework it is
+possible to evolve populations of variants of the original FFT program
+to optimize for certain execution properties.
