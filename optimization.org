@@ -94,3 +94,29 @@
    #+begin_src sh
      make ping_pong_app_test CORES=16 PROCS=2
    #+end_src
+
+* Running a Simple Fast Fourier Transform (FFT)
+The FFT benchmark has higher memory requirements than the simple
+ping-pong test, so for this we'll have to increase the memory of the
+VM by passing the =-m 1024= flag to the call to =qemu-kvm=.
+#+begin_src sh
+  qemu-kvm -hda overlays/00.qcow -nographic -cdrom data/debian-5010-amd64-netinst.iso -net nic -net user,hostfwd=tcp:127.0.0.1:2222-:22
+#+end_src
+
+This should run for a while and complete with output that looks like
+the following.
+:                  PROCESS STATISTICS
+:             Computation      Transpose     Transpose
+:  Proc          Time            Time        Fraction
+:     0          79869664       27878043       0.34904
+: 
+:                  TIMING INFORMATION
+: Start time                        : 1333389980838004
+: Initialization finish time        : 1333390099558235
+: Overall finish time               : 1333390179427899
+: Total time with initialization    :        198589895
+: Total time without initialization :         79869664
+: Overall transpose time            :         27878043
+: Overall transpose fraction        :          0.34904
+: 
+: [spawn.py] Exited with return code: 0
