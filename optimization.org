@@ -6,7 +6,6 @@
 1. We will create a Qemu virtual machine and install the Debian 5.0.9
    specifically =debian-5010-i386-netinst.iso= from
    http://cdimage.debian.org/mirror/cdimage/archive/5.0.9/i386/iso-cd/.
-
    #+begin_src sh
      # create the disk
      qemu-img create -f qcow2 tune.qcow 4G
@@ -40,7 +39,7 @@
 
 4. Now install the Graphite dependencies,
    #+begin_src sh
-     apt-get install build-essential
+     apt-get install build-essential m4
      apt-get install libboost1.35-dev libboost-filesystem1.35-dev libboost-system1.35-dev
      apt-get install git-core
      # and an ssh server so we can ssh into this VM
@@ -60,7 +59,7 @@
    with ssh -- allowing copy-paste from the local machine, use of a
    normal terminal, and other niceties.
    #+begin_src sh
-     qemu-kvm -hda tune.qcow -nographic -net nic -net user,hostfwd=tcp:127.0.0.1:2222-:22
+     qemu-kvm -hda tune.qcow -nographic -cdrom data/debian-5010-amd64-netinst.iso -net nic -net user,hostfwd=tcp:127.0.0.1:2222-:22
    #+end_src
 
 6. Log into =tune= as =bacon=.
@@ -87,4 +86,11 @@
      # where Pin is uzipped to
      PIN_HOME = /home/bacon/pin
      EOF
+   #+end_src
+   run =make= to build Graphite.
+
+7. Confirm that the build was successful by running the following
+   which should exit successfully.
+   #+begin_src sh
+     make ping_pong_app_test CORES=16 PROCS=2
    #+end_src
