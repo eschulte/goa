@@ -10,17 +10,22 @@
 #    3. runs the resulting program in Graphite in the VM
 #    4. returns the full set of Graphite debug information in a format
 #       readable by the common lisp `read-from-string' function.
-
-## read in the file to test
+pick_remote(){
+    # for now we'll just use one remote server
+    echo "bacon@guest";
+}
+guest_test="/home/bacon/bin/guest-test.sh"
 var=$1
-
-## TODO: find a free remote machine
-# remote="foo"
 
 ## TODO: run remotely and collect output and return value
 # scp $var $remote:/tmp/
-# output=$(ssh $remote evaluate $var)
-# success=$?
+output="busy"
+while [ "$output" = "busy" ]; do
+    remote=$(pick_remote);
+    scp -i data/id_rsa $var $remote:/tmp/
+    output=$(ssh -i data/id_rsa $remote $guest_test "/tmp/$(basename $var)")
+    success=$?
+done
 
 ## TODO: if sucessfull return the execution metrics as lisp
 sed_cmd=$(cat <<EOF

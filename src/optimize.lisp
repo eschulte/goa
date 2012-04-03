@@ -17,7 +17,7 @@
 (defvar *dir*   nil "Optional sub-directory in which to store results.")
 (defvar *psize* 100 "Population size.")
 (defvar *tsize* 2   "Tournament size.")
-(defvar *script* "./test.sh"
+(defvar *script* "./host-test.sh"
   "Script used to evaluate variants.
 Note: This does not follow the normal test script format but rather it;
 1. takes the path to a .s asm file
