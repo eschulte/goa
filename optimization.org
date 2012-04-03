@@ -132,3 +132,22 @@ Using the test script in file:src/test.sh, the experimental harness in
 file:src/optimize.lisp and the [[http://gitweb.adaptive.cs.unm.edu/software-evolution.git][software evolution]] framework it is
 possible to evolve populations of variants of the original FFT program
 to optimize for certain execution properties.
+* Notes
+** configuration and output
+Configuration is controlled in =carbon_sim.cfg= in the base of the
+graphite directory.
+
+Detailed simulator output information is written to =sim.out= in the
+=output_files= directory under graphite.
+
+Configurations notes
+- more complex core model would have variable instruction costs
+- more complex network (hop by hop)
+- power_modeling to true
+- enable_models_at_startup set to false
+- maybe try different synchronization schemes
+
+Date file notes
+- "Tile" is a Core
+- network model 2 is the actual communication of the process
+  (this is what matters)
