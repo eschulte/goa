@@ -21,13 +21,14 @@ pick_remote(){
 var=$1
 guest_test="/home/bacon/bin/guest-test.sh"
 cmd="$guest_test /tmp/$(basename $var)"
+id="../data/id_rsa"
 
 ## run remotely and collect output and return value
 output="busy"
 while [ "$output" = "busy" ]; do
     remote=$(pick_remote)
     scp -i data/id_rsa $var $remote:/tmp/ >/dev/null
-    output=$( ssh -t -i data/id_rsa $remote "$cmd" 2>/dev/null )
+    output=$( ssh -t -i $id $remote "$cmd" 2>/dev/null )
     success=$?
 done
 
@@ -48,7 +49,7 @@ if [ $success -eq 0 ];then
     ## parse and print the results
     echo "$output" \
         |sed -n '/FFT with Blocking Transpose/,$p' \
-        |grep " : "|sed "$sed_cmd"
+        |egrep " : +[.0-9]+$"|sed "$sed_cmd"
     exit 0
 else
     exit 1
