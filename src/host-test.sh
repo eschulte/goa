@@ -1,37 +1,39 @@
 #!/bin/sh
 #
-# Usage:
-#   test.sh variant.s
+# Copyright (C) 2012  Eric Schulte
 #
-# Note:
+# Usage:
+#   host-test.sh variant.s
+#
+# Commentary:
 #   This does not follow the normal test script format but rather it;
 #    1. takes the path to a .s asm file
 #    2. copies that file to a VM
 #    3. runs the resulting program in Graphite in the VM
 #    4. returns the full set of Graphite debug information in a format
 #       readable by the common lisp `read-from-string' function.
+#       
+# Code:
 pick_remote(){
     # for now we'll just use one remote server
     echo "bacon@guest";
 }
-guest_test="/home/bacon/bin/guest-test.sh"
 var=$1
+guest_test="/home/bacon/bin/guest-test.sh"
+cmd="$guest_test /tmp/$(basename $var)"
 
-## TODO: run remotely and collect output and return value
-# scp $var $remote:/tmp/
+## run remotely and collect output and return value
 output="busy"
 while [ "$output" = "busy" ]; do
-    remote=$(pick_remote);
-    scp -i data/id_rsa $var $remote:/tmp/
-    output=$(ssh -i data/id_rsa $remote $guest_test "/tmp/$(basename $var)")
+    remote=$(pick_remote)
+    scp -i data/id_rsa $var $remote:/tmp/ >/dev/null
+    output=$( ssh -t -i data/id_rsa $remote "$cmd" 2>/dev/null )
     success=$?
 done
 
-## TODO: if sucessfull return the execution metrics as lisp
+## if successful return the execution metrics as lisp
 sed_cmd=$(cat <<EOF
-s/:/./;
-s/^/(/;
-s/$/)/;
+s/://;
 s/ \+/ /g;
 s/Start time/start/;
 s/Initialization finish time/init-finish/;
@@ -42,11 +44,12 @@ s/Overall transpose time/trans-time/;
 s/Overall transpose fraction/trans-fraction/;
 EOF
 )
-# if [ $success -eq 0 ];then
-#     ## parse the results into something readable from lisp
-#     clean=$(echo "$output"|sed -n '/FFT with Blocking Transpose/,$p'|grep " : "|sed "$sed_cmd")
-#     echo="'($clean)"
-#     exit 0;
-# else
-#     exit 1;
-# fi
+if [ $success -eq 0 ];then
+    ## parse and print the results
+    echo "$output" \
+        |sed -n '/FFT with Blocking Transpose/,$p' \
+        |grep " : "|sed "$sed_cmd"
+    exit 0
+else
+    exit 1
+fi

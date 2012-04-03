@@ -40,8 +40,10 @@ Note: This does not follow the normal test script format but rather it;
         (shell "~a ~a p~d" *script* tmp i)
       (declare (ignorable err-output))
       (setf (fitness var) (if (= exit 0) 1 0))
-      (dolist (metric (read-from-string output))
-        (setf (slot-value (car metric) var) (cdr metric))))))
+      (mapcar (lambda (line) (let ((pair (split-sequence #\Space line)))
+                          (setf (slot-value (car metric) var)
+                                (read-from-string (cadr pair)))))
+              (split-sequence #\Newline output)))))
 
 (defun stats (var)
   "Return an alist of the vital stats of VAR."
