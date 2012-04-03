@@ -100,7 +100,7 @@ The FFT benchmark has higher memory requirements than the simple
 ping-pong test, so for this we'll have to increase the memory of the
 VM by passing the =-m 1024= flag to the call to =qemu-kvm=.
 #+begin_src sh
-  qemu-kvm -hda overlays/00.qcow -nographic -cdrom data/debian-5010-amd64-netinst.iso -net nic -net user,hostfwd=tcp:127.0.0.1:2222-:22
+  qemu-kvm -hda tune.qcow -nographic -cdrom data/debian-5010-amd64-netinst.iso -net nic -net user,hostfwd=tcp:127.0.0.1:2222-:22
 #+end_src
 
 This should run for a while and complete with output that looks like
@@ -132,6 +132,35 @@ Using the test script in file:src/test.sh, the experimental harness in
 file:src/optimize.lisp and the [[http://gitweb.adaptive.cs.unm.edu/software-evolution.git][software evolution]] framework it is
 possible to evolve populations of variants of the original FFT program
 to optimize for certain execution properties.
+
+* Running overlays
+Qemu overlays create lightweight disk images based off of a starting
+disk image which can be used to store diffs from the original, and to
+run multiple instances of an original.
+
+We'll use overlays to parallelize the fitness evaluation in our
+genetic algorithm.
+
+To create some number of overlay images run;
+#+begin_src sh
+  pushd overlays/
+  for i in $(seq 15);do
+      j=$(printf "%0.2d" i);
+      if [ ! -f "$j.qcow" ];then
+          qemu-img create -b ../tune.qcow -f qcow2 "$j.qcow"
+      fi
+  done
+  popd
+#+end_src
+
+To run an overlay run;
+#+begin_src sh
+  pushd overlays/
+  i="01"
+  qemu-kvm -hda "$i.qcow" -nographic -cdrom ../data/debian-5010-amd64-netinst.iso -net nic -net user,hostfwd=tcp:127.0.0.1:$i$i-:22
+  popd
+#+end_src
+
 * Notes
 ** configuration and output
 Configuration is controlled in =carbon_sim.cfg= in the base of the
