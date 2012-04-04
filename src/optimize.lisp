@@ -76,7 +76,7 @@ Note: This does not follow the normal test script format but rather it;
   (dotimes (n steps)
     (store (mapcar #'stats *pop*)
            (let ((file (format nil "biased-pop-~S.store" n)))
-             (if *dir* (merge-pathnames file dir) file)))
+             (if *dir* (merge-pathnames file *dir*) file)))
     (setf *pop* (take-biased-step *pop* :test test :key key))))
 
 #+run
