@@ -27,7 +27,7 @@ id="../data/id_rsa"
 output="busy"
 while [ "$output" = "busy" ]; do
     remote=$(pick_remote)
-    scp -i data/id_rsa $var $remote:/tmp/ >/dev/null
+    scp -i $id $var $remote:/tmp/ >/dev/null
     output=$( ssh -t -i $id $remote "$cmd" 2>/dev/null )
     success=$?
 done
