@@ -79,10 +79,10 @@
      cat <<EOF > ~/graphite/Makefile.config
      # Use ia32 for 32-bit, x86_64 for 64-bit
      TARGET_ARCH = x86_64 # <-(may be different depending on your host?)
-     
+
      # change only if a different (more up-to-date) version of Boost is installed
      BOOST_VERSION = 1_35
-     
+
      # where Pin is uzipped to
      PIN_HOME = /home/bacon/pin
      EOF
@@ -111,13 +111,13 @@ the following.
 :    65536 Cache lines
 :    16 Byte line size
 :    4096 Bytes per page
-: 
-: 
+:
+:
 :                  PROCESS STATISTICS
 :             Computation      Transpose     Transpose
 :  Proc          Time            Time        Fraction
 :     0          79869664       27878043       0.34904
-: 
+:
 :                  TIMING INFORMATION
 : Start time                        : 1333389980838004
 : Initialization finish time        : 1333390099558235
@@ -141,6 +141,13 @@ will require some configuration on the host machine (or you are edit
    : Host tune
    : Port 2222
    : User bacon
+
+3. Since ssh is apparently /very/ sensitive to widely readable public
+   keys, be sure to fix access permission for file:data/id_rsa which
+   may not be preserved by git.
+   #+begin_src sh
+     chmod 700 data/id_rsa
+   #+end_src
 
 * Evolving a Population of Variants
 Using the test script in file:src/test.sh, the experimental harness in
@@ -172,7 +179,7 @@ To run an overlay run;
 #+begin_src sh
   pushd overlays/
   i="01"
-  qemu-kvm -hda "$i.qcow" -nographic -cdrom ../data/debian-5010-amd64-netinst.iso -net nic -net user,hostfwd=tcp:127.0.0.1:$i$i-:22
+  qemu-kvm -hda "$i.qcow" -nographic -m 1024 -cdrom ../data/debian-5010-amd64-netinst.iso -net nic -net user,hostfwd=tcp:127.0.0.1:$i$i-:22
   popd
 #+end_src
 
@@ -195,3 +202,16 @@ Date file notes
 - "Tile" is a Core
 - network model 2 is the actual communication of the process
   (this is what matters)
+
+** running times by VM memory
+Running =time ./bin/guest-test.s=.
+
+- with =-m 1024=.
+  : real    4m20.468s
+  : user    2m27.185s
+  : sys     1m52.055s
+
+- with =-m 2048=
+  : real    4m19.885s
+  : user    2m25.457s
+  : sys     1m53.167s
