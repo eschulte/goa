@@ -59,8 +59,8 @@ Note: This does not follow the normal test script format but rather it;
 
 (defun stats (var)
   "Return an alist of the vital stats of VAR."
-  (mapcar (lambda (stat) `(,stat . ,(slot-value stat var)))
-          '(:time-wo-init :history)))
+  (mapcar (lambda (stat) `(,stat . ,(slot-value var stat)))
+          '(time-wo-init history)))
 
 (defun take-biased-step (pop &key (test #'<) (key #'time-wo-init))
   "Take a whole-population biased step through neutral space."

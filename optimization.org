@@ -215,3 +215,32 @@ Running =time ./bin/guest-test.s=.
   : real    4m19.885s
   : user    2m25.457s
   : sys     1m53.167s
+
+** successfully running evolutionary steps
+#+begin_src slime-repl
+  SOFTWARE-EVOLUTION> (setf results '(#<PLL-ASM {1008347463}> #<PLL-ASM {1007F17463}>))
+  
+  ; in: SETF RESULTS
+  ;     (SETF SOFTWARE-EVOLUTION::RESULTS
+  ;             '(#<SOFTWARE-EVOLUTION::PLL-ASM {1008347463}>
+  ;               #<SOFTWARE-EVOLUTION::PLL-ASM {1007F17463}>))
+  ; ==>
+  ;   (SETQ SOFTWARE-EVOLUTION::RESULTS
+  ;           '(#<SOFTWARE-EVOLUTION::PLL-ASM {1008347463}>
+  ;             #<SOFTWARE-EVOLUTION::PLL-ASM {1007F17463}>))
+  ; 
+  ; caught WARNING:
+  ;   undefined variable: RESULTS
+  ; 
+  ; compilation unit finished
+  ;   Undefined variable:
+  ;     RESULTS
+  ;   caught 1 WARNING condition
+  (#<PLL-ASM {1008347463}> #<PLL-ASM {1007F17463}>)
+  SOFTWARE-EVOLUTION> (equal-it (genome (first results)) (genome (second results)))
+  STYLE-WARNING: redefining SOFTWARE-EVOLUTION::STATS in DEFUN
+  NIL
+  SOFTWARE-EVOLUTION> (mapcar #'stats results)
+  (((TIME-WO-INIT . 103187924) (HISTORY (:SWAP 3561 2147)))
+   ((TIME-WO-INIT . 101699638) (HISTORY (:INSERT 1600 2344))))
+#+end_src
