@@ -16,7 +16,7 @@
 # Code:
 pick_remote(){
     # for now we'll just use one remote server
-    echo "bacon@guest";
+    echo "tune";
 }
 var=$1
 guest_test="/home/bacon/bin/guest-test.sh"

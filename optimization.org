@@ -127,6 +127,21 @@ the following.
 : Overall transpose time            :         27878043
 : Overall transpose fraction        :          0.34904
 
+* Host machine setup
+We will want to ssh to =tune= to connect to the tune VM machine.  This
+will require some configuration on the host machine (or you are edit
+"=tune=" in the file:src/host-test.sh script).
+
+1. Edit file:/etc/hosts so that "=tune=" redirects to "=localhost="
+   changing the =localhost= line to something like the following.
+   : 127.0.0.1       localhost.localdomain   localhost your-hostname tune
+
+2. Edit your file:~/.ssh/config so that connections to =tune= use port
+   2222 and connect as bacon by adding something like the following.
+   : Host tune
+   : Port 2222
+   : User bacon
+
 * Evolving a Population of Variants
 Using the test script in file:src/test.sh, the experimental harness in
 file:src/optimize.lisp and the [[http://gitweb.adaptive.cs.unm.edu/software-evolution.git][software evolution]] framework it is
