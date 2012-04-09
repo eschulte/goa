@@ -64,13 +64,10 @@ Note: This does not follow the normal test script format but rather it;
 
 (defun take-biased-step (pop &key (test #'<) (key #'time-wo-init) &aux result)
   "Take a whole-population biased step through neutral space."
-  (flet ((new ()
-           (evaluate
-            (mutate (copy (first (sort (repeatedly *tsize* (random-elt pop))
-                                       test :key key)))))))
-    (loop :for var = (new) :until (= (length result) *psize*)
-       :do (when (= (fitness var) 1) (push var result)))
-    result))
+  (do ((var (let ((t-pop (repeatedly *tsize* (random-elt pop))))
+              (evaluate (mutate (copy (first (sort t-pop test :key key))))))))
+      ((= (length result) *psize*) result)
+    (when (= (fitness var) 1) (push var result))))
 
 (defun do-biased-walk (seed &key (steps 100) (test #'<) (key #'time-wo-init))
   "Evolve a population in the neutral space biased by metric and KEY."
