@@ -55,20 +55,22 @@ Note: This does not follow the normal test script format but rather it;
                   (when (and key (slot-exists-p var key))
                     (setf (slot-value var key) val)))))
             (split-sequence #\Newline out)))
-  (fitness var))
+  var)
 
 (defun stats (var)
   "Return an alist of the vital stats of VAR."
   (mapcar (lambda (stat) `(,stat . ,(slot-value var stat)))
           '(time-wo-init history)))
 
-(defun take-biased-step (pop &key (test #'<) (key #'time-wo-init))
+(defun take-biased-step (pop &key (test #'<) (key #'time-wo-init) &aux result)
   "Take a whole-population biased step through neutral space."
-  (flet ((pick ()
-           (first (sort (repeatedly *tsize* (random-elt pop)) test :key key))))
-    (loop :for var = (copy (pick)) :until (= *psize* 0)
-       :do (mutate var) (evaluate var)
-       :if (= (fitness var) 1) :collect (progn (decf *psize*) var))))
+  (flet ((new ()
+           (evaluate
+            (mutate (copy (first (sort (repeatedly *tsize* (random-elt pop))
+                                       test :key key)))))))
+    (loop :for var = (new) :until (= (length result) *psize*)
+       :do (when (= (fitness var) 1) (push var result)))
+    result))
 
 (defun do-biased-walk (seed &key (steps 100) (test #'<) (key #'time-wo-init))
   "Evolve a population in the neutral space biased by metric and KEY."
