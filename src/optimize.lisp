@@ -15,6 +15,7 @@
 
 (defvar *pop*   nil "Population of variants.")
 (defvar *dir*   nil "Optional sub-directory in which to store results.")
+(defvar *file-format* "biased-pop-~S.store" "File name format.")
 (defvar *psize* 100 "Population size.")
 (defvar *tsize* 2   "Tournament size.")
 (defvar *script* "./host-test.sh"
@@ -62,21 +63,25 @@ Note: This does not follow the normal test script format but rather it;
   (mapcar (lambda (stat) `(,stat . ,(slot-value var stat)))
           '(time-wo-init history)))
 
+(defun file-for-run (n)
+  (let ((file (format nil *file-format* n)))
+    (if *dir* (merge-pathnames file *dir*) file)))
+
 (defun take-biased-step (pop &key (test #'<) (key #'time-wo-init) &aux result)
   "Take a whole-population biased step through neutral space."
-  (do ((var (let ((t-pop (repeatedly *tsize* (random-elt pop))))
-              (evaluate (mutate (copy (first (sort t-pop test :key key))))))))
-      ((= (length result) *psize*) result)
-    (when (= (fitness var) 1) (push var result))))
+  (flet ((new-var ()
+           (let ((t-pop (repeatedly *tsize* (random-elt pop))))
+             (evaluate (mutate (copy (first (sort t-pop test :key key))))))))
+    (do ((var (new-var) (new-var)))
+        ((= (length result) *psize*) result)
+      (when (= (fitness var) 1) (push var result)))))
 
 (defun do-biased-walk (seed &key (steps 100) (test #'<) (key #'time-wo-init))
   "Evolve a population in the neutral space biased by metric and KEY."
   (setf *pop* (list seed))
   (dotimes (n steps)
-    (store (mapcar #'stats *pop*)
-           (let ((file (format nil "biased-pop-~S.store" n)))
-             (if *dir* (merge-pathnames file *dir*) file)))
+    (store (mapcar #'stats *pop*) (file-for-run n))
     (setf *pop* (take-biased-step *pop* :test test :key key))))
 
 #+run
-(let ((*psize* 2)) (do-biased-walk *orig* :steps 2))
+(do-biased-walk *orig* :steps 2)
