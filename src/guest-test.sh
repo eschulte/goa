@@ -9,9 +9,16 @@
 #   Takes an asm fft file, compiles it, runs it and returns results.
 #
 # Code:
+lock="/tmp/lockfile"
+quit(){ echo busy; exit 1; }
+
+# atomic check and set on the VM lock
+(umask 222; echo $$ >$lock) 2>/dev/null || quit;
+
 var=$1
 if [ -z "$1" ];then
     echo "The first argument must be the path to an ASM FFT file."
+    rm -f $lock
     exit 1
 else
     # compile
@@ -27,3 +34,6 @@ else
     pushd /home/bacon/graphite
     make fft_bench_test
 fi
+
+# release the lock on this VM
+rm -f $lock
