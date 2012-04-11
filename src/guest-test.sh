@@ -10,7 +10,9 @@
 #
 # Code:
 lock="/tmp/lockfile"
-quit(){ echo busy; exit 1; }
+return=1
+quit_locked(){ echo busy; exit 1; }
+quit_free(){ rm -f $lock; exit $return; }
 
 # atomic check and set on the VM lock
 (umask 222; echo $$ >$lock) 2>/dev/null || quit;
@@ -18,8 +20,6 @@ quit(){ echo busy; exit 1; }
 var=$1
 if [ -z "$1" ];then
     echo "The first argument must be the path to an ASM FFT file."
-    rm -f $lock
-    exit 1
 else
     # compile
     pushd /home/bacon/graphite/tests/benchmarks/fft
@@ -33,7 +33,6 @@ else
     # run
     pushd /home/bacon/graphite
     make fft_bench_test
+    return=$?
 fi
-
-# release the lock on this VM
-rm -f $lock
+quit_free

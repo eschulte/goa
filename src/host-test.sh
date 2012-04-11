@@ -14,7 +14,8 @@
 #       readable by the common lisp `read-from-string' function.
 #       
 # Code:
-. ./REMOTESS # e.g., REMOTES=("tune")
+REMOTES=("tune")
+. $(dirname $0)/REMOTES # allow host-specific remote files
 pick_remote(){ echo ${REMOTES[$RANDOM % ${#REMOTES[@]}]}; }
 
 var=$1
