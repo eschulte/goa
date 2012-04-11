@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Copyright (C) 2012  Eric Schulte
 #
@@ -12,7 +12,7 @@
 #    3. runs the resulting program in Graphite in the VM
 #    4. returns the full set of Graphite debug information in a format
 #       readable by the common lisp `read-from-string' function.
-#       
+#
 # Code:
 REMOTES=("tune")
 . $(dirname $0)/REMOTES # allow host-specific remote files
@@ -27,8 +27,8 @@ id="../data/id_rsa"
 output="busy"
 while [ "$output" = "busy" ]; do
     remote=$(pick_remote)
-    scp -i $id $var $remote:/tmp/ >/dev/null
-    output=$( ssh -t -i $id $remote "$cmd" 2>/dev/null )
+    scp -i $id -P $remote $var bacon@localhost:/tmp/ >/dev/null
+    output=$( ssh -t -i $id -p $remote bacon@localhost "$cmd" 2>/dev/null )
     success=$?
     if [ "$output" = "busy" ];then sleep 1; fi
 done
