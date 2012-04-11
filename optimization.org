@@ -156,6 +156,9 @@ possible to evolve populations of variants of the original FFT program
 to optimize for certain execution properties.
 
 * Running overlays
+  :PROPERTIES:
+  :shebang:  #!/bin/sh
+  :END:
 Qemu overlays create lightweight disk images based off of a starting
 disk image which can be used to store diffs from the original, and to
 run multiple instances of an original.
@@ -164,9 +167,9 @@ We'll use overlays to parallelize the fitness evaluation in our
 genetic algorithm.
 
 To create some number of overlay images run;
-#+begin_src sh
+#+begin_src sh :tangle src/create-vms
   pushd overlays/
-  for i in $(seq 15);do
+  for i in $(seq 46);do
       j=$(printf "%0.2d" i);
       if [ ! -f "$j.qcow" ];then
           qemu-img create -b ../tune.qcow -f qcow2 "$j.qcow"
@@ -175,11 +178,22 @@ To create some number of overlay images run;
   popd
 #+end_src
 
-To run an overlay run;
-#+begin_src sh
+To run all overlays in their own screen windows run;
+#+begin_src sh :tangle src/startup-vms
+  remotes=""
   pushd overlays/
-  i="01"
-  qemu-kvm -hda "$i.qcow" -nographic -m 1024 -cdrom ../data/debian-5010-amd64-netinst.iso -net nic -net user,hostfwd=tcp:127.0.0.1:$i$i-:22
+  for i in $(seq 46);do
+      I=$(printf "%0.2d" i);
+      screen -X screen -t $I-VM \
+          qemu-kvm -hda $I.cqow -nographic -m 1G \
+          -cdrom ../data/debian-5010-amd64-netinst.iso \
+          -net nic -net user,hostfwd=tcp:127.0.0.1:30$I-:22
+      remotes="$remotes \"-p 30$I bacon@localhost\""
+  done
+  cat <<EOF > REMOTES
+  #!/bin/sh
+  REMOTES=($remotes)
+  EOF
   popd
 #+end_src
 
