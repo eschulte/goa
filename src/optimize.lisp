@@ -87,4 +87,4 @@ Note: This does not follow the normal test script format but rather it;
     (setf *pop* (take-biased-step *pop* :test test :key key))))
 
 #+run
-(do-biased-walk *orig* :steps 100)
+(do-biased-walk *orig*)
