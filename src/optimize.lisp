@@ -13,6 +13,8 @@
 (require :software-evolution)
 (in-package :software-evolution)
 
+(advise-thread-pool-size 46)
+
 (defvar *pop*   nil "Population of variants.")
 (defvar *dir*   nil "Optional sub-directory in which to store results.")
 (defvar *file-format* "biased-pop-~S.store" "File name format.")
@@ -72,9 +74,10 @@ Note: This does not follow the normal test script format but rather it;
   (flet ((new-var ()
            (let ((t-pop (repeatedly *tsize* (random-elt pop))))
              (evaluate (mutate (copy (first (sort t-pop test :key key))))))))
-    (do ((var (new-var) (new-var)))
-        ((= (length result) *psize*) result)
-      (when (= (fitness var) 1) (push var result)))))
+    (loop :until (= (length result) *psize*) :do
+       (let ((pool (prepeatedly (- *psize* (length result)) (new-var))))
+         (dolist (var pool) (when (= (fitness var) 1) (push var result)))))
+    result))
 
 (defun do-biased-walk (seed &key (steps 100) (test #'<) (key #'time-wo-init))
   "Evolve a population in the neutral space biased by metric and KEY."
@@ -84,4 +87,4 @@ Note: This does not follow the normal test script format but rather it;
     (setf *pop* (take-biased-step *pop* :test test :key key))))
 
 #+run
-(do-biased-walk *orig* :steps 2)
+(do-biased-walk *orig* :steps 100)
