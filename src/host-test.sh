@@ -14,7 +14,7 @@
 #       readable by the common lisp `read-from-string' function.
 #       
 # Code:
-REMOTES=("tune")
+. ./REMOTESS # e.g., REMOTES=("tune")
 pick_remote(){ echo ${REMOTES[$RANDOM % ${#REMOTES[@]}]}; }
 
 var=$1
