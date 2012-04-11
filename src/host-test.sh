@@ -14,10 +14,9 @@
 #       readable by the common lisp `read-from-string' function.
 #       
 # Code:
-pick_remote(){
-    # for now we'll just use one remote server
-    echo "tune";
-}
+REMOTES=("tune")
+pick_remote(){ echo ${REMOTES[$RANDOM % ${#REMOTES[@]}]}; }
+
 var=$1
 guest_test="/home/bacon/bin/guest-test.sh"
 cmd="$guest_test /tmp/$(basename $var)"
@@ -30,6 +29,7 @@ while [ "$output" = "busy" ]; do
     scp -i $id $var $remote:/tmp/ >/dev/null
     output=$( ssh -t -i $id $remote "$cmd" 2>/dev/null )
     success=$?
+    if [ "$output" = "busy" ];then sleep 1; fi
 done
 
 ## if successful return the execution metrics as lisp
