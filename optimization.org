@@ -59,7 +59,7 @@
    with ssh -- allowing copy-paste from the local machine, use of a
    normal terminal, and other niceties.
    #+begin_src sh
-     qemu-kvm -hda tune.qcow -nographic -cdrom data/debian-5010-amd64-netinst.iso -net nic -net user,hostfwd=tcp:127.0.0.1:2222-:22
+     qemu-kvm -hda tune.qcow -nographic -cdrom data/debian-5010-amd64-netinst.iso -m 1G -net nic -net user,hostfwd=tcp:127.0.0.1:2222-:22 -daemonize
    #+end_src
 
 6. Log into =tune= as =bacon=.
@@ -98,9 +98,9 @@
 * Running a Simple Fast Fourier Transform (FFT)
 The FFT benchmark has higher memory requirements than the simple
 ping-pong test, so for this we'll have to increase the memory of the
-VM by passing the =-m 1024= flag to the call to =qemu-kvm=.
+VM by passing the =-m 1G= flag to the call to =qemu-kvm=.
 #+begin_src sh
-  qemu-kvm -hda tune.qcow -nographic -cdrom data/debian-5010-amd64-netinst.iso -net nic -net user,hostfwd=tcp:127.0.0.1:2222-:22
+  qemu-kvm -hda tune.qcow -nographic -cdrom data/debian-5010-amd64-netinst.iso -m 1G -net nic -net user,hostfwd=tcp:127.0.0.1:2222-:22 -daemonize
 #+end_src
 
 This should run for a while and complete with output that looks like
@@ -178,23 +178,23 @@ To create some number of overlay images run;
   popd
 #+end_src
 
-To run all overlays in their own screen windows run;
+To run all overlays daemonized;
 #+begin_src sh :tangle src/startup-vms
   remotes=""
   pushd overlays/
   for i in $(seq 46);do
       I=$(printf "%0.2d" i);
-      screen -X screen -t $I-VM \
-          qemu-kvm -hda $I.cqow -nographic -m 1G \
+      qemu-kvm -hda $I.qcow -nographic -m 1G \
           -cdrom ../data/debian-5010-amd64-netinst.iso \
-          -net nic -net user,hostfwd=tcp:127.0.0.1:30$I-:22
-      remotes="$remotes \"-p 30$I bacon@localhost\""
+          -net nic -net user,hostfwd=tcp:127.0.0.1:30$I-:22 \
+          -daemonize
+      remotes="$remotes \"30$I\""
   done
-  cat <<EOF > REMOTES
+  popd
+  cat <<EOF > src/REMOTES
   #!/bin/sh
   REMOTES=($remotes)
   EOF
-  popd
 #+end_src
 
 * Notes
