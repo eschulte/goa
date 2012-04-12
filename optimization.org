@@ -95,6 +95,22 @@
      make ping_pong_app_test CORES=16 PROCS=2
    #+end_src
 
+8. At this point the virtual machine is usable for running
+   applications through Graphite and collecting metrics.  If modeling
+   power consumption then one more dependency must be installed.
+   McPAT is available at http://www.hpl.hp.com/research/mcpat/.  The
+   tarball should be downloaded to the virtual machine and unpacked
+   into the home directory.
+   #+begin_src sh
+     cd ~/archives/
+     wget http://www.hpl.hp.com/research/mcpat/mcpat0.8_r274.tar.gz
+     cd ~
+     tar xzf archives/mcpat0.8_r274.tar.g
+     sudo apt-get install libc6-dev-i386
+     cd mcpat0.8_r274/
+     make
+   #+end_src
+
 * Running a Simple Fast Fourier Transform (FFT)
 The FFT benchmark has higher memory requirements than the simple
 ping-pong test, so for this we'll have to increase the memory of the
@@ -127,20 +143,29 @@ the following.
 : Overall transpose time            :         27878043
 : Overall transpose fraction        :          0.34904
 
-* Host machine setup
-We will want to ssh to =tune= to connect to the tune VM machine.  This
-will require some configuration on the host machine (or you are edit
-"=tune=" in the file:src/host-test.sh script).
+* Evolving a Population of Variants
+Using the scripts in file:src/host-test.sh and file:src/guest-test.sh,
+the experimental harness in file:src/optimize.lisp and the [[http://gitweb.adaptive.cs.unm.edu/software-evolution.git][software
+evolution]] framework it is possible to evolve populations of variants
+of the original FFT program to optimize for certain execution
+properties.  The following instructions describe how to evolve a
+population of variant programs using multiple VM back ends for
+parallel fitness evaluation.
 
-1. Edit file:/etc/hosts so that "=tune=" redirects to "=localhost="
-   changing the =localhost= line to something like the following.
-   : 127.0.0.1       localhost.localdomain   localhost your-hostname tune
+1. Copy the file:src/guest-test.sh script into the =/home/bacon/bin/=
+   on the virtual machine.  Power off the virtual machine before
+   performing the next step.
+   #+begin_src sh
+     scp src/guest-test.sh -P 2222 bacon@localhost:bin/
+     ssh -p 2222 root@localhost poweroff
+   #+end_src
 
-2. Edit your file:~/.ssh/config so that connections to =tune= use port
-   2222 and connect as bacon by adding something like the following.
-   : Host tune
-   : Port 2222
-   : User bacon
+2. The current version of file:src/host-test.sh assumes that all
+   virtual machines are running on =localhost= and that they are
+   placed behind different port numbers.  To setup multiple VMs on
+   your local machine saving their port numbers to the
+   file:src/REMOTES file (as required by file:src/host-test.sh) follow
+   the steps in [[#running-overlays][Running overlays]].
 
 3. Since ssh is apparently /very/ sensitive to widely readable public
    keys, be sure to fix access permission for file:data/id_rsa which
@@ -149,15 +174,31 @@ will require some configuration on the host machine (or you are edit
      chmod 700 data/id_rsa
    #+end_src
 
-* Evolving a Population of Variants
-Using the test script in file:src/test.sh, the experimental harness in
-file:src/optimize.lisp and the [[http://gitweb.adaptive.cs.unm.edu/software-evolution.git][software evolution]] framework it is
-possible to evolve populations of variants of the original FFT program
-to optimize for certain execution properties.
+4. Change into the =src/= directory and fire up a Common Lisp
+   interpreter (SBCL version 1.0.55 was used to prepare these
+   instructions).  Ensure that the [[http://gitweb.adaptive.cs.unm.edu/software-evolution.git][software evolution]] framework is
+   installed and load the file:src/optimize.lisp file into your lisp
+   session.  To test that things your test scripts, virtual machines,
+   and lisp install are all working correctly evaluate the original
+   FFT program and ensure that it's fitness is equal to 1.
+   #+begin_src lisp
+     (require 'software-evolution)
+     (in-package 'software-evolution)
+     (load "optimize.lisp")
+     (unless (= 1 (fitness (evaluate *orig*)))
+       (error "Something is wrong, debug your script/lisp setup."))
+   #+end_src
+
+5. If everything appears to be working as expected, then a population
+   of 100 variants can be evolved to minimize execution time by
+   running the following.  See file:src/optimize.lisp to change the
+   default configuration of things like population size, tournament
+   size, and the features optimized for.
 
 * Running overlays
   :PROPERTIES:
   :shebang:  #!/bin/sh
+  :CUSTOM_ID: running-overlays
   :END:
 Qemu overlays create lightweight disk images based off of a starting
 disk image which can be used to store diffs from the original, and to
