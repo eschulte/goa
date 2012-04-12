@@ -56,6 +56,9 @@ Note: This does not follow the normal test script format but rather it;
                        (key  (read-from-string (car pair)))
                        (val  (read-from-string (cadr pair))))
                   (when (and key (slot-exists-p var key))
+                    (unless (numberp val)
+                      (format t "~&non-numeric value ~a:~a" key val)
+                      (setf (fitness var) 0))
                     (setf (slot-value var key) val)))))
             (split-sequence #\Newline out)))
   var)
@@ -69,17 +72,24 @@ Note: This does not follow the normal test script format but rather it;
   (let ((file (format nil *file-format* n)))
     (if *dir* (merge-pathnames file *dir*) file)))
 
-(defun take-biased-step (pop &key (test #'<) (key #'time-wo-init) &aux result)
+(defun safe< (a b)
+  "A version of < which gives the right values in the case of non-numbers."
+  (if (numberp a)
+      (if (numberp b) (< a b) T)
+      nil))
+
+(defun take-biased-step (pop &key (test #'safe<) (key #'time-wo-init) &aux result)
   "Take a whole-population biased step through neutral space."
   (flet ((new-var ()
            (let ((t-pop (repeatedly *tsize* (random-elt pop))))
              (evaluate (mutate (copy (first (sort t-pop test :key key))))))))
-    (loop :until (= (length result) *psize*) :do
-       (let ((pool (prepeatedly (- *psize* (length result)) (new-var))))
+    (loop :until (>= (length result) *psize*) :do
+       (let ((pool (prepeatedly (floor (* (- *psize* (length result)) 1.3333))
+                     (new-var))))
          (dolist (var pool) (when (= (fitness var) 1) (push var result)))))
-    result))
+    (subseq result 0 *psize*)))
 
-(defun do-biased-walk (seed &key (steps 100) (test #'<) (key #'time-wo-init))
+(defun do-biased-walk (seed &key (steps 100) (test #'safe<) (key #'time-wo-init))
   "Evolve a population in the neutral space biased by metric and KEY."
   (setf *pop* (list seed))
   (dotimes (n steps)
