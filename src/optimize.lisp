@@ -13,6 +13,7 @@
 (require :software-evolution)
 (in-package :software-evolution)
 
+#+lab-machine
 (advise-thread-pool-size 46)
 
 (defvar *pop*   nil "Population of variants.")
@@ -30,8 +31,24 @@ Note: This does not follow the normal test script format but rather it;
 
 (defclass pll-asm (asm)
   ((time-wo-init :accessor time-wo-init :initform nil)
-   (time-w-init  :accessor time-w-init  :initform nil)
-   (trans-time   :accessor trans-time   :initform nil))
+   (time-w-init :accessor time-w-init :initform nil)
+   (trans-time :accessor trans-time :initform nil)
+   (total-packets-sent :accessor total-packets-sent :initform nil)
+   (total-flits-sent :accessor total-flits-sent :initform nil)
+   (total-bytes-sent :accessor total-bytes-sent :initform nil)
+   (total-packets-broadcasted :accessor total-packets-broadcasted :initform nil)
+   (total-flits-broadcasted :accessor total-flits-broadcasted :initform nil)
+   (total-bytes-broadcasted :accessor total-bytes-broadcasted :initform nil)
+   (total-packets-received :accessor total-packets-received :initform nil)
+   (total-flits-received :accessor total-flits-received :initform nil)
+   (total-bytes-received :accessor total-bytes-received :initform nil)
+   (average-packet-latency-in-clock-cycles :accessor average-packet-latency-in-clock-cycles :initform nil)
+   (average-packet-latency-in-ns :accessor average-packet-latency-in-ns :initform nil)
+   (average-contention-delay-in-clock-cycles :accessor average-contention-delay-in-clock-cycles :initform nil)
+   (average-contention-delay-in-ns :accessor average-contention-delay-in-ns :initform nil)
+   (switch-allocator-traversals :accessor switch-allocator-traversals :initform nil)
+   (crossbar-traversals :accessor crossbar-traversals :initform nil)
+   (link-traversals :accessor link-traversals :initform nil))
   (:documentation
    "Extending the ASM class with a number of parallel run statistics."))
 
@@ -62,6 +79,20 @@ Note: This does not follow the normal test script format but rather it;
                     (setf (slot-value var key) val)))))
             (split-sequence #\Newline out)))
   var)
+
+(defmethod evaluate-network ((var pll-asm))
+  (multiple-value-bind (out err exit) (shell "~a ~a" *script* (pll-to-s var))
+    (declare (ignorable err))
+    (setf (fitness var) (if (= exit 0) 1 0))
+    (mapcar (lambda (line)
+              (when (> (length line) 0)
+                (let* ((pair (split-sequence #\Space line
+                                             :remove-empty-subseqs t))
+                       (key  (read-from-string (car pair)))
+                       (vals (mapcar #'read-from-string (cdr pair))))
+                  (when (and key (slot-exists-p var key))
+                    (setf (slot-value var key) vals)))))
+            (split-sequence #\Newline out))))
 
 (defun stats (var)
   "Return an alist of the vital stats of VAR."

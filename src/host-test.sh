@@ -14,14 +14,16 @@
 #       readable by the common lisp `read-from-string' function.
 #
 # Code:
-REMOTES=("tune")
+REMOTES=("2222")
 . $(dirname $0)/REMOTES # allow host-specific remote files
 pick_remote(){ echo ${REMOTES[$RANDOM % ${#REMOTES[@]}]}; }
 
+if [ -z "$1" ];then echo "requires an argument"; exit 1;fi
 var=$1
 guest_test="/home/bacon/bin/guest-test.sh"
 cmd="$guest_test /tmp/$(basename $var)"
 id="../data/id_rsa"
+output_path="graphite/output_files/sim.out"
 
 ## run remotely and collect output and return value
 output="busy"
@@ -33,24 +35,24 @@ while [ "$output" = "busy" ]; do
     if [ "$output" = "busy" ];then sleep 1; fi
 done
 
-## if successful return the execution metrics as lisp
+## if successful collect the output file
+output=$(scp -i $id -P $remote bacon@localhost:$output_path /dev/stdout)
+
+## return the execution metrics as lisp
 sed_cmd=$(cat <<EOF
-s/://;
-s/ \+/ /g;
-s/Start time/start/;
-s/Initialization finish time/init-finish/;
-s/Overall finish time/finish/;
-s/Total time with initialization/time-w-init/;
-s/Total time without initialization/time-wo-init/;
-s/Overall transpose time/trans-time/;
-s/Overall transpose fraction/trans-fraction/;
+s/^ \+//;
+s/ \+| \+/ /g;
+s/(//g;
+s/)//g;
+s/\([a-zA-Z]\) \([a-zA-Z]\)/\1-\2/g;
 EOF
 )
 if [ $success -eq 0 ];then
-    ## parse and print the results
+    # collecting the "Network model 2" stats
     echo "$output" \
-        |sed -n '/FFT with Blocking Transpose/,$p' \
-        |egrep " : +[.0-9]+$"|sed "$sed_cmd"
+        |sed -n '/Network model 2/,/Network model 3/p' \
+        |grep -v 'Network model'|grep -v 'Activity Counters' \
+        |sed "$sed_cmd"
     exit 0
 else
     exit 1
