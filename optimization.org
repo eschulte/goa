@@ -106,8 +106,10 @@
      wget http://www.hpl.hp.com/research/mcpat/mcpat0.8_r274.tar.gz
      cd ~
      tar xzf archives/mcpat0.8_r274.tar.g
-     sudo apt-get install libc6-dev-i386
-     cd mcpat0.8_r274/
+     sudo apt-get install libc6-dev-i386 lib32stdc++6-dev
+     mv mcpat0.8_r274/ mcpat/
+     cd mcpat/
+     # TODO: something else is required for a successful build
      make
    #+end_src
 
@@ -238,7 +240,7 @@ To run all overlays daemonized;
   EOF
 #+end_src
 
-* Notes
+* COMMENT Notes
 ** configuration and output
 Configuration is controlled in =carbon_sim.cfg= in the base of the
 graphite directory.
@@ -298,4 +300,49 @@ Running =time ./bin/guest-test.s=.
   SOFTWARE-EVOLUTION> (mapcar #'stats results)
   (((TIME-WO-INIT . 103187924) (HISTORY (:SWAP 3561 2147)))
    ((TIME-WO-INIT . 101699638) (HISTORY (:INSERT 1600 2344))))
+#+end_src
+
+** Publishing
+This code is used to publish this page to the =cs.unm.edu= webserver.
+#+begin_src emacs-lisp :results silent
+  (setq opt-dir (file-name-directory (or load-file-name buffer-file-name)))
+  (unless (boundp 'org-publish-project-alist)
+    (setq org-publish-project-alist nil))
+  ;; the main html page
+  (add-to-list 'org-publish-project-alist
+               `("opt-html"
+                 :base-directory ,opt-dir
+                 :publishing-directory "/ssh:eschulte@kenworth.cs.unm.edu:~/public_html/code/opt/"
+                 :publishing-function org-publish-org-to-html
+                 :style "<style type=\"text/css\">\n <!--/*--><![CDATA[/*><!--*/
+    pre{display:table-cell;background:#232323; color:#e6e1dc;}
+    #content{max-width:1000px;margin:auto;} body{ font-size:small; } table{ font-size:small; }
+    .outline-text-2{margin-left:2em;}.outline-text-3{margin-left:3em;}
+    .title  { text-align: center; }
+    p.verse { margin-left: 3% }
+    p { text-align: justify }
+    table { border-collapse: collapse; }
+    td, th { vertical-align: top; }
+    dt { font-weight: bold; }
+    div.figure { padding: 0.5em; }
+    div.figure p { text-align: center; }
+    .linenr { font-size:smaller }
+    #postamble { color: gray; padding-top: 2em; font-size: 0.75em; }
+    /*]]>*/-->
+  </style>"))
+  (add-to-list 'org-publish-project-alist
+               `("opt-src"
+                 :base-directory ,(expand-file-name "src" opt-dir)
+                 :base-extension "txt\\|sh\\|lisp"
+                 :publishing-directory "/ssh:eschulte@kenworth.cs.unm.edu:~/public_html/code/opt/src/"
+                 :publishing-function org-publish-attachment))
+  (add-to-list 'org-publish-project-alist
+               `("opt-data"
+                 :base-directory ,(expand-file-name "data" opt-dir)
+                 :base-extension "s"
+                 :publishing-directory "/ssh:eschulte@kenworth.cs.unm.edu:~/public_html/code/opt/data/"
+                 :publishing-function org-publish-attachment))
+  ;; a single combined project to publish both html and supporting materials
+  (add-to-list 'org-publish-project-alist
+               '("opt" :components ("opt-html" "opt-src" "opt-data")))
 #+end_src
