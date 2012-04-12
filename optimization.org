@@ -1,5 +1,39 @@
 #+Title: Optimization
-#+Options: ^:nil
+#+Options: ^:nil toc:1
+
+* Introduction
+During compilation and linking, non-functional properties of software
+such as running time and executable size may be optimized.  Such
+techniques have been extensively researched and implementations can be
+found in many of the cornerstones of modern software development
+environments such as GCC.
+
+Current techniques almost exclusively rely on operations which may be
+formally proven to preserve program semantics.  Using a much looser
+test-suite based definition of program behavior we are able to evolve
+neutral program variants not reachable through semantic-preserving
+operations alone.
+
+Some of these neutral variants may have desirable non-functional
+characteristics such as faster running times, reduced energy
+consumption or a smaller executable size.  By assigning fitness to
+neutral variants based on such non-functional characteristics it
+should be possible to optimize software in more radical ways than
+possible using existing techniques.  Here we investigate the
+application of neutral variants to software optimization.
+
+Modern system emulators allow fine-grained monitoring of aspects of
+program execution, such as energy consumption and communication
+overhead, which may be difficult to predict a-priori.  We use [[http://groups.csail.mit.edu/carbon/?page_id=111][Graphite]]
+to calculate variant fitness in a multi-objective EC system for
+software optimization.  We hypothesize a number of benefits to such a
+software optimization system, including the following.
+- more radical software transformation than possible through semantic
+  preserving transformations
+- optimization of software properties not readily predictable through
+  static analysis
+- multi-objective fitness weights allow a natural method for
+  developers to specify priorities for non-functional optimization
 
 * Virtual Machine Setup
 
@@ -59,7 +93,8 @@
    with ssh -- allowing copy-paste from the local machine, use of a
    normal terminal, and other niceties.
    #+begin_src sh
-     qemu-kvm -hda tune.qcow -nographic -cdrom data/debian-5010-amd64-netinst.iso -m 1G -net nic -net user,hostfwd=tcp:127.0.0.1:2222-:22 -daemonize
+     qemu-kvm -hda tune.qcow -nographic -cdrom data/debian-5010-amd64-netinst.iso \
+         -m 1G -net nic -net user,hostfwd=tcp:127.0.0.1:2222-:22 -daemonize
    #+end_src
 
 6. Log into =tune= as =bacon=.
@@ -118,7 +153,8 @@ The FFT benchmark has higher memory requirements than the simple
 ping-pong test, so for this we'll have to increase the memory of the
 VM by passing the =-m 1G= flag to the call to =qemu-kvm=.
 #+begin_src sh
-  qemu-kvm -hda tune.qcow -nographic -cdrom data/debian-5010-amd64-netinst.iso -m 1G -net nic -net user,hostfwd=tcp:127.0.0.1:2222-:22 -daemonize
+  qemu-kvm -hda tune.qcow -nographic -cdrom data/debian-5010-amd64-netinst.iso \
+      -m 1G -net nic -net user,hostfwd=tcp:127.0.0.1:2222-:22 -daemonize
 #+end_src
 
 This should run for a while and complete with output that looks like
