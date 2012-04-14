@@ -1,4 +1,3 @@
-# -*- org-export-html-style-include-default:nil; org-export-html-final-hook:(#'org-docco-buffer) -*-
 #+Title: optimize.lisp
 #+Author: Eric Schulte
 #+Style: <link rel="stylesheet" href="docco.css" type="text/css">
@@ -225,3 +224,9 @@ evolution.
   ,#+run
   (do-biased-walk *orig*)
 #+end_src
+
+# Local Variables:
+# org-export-html-postamble: nil
+# org-export-html-style-include-default: nil
+# org-docco-doccoize-me: t
+# End:
