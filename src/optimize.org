@@ -1,0 +1,227 @@
+# -*- org-export-html-style-include-default:nil; org-export-html-final-hook:(#'org-docco-buffer) -*-
+#+Title: optimize.lisp
+#+Author: Eric Schulte
+#+Style: <link rel="stylesheet" href="docco.css" type="text/css">
+
+Optimize metrics in a population of software variants.
+
+Starting with an initial software object, generate a population of
+variant implementations and then evolve to optimize some metric such
+as fastest execution, least communication, lowest energy consumption
+etc...  For more complete notes on this experiment (still early
+stages) see my [[http://cs.unm.edu/~eschulte/code/opt/optimization.html][notes and reproducibility instructions]].
+#+begin_src lisp
+  ;;; optimize.lisp --- optimize metrics in a population of software variants
+
+  ;; Copyright (C) 2012  Eric Schulte
+
+  ;;; Commentary:
+
+  ;; Starting with an initial software object, generate a population of
+  ;; variant implementations and then evolve to optimize some metric
+  ;; such as fastest execution, least communication, lowest energy
+  ;; consumption etc...
+#+end_src
+
+First load up the [[http://cs.unm.edu/~eschulte/code/software-evolution/README.html][Software Evolution]] library providing classes for
+software representations and functions for mutating representations
+and evolving population.  The git repository for this code is
+available at http://gitweb.adaptive.cs.unm.edu/software-evolution.git.
+#+begin_src lisp
+  ;;; Code:
+  (require :software-evolution)
+  (in-package :software-evolution)
+#+end_src
+
+If running on one of the 48-core lab machines, set the thread pool
+size to 46 (one for each VM backend) so that we can perform fitness
+evaluations in parallel.
+#+begin_src lisp
+  ,#+lab-machine
+  (advise-thread-pool-size 46)
+#+end_src
+
+Setup some global variables and set configurations -- similar to what
+we would do with command-line flags in genprog.
+#+begin_src lisp
+  (defvar *pop*   nil "Population of variants.")
+  (defvar *dir*   nil "Optional sub-directory in which to store results.")
+  (defvar *file-format* "biased-pop-~S.store" "File name format.")
+  (defvar *psize* 100 "Population size.")
+  (defvar *tsize* 2   "Tournament size.")
+#+end_src
+
+Notice that I'm defining a different interface for the test script,
+since it handles passing evaluating off to a virtual machine and given
+that it return a complex fitness representation consisting of a number
+of lines holding key-value pairs.  The =evaluate= function below will
+parse this output and make the appropriate changes to the individual.
+
+This [[http://cs.unm.edu/~eschulte/code/opt/src/host-test.sh][host-test.sh]] script and the [[http://cs.unm.edu/~eschulte/code/opt/src/guest-test.sh][guest-test.sh]] script are used to
+distribute evaluation across a pool of VM back ends.
+#+begin_src lisp
+  (defvar *script* "./host-test.sh"
+    "Script used to evaluate variants.
+  Note: This does not follow the normal test script format but rather it;
+  1. takes the path to a .s asm file
+  2. copies that file to a VM
+  3. runs the resulting program in Graphite in the VM
+  4. returns the full set of Graphite debug information")
+#+end_src
+
+Here I sub-class the asm representation which itself sub-classes the
+generic software representation class.  I basically just add a bunch
+of fields to the class corresponding to performance metrics which I'll
+like to track.  Most of these are communication based and are all
+output by the [[http://groups.csail.mit.edu/carbon/?page_id=111][Graphite]] emulator.
+#+begin_src lisp
+  (defclass pll-asm (asm)
+    ((time-wo-init :accessor time-wo-init :initform nil)
+     (time-w-init :accessor time-w-init :initform nil)
+     (trans-time :accessor trans-time :initform nil)
+     (total-packets-sent :accessor total-packets-sent :initform nil)
+     (total-flits-sent :accessor total-flits-sent :initform nil)
+     (total-bytes-sent :accessor total-bytes-sent :initform nil)
+     (total-packets-broadcasted :accessor total-packets-broadcasted :initform nil)
+     (total-flits-broadcasted :accessor total-flits-broadcasted :initform nil)
+     (total-bytes-broadcasted :accessor total-bytes-broadcasted :initform nil)
+     (total-packets-received :accessor total-packets-received :initform nil)
+     (total-flits-received :accessor total-flits-received :initform nil)
+     (total-bytes-received :accessor total-bytes-received :initform nil)
+     (average-packet-latency-in-clock-cycles :accessor average-packet-latency-in-clock-cycles :initform nil)
+     (average-packet-latency-in-ns :accessor average-packet-latency-in-ns :initform nil)
+     (average-contention-delay-in-clock-cycles :accessor average-contention-delay-in-clock-cycles :initform nil)
+     (average-contention-delay-in-ns :accessor average-contention-delay-in-ns :initform nil)
+     (switch-allocator-traversals :accessor switch-allocator-traversals :initform nil)
+     (crossbar-traversals :accessor crossbar-traversals :initform nil)
+     (link-traversals :accessor link-traversals :initform nil))
+    (:documentation
+     "Extending the ASM class with a number of parallel run statistics."))
+
+  (defun pll-to-s (var)
+    "Write VAR to a temporary .s file."
+    (let ((tmp (temp-file-name "s"))) (asm-to-file var tmp) tmp))
+  
+  (defun pll-from-asm (asm)
+    (make-instance 'pll-asm :genome  (copy (genome asm))))
+#+end_src
+
+I load up the original program into a global variable for use later
+on.  I'm not using any fault localization because I'd like the
+mutations to be applied uniformly across the entire program -- I'm
+searching through program space, not fixing bugs.
+#+begin_src lisp
+  (defvar *orig* (pll-from-asm (asm-from-file "../data/fft.s"))
+    "Original seed program.")
+#+end_src
+
+Custom evaluation function.  In this case I'm not using any of the
+built-in evaluation framework because it is easier to just call the
+test script directly and modify the representations myself.  Runs the
+shell script mapping through each line of output collecting =key= and
+=val= and saving them into our new fields in the representation.
+#+begin_src lisp
+  (defmethod evaluate ((var pll-asm))
+    "Run parallel program VAR collecting and saving fitness and all metrics."
+    (multiple-value-bind (out err exit) (shell "~a ~a" *script* (pll-to-s var))
+      (declare (ignorable err))
+      (setf (fitness var) (if (= exit 0) 1 0))
+      (mapcar (lambda (line)
+                (when (> (length line) 0)
+                  (let* ((pair (split-sequence #\Space line))
+                         (key  (read-from-string (car pair)))
+                         (val  (read-from-string (cadr pair))))
+                    (when (and key (slot-exists-p var key))
+                      (unless (numberp val)
+                        (format t "~&non-numeric value ~a:~a" key val)
+                        (setf (fitness var) 0))
+                      (setf (slot-value var key) val)))))
+              (split-sequence #\Newline out)))
+    var)
+#+end_src
+
+An alternate evaluation function depending on the type of stats I want
+to collect -- can be ignored.
+#+begin_src lisp
+  (defmethod evaluate-network ((var pll-asm))
+    (multiple-value-bind (out err exit) (shell "~a ~a" *script* (pll-to-s var))
+      (declare (ignorable err))
+      (setf (fitness var) (if (= exit 0) 1 0))
+      (mapcar (lambda (line)
+                (when (> (length line) 0)
+                  (let* ((pair (split-sequence #\Space line
+                                               :remove-empty-subseqs t))
+                         (key  (read-from-string (car pair)))
+                         (vals (mapcar #'read-from-string (cdr pair))))
+                    (when (and key (slot-exists-p var key))
+                      (setf (slot-value var key) vals)))))
+              (split-sequence #\Newline out))))
+#+end_src
+
+This collects some stats from a population (namely the =time-wo-init=
+and =history= fields for each individual).  This is all I really want
+for analysis for now and it is much lighter weight than saving whole
+individuals.
+#+begin_src lisp
+  (defun stats (var)
+    "Return an alist of the vital stats of VAR."
+    (mapcar (lambda (stat) `(,stat . ,(slot-value var stat)))
+            '(time-wo-init history)))
+#+end_src
+
+Two small helper functions used in =take-biased-step= below.
+#+begin_src lisp
+  (defun file-for-run (n)
+    (let ((file (format nil *file-format* n)))
+      (if *dir* (merge-pathnames file *dir*) file)))
+  
+  (defun safe< (a b)
+    "A version of < which gives the right values in the case of non-numbers."
+    (if (numberp a)
+        (if (numberp b) (< a b) T)
+        nil))
+#+end_src
+
+Take a single biased step neutral space.  My /neutral space/ we mean
+that only those individuals which have full fitness (i.e., pass the
+only test) are considered, and by /biased/ we mean that out of the
+neutral individuals we select we use simple tournament selection in
+=new-var= to select those who have the attributes we like.  These
+attributes are specified using the =test= and =key= keyword arguments
+to this function.
+- key :: is a function which is called on the individuals to yield
+     some comparable metric (e.g., the running time)
+- test :: is a function which is called on the results of the =key=
+     function to specify what we like in that metric (e.g., =safe<=
+     meaning "we want the smaller, but fail gracefully if it isn't a
+     number")
+#+begin_src lisp
+  (defun take-biased-step (pop &key (test #'safe<) (key #'time-wo-init) &aux result)
+    "Take a whole-population biased step through neutral space."
+    (flet ((new-var ()
+             (let ((t-pop (repeatedly *tsize* (random-elt pop))))
+               (evaluate (mutate (copy (first (sort t-pop test :key key))))))))
+      (loop :until (>= (length result) *psize*) :do
+         (let ((pool (prepeatedly (floor (* (- *psize* (length result)) 1.3333))
+                       (new-var))))
+           (dolist (var pool) (when (= (fitness var) 1) (push var result)))))
+      (subseq result 0 *psize*)))
+#+end_src
+
+Just a collection of biased steps with some minimal note-keeping in
+the middle.
+#+begin_src lisp
+  (defun do-biased-walk (seed &key (steps 100) (test #'safe<) (key #'time-wo-init))
+    "Evolve a population in the neutral space biased by metric and KEY."
+    (setf *pop* (list seed))
+    (dotimes (n steps)
+      (store (mapcar #'stats *pop*) (file-for-run n))
+      (setf *pop* (take-biased-step *pop* :test test :key key))))
+#+end_src
+
+This is the command which is actually issued on the server to run
+evolution.
+#+begin_src lisp
+  ,#+run
+  (do-biased-walk *orig*)
+#+end_src
