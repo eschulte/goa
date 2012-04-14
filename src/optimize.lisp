@@ -13,7 +13,6 @@
 (require :software-evolution)
 (in-package :software-evolution)
 
-#+lab-machine
 (advise-thread-pool-size 46)
 
 (defvar *pop*   nil "Population of variants.")
@@ -30,9 +29,16 @@ Note: This does not follow the normal test script format but rather it;
 4. returns the full set of Graphite debug information")
 
 (defclass pll-asm (asm)
-  ((time-wo-init :accessor time-wo-init :initform nil)
-   (time-w-init :accessor time-w-init :initform nil)
-   (trans-time :accessor trans-time :initform nil)
+  (;; execution stats
+   (start          :accessor start          :initform nil)
+   (init-finish    :accessor init-finish    :initform nil)
+   (finish         :accessor finish         :initform nil)
+   (trans-fraction :accessor trans-fraction :initform nil)
+   (time-wo-init   :accessor time-wo-init   :initform nil)
+   (time-w-init    :accessor time-w-init    :initform nil)
+   (raw-output     :accessor raw-output     :initform nil)
+   (trans-time     :accessor trans-time     :initform nil)
+   ;; network stats
    (total-packets-sent :accessor total-packets-sent :initform nil)
    (total-flits-sent :accessor total-flits-sent :initform nil)
    (total-bytes-sent :accessor total-bytes-sent :initform nil)
@@ -62,37 +68,30 @@ Note: This does not follow the normal test script format but rather it;
   "Write VAR to a temporary .s file."
   (let ((tmp (temp-file-name "s"))) (asm-to-file var tmp) tmp))
 
+(defun output-to-stats (output)
+  (delete nil
+          (mapcar (lambda (line)
+                    (when (> (length line) 0)
+                      (let* ((pair (split-sequence #\Space line))
+                             (key  (read-from-string (car pair)))
+                             (val  (read-from-string (cadr pair))))
+                        (cons key val))))
+                  (split-sequence #\Newline output))))
+
+(defun apply-output (var output)
+  (mapcar (lambda (pair)
+            (let ((key (car pair)) (val (cdr pair)))
+              (when (and key (slot-exists-p var key))
+                (setf (slot-value var key) val))))
+          (output-to-stats output)))
+
 (defmethod evaluate ((var pll-asm))
   "Run parallel program VAR collecting and saving fitness and all metrics."
-  (multiple-value-bind (out err exit) (shell "~a ~a" *script* (pll-to-s var))
+  (multiple-value-bind (output err exit) (shell "~a ~a" *script* (pll-to-s var))
     (declare (ignorable err))
     (setf (fitness var) (if (= exit 0) 1 0))
-    (mapcar (lambda (line)
-              (when (> (length line) 0)
-                (let* ((pair (split-sequence #\Space line))
-                       (key  (read-from-string (car pair)))
-                       (val  (read-from-string (cadr pair))))
-                  (when (and key (slot-exists-p var key))
-                    (unless (numberp val)
-                      (format t "~&non-numeric value ~a:~a" key val)
-                      (setf (fitness var) 0))
-                    (setf (slot-value var key) val)))))
-            (split-sequence #\Newline out)))
+    (setf (raw-output var) output))
   var)
-
-(defmethod evaluate-network ((var pll-asm))
-  (multiple-value-bind (out err exit) (shell "~a ~a" *script* (pll-to-s var))
-    (declare (ignorable err))
-    (setf (fitness var) (if (= exit 0) 1 0))
-    (mapcar (lambda (line)
-              (when (> (length line) 0)
-                (let* ((pair (split-sequence #\Space line
-                                             :remove-empty-subseqs t))
-                       (key  (read-from-string (car pair)))
-                       (vals (mapcar #'read-from-string (cdr pair))))
-                  (when (and key (slot-exists-p var key))
-                    (setf (slot-value var key) vals)))))
-            (split-sequence #\Newline out))))
 
 (defun stats (var)
   "Return an alist of the vital stats of VAR."
@@ -115,16 +114,22 @@ Note: This does not follow the normal test script format but rather it;
            (let ((t-pop (repeatedly *tsize* (random-elt pop))))
              (evaluate (mutate (copy (first (sort t-pop test :key key))))))))
     (loop :until (>= (length result) *psize*) :do
-       (let ((pool (prepeatedly (floor (* (- *psize* (length result)) 1.3333))
-                     (new-var))))
-         (dolist (var pool) (when (= (fitness var) 1) (push var result)))))
-    (subseq result 0 *psize*)))
+       (let* ((to-run (min (thread-pool-size)
+                           (floor (* (- *psize* (length result)) 3))))
+              (pool (progn
+                      (format t "~&generating ~a" to-run)
+                      (prepeatedly to-run (prog1 (new-var) (format t "."))))))
+         (format t "~&keeping the fit")
+         (dolist (var pool) (when (= (fitness var) 1) (push var result)))
+         (format t "~&(length results);=> ~a" (length result))))
+    (dolist (var result) (apply-output var (raw-output var)))
+    result))
 
 (defun do-biased-walk (seed &key (steps 100) (test #'safe<) (key #'time-wo-init))
   "Evolve a population in the neutral space biased by metric and KEY."
   (setf *pop* (list seed))
   (dotimes (n steps)
-    (store (mapcar #'stats *pop*) (file-for-run n))
+    (store *pop* (file-for-run n))
     (setf *pop* (take-biased-step *pop* :test test :key key))))
 
 #+run
