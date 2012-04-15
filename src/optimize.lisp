@@ -13,6 +13,7 @@
 (require :software-evolution)
 (in-package :software-evolution)
 
+#+lab-machine
 (advise-thread-pool-size 46)
 
 (defvar *pop*   nil "Population of variants.")
@@ -79,25 +80,28 @@ Note: This does not follow the normal test script format but rather it;
     (multiple-value-bind (output err exit) (shell "~a ~a" *script* s-file)
       (declare (ignorable err))
       (delete-file s-file)
-      (note 2 "$ ~a ~a # $? => ~d " *script* s-file err)
+      (note 2 "$ ~a ~a; $? => ~d" *script* s-file exit)
       (setf (raw-output var) output)
       (if (= exit 0) 1 0))))
 
 (defun output-to-stats (output)
-  (delete nil
-          (mapcar (lambda (line)
-                    (when (> (length line) 0)
-                      (let* ((pair (split-sequence #\Space line))
-                             (key  (read-from-string (car pair)))
-                             (val  (read-from-string (cadr pair))))
-                        (cons key val))))
-                  (split-sequence #\Newline output))))
+  (delete
+   nil
+   (mapcar
+    (lambda (line)
+      (when (> (length line) 0)
+        (let* ((pair (split-sequence #\Space line :remove-empty-subseqs t))
+               (key  (read-from-string (car pair)))
+               (val  (mapcar #'read-from-string (cdr pair))))
+          (cons key val))))
+    (split-sequence #\Newline output :remove-empty-subseqs t))))
 
 (defun apply-output (var output)
   (mapcar (lambda (pair)
             (let ((key (car pair)) (val (cdr pair)))
               (when (and key (slot-exists-p var key))
-                (setf (slot-value var key) val))))
+                (setf (slot-value var key)
+                      (if (= (length val) 1) (first val) val)))))
           (output-to-stats output)))
 
 (defun test (var)

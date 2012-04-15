@@ -39,6 +39,18 @@ done
 log_output=$(scp -i $id -P $remote bacon@localhost:$output_path /dev/stdout)
 
 ## return the execution metrics as lisp
+sed_cmd=$(cat <<EOF
+s/://;
+s/ \+/ /g;
+s/Start time/start/;
+s/Initialization finish time/init-finish/;
+s/Overall finish time/finish/;
+s/Total time with initialization/time-w-init/;
+s/Total time without initialization/time-wo-init/;
+s/Overall transpose time/trans-time/;
+s/Overall transpose fraction/trans-fraction/;
+EOF
+)
 log_sed_cmd=$(cat <<EOF
 s/^ \+//;
 s/ \+| \+/ /g;
@@ -49,7 +61,9 @@ EOF
 )
 if [ $success -eq 0 ];then
     # runtime metrics
-    
+    echo "$output" \
+        |sed -n '/FFT with Blocking Transpose/,$p' \
+        |egrep " : +[.0-9]+"|sed "$sed_cmd"
     # collecting the "Network model 2" stats
     echo "$log_output" \
         |sed -n '/Network model 2/,/Network model 3/p' \
