@@ -48,11 +48,16 @@ Note: This does not follow the normal test script format but rather it;
    (total-packets-received :accessor total-packets-received :initform nil)
    (total-flits-received :accessor total-flits-received :initform nil)
    (total-bytes-received :accessor total-bytes-received :initform nil)
-   (average-packet-latency-in-clock-cycles :accessor average-packet-latency-in-clock-cycles :initform nil)
-   (average-packet-latency-in-ns :accessor average-packet-latency-in-ns :initform nil)
-   (average-contention-delay-in-clock-cycles :accessor average-contention-delay-in-clock-cycles :initform nil)
-   (average-contention-delay-in-ns :accessor average-contention-delay-in-ns :initform nil)
-   (switch-allocator-traversals :accessor switch-allocator-traversals :initform nil)
+   (average-packet-latency-in-clock-cycles
+    :accessor average-packet-latency-in-clock-cycles :initform nil)
+   (average-packet-latency-in-ns
+    :accessor average-packet-latency-in-ns :initform nil)
+   (average-contention-delay-in-clock-cycles
+    :accessor average-contention-delay-in-clock-cycles :initform nil)
+   (average-contention-delay-in-ns
+    :accessor average-contention-delay-in-ns :initform nil)
+   (switch-allocator-traversals
+    :accessor switch-allocator-traversals :initform nil)
    (crossbar-traversals :accessor crossbar-traversals :initform nil)
    (link-traversals :accessor link-traversals :initform nil))
   (:documentation
@@ -67,6 +72,16 @@ Note: This does not follow the normal test script format but rather it;
 (defun pll-to-s (var)
   "Write VAR to a temporary .s file."
   (let ((tmp (temp-file-name "s"))) (asm-to-file var tmp) tmp))
+
+(defmethod evaluate ((var pll-asm))
+  "Run parallel program VAR collecting and saving fitness and all metrics."
+  (let ((s-file (pll-to-s var)))
+    (multiple-value-bind (output err exit) (shell "~a ~a" *script* s-file)
+      (declare (ignorable err))
+      (delete-file s-file)
+      (note 2 "$ ~a ~a # $? => ~d " *script* s-file err)
+      (setf (raw-output var) output)
+      (if (= exit 0) 1 0))))
 
 (defun output-to-stats (output)
   (delete nil
@@ -85,18 +100,15 @@ Note: This does not follow the normal test script format but rather it;
                 (setf (slot-value var key) val))))
           (output-to-stats output)))
 
-(defmethod evaluate ((var pll-asm))
-  "Run parallel program VAR collecting and saving fitness and all metrics."
-  (multiple-value-bind (output err exit) (shell "~a ~a" *script* (pll-to-s var))
-    (declare (ignorable err))
-    (setf (fitness var) (if (= exit 0) 1 0))
-    (setf (raw-output var) output))
+(defun test (var)
+  "Wraps fitness with extra test-output processing."
+  (evaluate var)
+  (apply-output var (raw-output var))
   var)
 
 (defun stats (var)
   "Return an alist of the vital stats of VAR."
-  (mapcar (lambda (stat) `(,stat . ,(slot-value var stat)))
-          '(time-wo-init history)))
+  (mapcar (lambda (stat) `(,stat . ,(slot-value var stat))) '(time-wo-init history)))
 
 (defun file-for-run (n)
   (let ((file (format nil *file-format* n)))
@@ -104,33 +116,33 @@ Note: This does not follow the normal test script format but rather it;
 
 (defun safe< (a b)
   "A version of < which gives the right values in the case of non-numbers."
-  (if (numberp a)
-      (if (numberp b) (< a b) T)
-      nil))
+  (if (numberp a) (if (numberp b) (< a b) T) nil))
 
-(defun take-biased-step (pop &key (test #'safe<) (key #'time-wo-init) &aux result)
+(defun biased-step (pop &key (test #'safe<) (key #'time-wo-init) &aux result)
   "Take a whole-population biased step through neutral space."
   (flet ((new-var ()
            (let ((t-pop (repeatedly *tsize* (random-elt pop))))
-             (evaluate (mutate (copy (first (sort t-pop test :key key))))))))
+             (test (mutate (copy (first (sort t-pop test :key key))))))))
     (loop :until (>= (length result) *psize*) :do
        (let* ((to-run (min (thread-pool-size)
                            (floor (* (- *psize* (length result)) 3))))
               (pool (progn
-                      (format t "~&generating ~a" to-run)
-                      (prepeatedly to-run (prog1 (new-var) (format t "."))))))
-         (format t "~&keeping the fit")
+                      (note 1 "~&generating ~a" to-run)
+                      (prepeatedly to-run (progn (note 2 "starting")
+                                                 (new-var))))))
+         (note 1 "~&keeping the fit")
          (dolist (var pool) (when (= (fitness var) 1) (push var result)))
-         (format t "~&(length results);=> ~a" (length result))))
-    (dolist (var result) (apply-output var (raw-output var)))
-    result))
+         (note 1 "~&(length results) ;; => ~a" (length result))))
+    (subseq result 0 *psize*)))
 
-(defun do-biased-walk (seed &key (steps 100) (test #'safe<) (key #'time-wo-init))
+(defun biased-walk (seed &key (steps 100) (test #'safe<) (key #'time-wo-init))
   "Evolve a population in the neutral space biased by metric and KEY."
   (setf *pop* (list seed))
   (dotimes (n steps)
+    (note 1 "saving population ~d" n)
     (store *pop* (file-for-run n))
-    (setf *pop* (take-biased-step *pop* :test test :key key))))
+    (note 1 "generating population ~d" (1+ n))
+    (setf *pop* (biased-step *pop* :test test :key key))))
 
 #+run
-(do-biased-walk *orig*)
+(biased-walk *orig*)
