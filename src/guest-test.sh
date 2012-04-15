@@ -10,9 +10,8 @@
 #
 # Code:
 lock="/tmp/lockfile"
-return=1
 quit_locked(){ echo busy; exit 1; }
-quit_free(){ rm -f $lock; exit $return; }
+quit_free(){ rm -f $lock; exit 0; }
 
 # atomic check and set on the VM lock
 (umask 222; echo $$ >$lock) 2>/dev/null || quit_locked;
@@ -33,9 +32,8 @@ else
         popd
         # run
         pushd /home/bacon/graphite
-        rm -f output_files/sim.out
+        rm -f output_files/s
         make fft_bench_test
-        return=$?
     ) 2>/dev/null
 fi
 quit_free

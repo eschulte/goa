@@ -31,7 +31,6 @@ while [ "$output" = "busy" ]; do
     remote=$(pick_remote)
     scp -i $id -P $remote $var bacon@localhost:/tmp/ >/dev/null
     output=$( ssh -t -i $id -p $remote bacon@localhost "$cmd" 2>/dev/null )
-    success=$?
     if [ "$output" = "busy" ];then sleep 1; fi
 done
 
@@ -59,17 +58,18 @@ s/)//g;
 s/\([a-zA-Z]\) \([a-zA-Z]\)/\1-\2/g;
 EOF
 )
-if [ $success -eq 0 ];then
-    # runtime metrics
-    echo "$output" \
-        |sed -n '/FFT with Blocking Transpose/,$p' \
-        |egrep " : +[.0-9]+"|sed "$sed_cmd"
-    # collecting the "Network model 2" stats
-    echo "$log_output" \
-        |sed -n '/Network model 2/,/Network model 3/p' \
-        |grep -v 'Network model'|grep -v 'Activity Counters' \
-        |sed "$log_sed_cmd"
-    exit 0
-else
-    exit 1
-fi
+
+# runtime metrics
+echo "$output" \
+    |sed -n '/FFT with Blocking Transpose/,$p' \
+    |egrep " : +[.0-9]+"|sed "$sed_cmd"
+
+# collecting the "Network model 2" stats
+echo "$log_output" \
+    |sed -n '/Network model 2/,/Network model 3/p' \
+    |grep -v 'Network model'|grep -v 'Activity Counters' \
+    |sed "$log_sed_cmd"
+
+# success
+echo "$output"|grep "Exited with return code: 0" >/dev/null 2>/dev/null && exit 0
+exit 1
