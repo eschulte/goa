@@ -35,6 +35,6 @@ else
         pushd /home/bacon/graphite
         make fft_bench_test
         return=$?
-    ) >/dev/null 2>/dev/null
+    ) 2>/dev/null
 fi
 quit_free

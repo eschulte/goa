@@ -36,10 +36,10 @@ while [ "$output" = "busy" ]; do
 done
 
 ## if successful collect the output file
-output=$(scp -i $id -P $remote bacon@localhost:$output_path /dev/stdout)
+log_output=$(scp -i $id -P $remote bacon@localhost:$output_path /dev/stdout)
 
 ## return the execution metrics as lisp
-sed_cmd=$(cat <<EOF
+log_sed_cmd=$(cat <<EOF
 s/^ \+//;
 s/ \+| \+/ /g;
 s/(//g;
@@ -48,11 +48,13 @@ s/\([a-zA-Z]\) \([a-zA-Z]\)/\1-\2/g;
 EOF
 )
 if [ $success -eq 0 ];then
+    # runtime metrics
+    
     # collecting the "Network model 2" stats
-    echo "$output" \
+    echo "$log_output" \
         |sed -n '/Network model 2/,/Network model 3/p' \
         |grep -v 'Network model'|grep -v 'Activity Counters' \
-        |sed "$sed_cmd"
+        |sed "$log_sed_cmd"
     exit 0
 else
     exit 1
