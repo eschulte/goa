@@ -30,7 +30,8 @@ Note: This does not follow the normal test script format but rather it;
 4. returns the full set of Graphite debug information")
 
 (defclass pll-asm (asm)
-  (;; execution stats
+  ((neutral-p      :accessor neutral-p      :initform nil)
+   ;; execution stats
    (start          :accessor start          :initform nil)
    (init-finish    :accessor init-finish    :initform nil)
    (finish         :accessor finish         :initform nil)
@@ -75,18 +76,19 @@ Note: This does not follow the normal test script format but rather it;
   (let ((tmp (temp-file-name "s"))) (asm-to-file var tmp) tmp))
 
 (defmethod evaluate ((var pll-asm))
-  "Run parallel program VAR collecting and saving fitness and all metrics."
+  "Run parallel program VAR collecting and saving neutrality and all metrics."
   (let ((s-file (pll-to-s var)))
     (multiple-value-bind (output err exit) (shell "~a ~a" *script* s-file)
       (declare (ignorable err))
       (delete-file s-file)
       (note 2 "$ ~a ~a; $? => ~d" *script* s-file exit)
       (setf (raw-output var) output)
-      (if (= exit 0) 1 0))))
+      (apply-output var (raw-output var))
+      (setf (neutral-p var) (= exit 0))
+      var)))
 
 (defun output-to-stats (output)
-  (delete
-   nil
+  (delete nil
    (mapcar
     (lambda (line)
       (when (> (length line) 0)
@@ -104,12 +106,6 @@ Note: This does not follow the normal test script format but rather it;
                       (if (= (length val) 1) (first val) val)))))
           (output-to-stats output)))
 
-(defun test (var)
-  "Wraps fitness with extra test-output processing."
-  (evaluate var)
-  (apply-output var (raw-output var))
-  var)
-
 (defun stats (var)
   "Return an alist of the vital stats of VAR."
   (mapcar (lambda (stat) `(,stat . ,(slot-value var stat))) '(time-wo-init history)))
@@ -126,7 +122,7 @@ Note: This does not follow the normal test script format but rather it;
   "Take a whole-population biased step through neutral space."
   (flet ((new-var ()
            (let ((t-pop (repeatedly *tsize* (random-elt pop))))
-             (test (mutate (copy (first (sort t-pop test :key key))))))))
+             (evaluate (mutate (copy (first (sort t-pop test :key key))))))))
     (loop :until (>= (length result) *psize*) :do
        (let* ((to-run (min (thread-pool-size)
                            (floor (* (- *psize* (length result)) 3))))
@@ -135,7 +131,7 @@ Note: This does not follow the normal test script format but rather it;
                       (prepeatedly to-run (progn (note 2 "starting")
                                                  (new-var))))))
          (note 1 "~&keeping the fit")
-         (dolist (var pool) (when (= (fitness var) 1) (push var result)))
+         (dolist (var pool) (when (neutral-p var) (push var result)))
          (note 1 "~&(length results) ;; => ~a" (length result))))
     (subseq result 0 *psize*)))
 

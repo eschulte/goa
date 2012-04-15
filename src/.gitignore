@@ -1,3 +1,4 @@
 REMOTES
 create-vms
 startup-vms
+*.fasl
