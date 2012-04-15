@@ -75,18 +75,6 @@ Note: This does not follow the normal test script format but rather it;
   "Write VAR to a temporary .s file."
   (let ((tmp (temp-file-name "s"))) (asm-to-file var tmp) tmp))
 
-(defmethod evaluate ((var pll-asm))
-  "Run parallel program VAR collecting and saving neutrality and all metrics."
-  (let ((s-file (pll-to-s var)))
-    (multiple-value-bind (output err exit) (shell "~a ~a" *script* s-file)
-      (declare (ignorable err))
-      (delete-file s-file)
-      (note 2 "$ ~a ~a; $? => ~d" *script* s-file exit)
-      (setf (raw-output var) output)
-      (apply-output var (raw-output var))
-      (setf (neutral-p var) (= exit 0))
-      var)))
-
 (defun output-to-stats (output)
   (delete nil
    (mapcar
@@ -106,9 +94,17 @@ Note: This does not follow the normal test script format but rather it;
                       (if (= (length val) 1) (first val) val)))))
           (output-to-stats output)))
 
-(defun stats (var)
-  "Return an alist of the vital stats of VAR."
-  (mapcar (lambda (stat) `(,stat . ,(slot-value var stat))) '(time-wo-init history)))
+(defmethod evaluate ((var pll-asm))
+  "Run parallel program VAR collecting and saving neutrality and all metrics."
+  (let ((s-file (pll-to-s var)))
+    (multiple-value-bind (output err exit) (shell "~a ~a" *script* s-file)
+      (declare (ignorable err))
+      (delete-file s-file)
+      (note 2 "$ ~a ~a; $? => ~d" *script* s-file exit)
+      (setf (raw-output var) output)
+      (apply-output var (raw-output var))
+      (setf (neutral-p var) (= exit 0))
+      var)))
 
 (defun file-for-run (n)
   (let ((file (format nil *file-format* n)))
