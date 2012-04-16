@@ -182,6 +182,11 @@ the following.
 : Overall transpose fraction        :          0.34904
 
 * Evolving a Population of Variants
+This experimental setup is held in a git directory available from
+http://gitweb.adaptive.cs.unm.edu/optimization.git for anonymous git
+access with the following.
+: git clone http://gitweb.adaptive.cs.unm.edu/optimization.git
+
 Using the scripts in file:src/host-test.sh and file:src/guest-test.sh,
 the experimental harness in file:src/optimize.lisp and the [[http://gitweb.adaptive.cs.unm.edu/software-evolution.git][software
 evolution]] framework it is possible to evolve populations of variants
