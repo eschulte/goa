@@ -281,7 +281,7 @@ To run all overlays daemonized;
   EOF
 #+end_src
 
-* Results
+* Experimental Runs
 
 #+Caption: Listing of runs.
 #+RESULTS: results-summary
@@ -305,7 +305,7 @@ To run all overlays daemonized;
                                 fields))))))))
 #+end_src
 
-** First Serial Run
+** STARTED First Serial Run
    :PROPERTIES:
    :git-tag:  first-serial-run
    :results-dir: ~/research/epr/optimize/results/first-run
@@ -314,7 +314,8 @@ To run all overlays daemonized;
 Running very slowly with only 1 VM running evaluations in the
 background.
 
-** DONE First Parallel Run
+** CANCELED First Parallel Run
+   - State "CANCELED"   from "DONE"       [2012-04-16 Mon 15:08]
    :PROPERTIES:
    :git-tag:  first-parallel-run
    :results-dir: ~/research/epr/opt-real/results/first-run
@@ -323,7 +324,7 @@ background.
 Failed to collect appropriate statistics, only have running time for
 the first generation.
 
-** Parallel Runtime Run
+** STARTED Parallel Runtime Run
    :PROPERTIES:
    :git-tag:  pll-runtime-run
    :results-dir: ~/research/epr/opt-real/results/pll-2
