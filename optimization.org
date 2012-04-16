@@ -276,6 +276,56 @@ To run all overlays daemonized;
   EOF
 #+end_src
 
+* Results
+
+#+Caption: Listing of runs.
+#+RESULTS: results-summary
+| run                  | git-tag            | results-dir                               |
+|----------------------+--------------------+-------------------------------------------|
+| First Serial Run     | first-serial-run   | ~/research/epr/optimize/results/first-run |
+| First Parallel Run   | first-parallel-run | ~/research/epr/opt-real/results/first-run |
+| Parallel Runtime Run | pll-runtime-run    | ~/research/epr/opt-real/results/pll-2     |
+
+#+name: results-summary
+#+begin_src emacs-lisp :exports results
+  (let ((fields (list "git-tag" "results-dir")))
+    (append (list (cons "run" fields) 'hline)
+            (save-restriction
+              (org-narrow-to-subtree)
+              (cdr
+               (org-map-entries
+                (lambda ()
+                  (cons (org-get-heading t t)
+                        (mapcar (lambda (field) (org-entry-get (point) field))
+                                fields))))))))
+#+end_src
+
+** First Serial Run
+   :PROPERTIES:
+   :git-tag:  first-serial-run
+   :results-dir: ~/research/epr/optimize/results/first-run
+   :dates:    <2012-04-10 Tue>
+   :END:
+Running very slowly with only 1 VM running evaluations in the
+background.
+
+** DONE First Parallel Run
+   :PROPERTIES:
+   :git-tag:  first-parallel-run
+   :results-dir: ~/research/epr/opt-real/results/first-run
+   :dates:    <2012-04-12 Thu>--<2012-04-13 Fri>
+   :END:
+Failed to collect appropriate statistics, only have running time for
+the first generation.
+
+** Parallel Runtime Run
+   :PROPERTIES:
+   :git-tag:  pll-runtime-run
+   :results-dir: ~/research/epr/opt-real/results/pll-2
+   :dates:    <2012-04-15 Sun>
+   :END:
+Looks to be working, saving the full population at every generation.
+
 * COMMENT Notes
 ** SBCL is going sleeping on the job
 Maybe has something to do with script processes dying and never
@@ -433,13 +483,15 @@ Running =time ./bin/guest-test.s=.
 This code is used to publish this page to the =cs.unm.edu= webserver.
 #+begin_src emacs-lisp :results silent
   (setq opt-dir (file-name-directory (or load-file-name buffer-file-name)))
+  (setq opt-server "moons.cs.unm.edu")
   (unless (boundp 'org-publish-project-alist)
     (setq org-publish-project-alist nil))
   ;; the main html page
   (add-to-list 'org-publish-project-alist
                `("opt-html"
                  :base-directory ,opt-dir
-                 :publishing-directory "/ssh:eschulte@kenworth.cs.unm.edu:~/public_html/code/opt/"
+                 :publishing-directory ,(format "/ssh:eschulte@%s:~/public_html/code/opt/"
+                                                opt-server)
                  :publishing-function org-publish-org-to-html
                  :style "<style type=\"text/css\">\n <!--/*--><![CDATA[/*><!--*/
     pre{display:table-cell;background:#232323; color:#e6e1dc;}
@@ -461,13 +513,15 @@ This code is used to publish this page to the =cs.unm.edu= webserver.
                `("opt-src"
                  :base-directory ,(expand-file-name "src" opt-dir)
                  :base-extension "txt\\|sh\\|lisp"
-                 :publishing-directory "/ssh:eschulte@kenworth.cs.unm.edu:~/public_html/code/opt/src/"
+                 :publishing-directory ,(format "/ssh:eschulte@%s:~/public_html/code/opt/src/"
+                                                opt-server)
                  :publishing-function org-publish-attachment))
   (add-to-list 'org-publish-project-alist
                `("opt-data"
                  :base-directory ,(expand-file-name "data" opt-dir)
                  :base-extension "s"
-                 :publishing-directory "/ssh:eschulte@kenworth.cs.unm.edu:~/public_html/code/opt/data/"
+                 :publishing-directory ,(format "/ssh:eschulte@%s:~/public_html/code/opt/data/"
+                                                opt-server)
                  :publishing-function org-publish-attachment))
   ;; a single combined project to publish both html and supporting materials
   (add-to-list 'org-publish-project-alist
