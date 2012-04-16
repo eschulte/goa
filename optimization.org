@@ -277,6 +277,22 @@ To run all overlays daemonized;
 #+end_src
 
 * COMMENT Notes
+** SBCL is going sleeping on the job
+Probably has something to do with script processes dying and never
+returning to SBCL, which then hangs the thread and then hangs sbcl
+itself.  A Possible fix could be to use something like trivial timeout
+to push script execution into an external thread.
+
+: $ ps auxwwwf
+: eschulte  3692  0.0  0.0  33940 10124 ?        Ss   Apr11   4:35 SCREEN
+: eschulte  4282  0.0  0.0  39700  3772 pts/3    Ss   Apr11   0:00  \_ /usr/bin/zsh
+: eschulte  8665  2.6  0.1 8744068 149116 pts/3  Sl+  16:04   8:15  |   \_ sbcl
+: eschulte 17732  0.0  0.0      0     0 pts/3    Z    19:01   0:00  |       \_ [host-test.sh] <defunct>
+: eschulte 17739  0.0  0.0      0     0 pts/3    Z    19:01   0:00  |       \_ [host-test.sh] <defunct>
+: eschulte  9033  0.0  0.0  45688  9700 pts/1    Ss+  Apr11   0:01  \_ /usr/bin/zsh
+: eschulte 23988  0.0  0.0  39816  3892 pts/2    Ss+  Apr12   0:01  \_ /usr/bin/zsh
+: eschulte  2472  0.0  0.0  39684  3684 pts/33   Ss   12:35   0:00  \_ /usr/bin/zsh
+
 ** configuration and output
 Configuration is controlled in =carbon_sim.cfg= in the base of the
 graphite directory.
