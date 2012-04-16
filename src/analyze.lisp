@@ -12,11 +12,12 @@
 (load "./optimize.lisp")
 
 (defvar *stats* nil "List of statistics read from a run.")
+(defvar *a-dir* "../../opt-real/results/first-run/" "Analysis directory")
 
 (defun getter (key) (lambda (it) (cdr (assoc key it))))
 
 (defun read-run (&key (steps 100) &aux results)
-  (dotimes (n steps) (push (restore (file-for-run n)) results))
+  (dotimes (n steps) (push (restore (file-for-run n *a-dir*)) results))
   (nreverse results))
 
 (defun stat (run &key (field 'time-wo-init) (func #'mean))

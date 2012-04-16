@@ -77,14 +77,14 @@ Note: This does not follow the normal test script format but rather it;
 
 (defun output-to-stats (output)
   (delete nil
-   (mapcar
-    (lambda (line)
-      (when (> (length line) 0)
-        (let* ((pair (split-sequence #\Space line :remove-empty-subseqs t))
-               (key  (read-from-string (car pair)))
-               (val  (mapcar #'read-from-string (cdr pair))))
-          (cons key val))))
-    (split-sequence #\Newline output :remove-empty-subseqs t))))
+          (mapcar
+           (lambda (line)
+             (when (> (length line) 0)
+               (let* ((pair (split-sequence #\Space line :remove-empty-subseqs t))
+                      (key  (read-from-string (car pair)))
+                      (val  (mapcar #'read-from-string (cdr pair))))
+                 (cons key val))))
+           (split-sequence #\Newline output :remove-empty-subseqs t))))
 
 (defun apply-output (var output)
   (mapcar (lambda (pair)
@@ -111,9 +111,9 @@ Note: This does not follow the normal test script format but rather it;
         (declare (ignore c))
         var))))
 
-(defun file-for-run (n)
+(defun file-for-run (n &optional (dir *dir*))
   (let ((file (format nil *file-format* n)))
-    (if *dir* (merge-pathnames file *dir*) file)))
+    (if dir (merge-pathnames file dir) file)))
 
 (defun safe< (a b)
   "A version of < which gives the right values in the case of non-numbers."
