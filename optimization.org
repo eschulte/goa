@@ -278,12 +278,17 @@ To run all overlays daemonized;
 
 * COMMENT Notes
 ** SBCL is going sleeping on the job
-Probably has something to do with script processes dying and never
+Maybe has something to do with script processes dying and never
 returning to SBCL, which then hangs the thread and then hangs sbcl
-itself.  A Possible fix could be to use something like trivial timeout
-to push script execution into an external thread.
+itself.  Could also be a race condition between the threads.
 
+Killing the VM which was hanging ssh connections seems to have started
+the SBCL process right back up.  So that is one way forward.  Should
+probably start using the limit.c script for these executions.
+
+*** ps auxwwwf from a stalled run
 : $ ps auxwwwf
+: [...]
 : eschulte  3692  0.0  0.0  33940 10124 ?        Ss   Apr11   4:35 SCREEN
 : eschulte  4282  0.0  0.0  39700  3772 pts/3    Ss   Apr11   0:00  \_ /usr/bin/zsh
 : eschulte  8665  2.6  0.1 8744068 149116 pts/3  Sl+  16:04   8:15  |   \_ sbcl
@@ -292,6 +297,76 @@ to push script execution into an external thread.
 : eschulte  9033  0.0  0.0  45688  9700 pts/1    Ss+  Apr11   0:01  \_ /usr/bin/zsh
 : eschulte 23988  0.0  0.0  39816  3892 pts/2    Ss+  Apr12   0:01  \_ /usr/bin/zsh
 : eschulte  2472  0.0  0.0  39684  3684 pts/33   Ss   12:35   0:00  \_ /usr/bin/zsh
+: [...]
+
+*** logging output from a stalled run
+: SOFTWARE-EVOLUTION(12): (biased-walk *orig*)
+:
+: 2012.04.15.23.22.40: saving population 0
+: 2012.04.15.23.22.40: generating population 1
+: 2012.04.15.23.22.40: generating 46
+: 2012.04.15.23.32.46: keeping the fit
+: 2012.04.15.23.32.46: (length results) ;; => 47
+: 2012.04.15.23.32.46: generating 46
+: 2012.04.15.23.42.57: keeping the fit
+: 2012.04.15.23.42.57: (length results) ;; => 94
+: 2012.04.15.23.42.57: generating 18
+: 2012.04.15.23.48.04: keeping the fit
+: 2012.04.15.23.48.04: (length results) ;; => 113
+: 2012.04.15.23.48.04: saving population 1
+: 2012.04.15.23.48.05: generating population 2
+: 2012.04.15.23.48.05: generating 46
+: 2012.04.15.23.58.14: keeping the fit
+: 2012.04.15.23.58.14: (length results) ;; => 47
+: 2012.04.15.23.58.14: generating 46
+: 2012.04.16.00.08.23: keeping the fit
+: 2012.04.16.00.08.23: (length results) ;; => 94
+: 2012.04.16.00.08.23: generating 18
+: 2012.04.16.00.13.32: keeping the fit
+: 2012.04.16.00.13.32: (length results) ;; => 113
+: 2012.04.16.00.13.32: saving population 2
+: 2012.04.16.00.13.32: generating population 3
+: 2012.04.16.00.13.32: generating 46
+: 2012.04.16.00.23.49: keeping the fit
+: 2012.04.16.00.23.49: (length results) ;; => 47
+: 2012.04.16.00.23.49: generating 46
+: 2012.04.16.00.34.09: keeping the fit
+: 2012.04.16.00.34.09: (length results) ;; => 94
+: 2012.04.16.00.34.09: generating 18
+: 2012.04.16.00.39.17: keeping the fit
+: 2012.04.16.00.39.17: (length results) ;; => 113
+: 2012.04.16.00.39.17: saving population 3
+: 2012.04.16.00.39.17: generating population 4
+: 2012.04.16.00.39.17: generating 46
+: 2012.04.16.00.49.24: keeping the fit
+: 2012.04.16.00.49.24: (length results) ;; => 47
+: 2012.04.16.00.49.24: generating 46
+: 2012.04.16.00.59.41: keeping the fit
+: 2012.04.16.00.59.41: (length results) ;; => 94
+: 2012.04.16.00.59.41: generating 18
+: 2012.04.16.01.04.51: keeping the fit
+: 2012.04.16.01.04.51: (length results) ;; => 113
+: 2012.04.16.01.04.51: saving population 4
+: 2012.04.16.01.04.52: generating population 5
+: 2012.04.16.01.04.52: generating 46
+: 2012.04.16.01.15.09: keeping the fit
+: 2012.04.16.01.15.09: (length results) ;; => 47
+: 2012.04.16.01.15.09: generating 46
+: 2012.04.16.01.25.18: keeping the fit
+: 2012.04.16.01.25.18: (length results) ;; => 94
+: 2012.04.16.01.25.18: generating 18
+: 2012.04.16.01.30.28: keeping the fit
+: 2012.04.16.01.30.28: (length results) ;; => 113
+: 2012.04.16.01.30.28: saving population 5
+: 2012.04.16.01.30.28: generating population 6
+: 2012.04.16.01.30.28: generating 46
+: 2012.04.16.01.40.43: keeping the fit
+: 2012.04.16.01.40.43: (length results) ;; => 47
+: 2012.04.16.01.40.43: generating 46
+:
+
+*** tried wrapping in trivial timeout
+In case the shell scripts were hanging, but to no effect.
 
 ** configuration and output
 Configuration is controlled in =carbon_sim.cfg= in the base of the
@@ -328,7 +403,7 @@ Running =time ./bin/guest-test.s=.
 ** successfully running evolutionary steps
 #+begin_src slime-repl
   SOFTWARE-EVOLUTION> (setf results '(#<PLL-ASM {1008347463}> #<PLL-ASM {1007F17463}>))
-  
+
   ; in: SETF RESULTS
   ;     (SETF SOFTWARE-EVOLUTION::RESULTS
   ;             '(#<SOFTWARE-EVOLUTION::PLL-ASM {1008347463}>
@@ -337,10 +412,10 @@ Running =time ./bin/guest-test.s=.
   ;   (SETQ SOFTWARE-EVOLUTION::RESULTS
   ;           '(#<SOFTWARE-EVOLUTION::PLL-ASM {1008347463}>
   ;             #<SOFTWARE-EVOLUTION::PLL-ASM {1007F17463}>))
-  ; 
+  ;
   ; caught WARNING:
   ;   undefined variable: RESULTS
-  ; 
+  ;
   ; compilation unit finished
   ;   Undefined variable:
   ;     RESULTS
