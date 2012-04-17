@@ -65,15 +65,32 @@ Note: This does not follow the normal test script format but rather it;
   (:documentation
    "Extending the ASM class with a number of parallel run statistics."))
 
+(defun pll-to-s (var)
+  "Write VAR to a temporary .s file."
+  (let ((tmp (temp-file-name "s"))) (asm-to-file var tmp) tmp))
+
 (defun pll-from-asm (asm)
   (make-instance 'pll-asm :genome  (copy (genome asm))))
 
 (defvar *orig* (pll-from-asm (asm-from-file "../data/fft.s"))
   "Original seed program.")
 
-(defun pll-to-s (var)
-  "Write VAR to a temporary .s file."
-  (let ((tmp (temp-file-name "s"))) (asm-to-file var tmp) tmp))
+(defmethod evaluate ((var pll-asm))
+  "Run parallel program VAR collecting and saving neutrality and all metrics."
+  (let ((s-file (pll-to-s var)))
+    (handler-case
+        (with-timeout (360)
+          (multiple-value-bind (output err exit) (shell "~a ~a" *script* s-file)
+            (declare (ignorable err))
+            (delete-file s-file)
+            (note 2 "$ ~a ~a; $? => ~d" *script* s-file exit)
+            (setf (raw-output var) output)
+            (apply-output var (raw-output var))
+            (setf (neutral-p var) (= exit 0))
+            var))
+      (timeout-error (c)
+        (declare (ignore c))
+        var))))
 
 (defun output-to-stats (output)
   (delete nil
@@ -93,23 +110,6 @@ Note: This does not follow the normal test script format but rather it;
                 (setf (slot-value var key)
                       (if (= (length val) 1) (first val) val)))))
           (output-to-stats output)))
-
-(defmethod evaluate ((var pll-asm))
-  "Run parallel program VAR collecting and saving neutrality and all metrics."
-  (let ((s-file (pll-to-s var)))
-    (handler-case
-        (with-timeout (360)
-          (multiple-value-bind (output err exit) (shell "~a ~a" *script* s-file)
-            (declare (ignorable err))
-            (delete-file s-file)
-            (note 2 "$ ~a ~a; $? => ~d" *script* s-file exit)
-            (setf (raw-output var) output)
-            (apply-output var (raw-output var))
-            (setf (neutral-p var) (= exit 0))
-            var))
-      (timeout-error (c)
-        (declare (ignore c))
-        var))))
 
 (defun file-for-run (n &optional (dir *dir*))
   (let ((file (format nil *file-format* n)))
