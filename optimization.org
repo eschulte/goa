@@ -518,7 +518,7 @@ This code is used to publish this page to the =cs.unm.edu= webserver.
   (add-to-list 'org-publish-project-alist
                `("opt-src"
                  :base-directory ,(expand-file-name "src" opt-dir)
-                 :base-extension "txt\\|sh\\|lisp"
+                 :base-extension "txt\\|sh\\|lisp\\|html"
                  :publishing-directory ,(format "/ssh:eschulte@%s:~/public_html/code/opt/src/"
                                                 opt-server)
                  :publishing-function org-publish-attachment))
