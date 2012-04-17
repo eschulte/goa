@@ -1,6 +1,7 @@
 #+Title: optimize.lisp
 #+Author: Eric Schulte
 #+Style: <link rel="stylesheet" href="docco.css" type="text/css">
+#+Property: tangle optimize.lisp
 
 Optimize metrics in a population of software variants.
 
@@ -9,7 +10,7 @@ variant implementations and then evolve to optimize some metric such
 as fastest execution, least communication, lowest energy consumption
 etc...  For more complete notes on this experiment (still early
 stages) see my [[http://cs.unm.edu/~eschulte/code/opt/optimization.html][notes and reproducibility instructions]].
-#+begin_src lisp
+#+begin_src lisp :padline no
   ;;; optimize.lisp --- optimize metrics in a population of software variants
 
   ;; Copyright (C) 2012  Eric Schulte
@@ -186,15 +187,13 @@ Two small helper functions used in =take-biased-step= below.
 - safe< :: is a version of =<= which protects against empty fields due
      to incomplete or non-standard program output.
 #+begin_src lisp
-  (defun file-for-run (n)
+  (defun file-for-run (n &optional (dir *dir*))
     (let ((file (format nil *file-format* n)))
-      (if *dir* (merge-pathnames file *dir*) file)))
-
+      (if dir (merge-pathnames file dir) file)))
+  
   (defun safe< (a b)
     "A version of < which gives the right values in the case of non-numbers."
-    (if (numberp a)
-        (if (numberp b) (< a b) T)
-        nil))
+    (if (numberp a) (if (numberp b) (< a b) T) nil))
 #+end_src
 
 Take a single biased step neutral space.  My /neutral space/ we mean

@@ -21,6 +21,7 @@
 (defvar *file-format* "biased-pop-~S.store" "File name format.")
 (defvar *psize* 100 "Population size.")
 (defvar *tsize* 2   "Tournament size.")
+
 (defvar *script* "./host-test.sh"
   "Script used to evaluate variants.
 Note: This does not follow the normal test script format but rather it;
