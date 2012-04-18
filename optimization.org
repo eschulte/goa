@@ -332,6 +332,21 @@ the first generation.
    :END:
 Looks to be working, saving the full population at every generation.
 
+Using the following to restart a failing run
+#+begin_src lisp
+  (require :software-evolution)
+  (in-package :software-evolution)
+  (load "optimize.lisp")
+  (setf *dir* "../results/pll-2/")
+  (setf *pop* (restore "../results/pll-2/biased-pop-113.store"))
+  (setf *note-level* 1)
+  (advise-thread-pool-size 46)
+  (loop for n from 113 to 300 do (note 1 "saving population ~d" n)
+       (store *pop* (file-for-run n))
+       (note 1 "generating population ~d" (1+ n))
+       (setf *pop* (biased-step *pop*)))
+#+end_src
+
 * COMMENT Notes
 ** SBCL is going sleeping on the job
 Maybe has something to do with script processes dying and never
