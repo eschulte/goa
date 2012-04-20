@@ -157,8 +157,7 @@ The FFT benchmark has higher memory requirements than the simple
 ping-pong test, so for this we'll have to increase the memory of the
 VM by passing the =-m 1G= flag to the call to =qemu-kvm=.
 #+begin_src sh
-  qemu-kvm -hda tune.qcow -nographic -cdrom data/debian-5010-amd64-netinst.iso \
-      -m 1G -net nic -net user,hostfwd=tcp:127.0.0.1:2222-:22 -daemonize
+  ./src/run-vm tune.qcow 2222
 #+end_src
 
 This should run for a while and complete with output that looks like
@@ -285,10 +284,7 @@ To run all overlays daemonized;
   pushd overlays/
   for i in $(seq 46);do
       I=$(printf "%0.2d" i);
-      qemu-kvm -hda $I.qcow -nographic -m 1G \
-          -cdrom ../data/debian-5010-amd64-netinst.iso \
-          -net nic -net user,hostfwd=tcp:127.0.0.1:30$I-:22 \
-          -daemonize
+      ../src/run-vm "$I.qcow" "30$I"
       remotes="$remotes \"30$I\""
   done
   popd
