@@ -216,7 +216,8 @@ parallel fitness evaluation.
      gcc -o src/limit src/limit.c
      # guest limit harness
      scp src/limit.c -P 2222 bacon@localhost:bin/
-     ssh -p 2222 root@localhost gcc -o bin/limit bin/limit.c
+     ssh -p 2222 bacon@localhost gcc -o bin/limit bin/limit.c
+     ssh -p 2222 root@localhost poweroff
    #+end_src
 
 3. The current version of file:src/host-test.sh assumes that all
