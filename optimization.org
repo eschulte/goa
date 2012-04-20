@@ -207,21 +207,34 @@ parallel fitness evaluation.
      ssh -p 2222 root@localhost poweroff
    #+end_src
 
-2. The current version of file:src/host-test.sh assumes that all
+2. We will use the file:src/limit.c test harness to protect our
+   evolutionary process from the sometimes aberrant behavior of the
+   test execution shell scripts and the evolved variants which they
+   execute.  Compile both host and guest versions of this script and
+   place them for use by the host and guest test scripts.
+   #+begin_src sh
+     # host limit harness
+     gcc -o src/limit src/limit.c
+     # guest limit harness
+     scp src/limit.c -P 2222 bacon@localhost:bin/
+     ssh -p 2222 root@localhost gcc -o bin/limit bin/limit.c
+   #+end_src
+
+3. The current version of file:src/host-test.sh assumes that all
    virtual machines are running on =localhost= and that they are
    placed behind different port numbers.  To setup multiple VMs on
    your local machine saving their port numbers to the
    file:src/REMOTES file (as required by file:src/host-test.sh) follow
    the steps in [[#running-overlays][Running overlays]].
 
-3. Since ssh is apparently /very/ sensitive to widely readable public
+4. Since ssh is apparently /very/ sensitive to widely readable public
    keys, be sure to fix access permission for file:data/id_rsa which
    may not be preserved by git.
    #+begin_src sh
      chmod 700 data/id_rsa
    #+end_src
 
-4. Change into the =src/= directory and fire up a Common Lisp
+5. Change into the =src/= directory and fire up a Common Lisp
    interpreter (SBCL version 1.0.55 was used to prepare these
    instructions).  Ensure that the [[http://gitweb.adaptive.cs.unm.edu/software-evolution.git][software evolution]] framework is
    installed and load the file:src/optimize.lisp file into your lisp
@@ -236,7 +249,7 @@ parallel fitness evaluation.
        (error "Something is wrong, debug your script/lisp setup."))
    #+end_src
 
-5. If everything appears to be working as expected, then a population
+6. If everything appears to be working as expected, then a population
    of 100 variants can be evolved to minimize execution time by
    running the following.  See file:src/optimize.lisp to change the
    default configuration of things like population size, tournament

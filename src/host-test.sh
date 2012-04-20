@@ -15,6 +15,7 @@
 #
 # Code:
 REMOTES=("2222")
+LIMIT="$(dirname $0)/limit"
 . $(dirname $0)/REMOTES # allow host-specific remote files
 pick_remote(){ echo ${REMOTES[$RANDOM % ${#REMOTES[@]}]}; }
 
@@ -29,13 +30,13 @@ output_path="graphite/output_files/sim.out"
 output="busy"
 while [ "$output" = "busy" ]; do
     remote=$(pick_remote)
-    scp -i $id -P $remote $var bacon@localhost:/tmp/ >/dev/null
-    output=$( ssh -t -i $id -p $remote bacon@localhost "$cmd" 2>/dev/null )
+    $LIMIT scp -i $id -P $remote $var bacon@localhost:/tmp/ >/dev/null
+    output=$($LIMIT ssh -t -i $id -p $remote bacon@localhost "$cmd" 2>/dev/null)
     if [ "$output" = "busy" ];then sleep 1; fi
 done
 
 ## if successful collect the output file
-log_output=$(scp -i $id -P $remote bacon@localhost:$output_path /dev/stdout)
+log_output=$($LIMIT scp -i $id -P $remote bacon@localhost:$output_path /dev/stdout)
 
 ## return the execution metrics as lisp
 sed_cmd=$(cat <<EOF

@@ -9,6 +9,7 @@
 #   Takes an asm fft file, compiles it, runs it and returns results.
 #
 # Code:
+LIMIT="/home/bacon/bin/limit"
 lock="/tmp/lockfile"
 quit_locked(){ echo busy; exit 1; }
 quit_free(){ rm -f $lock; exit 0; }
@@ -33,7 +34,7 @@ else
         # run
         pushd /home/bacon/graphite
         rm -f output_files/s
-        make fft_bench_test
+        $LIMIT make fft_bench_test
     ) 2>/dev/null
 fi
 quit_free
