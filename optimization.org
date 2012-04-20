@@ -35,7 +35,11 @@ software optimization system, including the following.
 - multi-objective fitness weights allow a natural method for
   developers to specify priorities for non-functional optimization
 
-* Virtual Machine Setup
+* Reproduction Instructions
+The following instructions may be used to reproduce and expand upon
+these results.
+
+** Virtual Machine Setup
 
 1. We will create a Qemu virtual machine and install the Debian 5.0.9
    specifically =debian-5010-i386-netinst.iso= from
@@ -148,7 +152,7 @@ software optimization system, including the following.
      make
    #+end_src
 
-* Running a Simple Fast Fourier Transform (FFT)
+** Running a Simple Fast Fourier Transform (FFT)
 The FFT benchmark has higher memory requirements than the simple
 ping-pong test, so for this we'll have to increase the memory of the
 VM by passing the =-m 1G= flag to the call to =qemu-kvm=.
@@ -181,7 +185,7 @@ the following.
 : Overall transpose time            :         27878043
 : Overall transpose fraction        :          0.34904
 
-* Evolving a Population of Variants
+** Evolving a Population of Variants
 This experimental setup is held in a git directory available from
 http://gitweb.adaptive.cs.unm.edu/optimization.git for anonymous git
 access with the following.
@@ -238,7 +242,7 @@ parallel fitness evaluation.
    default configuration of things like population size, tournament
    size, and the features optimized for.
 
-* Running overlays
+** Running overlays
   :PROPERTIES:
   :shebang:  #!/bin/sh
   :CUSTOM_ID: running-overlays
