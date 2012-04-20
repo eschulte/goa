@@ -304,7 +304,7 @@ To run all overlays daemonized;
 | First Serial Run           | CANCELED | first-serial-run   | loaf    | first-run   |
 | First Parallel Run         | CANCELED | first-parallel-run | real    | first-run   |
 | Parallel Runtime Run       | STARTED  | pll-runtime-run    | real    | pll-2       |
-| Communication Minimization | TODO     | HEAD               | complex | packets-min |
+| Communication Minimization | STARTED  | packets-min        | complex | packets-min |
 
 #+name: results-summary
 #+begin_src emacs-lisp :exports results
@@ -390,7 +390,7 @@ Using the following to restart a failing run
    :PROPERTIES:
    :results-dir: packets-min
    :machine:  complex
-   :git-tag:  HEAD
+   :git-tag:  packets-min
    :END:
 
 #+begin_src lisp
