@@ -950,3 +950,256 @@ SOFTWARE-EVOLUTION(9): (loop for n from 75 to 200 do (note 1 "saving population 
 2012.04.18.04.13.30: (length results) ;; => 46
 2012.04.18.04.13.30: generating 46
 
+SOFTWARE-EVOLUTION(19): (loop for n from 113 to 300 do (note 1 "saving population ~d" n)
+                                                     (store *pop* (file-for-run n))
+                                                     (note 1 "generating population ~d" (1+ n))
+                                                     (setf *pop* (biased-step *pop*)))
+
+2012.04.19.09.11.17: saving population 113
+2012.04.19.09.11.18: generating population 114
+2012.04.19.09.11.18: generating 30
+2012.04.19.09.21.33: keeping the fit
+2012.04.19.09.21.33: (length results) ;; => 31
+2012.04.19.09.21.33: generating 30
+2012.04.19.09.31.37: keeping the fit
+2012.04.19.09.31.37: (length results) ;; => 62
+2012.04.19.09.31.37: generating 30
+2012.04.19.09.41.39: keeping the fit
+2012.04.19.09.41.39: (length results) ;; => 93
+2012.04.19.09.41.39: generating 21
+2012.04.19.09.47.09: keeping the fit
+2012.04.19.09.47.09: (length results) ;; => 115
+2012.04.19.09.47.09: saving population 114
+2012.04.19.09.47.09: generating population 115
+2012.04.19.09.47.09: generating 30
+2012.04.19.09.57.28: keeping the fit
+2012.04.19.09.57.28: (length results) ;; => 31
+2012.04.19.09.57.28: generating 30
+2012.04.19.10.07.47: keeping the fit
+2012.04.19.10.07.47: (length results) ;; => 62
+2012.04.19.10.07.47: generating 30
+2012.04.19.10.17.56: keeping the fit
+2012.04.19.10.17.56: (length results) ;; => 93
+2012.04.19.10.17.56: generating 21
+2012.04.19.10.23.08: keeping the fit
+2012.04.19.10.23.08: (length results) ;; => 115
+2012.04.19.10.23.08: saving population 115
+2012.04.19.10.23.08: generating population 116
+2012.04.19.10.23.08: generating 30
+2012.04.19.10.33.13: keeping the fit
+2012.04.19.10.33.13: (length results) ;; => 31
+2012.04.19.10.33.13: generating 30
+2012.04.19.10.43.16: keeping the fit
+2012.04.19.10.43.16: (length results) ;; => 62
+2012.04.19.10.43.16: generating 30
+2012.04.19.10.53.25: keeping the fit
+2012.04.19.10.53.25: (length results) ;; => 93
+2012.04.19.10.53.25: generating 21
+2012.04.19.10.58.36: keeping the fit
+2012.04.19.10.58.36: (length results) ;; => 115
+2012.04.19.10.58.36: saving population 116
+2012.04.19.10.58.37: generating population 117
+2012.04.19.10.58.37: generating 30
+2012.04.19.11.08.42: keeping the fit
+2012.04.19.11.08.42: (length results) ;; => 31
+2012.04.19.11.08.42: generating 30
+2012.04.19.11.19.00: keeping the fit
+2012.04.19.11.19.00: (length results) ;; => 62
+2012.04.19.11.19.00: generating 30
+2012.04.19.11.29.21: keeping the fit
+2012.04.19.11.29.21: (length results) ;; => 93
+2012.04.19.11.29.21: generating 21
+2012.04.19.11.34.50: keeping the fit
+2012.04.19.11.34.50: (length results) ;; => 115
+2012.04.19.11.34.50: saving population 117
+2012.04.19.11.34.50: generating population 118
+2012.04.19.11.34.50: generating 30
+2012.04.19.11.45.18: keeping the fit
+2012.04.19.11.45.18: (length results) ;; => 31
+2012.04.19.11.45.18: generating 30
+2012.04.19.11.55.37: keeping the fit
+2012.04.19.11.55.37: (length results) ;; => 62
+2012.04.19.11.55.37: generating 30
+2012.04.19.12.05.58: keeping the fit
+2012.04.19.12.05.58: (length results) ;; => 93
+2012.04.19.12.05.58: generating 21
+2012.04.19.12.11.26: keeping the fit
+2012.04.19.12.11.26: (length results) ;; => 115
+2012.04.19.12.11.26: saving population 118
+2012.04.19.12.11.26: generating population 119
+2012.04.19.12.11.26: generating 30
+2012.04.19.12.21.44: keeping the fit
+2012.04.19.12.21.44: (length results) ;; => 31
+2012.04.19.12.21.44: generating 30
+2012.04.19.12.32.11: keeping the fit
+2012.04.19.12.32.11: (length results) ;; => 62
+2012.04.19.12.32.11: generating 30
+2012.04.19.12.42.35: keeping the fit
+2012.04.19.12.42.35: (length results) ;; => 93
+2012.04.19.12.42.35: generating 21
+2012.04.19.12.48.00: keeping the fit
+2012.04.19.12.48.00: (length results) ;; => 115
+2012.04.19.12.48.00: saving population 119
+2012.04.19.12.48.01: generating population 120
+2012.04.19.12.48.01: generating 30
+2012.04.19.12.58.29: keeping the fit
+2012.04.19.12.58.29: (length results) ;; => 31
+2012.04.19.12.58.29: generating 30
+2012.04.19.13.08.57: keeping the fit
+2012.04.19.13.08.57: (length results) ;; => 62
+2012.04.19.13.08.57: generating 30
+2012.04.19.13.19.17: keeping the fit
+2012.04.19.13.19.17: (length results) ;; => 93
+2012.04.19.13.19.17: generating 21
+2012.04.19.13.24.41: keeping the fit
+2012.04.19.13.24.41: (length results) ;; => 115
+2012.04.19.13.24.41: saving population 120
+2012.04.19.13.24.41: generating population 121
+2012.04.19.13.24.41: generating 30
+2012.04.19.13.34.54: keeping the fit
+2012.04.19.13.34.54: (length results) ;; => 31
+2012.04.19.13.34.54: generating 30
+2012.04.19.13.45.10: keeping the fit
+2012.04.19.13.45.10: (length results) ;; => 62
+2012.04.19.13.45.10: generating 30
+2012.04.19.13.55.24: keeping the fit
+2012.04.19.13.55.24: (length results) ;; => 93
+2012.04.19.13.55.24: generating 21
+2012.04.19.14.00.42: keeping the fit
+2012.04.19.14.00.42: (length results) ;; => 115
+2012.04.19.14.00.42: saving population 121
+2012.04.19.14.00.43: generating population 122
+2012.04.19.14.00.43: generating 30
+2012.04.19.14.10.58: keeping the fit
+2012.04.19.14.10.58: (length results) ;; => 31
+2012.04.19.14.10.58: generating 30
+2012.04.19.14.21.04: keeping the fit
+2012.04.19.14.21.04: (length results) ;; => 62
+2012.04.19.14.21.04: generating 30
+2012.04.19.14.31.20: keeping the fit
+2012.04.19.14.31.20: (length results) ;; => 93
+2012.04.19.14.31.20: generating 21
+2012.04.19.14.36.33: keeping the fit
+2012.04.19.14.36.33: (length results) ;; => 115
+2012.04.19.14.36.33: saving population 122
+2012.04.19.14.36.34: generating population 123
+2012.04.19.14.36.34: generating 30
+2012.04.19.14.46.43: keeping the fit
+2012.04.19.14.46.43: (length results) ;; => 31
+2012.04.19.14.46.43: generating 30
+2012.04.19.14.56.55: keeping the fit
+2012.04.19.14.56.55: (length results) ;; => 62
+2012.04.19.14.56.55: generating 30
+2012.04.19.15.07.02: keeping the fit
+2012.04.19.15.07.02: (length results) ;; => 93
+2012.04.19.15.07.02: generating 21
+2012.04.19.15.12.15: keeping the fit
+2012.04.19.15.12.15: (length results) ;; => 115
+2012.04.19.15.12.15: saving population 123
+2012.04.19.15.12.15: generating population 124
+2012.04.19.15.12.15: generating 30
+2012.04.19.15.22.21: keeping the fit
+2012.04.19.15.22.21: (length results) ;; => 31
+2012.04.19.15.22.21: generating 30
+2012.04.19.15.32.27: keeping the fit
+2012.04.19.15.32.27: (length results) ;; => 62
+2012.04.19.15.32.27: generating 30
+2012.04.19.15.42.30: keeping the fit
+2012.04.19.15.42.30: (length results) ;; => 93
+2012.04.19.15.42.30: generating 21
+2012.04.19.15.47.43: keeping the fit
+2012.04.19.15.47.43: (length results) ;; => 115
+2012.04.19.15.47.43: saving population 124
+2012.04.19.15.47.44: generating population 125
+2012.04.19.15.47.44: generating 30
+2012.04.19.15.57.50: keeping the fit
+2012.04.19.15.57.50: (length results) ;; => 31
+2012.04.19.15.57.50: generating 30
+2012.04.19.16.07.56: keeping the fit
+2012.04.19.16.07.56: (length results) ;; => 62
+2012.04.19.16.07.56: generating 30
+2012.04.19.16.18.00: keeping the fit
+2012.04.19.16.18.00: (length results) ;; => 93
+2012.04.19.16.18.00: generating 21
+2012.04.19.16.23.11: keeping the fit
+2012.04.19.16.23.11: (length results) ;; => 115
+2012.04.19.16.23.11: saving population 125
+2012.04.19.16.23.11: generating population 126
+2012.04.19.16.23.11: generating 30
+2012.04.19.16.33.16: keeping the fit
+2012.04.19.16.33.16: (length results) ;; => 31
+2012.04.19.16.33.16: generating 30
+2012.04.19.16.43.21: keeping the fit
+2012.04.19.16.43.21: (length results) ;; => 62
+2012.04.19.16.43.21: generating 30
+2012.04.19.16.53.54: keeping the fit
+2012.04.19.16.53.54: (length results) ;; => 93
+2012.04.19.16.53.54: generating 21
+2012.04.19.16.59.58: keeping the fit
+2012.04.19.16.59.58: (length results) ;; => 114
+2012.04.19.16.59.58: saving population 126
+2012.04.19.16.59.58: generating population 127
+2012.04.19.16.59.58: generating 30
+2012.04.19.17.11.20: keeping the fit
+2012.04.19.17.11.20: (length results) ;; => 1
+2012.04.19.17.11.20: generating 30
+2012.04.19.17.22.52: keeping the fit
+2012.04.19.17.22.52: (length results) ;; => 3
+2012.04.19.17.22.52: generating 30
+2012.04.19.17.34.40: keeping the fit
+2012.04.19.17.34.40: (length results) ;; => 4
+2012.04.19.17.34.40: generating 30
+2012.04.19.17.46.16: keeping the fit
+2012.04.19.17.46.16: (length results) ;; => 5
+2012.04.19.17.46.16: generating 30
+2012.04.19.17.58.00: keeping the fit
+2012.04.19.17.58.00: (length results) ;; => 6
+2012.04.19.17.58.00: generating 30
+2012.04.19.18.09.26: keeping the fit
+2012.04.19.18.09.26: (length results) ;; => 7
+2012.04.19.18.09.26: generating 30
+2012.04.19.18.20.59: keeping the fit
+2012.04.19.18.20.59: (length results) ;; => 8
+2012.04.19.18.20.59: generating 30
+2012.04.19.18.32.38: keeping the fit
+2012.04.19.18.32.38: (length results) ;; => 9
+2012.04.19.18.32.38: generating 30
+2012.04.19.18.44.32: keeping the fit
+2012.04.19.18.44.32: (length results) ;; => 10
+2012.04.19.18.44.32: generating 30
+2012.04.19.18.56.01: keeping the fit
+2012.04.19.18.56.01: (length results) ;; => 11
+2012.04.19.18.56.01: generating 30
+2012.04.19.19.07.35: keeping the fit
+2012.04.19.19.07.35: (length results) ;; => 12
+2012.04.19.19.07.35: generating 30
+2012.04.19.19.18.56: keeping the fit
+2012.04.19.19.18.56: (length results) ;; => 14
+2012.04.19.19.18.56: generating 30
+2012.04.19.19.30.44: keeping the fit
+2012.04.19.19.30.44: (length results) ;; => 15
+2012.04.19.19.30.44: generating 30
+2012.04.19.19.42.17: keeping the fit
+2012.04.19.19.42.17: (length results) ;; => 16
+2012.04.19.19.42.17: generating 30
+2012.04.19.19.53.53: keeping the fit
+2012.04.19.19.53.53: (length results) ;; => 17
+2012.04.19.19.53.53: generating 30
+2012.04.19.20.05.28: keeping the fit
+2012.04.19.20.05.28: (length results) ;; => 18
+2012.04.19.20.05.28: generating 30
+
+debugger invoked on a SIMPLE-ERROR in thread #<THREAD "initial thread" RUNNING {1002A5A011}>:
+  couldn't create pipe: Too many open files
+
+Type HELP for debugger help, or (SB-EXT:QUIT) to exit from SBCL.
+
+restarts (invokable by number or by possibly-abbreviated name):
+  0: [FORCE-VALUES    ] Set future value
+  1:                    FORCE-VALUES
+  2: [TERMINATE-THREAD] SB-THREAD:TERMINATE-THREAD
+  3: [ABORT           ] Exit debugger, returning to top level.
+
+((LAMBDA ()))
+0]
+

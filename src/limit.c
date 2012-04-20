@@ -7,7 +7,7 @@ int main(int argc, char *argv[]) {
 
   // resource/time limits
   struct rlimit limit;
-  limit.rlim_cur = 8; limit.rlim_max = 8;
+  limit.rlim_cur = 360; limit.rlim_max = 360;
   setrlimit(RLIMIT_CPU, &limit);       // cpu seconds
   limit.rlim_cur = 512; limit.rlim_max = 512;
   setrlimit(RLIMIT_NPROC, &limit);     // number of spawned processes

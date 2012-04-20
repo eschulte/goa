@@ -245,7 +245,7 @@ parallel fitness evaluation.
      (require 'software-evolution)
      (in-package 'software-evolution)
      (load "optimize.lisp")
-     (unless (= 1 (fitness (evaluate *orig*)))
+     (unless (neutral-p (evaluate *orig*))
        (error "Something is wrong, debug your script/lisp setup."))
    #+end_src
 
@@ -299,15 +299,16 @@ To run all overlays daemonized;
 
 #+Caption: Listing of runs.
 #+RESULTS: results-summary
-| run                  | state    | git-tag            | results-dir       |
-|----------------------+----------+--------------------+-------------------|
-| First Serial Run     | CANCELED | first-serial-run   | results/first-run |
-| First Parallel Run   | CANCELED | first-parallel-run | results/first-run |
-| Parallel Runtime Run | STARTED  | pll-runtime-run    | results/pll-2     |
+| run                        | state    | git-tag            | machine | results-dir |
+|----------------------------+----------+--------------------+---------+-------------|
+| First Serial Run           | CANCELED | first-serial-run   | loaf    | first-run   |
+| First Parallel Run         | CANCELED | first-parallel-run | real    | first-run   |
+| Parallel Runtime Run       | STARTED  | pll-runtime-run    | real    | pll-2       |
+| Communication Minimization | TODO     | HEAD               | complex | packets-min |
 
 #+name: results-summary
 #+begin_src emacs-lisp :exports results
-  (let ((fields (list "git-tag" "results-dir")))
+  (let ((fields (list "git-tag" "machine" "results-dir")))
     (append (list (cons "run" (cons "state" fields)) 'hline)
             (save-restriction
               (org-narrow-to-subtree)
@@ -325,8 +326,9 @@ To run all overlays daemonized;
      accidentally rebooted the machine
    :PROPERTIES:
    :git-tag:  first-serial-run
-   :results-dir: results/first-run
+   :results-dir: first-run
    :dates:    <2012-04-10 Tue>
+   :machine:  loaf
    :END:
 Running very slowly with only 1 VM running evaluations in the
 background.
@@ -353,8 +355,9 @@ background.
    - State "CANCELED"   from "DONE"       [2012-04-16 Mon 15:08]
    :PROPERTIES:
    :git-tag:  first-parallel-run
-   :results-dir: results/first-run
+   :results-dir: first-run
    :dates:    <2012-04-12 Thu>--<2012-04-13 Fri>
+   :machine:  real
    :END:
 Failed to collect appropriate statistics, only have running time for
 the first generation.
@@ -362,8 +365,9 @@ the first generation.
 ** STARTED Parallel Runtime Run
    :PROPERTIES:
    :git-tag:  pll-runtime-run
-   :results-dir: results/pll-2
+   :results-dir: pll-2
    :dates:    <2012-04-15 Sun>
+   :machine:  real
    :END:
 Looks to be working, saving the full population at every generation.
 
@@ -373,13 +377,33 @@ Using the following to restart a failing run
   (in-package :software-evolution)
   (load "optimize.lisp")
   (setf *dir* "../results/pll-2/")
-  (setf *pop* (restore "../results/pll-2/biased-pop-113.store"))
+  (setf *pop* (restore "../results/pll-2/biased-pop-126.store"))
   (setf *note-level* 1)
   (advise-thread-pool-size 46)
-  (loop for n from 113 to 300 do (note 1 "saving population ~d" n)
+  (loop for n from 126 to 300 do (note 1 "saving population ~d" n)
        (store *pop* (file-for-run n))
        (note 1 "generating population ~d" (1+ n))
        (setf *pop* (biased-step *pop*)))
+#+end_src
+
+** STARTED Communication Minimization
+   :PROPERTIES:
+   :results-dir: packets-min
+   :machine:  complex
+   :git-tag:  HEAD
+   :END:
+
+#+begin_src lisp
+  (require :software-evolution)
+  (in-package :software-evolution)
+  (load "optimize.lisp")
+  (setf *dir* "../results/packets-min/")
+  (setf *note-level* 1)
+  (setf *note-out* (open "../results/packets-min.session"
+                         :direction :output
+                         :if-exists :append))
+  (advise-thread-pool-size 46)
+  (biased-walk *orig* :steps 1000 :key #'total-packets-sent)
 #+end_src
 
 * COMMENT Notes
