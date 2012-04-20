@@ -302,40 +302,61 @@ To run all overlays daemonized;
 
 #+Caption: Listing of runs.
 #+RESULTS: results-summary
-| run                  | git-tag            | results-dir                               |
-|----------------------+--------------------+-------------------------------------------|
-| First Serial Run     | first-serial-run   | ~/research/epr/optimize/results/first-run |
-| First Parallel Run   | first-parallel-run | ~/research/epr/opt-real/results/first-run |
-| Parallel Runtime Run | pll-runtime-run    | ~/research/epr/opt-real/results/pll-2     |
+| run                  | state    | git-tag            | results-dir       |
+|----------------------+----------+--------------------+-------------------|
+| First Serial Run     | CANCELED | first-serial-run   | results/first-run |
+| First Parallel Run   | CANCELED | first-parallel-run | results/first-run |
+| Parallel Runtime Run | STARTED  | pll-runtime-run    | results/pll-2     |
 
 #+name: results-summary
 #+begin_src emacs-lisp :exports results
   (let ((fields (list "git-tag" "results-dir")))
-    (append (list (cons "run" fields) 'hline)
+    (append (list (cons "run" (cons "state" fields)) 'hline)
             (save-restriction
               (org-narrow-to-subtree)
               (cdr
                (org-map-entries
                 (lambda ()
                   (cons (org-get-heading t t)
-                        (mapcar (lambda (field) (org-entry-get (point) field))
-                                fields))))))))
+                        (cons (org-get-todo-state)
+                              (mapcar (lambda (field) (org-entry-get (point) field))
+                                      fields)))))))))
 #+end_src
 
-** STARTED First Serial Run
+** CANCELED First Serial Run
+   - State "CANCELED"   from "STARTED"    [2012-04-20 Fri 11:30] \\
+     accidentally rebooted the machine
    :PROPERTIES:
    :git-tag:  first-serial-run
-   :results-dir: ~/research/epr/optimize/results/first-run
+   :results-dir: results/first-run
    :dates:    <2012-04-10 Tue>
    :END:
 Running very slowly with only 1 VM running evaluations in the
 background.
 
+#+name: first-run-generation-times
+#+begin_src lisp :package software-evolution
+  (let ((*a-dir* "results/first-run/"))
+    (mapcar #'list (mapcar #'float (stat (read-run :steps 18)))))
+#+end_src
+
+#+name: first-run-generation-times-plot
+#+header: :file data/first-run-generation-times-plot.svg
+#+begin_src gnuplot :var data=first-run-generation-times
+  set xlabel 'generations'
+  set ylabel 'time-wo-init'
+  plot data
+#+end_src
+
+#+Caption: time-wo-init by generation: too few generations for a trend to develop
+#+RESULTS: first-run-generation-times-plot
+[[file:data/first-run-generation-times-plot.svg]]
+
 ** CANCELED First Parallel Run
    - State "CANCELED"   from "DONE"       [2012-04-16 Mon 15:08]
    :PROPERTIES:
    :git-tag:  first-parallel-run
-   :results-dir: ~/research/epr/opt-real/results/first-run
+   :results-dir: results/first-run
    :dates:    <2012-04-12 Thu>--<2012-04-13 Fri>
    :END:
 Failed to collect appropriate statistics, only have running time for
@@ -344,7 +365,7 @@ the first generation.
 ** STARTED Parallel Runtime Run
    :PROPERTIES:
    :git-tag:  pll-runtime-run
-   :results-dir: ~/research/epr/opt-real/results/pll-2
+   :results-dir: results/pll-2
    :dates:    <2012-04-15 Sun>
    :END:
 Looks to be working, saving the full population at every generation.
@@ -532,7 +553,7 @@ This code is used to publish this page to the =cs.unm.edu= webserver.
                                                 opt-server)
                  :publishing-function org-publish-org-to-html
                  :style "<style type=\"text/css\">\n <!--/*--><![CDATA[/*><!--*/
-    pre{display:table-cell;background:#232323; color:#e6e1dc;}
+    /* pre{display:table-cell;background:#232323; color:#e6e1dc;} */
     #content{max-width:1000px;margin:auto;} body{ font-size:small; } table{ font-size:small; }
     .outline-text-2{margin-left:2em;}.outline-text-3{margin-left:3em;}
     .title  { text-align: center; }
@@ -557,7 +578,7 @@ This code is used to publish this page to the =cs.unm.edu= webserver.
   (add-to-list 'org-publish-project-alist
                `("opt-data"
                  :base-directory ,(expand-file-name "data" opt-dir)
-                 :base-extension "s"
+                 :base-extension "txt\\|sh\\|lisp\\|html\\|s\\|svg"
                  :publishing-directory ,(format "/ssh:eschulte@%s:~/public_html/code/opt/data/"
                                                 opt-server)
                  :publishing-function org-publish-attachment))

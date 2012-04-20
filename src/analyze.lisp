@@ -12,7 +12,7 @@
 (load "./optimize.lisp")
 
 (defvar *stats* nil "List of statistics read from a run.")
-(defvar *a-dir* "../../opt-real/results/first-run/" "Analysis directory")
+(defvar *a-dir* "" "Analysis directory")
 
 (defun getter (key) (lambda (it) (cdr (assoc key it))))
 
