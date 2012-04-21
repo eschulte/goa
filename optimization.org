@@ -403,7 +403,13 @@ Using the following to restart a failing run
                          :direction :output
                          :if-exists :append))
   (advise-thread-pool-size 46)
-  (biased-walk *orig* :steps 1000 :key #'total-packets-sent)
+  ;; (biased-walk *orig* :steps 1000 :key #'total-packets-sent)
+  (let* ((restart 19)
+         (*pop* (restore (file-for-run restart))))
+    (loop for n from restart to 1000 do (note 1 "saving population ~d" n)
+         (store *pop* (file-for-run n))
+         (note 1 "generating population ~d" (1+ n))
+         (setf *pop* (biased-step *pop* :key #'total-packets-sent))))
 #+end_src
 
 * COMMENT Notes
