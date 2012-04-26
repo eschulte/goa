@@ -296,6 +296,10 @@ To run all overlays daemonized;
 #+end_src
 
 * Experimental Runs
+  :PROPERTIES:
+  :exports: code
+  :eval:     no-export
+  :END:
 
 #+Caption: Listing of runs.
 #+RESULTS: results-summary
@@ -303,22 +307,24 @@ To run all overlays daemonized;
 |----------------------------+----------+--------------------+---------+-------------|
 | First Serial Run           | CANCELED | first-serial-run   | loaf    | first-run   |
 | First Parallel Run         | CANCELED | first-parallel-run | real    | first-run   |
-| Parallel Runtime Run       | STARTED  | pll-runtime-run    | real    | pll-2       |
+| Parallel Runtime Run       | DONE     | pll-runtime-run    | real    | pll-2       |
 | Communication Minimization | STARTED  | packets-min        | complex | packets-min |
 
 #+name: results-summary
 #+begin_src emacs-lisp :exports results
   (let ((fields (list "git-tag" "machine" "results-dir")))
     (append (list (cons "run" (cons "state" fields)) 'hline)
-            (save-restriction
-              (org-narrow-to-subtree)
-              (cdr
-               (org-map-entries
-                (lambda ()
-                  (cons (org-get-heading t t)
-                        (cons (org-get-todo-state)
-                              (mapcar (lambda (field) (org-entry-get (point) field))
-                                      fields)))))))))
+            (remove-if-not
+             (lambda (entry) (nth 2 entry))
+             (save-restriction
+               (org-narrow-to-subtree)
+               (cdr
+                (org-map-entries
+                 (lambda ()
+                   (cons (org-get-heading t t)
+                         (cons (org-get-todo-state)
+                               (mapcar (lambda (field) (org-entry-get (point) field))
+                                       fields))))))))))
 #+end_src
 
 ** CANCELED First Serial Run
@@ -348,7 +354,6 @@ background.
 #+end_src
 
 #+Caption: time-wo-init by generation: too few generations for a trend to develop
-#+RESULTS: first-run-generation-times-plot
 [[file:data/first-run-generation-times-plot.svg]]
 
 ** CANCELED First Parallel Run
@@ -362,7 +367,7 @@ background.
 Failed to collect appropriate statistics, only have running time for
 the first generation.
 
-** STARTED Parallel Runtime Run
+** DONE Parallel Runtime Run
    :PROPERTIES:
    :git-tag:  pll-runtime-run
    :results-dir: pll-2
@@ -380,6 +385,7 @@ Analysis code in file:src/pll-2.lisp
 #+end_src
 
 #+name: pll-2-runtimes-plot
+#+header: :exports code
 #+begin_src gnuplot :var data=pll-2-runtimes :file data/pll-2-runtimes.svg
 ylabel 'time-wo-init'
 xlabel 'generation'
@@ -387,7 +393,6 @@ plot data
 #+end_src
 
 #+Caption: Ugh, selection must not have been working, probably a bug...
-#+RESULTS: pll-2-runtimes-plot
 [[file:data/pll-2-runtimes.svg]]
 
 *** Use the following to restart a failing run
