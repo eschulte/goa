@@ -308,7 +308,7 @@ To run all overlays daemonized;
 | First Serial Run           | CANCELED | first-serial-run   | loaf    | first-run   |
 | First Parallel Run         | CANCELED | first-parallel-run | real    | first-run   |
 | Parallel Runtime Run       | DONE     | pll-runtime-run    | real    | pll-2       |
-| Communication Minimization | STARTED  | packets-min        | complex | packets-min |
+| Communication Minimization | DONE     | packets-min        | complex | packets-min |
 
 #+name: results-summary
 #+begin_src emacs-lisp :exports results
@@ -376,7 +376,7 @@ the first generation.
    :END:
 Looks to be working, saving the full population at every generation.
 
-*** Analysis of Results
+*** Analysis
 Analysis code in file:src/pll-2.lisp
 
 #+name: pll-2-runtimes
@@ -410,13 +410,33 @@ plot data
        (setf *pop* (biased-step *pop*)))
 #+end_src
 
-** STARTED Communication Minimization
+** DONE Communication Minimization
    :PROPERTIES:
    :results-dir: packets-min
    :machine:  complex
    :git-tag:  packets-min
    :END:
 
+*** Analysis
+Analysis code in file:src/packet-min.lisp
+
+#+name: packets-min-runtimes
+#+begin_src lisp :package software-evolution
+  (mapcar #'list (cdr *packets*))
+#+end_src
+
+#+name: packets-min-runtimes-plot
+#+header: :exports code
+#+begin_src gnuplot :var data=packets-min-runtimes :file data/packets-min-runtimes.svg
+set ylabel 'total-packets-sent'
+set xlabel 'generation'
+plot data
+#+end_src
+
+#+Caption: Ugh, same bug
+[[file:data/packets-min-runtimes.svg]]
+
+*** Restarting a stalled run
 #+begin_src lisp
   (require :software-evolution)
   (in-package :software-evolution)
