@@ -9,5 +9,5 @@
 REMOTES=("2222")
 . $(dirname $0)/REMOTES # allow host-specific remote files
 for remote in ${REMOTES[@]};do
-    ssh -i data/id_rsa -p $remote bacon@guest "$@"
+    ssh -i data/id_rsa -p $remote bacon@localhost "$@"
 done
