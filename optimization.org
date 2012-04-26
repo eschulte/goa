@@ -371,7 +371,26 @@ the first generation.
    :END:
 Looks to be working, saving the full population at every generation.
 
-Using the following to restart a failing run
+*** Analysis of Results
+Analysis code in file:src/pll-2.lisp
+
+#+name: pll-2-runtimes
+#+begin_src lisp :package software-evolution
+  (mapcar #'list (cdr *times*))
+#+end_src
+
+#+name: pll-2-runtimes-plot
+#+begin_src gnuplot :var data=pll-2-runtimes :file data/pll-2-runtimes.svg
+ylabel 'time-wo-init'
+xlabel 'generation'
+plot data
+#+end_src
+
+#+Caption: Ugh, selection must not have been working, probably a bug...
+#+RESULTS: pll-2-runtimes-plot
+[[file:data/pll-2-runtimes.svg]]
+
+*** Use the following to restart a failing run
 #+begin_src lisp
   (require :software-evolution)
   (in-package :software-evolution)
@@ -404,7 +423,7 @@ Using the following to restart a failing run
                          :if-exists :append))
   (advise-thread-pool-size 46)
   ;; (biased-walk *orig* :steps 1000 :key #'total-packets-sent)
-  (let* ((restart 19)
+  (let* ((restart 24)
          (*pop* (restore (file-for-run restart))))
     (loop for n from restart to 1000 do (note 1 "saving population ~d" n)
          (store *pop* (file-for-run n))
