@@ -309,6 +309,7 @@ To run all overlays daemonized;
 | First Parallel Run         | CANCELED | first-parallel-run | real    | first-run   |
 | Parallel Runtime Run       | DONE     | pll-runtime-run    | real    | pll-2       |
 | Communication Minimization | DONE     | packets-min        | complex | packets-min |
+| runtime-2                  | STARTED  | runtime-2          | complex | runtime-2   |
 
 #+name: results-summary
 #+begin_src emacs-lisp :exports results
@@ -454,6 +455,29 @@ plot data
          (store *pop* (file-for-run n))
          (note 1 "generating population ~d" (1+ n))
          (setf *pop* (biased-step *pop* :key #'total-packets-sent))))
+#+end_src
+
+** STARTED runtime-2
+   :PROPERTIES:
+   :git-tag:  runtime-2
+   :results-dir: runtime-2
+   :machine:  complex
+   :END:
+
+*** running
+#+begin_src lisp
+  (require :software-evolution)
+  (in-package :software-evolution)
+  (load "optimize.lisp")
+  (setf *dir* "../results/runtime-2/")
+  (setf *note-level* 1)
+  (advise-thread-pool-size 46)
+  (let ((last 1))
+    (setf *pop* (restore (file-for-run last)))
+    (loop for n from last to 300 do (note 1 "saving population ~d" n)
+         (store *pop* (file-for-run n))
+         (note 1 "generating population ~d" (1+ n))
+         (setf *pop* (biased-step *pop*))))
 #+end_src
 
 * COMMENT Notes

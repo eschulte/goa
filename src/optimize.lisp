@@ -86,9 +86,8 @@ Note: This does not follow the normal test script format but rather it;
             (delete-file s-file)
             (note 2 "$ ~a ~a; $? => ~d" *script* s-file exit)
             (setf (raw-output var) output)
-            (when (zerop exit)
-              (apply-output var (raw-output var))
-              (setf (neutral-p var) t))
+            (apply-output var (raw-output var))
+            (setf (neutral-p var) (zerop exit))
             var))
       (timeout-error (c)
         (declare (ignore c))
@@ -117,11 +116,7 @@ Note: This does not follow the normal test script format but rather it;
   (let ((file (format nil *file-format* n)))
     (if dir (merge-pathnames file dir) file)))
 
-(defun safe< (a b)
-  "A version of < which gives the right values in the case of non-numbers."
-  (if (numberp a) (if (numberp b) (< a b) T) nil))
-
-(defun biased-step (pop &key (test #'safe<) (key #'time-wo-init) &aux result)
+(defun biased-step (pop &key (test #'<) (key #'time-wo-init) &aux result)
   "Take a whole-population biased step through neutral space."
   (flet ((new-var ()
            (let ((t-pop (repeatedly *tsize* (random-elt pop))))
@@ -131,21 +126,24 @@ Note: This does not follow the normal test script format but rather it;
                            (floor (* (- *psize* (length result)) 3))))
               (pool (progn
                       (note 1 "~&generating ~a" to-run)
-                      (prepeatedly to-run (progn (note 2 "starting")
-                                                 (new-var))))))
+                      (mapcar (lambda (var) (apply-output var (raw-output var)) var)
+                              (prepeatedly to-run (new-var))))))
          (note 1 "~&keeping the fit")
-         (dolist (var pool) (when (neutral-p var) (push var result)))
+         (dolist (var pool) (when (and (neutral-p var) (funcall key var))
+                              (push var result)))
          (note 1 "~&(length results) ;; => ~a" (length result))))
     (subseq result 0 *psize*)))
 
-(defun biased-walk (seed &key (steps 100) (test #'safe<) (key #'time-wo-init))
+(defun biased-walk (seed &key (steps 100) (test #'<) (key #'time-wo-init))
   "Evolve a population in the neutral space biased by metric and KEY."
   (setf *pop* (list seed))
   (dotimes (n steps)
     (note 1 "saving population ~d" n)
     (store *pop* (file-for-run n))
     (note 1 "generating population ~d" (1+ n))
-    (setf *pop* (biased-step *pop* :test test :key key))))
+    (setf *pop* (biased-step *pop* :test test :key key))
+    (unless (funcall key (random-elt *pop*))
+      (error "Someone snuck into the population w/o ~S" key))))
 
 #+run
 (biased-walk *orig*)
