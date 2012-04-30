@@ -473,7 +473,7 @@ plot data
   (setf *dir* "../results/runtime-2/")
   (setf *note-level* 1)
   (advise-thread-pool-size 46)
-  (let ((last 1))
+  (let ((last 82))
     (setf *pop* (restore (file-for-run last)))
     (loop for n from last to 300 do (note 1 "saving population ~d" n)
          (store *pop* (file-for-run n))
@@ -682,3 +682,7 @@ This code is used to publish this page to the =cs.unm.edu= webserver.
   (add-to-list 'org-publish-project-alist
                '("opt" :components ("opt-html" "opt-src" "opt-data")))
 #+end_src
+
+* Reading
+- [[file:~/reading/reading.org::#bruening2003infrastructure][An infrastructure for adaptive dynamic optimization]]
+- [[file:~/reading/reading.org::#frigo1998fftw][FFTW: An adaptive software architecture for the FFT]]
