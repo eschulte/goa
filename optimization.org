@@ -473,7 +473,7 @@ plot data
   (setf *dir* "../results/runtime-2/")
   (setf *note-level* 1)
   (advise-thread-pool-size 46)
-  (let ((last 82))
+  (let ((last 161))
     (setf *pop* (restore (file-for-run last)))
     (loop for n from last to 300 do (note 1 "saving population ~d" n)
          (store *pop* (file-for-run n))
