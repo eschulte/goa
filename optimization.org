@@ -1,5 +1,6 @@
 #+Title: Optimization
 #+Options: ^:nil toc:1
+#+Startup: hideblocks
 
 * Introduction
 During compilation and linking, non-functional properties of software
@@ -465,6 +466,30 @@ plot data
    :dates:    2012-04-27
    :END:
 
+Appears to be working, but slowly.
+
+*** Analysis
+Analysis code in file:src/runtime-2.lisp
+
+#+name: runtime-2-times
+#+begin_src lisp :package software-evolution
+  ;; (mapcar #'list (cdr *times*))
+  ;; (mapcar #'list (second *raw-times*))
+  *times*
+#+end_src
+
+#+name: packets-min-runtimes-plot
+#+header: :exports code
+#+begin_src gnuplot :var data=runtime-2-times :file data/runtime-2.svg
+  set ylabel 'time-wo-init'
+  set xlabel 'generation'
+  plot data using 0:1:2 w errorbars, \
+       data using 0:1 w lines
+#+end_src
+
+#+Caption: Run times by generation of evolution
+[[file:data/runtime-2.svg]]
+
 *** running
 #+begin_src lisp
   (require :software-evolution)
@@ -482,6 +507,12 @@ plot data
 #+end_src
 
 * COMMENT Notes
+** exactly /what/ can we measure
+- communication by packet
+- runtime
+- power consumption (assuming we get the power piece working)
+- number of floating point operations?
+
 ** SBCL is going sleeping on the job
 Maybe has something to do with script processes dying and never
 returning to SBCL, which then hangs the thread and then hangs sbcl
