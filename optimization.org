@@ -497,16 +497,18 @@ Analysis code in file:src/runtime-2.lisp
   (load "optimize.lisp")
   (setf *dir* "../results/runtime-2/")
   (setf *note-level* 1)
+  (setf *tsize* 4)
   (advise-thread-pool-size 46)
-  (let ((last 161))
+  (let ((last 289))
     (setf *pop* (restore (file-for-run last)))
-    (loop for n from last to 300 do (note 1 "saving population ~d" n)
+    (loop for n from last to 1000 do (note 1 "saving population ~d" n)
          (store *pop* (file-for-run n))
          (note 1 "generating population ~d" (1+ n))
          (setf *pop* (biased-step *pop*))))
 #+end_src
 
 * COMMENT Notes
+** TODO need to cleanup assembly files from /tmp in guest VMs
 ** exactly /what/ can we measure
 - communication by packet
 - runtime
