@@ -15,6 +15,7 @@
 
 #+lab-machine
 (advise-thread-pool-size 46)
+;; (thread-pool-size)
 
 (defvar *pop*   nil "Population of variants.")
 (defvar *dir*   nil "Optional sub-directory in which to store results.")

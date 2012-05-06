@@ -499,7 +499,7 @@ Analysis code in file:src/runtime-2.lisp
   (setf *note-level* 1)
   (setf *tsize* 4)
   (advise-thread-pool-size 46)
-  (let ((last 289))
+  (let ((last 347))
     (setf *pop* (restore (file-for-run last)))
     (loop for n from last to 1000 do (note 1 "saving population ~d" n)
          (store *pop* (file-for-run n))
