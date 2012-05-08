@@ -717,5 +717,6 @@ This code is used to publish this page to the =cs.unm.edu= webserver.
 #+end_src
 
 * Reading
+- [[http://web.mit.edu/newsoffice/2012/faster-fourier-transform-named-one-of-worlds-most-important-emerging-technologies.html][Sparse Fourier Transform]]
 - [[file:~/reading/reading.org::#bruening2003infrastructure][An infrastructure for adaptive dynamic optimization]]
 - [[file:~/reading/reading.org::#frigo1998fftw][FFTW: An adaptive software architecture for the FFT]]
