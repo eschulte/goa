@@ -3269,3 +3269,2077 @@ SOFTWARE-EVOLUTION(17): *tsize*
 
 4
 SOFTWARE-EVOLUTION(18):
+
+SOFTWARE-EVOLUTION(17): *tsize*
+
+4
+SOFTWARE-EVOLUTION(18): (advise-thread-pool-size 44)
+
+NIL
+SOFTWARE-EVOLUTION(19): (let ((last 289))
+                          (setf *pop* (restore (file-for-run last)))
+                          (loop for n from last to 1000 do (note 1 "saving population ~d" n)
+                               (store *pop* (file-for-run n))
+                               (note 1 "generating population ~d" (1+ n))
+                               (setf *pop* (biased-step *pop*))))
+
+2012.05.04.16.53.43: saving population 289
+2012.05.04.16.53.43: generating population 290
+2012.05.04.16.53.43: generating 44
+2012.05.04.17.03.57: keeping the fit
+2012.05.04.17.03.57: (length results) ;; => 44
+2012.05.04.17.03.57: generating 44
+;; swank:close-connection: end of file on #<SB-SYS:FD-STREAM for "a socket" {1007209BA1}>
+2012.05.04.17.14.10: keeping the fit
+2012.05.04.17.14.10: (length results) ;; => 88
+2012.05.04.17.14.10: generating 36
+2012.05.04.17.19.27: keeping the fit
+2012.05.04.17.19.27: (length results) ;; => 125
+2012.05.04.17.19.27: saving population 290
+2012.05.04.17.19.27: generating population 291
+2012.05.04.17.19.27: generating 44
+2012.05.04.17.29.46: keeping the fit
+2012.05.04.17.29.46: (length results) ;; => 44
+2012.05.04.17.29.46: generating 44
+2012.05.04.17.39.57: keeping the fit
+2012.05.04.17.39.57: (length results) ;; => 88
+2012.05.04.17.39.57: generating 36
+2012.05.04.17.45.19: keeping the fit
+2012.05.04.17.45.19: (length results) ;; => 125
+2012.05.04.17.45.19: saving population 291
+2012.05.04.17.45.20: generating population 292
+2012.05.04.17.45.20: generating 44
+2012.05.04.17.55.42: keeping the fit
+2012.05.04.17.55.42: (length results) ;; => 45
+2012.05.04.17.55.42: generating 44
+2012.05.04.18.05.59: keeping the fit
+2012.05.04.18.05.59: (length results) ;; => 90
+2012.05.04.18.05.59: generating 30
+2012.05.04.18.11.14: keeping the fit
+2012.05.04.18.11.14: (length results) ;; => 121
+2012.05.04.18.11.14: saving population 292
+2012.05.04.18.11.14: generating population 293
+2012.05.04.18.11.14: generating 44
+2012.05.04.18.21.40: keeping the fit
+2012.05.04.18.21.40: (length results) ;; => 44
+2012.05.04.18.21.40: generating 44
+2012.05.04.18.31.47: keeping the fit
+2012.05.04.18.31.47: (length results) ;; => 88
+2012.05.04.18.31.47: generating 36
+2012.05.04.18.37.08: keeping the fit
+2012.05.04.18.37.08: (length results) ;; => 125
+2012.05.04.18.37.08: saving population 293
+2012.05.04.18.37.08: generating population 294
+2012.05.04.18.37.08: generating 44
+2012.05.04.18.47.31: keeping the fit
+2012.05.04.18.47.31: (length results) ;; => 44
+2012.05.04.18.47.31: generating 44
+2012.05.04.18.57.50: keeping the fit
+2012.05.04.18.57.50: (length results) ;; => 88
+2012.05.04.18.57.50: generating 36
+2012.05.04.19.03.18: keeping the fit
+2012.05.04.19.03.18: (length results) ;; => 125
+2012.05.04.19.03.18: saving population 294
+2012.05.04.19.03.18: generating population 295
+2012.05.04.19.03.18: generating 44
+2012.05.04.19.13.37: keeping the fit
+2012.05.04.19.13.37: (length results) ;; => 45
+2012.05.04.19.13.37: generating 44
+2012.05.04.19.23.55: keeping the fit
+2012.05.04.19.23.55: (length results) ;; => 90
+2012.05.04.19.23.55: generating 30
+2012.05.04.19.29.12: keeping the fit
+2012.05.04.19.29.12: (length results) ;; => 121
+2012.05.04.19.29.12: saving population 295
+2012.05.04.19.29.13: generating population 296
+2012.05.04.19.29.13: generating 44
+2012.05.04.19.39.39: keeping the fit
+2012.05.04.19.39.39: (length results) ;; => 44
+2012.05.04.19.39.39: generating 44
+2012.05.04.19.49.56: keeping the fit
+2012.05.04.19.49.56: (length results) ;; => 89
+2012.05.04.19.49.56: generating 33
+2012.05.04.19.55.19: keeping the fit
+2012.05.04.19.55.19: (length results) ;; => 123
+2012.05.04.19.55.19: saving population 296
+2012.05.04.19.55.19: generating population 297
+2012.05.04.19.55.19: generating 44
+2012.05.04.20.05.45: keeping the fit
+2012.05.04.20.05.45: (length results) ;; => 44
+2012.05.04.20.05.45: generating 44
+2012.05.04.20.16.11: keeping the fit
+2012.05.04.20.16.11: (length results) ;; => 89
+2012.05.04.20.16.11: generating 33
+2012.05.04.20.21.32: keeping the fit
+2012.05.04.20.21.32: (length results) ;; => 123
+2012.05.04.20.21.32: saving population 297
+2012.05.04.20.21.33: generating population 298
+2012.05.04.20.21.33: generating 44
+2012.05.04.20.32.07: keeping the fit
+2012.05.04.20.32.07: (length results) ;; => 45
+2012.05.04.20.32.07: generating 44
+2012.05.04.20.42.17: keeping the fit
+2012.05.04.20.42.17: (length results) ;; => 90
+2012.05.04.20.42.17: generating 30
+2012.05.04.20.47.37: keeping the fit
+2012.05.04.20.47.37: (length results) ;; => 121
+2012.05.04.20.47.37: saving population 298
+2012.05.04.20.47.38: generating population 299
+2012.05.04.20.47.38: generating 44
+2012.05.04.20.57.52: keeping the fit
+2012.05.04.20.57.52: (length results) ;; => 44
+2012.05.04.20.57.52: generating 44
+2012.05.04.21.08.02: keeping the fit
+2012.05.04.21.08.02: (length results) ;; => 89
+2012.05.04.21.08.02: generating 33
+2012.05.04.21.13.25: keeping the fit
+2012.05.04.21.13.25: (length results) ;; => 123
+2012.05.04.21.13.25: saving population 299
+2012.05.04.21.13.25: generating population 300
+2012.05.04.21.13.25: generating 44
+2012.05.04.21.23.28: keeping the fit
+2012.05.04.21.23.28: (length results) ;; => 44
+2012.05.04.21.23.28: generating 44
+2012.05.04.21.33.38: keeping the fit
+2012.05.04.21.33.38: (length results) ;; => 89
+2012.05.04.21.33.38: generating 33
+2012.05.04.21.38.52: keeping the fit
+2012.05.04.21.38.52: (length results) ;; => 123
+2012.05.04.21.38.52: saving population 300
+2012.05.04.21.38.53: generating population 301
+2012.05.04.21.38.53: generating 44
+2012.05.04.21.49.06: keeping the fit
+2012.05.04.21.49.06: (length results) ;; => 44
+2012.05.04.21.49.06: generating 44
+2012.05.04.21.59.17: keeping the fit
+2012.05.04.21.59.17: (length results) ;; => 89
+2012.05.04.21.59.17: generating 33
+2012.05.04.22.04.39: keeping the fit
+2012.05.04.22.04.39: (length results) ;; => 123
+2012.05.04.22.04.39: saving population 301
+2012.05.04.22.04.40: generating population 302
+2012.05.04.22.04.40: generating 44
+2012.05.04.22.15.13: keeping the fit
+2012.05.04.22.15.13: (length results) ;; => 43
+2012.05.04.22.15.13: generating 44
+2012.05.04.22.25.25: keeping the fit
+2012.05.04.22.25.25: (length results) ;; => 88
+2012.05.04.22.25.25: generating 36
+2012.05.04.22.30.49: keeping the fit
+2012.05.04.22.30.49: (length results) ;; => 125
+2012.05.04.22.30.49: saving population 302
+2012.05.04.22.30.50: generating population 303
+2012.05.04.22.30.50: generating 44
+2012.05.04.22.41.13: keeping the fit
+2012.05.04.22.41.13: (length results) ;; => 42
+2012.05.04.22.41.13: generating 44
+2012.05.04.22.51.34: keeping the fit
+2012.05.04.22.51.34: (length results) ;; => 87
+2012.05.04.22.51.34: generating 39
+2012.05.04.22.57.36: keeping the fit
+2012.05.04.22.57.36: (length results) ;; => 126
+2012.05.04.22.57.36: saving population 303
+2012.05.04.22.57.36: generating population 304
+2012.05.04.22.57.36: generating 44
+2012.05.04.23.07.54: keeping the fit
+2012.05.04.23.07.54: (length results) ;; => 44
+2012.05.04.23.07.54: generating 44
+2012.05.04.23.18.09: keeping the fit
+2012.05.04.23.18.09: (length results) ;; => 89
+2012.05.04.23.18.09: generating 33
+2012.05.04.23.23.27: keeping the fit
+2012.05.04.23.23.27: (length results) ;; => 123
+2012.05.04.23.23.27: saving population 304
+2012.05.04.23.23.27: generating population 305
+2012.05.04.23.23.27: generating 44
+2012.05.04.23.33.38: keeping the fit
+2012.05.04.23.33.38: (length results) ;; => 45
+2012.05.04.23.33.38: generating 44
+2012.05.04.23.43.48: keeping the fit
+2012.05.04.23.43.48: (length results) ;; => 90
+2012.05.04.23.43.48: generating 30
+2012.05.04.23.49.16: keeping the fit
+2012.05.04.23.49.16: (length results) ;; => 121
+2012.05.04.23.49.16: saving population 305
+2012.05.04.23.49.17: generating population 306
+2012.05.04.23.49.17: generating 44
+2012.05.04.23.59.38: keeping the fit
+2012.05.04.23.59.38: (length results) ;; => 45
+2012.05.04.23.59.38: generating 44
+2012.05.05.00.09.50: keeping the fit
+2012.05.05.00.09.50: (length results) ;; => 89
+2012.05.05.00.09.50: generating 33
+2012.05.05.00.15.17: keeping the fit
+2012.05.05.00.15.17: (length results) ;; => 123
+2012.05.05.00.15.17: saving population 306
+2012.05.05.00.15.18: generating population 307
+2012.05.05.00.15.18: generating 44
+2012.05.05.00.25.28: keeping the fit
+2012.05.05.00.25.28: (length results) ;; => 44
+2012.05.05.00.25.28: generating 44
+2012.05.05.00.35.48: keeping the fit
+2012.05.05.00.35.48: (length results) ;; => 88
+2012.05.05.00.35.48: generating 36
+2012.05.05.00.41.07: keeping the fit
+2012.05.05.00.41.07: (length results) ;; => 125
+2012.05.05.00.41.07: saving population 307
+2012.05.05.00.41.07: generating population 308
+2012.05.05.00.41.07: generating 44
+2012.05.05.00.51.31: keeping the fit
+2012.05.05.00.51.31: (length results) ;; => 45
+2012.05.05.00.51.31: generating 44
+2012.05.05.01.01.42: keeping the fit
+2012.05.05.01.01.42: (length results) ;; => 89
+2012.05.05.01.01.42: generating 33
+2012.05.05.01.06.58: keeping the fit
+2012.05.05.01.06.58: (length results) ;; => 123
+2012.05.05.01.06.58: saving population 308
+2012.05.05.01.06.59: generating population 309
+2012.05.05.01.06.59: generating 44
+2012.05.05.01.17.22: keeping the fit
+2012.05.05.01.17.22: (length results) ;; => 44
+2012.05.05.01.17.22: generating 44
+2012.05.05.01.27.40: keeping the fit
+2012.05.05.01.27.40: (length results) ;; => 88
+2012.05.05.01.27.40: generating 36
+2012.05.05.01.33.03: keeping the fit
+2012.05.05.01.33.03: (length results) ;; => 125
+2012.05.05.01.33.03: saving population 309
+2012.05.05.01.33.03: generating population 310
+2012.05.05.01.33.03: generating 44
+2012.05.05.01.43.23: keeping the fit
+2012.05.05.01.43.23: (length results) ;; => 44
+2012.05.05.01.43.23: generating 44
+2012.05.05.01.53.40: keeping the fit
+2012.05.05.01.53.40: (length results) ;; => 89
+2012.05.05.01.53.40: generating 33
+2012.05.05.01.59.04: keeping the fit
+2012.05.05.01.59.04: (length results) ;; => 123
+2012.05.05.01.59.04: saving population 310
+2012.05.05.01.59.05: generating population 311
+2012.05.05.01.59.05: generating 44
+2012.05.05.02.09.13: keeping the fit
+2012.05.05.02.09.13: (length results) ;; => 45
+2012.05.05.02.09.13: generating 44
+2012.05.05.02.19.32: keeping the fit
+2012.05.05.02.19.32: (length results) ;; => 90
+2012.05.05.02.19.32: generating 30
+2012.05.05.02.24.48: keeping the fit
+2012.05.05.02.24.48: (length results) ;; => 121
+2012.05.05.02.24.48: saving population 311
+2012.05.05.02.24.48: generating population 312
+2012.05.05.02.24.48: generating 44
+2012.05.05.02.35.36: keeping the fit
+2012.05.05.02.35.36: (length results) ;; => 43
+2012.05.05.02.35.36: generating 44
+2012.05.05.02.45.49: keeping the fit
+2012.05.05.02.45.49: (length results) ;; => 88
+2012.05.05.02.45.49: generating 36
+2012.05.05.02.51.09: keeping the fit
+2012.05.05.02.51.09: (length results) ;; => 125
+2012.05.05.02.51.09: saving population 312
+2012.05.05.02.51.09: generating population 313
+2012.05.05.02.51.09: generating 44
+2012.05.05.03.01.21: keeping the fit
+2012.05.05.03.01.21: (length results) ;; => 45
+2012.05.05.03.01.21: generating 44
+2012.05.05.03.11.35: keeping the fit
+2012.05.05.03.11.35: (length results) ;; => 89
+2012.05.05.03.11.35: generating 33
+2012.05.05.03.16.58: keeping the fit
+2012.05.05.03.16.58: (length results) ;; => 123
+2012.05.05.03.16.58: saving population 313
+2012.05.05.03.16.58: generating population 314
+2012.05.05.03.16.58: generating 44
+2012.05.05.03.27.18: keeping the fit
+2012.05.05.03.27.18: (length results) ;; => 45
+2012.05.05.03.27.18: generating 44
+2012.05.05.03.37.37: keeping the fit
+2012.05.05.03.37.37: (length results) ;; => 89
+2012.05.05.03.37.37: generating 33
+2012.05.05.03.42.58: keeping the fit
+2012.05.05.03.42.58: (length results) ;; => 123
+2012.05.05.03.42.58: saving population 314
+2012.05.05.03.42.58: generating population 315
+2012.05.05.03.42.58: generating 44
+2012.05.05.03.53.17: keeping the fit
+2012.05.05.03.53.17: (length results) ;; => 44
+2012.05.05.03.53.17: generating 44
+2012.05.05.04.03.33: keeping the fit
+2012.05.05.04.03.33: (length results) ;; => 89
+2012.05.05.04.03.33: generating 33
+2012.05.05.04.08.53: keeping the fit
+2012.05.05.04.08.53: (length results) ;; => 123
+2012.05.05.04.08.53: saving population 315
+2012.05.05.04.08.53: generating population 316
+2012.05.05.04.08.53: generating 44
+2012.05.05.04.19.20: keeping the fit
+2012.05.05.04.19.20: (length results) ;; => 44
+2012.05.05.04.19.20: generating 44
+2012.05.05.04.29.35: keeping the fit
+2012.05.05.04.29.35: (length results) ;; => 89
+2012.05.05.04.29.35: generating 33
+2012.05.05.04.35.00: keeping the fit
+2012.05.05.04.35.00: (length results) ;; => 123
+2012.05.05.04.35.00: saving population 316
+2012.05.05.04.35.00: generating population 317
+2012.05.05.04.35.00: generating 44
+2012.05.05.04.45.23: keeping the fit
+2012.05.05.04.45.23: (length results) ;; => 44
+2012.05.05.04.45.23: generating 44
+2012.05.05.04.55.41: keeping the fit
+2012.05.05.04.55.41: (length results) ;; => 88
+2012.05.05.04.55.41: generating 36
+2012.05.05.05.01.01: keeping the fit
+2012.05.05.05.01.01: (length results) ;; => 125
+2012.05.05.05.01.01: saving population 317
+2012.05.05.05.01.02: generating population 318
+2012.05.05.05.01.02: generating 44
+2012.05.05.05.11.22: keeping the fit
+2012.05.05.05.11.22: (length results) ;; => 44
+2012.05.05.05.11.22: generating 44
+2012.05.05.05.21.32: keeping the fit
+2012.05.05.05.21.32: (length results) ;; => 88
+2012.05.05.05.21.32: generating 36
+2012.05.05.05.26.53: keeping the fit
+2012.05.05.05.26.53: (length results) ;; => 125
+2012.05.05.05.26.53: saving population 318
+2012.05.05.05.26.54: generating population 319
+2012.05.05.05.26.54: generating 44
+2012.05.05.05.37.17: keeping the fit
+2012.05.05.05.37.17: (length results) ;; => 44
+2012.05.05.05.37.17: generating 44
+2012.05.05.05.47.31: keeping the fit
+2012.05.05.05.47.31: (length results) ;; => 88
+2012.05.05.05.47.31: generating 36
+2012.05.05.05.53.13: keeping the fit
+2012.05.05.05.53.13: (length results) ;; => 125
+2012.05.05.05.53.13: saving population 319
+2012.05.05.05.53.13: generating population 320
+2012.05.05.05.53.13: generating 44
+2012.05.05.06.03.34: keeping the fit
+2012.05.05.06.03.34: (length results) ;; => 45
+2012.05.05.06.03.34: generating 44
+2012.05.05.06.13.44: keeping the fit
+2012.05.05.06.13.44: (length results) ;; => 90
+2012.05.05.06.13.44: generating 30
+2012.05.05.06.19.03: keeping the fit
+2012.05.05.06.19.03: (length results) ;; => 121
+2012.05.05.06.19.03: saving population 320
+2012.05.05.06.19.04: generating population 321
+2012.05.05.06.19.04: generating 44
+2012.05.05.06.29.26: keeping the fit
+2012.05.05.06.29.26: (length results) ;; => 44
+2012.05.05.06.29.26: generating 44
+2012.05.05.06.39.39: keeping the fit
+2012.05.05.06.39.39: (length results) ;; => 88
+2012.05.05.06.39.39: generating 36
+2012.05.05.06.45.13: keeping the fit
+2012.05.05.06.45.13: (length results) ;; => 125
+2012.05.05.06.45.13: saving population 321
+2012.05.05.06.45.13: generating population 322
+2012.05.05.06.45.13: generating 44
+2012.05.05.06.55.25: keeping the fit
+2012.05.05.06.55.25: (length results) ;; => 44
+2012.05.05.06.55.25: generating 44
+2012.05.05.07.05.44: keeping the fit
+2012.05.05.07.05.44: (length results) ;; => 89
+2012.05.05.07.05.44: generating 33
+2012.05.05.07.11.01: keeping the fit
+2012.05.05.07.11.01: (length results) ;; => 123
+2012.05.05.07.11.01: saving population 322
+2012.05.05.07.11.01: generating population 323
+2012.05.05.07.11.01: generating 44
+2012.05.05.07.21.24: keeping the fit
+2012.05.05.07.21.24: (length results) ;; => 44
+2012.05.05.07.21.24: generating 44
+2012.05.05.07.31.31: keeping the fit
+2012.05.05.07.31.31: (length results) ;; => 89
+2012.05.05.07.31.31: generating 33
+2012.05.05.07.36.50: keeping the fit
+2012.05.05.07.36.50: (length results) ;; => 123
+2012.05.05.07.36.50: saving population 323
+2012.05.05.07.36.50: generating population 324
+2012.05.05.07.36.50: generating 44
+2012.05.05.07.47.03: keeping the fit
+2012.05.05.07.47.03: (length results) ;; => 43
+2012.05.05.07.47.03: generating 44
+2012.05.05.07.57.19: keeping the fit
+2012.05.05.07.57.19: (length results) ;; => 88
+2012.05.05.07.57.19: generating 36
+2012.05.05.08.02.38: keeping the fit
+2012.05.05.08.02.38: (length results) ;; => 125
+2012.05.05.08.02.38: saving population 324
+2012.05.05.08.02.38: generating population 325
+2012.05.05.08.02.38: generating 44
+2012.05.05.08.13.18: keeping the fit
+2012.05.05.08.13.18: (length results) ;; => 45
+2012.05.05.08.13.18: generating 44
+2012.05.05.08.23.31: keeping the fit
+2012.05.05.08.23.31: (length results) ;; => 90
+2012.05.05.08.23.31: generating 30
+2012.05.05.08.28.48: keeping the fit
+2012.05.05.08.28.48: (length results) ;; => 121
+2012.05.05.08.28.48: saving population 325
+2012.05.05.08.28.49: generating population 326
+2012.05.05.08.28.49: generating 44
+2012.05.05.08.38.58: keeping the fit
+2012.05.05.08.38.58: (length results) ;; => 44
+2012.05.05.08.38.58: generating 44
+2012.05.05.08.49.16: keeping the fit
+2012.05.05.08.49.16: (length results) ;; => 87
+2012.05.05.08.49.16: generating 39
+2012.05.05.08.54.45: keeping the fit
+2012.05.05.08.54.45: (length results) ;; => 127
+2012.05.05.08.54.45: saving population 326
+2012.05.05.08.54.45: generating population 327
+2012.05.05.08.54.45: generating 44
+2012.05.05.09.05.10: keeping the fit
+2012.05.05.09.05.10: (length results) ;; => 44
+2012.05.05.09.05.10: generating 44
+2012.05.05.09.15.19: keeping the fit
+2012.05.05.09.15.19: (length results) ;; => 88
+2012.05.05.09.15.19: generating 36
+2012.05.05.09.20.43: keeping the fit
+2012.05.05.09.20.43: (length results) ;; => 125
+2012.05.05.09.20.43: saving population 327
+2012.05.05.09.20.44: generating population 328
+2012.05.05.09.20.44: generating 44
+2012.05.05.09.31.04: keeping the fit
+2012.05.05.09.31.04: (length results) ;; => 45
+2012.05.05.09.31.04: generating 44
+2012.05.05.09.41.23: keeping the fit
+2012.05.05.09.41.23: (length results) ;; => 90
+2012.05.05.09.41.23: generating 30
+2012.05.05.09.46.42: keeping the fit
+2012.05.05.09.46.42: (length results) ;; => 121
+2012.05.05.09.46.42: saving population 328
+2012.05.05.09.46.42: generating population 329
+2012.05.05.09.46.42: generating 44
+2012.05.05.09.56.49: keeping the fit
+2012.05.05.09.56.49: (length results) ;; => 45
+2012.05.05.09.56.49: generating 44
+2012.05.05.10.07.03: keeping the fit
+2012.05.05.10.07.03: (length results) ;; => 90
+2012.05.05.10.07.03: generating 30
+2012.05.05.10.12.22: keeping the fit
+2012.05.05.10.12.22: (length results) ;; => 121
+2012.05.05.10.12.22: saving population 329
+2012.05.05.10.12.22: generating population 330
+2012.05.05.10.12.22: generating 44
+2012.05.05.10.22.32: keeping the fit
+2012.05.05.10.22.32: (length results) ;; => 43
+2012.05.05.10.22.32: generating 44
+2012.05.05.10.32.45: keeping the fit
+2012.05.05.10.32.45: (length results) ;; => 87
+2012.05.05.10.32.45: generating 39
+2012.05.05.10.38.21: keeping the fit
+2012.05.05.10.38.21: (length results) ;; => 127
+2012.05.05.10.38.21: saving population 330
+2012.05.05.10.38.21: generating population 331
+2012.05.05.10.38.21: generating 44
+2012.05.05.10.49.02: keeping the fit
+2012.05.05.10.49.02: (length results) ;; => 45
+2012.05.05.10.49.02: generating 44
+2012.05.05.10.59.16: keeping the fit
+2012.05.05.10.59.16: (length results) ;; => 90
+2012.05.05.10.59.16: generating 30
+2012.05.05.11.04.32: keeping the fit
+2012.05.05.11.04.32: (length results) ;; => 121
+2012.05.05.11.04.32: saving population 331
+2012.05.05.11.04.32: generating population 332
+2012.05.05.11.04.32: generating 44
+2012.05.05.11.15.01: keeping the fit
+2012.05.05.11.15.01: (length results) ;; => 44
+2012.05.05.11.15.01: generating 44
+2012.05.05.11.25.04: keeping the fit
+2012.05.05.11.25.04: (length results) ;; => 89
+2012.05.05.11.25.04: generating 33
+2012.05.05.11.30.28: keeping the fit
+2012.05.05.11.30.28: (length results) ;; => 123
+2012.05.05.11.30.28: saving population 332
+2012.05.05.11.30.28: generating population 333
+2012.05.05.11.30.28: generating 44
+2012.05.05.11.40.41: keeping the fit
+2012.05.05.11.40.41: (length results) ;; => 44
+2012.05.05.11.40.41: generating 44
+2012.05.05.11.51.04: keeping the fit
+2012.05.05.11.51.04: (length results) ;; => 88
+2012.05.05.11.51.04: generating 36
+2012.05.05.11.56.28: keeping the fit
+2012.05.05.11.56.28: (length results) ;; => 125
+2012.05.05.11.56.28: saving population 333
+2012.05.05.11.56.28: generating population 334
+2012.05.05.11.56.28: generating 44
+2012.05.05.12.06.49: keeping the fit
+2012.05.05.12.06.49: (length results) ;; => 44
+2012.05.05.12.06.49: generating 44
+2012.05.05.12.16.58: keeping the fit
+2012.05.05.12.16.58: (length results) ;; => 89
+2012.05.05.12.16.58: generating 33
+2012.05.05.12.22.16: keeping the fit
+2012.05.05.12.22.16: (length results) ;; => 123
+2012.05.05.12.22.16: saving population 334
+2012.05.05.12.22.16: generating population 335
+2012.05.05.12.22.16: generating 44
+2012.05.05.12.32.33: keeping the fit
+2012.05.05.12.32.33: (length results) ;; => 43
+2012.05.05.12.32.33: generating 44
+2012.05.05.12.42.45: keeping the fit
+2012.05.05.12.42.45: (length results) ;; => 88
+2012.05.05.12.42.45: generating 36
+2012.05.05.12.48.13: keeping the fit
+2012.05.05.12.48.13: (length results) ;; => 125
+2012.05.05.12.48.13: saving population 335
+2012.05.05.12.48.13: generating population 336
+2012.05.05.12.48.13: generating 44
+2012.05.05.12.58.26: keeping the fit
+2012.05.05.12.58.26: (length results) ;; => 45
+2012.05.05.12.58.26: generating 44
+2012.05.05.13.08.43: keeping the fit
+2012.05.05.13.08.43: (length results) ;; => 89
+2012.05.05.13.08.43: generating 33
+2012.05.05.13.14.07: keeping the fit
+2012.05.05.13.14.07: (length results) ;; => 123
+2012.05.05.13.14.07: saving population 336
+2012.05.05.13.14.07: generating population 337
+2012.05.05.13.14.07: generating 44
+2012.05.05.13.24.23: keeping the fit
+2012.05.05.13.24.23: (length results) ;; => 45
+2012.05.05.13.24.23: generating 44
+2012.05.05.13.34.40: keeping the fit
+2012.05.05.13.34.40: (length results) ;; => 90
+2012.05.05.13.34.40: generating 30
+2012.05.05.13.39.57: keeping the fit
+2012.05.05.13.39.57: (length results) ;; => 121
+2012.05.05.13.39.57: saving population 337
+2012.05.05.13.39.57: generating population 338
+2012.05.05.13.39.57: generating 44
+2012.05.05.13.50.19: keeping the fit
+2012.05.05.13.50.19: (length results) ;; => 43
+2012.05.05.13.50.19: generating 44
+2012.05.05.14.00.23: keeping the fit
+2012.05.05.14.00.23: (length results) ;; => 88
+2012.05.05.14.00.23: generating 36
+2012.05.05.14.05.57: keeping the fit
+2012.05.05.14.05.57: (length results) ;; => 125
+2012.05.05.14.05.57: saving population 338
+2012.05.05.14.05.57: generating population 339
+2012.05.05.14.05.57: generating 44
+2012.05.05.14.16.11: keeping the fit
+2012.05.05.14.16.11: (length results) ;; => 44
+2012.05.05.14.16.11: generating 44
+2012.05.05.14.26.40: keeping the fit
+2012.05.05.14.26.40: (length results) ;; => 89
+2012.05.05.14.26.40: generating 33
+2012.05.05.14.32.07: keeping the fit
+2012.05.05.14.32.07: (length results) ;; => 123
+2012.05.05.14.32.07: saving population 339
+2012.05.05.14.32.08: generating population 340
+2012.05.05.14.32.08: generating 44
+2012.05.05.14.42.30: keeping the fit
+2012.05.05.14.42.30: (length results) ;; => 44
+2012.05.05.14.42.30: generating 44
+2012.05.05.14.52.42: keeping the fit
+2012.05.05.14.52.42: (length results) ;; => 88
+2012.05.05.14.52.42: generating 36
+2012.05.05.14.58.12: keeping the fit
+2012.05.05.14.58.12: (length results) ;; => 125
+2012.05.05.14.58.12: saving population 340
+2012.05.05.14.58.12: generating population 341
+2012.05.05.14.58.12: generating 44
+2012.05.05.15.08.29: keeping the fit
+2012.05.05.15.08.29: (length results) ;; => 45
+2012.05.05.15.08.29: generating 44
+2012.05.05.15.18.49: keeping the fit
+2012.05.05.15.18.49: (length results) ;; => 89
+2012.05.05.15.18.49: generating 33
+2012.05.05.15.24.10: keeping the fit
+2012.05.05.15.24.10: (length results) ;; => 123
+2012.05.05.15.24.10: saving population 341
+2012.05.05.15.24.10: generating population 342
+2012.05.05.15.24.10: generating 44
+2012.05.05.15.34.25: keeping the fit
+2012.05.05.15.34.25: (length results) ;; => 44
+2012.05.05.15.34.25: generating 44
+2012.05.05.15.44.44: keeping the fit
+2012.05.05.15.44.44: (length results) ;; => 89
+2012.05.05.15.44.44: generating 33
+2012.05.05.15.50.06: keeping the fit
+2012.05.05.15.50.06: (length results) ;; => 123
+2012.05.05.15.50.06: saving population 342
+2012.05.05.15.50.06: generating population 343
+2012.05.05.15.50.06: generating 44
+2012.05.05.16.00.29: keeping the fit
+2012.05.05.16.00.29: (length results) ;; => 45
+2012.05.05.16.00.29: generating 44
+2012.05.05.16.10.46: keeping the fit
+2012.05.05.16.10.46: (length results) ;; => 90
+2012.05.05.16.10.46: generating 30
+2012.05.05.16.16.11: keeping the fit
+2012.05.05.16.16.11: (length results) ;; => 121
+2012.05.05.16.16.11: saving population 343
+2012.05.05.16.16.11: generating population 344
+2012.05.05.16.16.11: generating 44
+2012.05.05.16.26.32: keeping the fit
+2012.05.05.16.26.32: (length results) ;; => 44
+2012.05.05.16.26.32: generating 44
+2012.05.05.16.36.49: keeping the fit
+2012.05.05.16.36.49: (length results) ;; => 88
+2012.05.05.16.36.49: generating 36
+2012.05.05.16.42.38: keeping the fit
+2012.05.05.16.42.38: (length results) ;; => 125
+2012.05.05.16.42.38: saving population 344
+2012.05.05.16.42.38: generating population 345
+2012.05.05.16.42.38: generating 44
+2012.05.05.16.52.53: keeping the fit
+2012.05.05.16.52.53: (length results) ;; => 44
+2012.05.05.16.52.53: generating 44
+2012.05.05.17.03.07: keeping the fit
+2012.05.05.17.03.07: (length results) ;; => 88
+2012.05.05.17.03.07: generating 36
+2012.05.05.17.08.31: keeping the fit
+2012.05.05.17.08.31: (length results) ;; => 125
+2012.05.05.17.08.31: saving population 345
+2012.05.05.17.08.31: generating population 346
+2012.05.05.17.08.31: generating 44
+2012.05.05.17.18.46: keeping the fit
+2012.05.05.17.18.46: (length results) ;; => 45
+2012.05.05.17.18.46: generating 44
+2012.05.05.17.28.54: keeping the fit
+2012.05.05.17.28.54: (length results) ;; => 90
+2012.05.05.17.28.54: generating 30
+2012.05.05.17.34.10: keeping the fit
+2012.05.05.17.34.10: (length results) ;; => 121
+2012.05.05.17.34.10: saving population 346
+2012.05.05.17.34.11: generating population 347
+2012.05.05.17.34.11: generating 44
+2012.05.05.17.44.32: keeping the fit
+2012.05.05.17.44.32: (length results) ;; => 44
+2012.05.05.17.44.32: generating 44
+2012.05.05.17.54.48: keeping the fit
+2012.05.05.17.54.48: (length results) ;; => 88
+2012.05.05.17.54.48: generating 36
+2012.05.05.18.00.07: keeping the fit
+2012.05.05.18.00.07: (length results) ;; => 125
+2012.05.05.18.00.07: saving population 347
+2012.05.05.18.00.07: generating population 348
+2012.05.05.18.00.07: generating 44
+2012.05.05.18.10.44: keeping the fit
+2012.05.05.18.10.44: (length results) ;; => 43
+2012.05.05.18.10.44: generating 44
+2012.05.05.18.20.54: keeping the fit
+2012.05.05.18.20.54: (length results) ;; => 88
+2012.05.05.18.20.54: generating 36
+^Czsh: killed     sbcl
+8:58 complex:src
+2012.05.06.11.20.26: saving population 347
+2012.05.06.11.20.27: generating population 348
+2012.05.06.11.20.27: generating 46
+2012.05.06.11.30.43: keeping the fit
+2012.05.06.11.30.43: (length results) ;; => 45
+2012.05.06.11.30.43: generating 46
+2012.05.06.11.40.58: keeping the fit
+2012.05.06.11.40.58: (length results) ;; => 91
+2012.05.06.11.40.58: generating 27
+2012.05.06.11.46.11: keeping the fit
+2012.05.06.11.46.11: (length results) ;; => 119
+2012.05.06.11.46.11: saving population 348
+2012.05.06.11.46.12: generating population 349
+2012.05.06.11.46.12: generating 46
+2012.05.06.11.56.36: keeping the fit
+2012.05.06.11.56.36: (length results) ;; => 45
+2012.05.06.11.56.36: generating 46
+2012.05.06.12.06.47: keeping the fit
+2012.05.06.12.06.47: (length results) ;; => 91
+2012.05.06.12.06.47: generating 27
+2012.05.06.12.12.04: keeping the fit
+2012.05.06.12.12.04: (length results) ;; => 119
+2012.05.06.12.12.04: saving population 349
+2012.05.06.12.12.04: generating population 350
+2012.05.06.12.12.04: generating 46
+2012.05.06.12.22.17: keeping the fit
+2012.05.06.12.22.17: (length results) ;; => 46
+2012.05.06.12.22.17: generating 46
+2012.05.06.12.32.24: keeping the fit
+2012.05.06.12.32.24: (length results) ;; => 92
+2012.05.06.12.32.24: generating 24
+2012.05.06.12.37.35: keeping the fit
+2012.05.06.12.37.35: (length results) ;; => 117
+2012.05.06.12.37.35: saving population 350
+2012.05.06.12.37.36: generating population 351
+2012.05.06.12.37.36: generating 46
+2012.05.06.12.47.56: keeping the fit
+2012.05.06.12.47.56: (length results) ;; => 46
+2012.05.06.12.47.56: generating 46
+2012.05.06.12.58.05: keeping the fit
+2012.05.06.12.58.05: (length results) ;; => 93
+2012.05.06.12.58.05: generating 21
+2012.05.06.13.03.15: keeping the fit
+2012.05.06.13.03.15: (length results) ;; => 115
+2012.05.06.13.03.15: saving population 351
+2012.05.06.13.03.15: generating population 352
+2012.05.06.13.03.15: generating 46
+2012.05.06.13.13.29: keeping the fit
+2012.05.06.13.13.29: (length results) ;; => 46
+2012.05.06.13.13.29: generating 46
+2012.05.06.13.23.40: keeping the fit
+2012.05.06.13.23.40: (length results) ;; => 93
+2012.05.06.13.23.40: generating 21
+2012.05.06.13.28.48: keeping the fit
+2012.05.06.13.28.48: (length results) ;; => 115
+2012.05.06.13.28.48: saving population 352
+2012.05.06.13.28.49: generating population 353
+2012.05.06.13.28.49: generating 46
+2012.05.06.13.39.02: keeping the fit
+2012.05.06.13.39.02: (length results) ;; => 46
+2012.05.06.13.39.02: generating 46
+2012.05.06.13.49.12: keeping the fit
+2012.05.06.13.49.12: (length results) ;; => 93
+2012.05.06.13.49.12: generating 21
+2012.05.06.13.54.22: keeping the fit
+2012.05.06.13.54.22: (length results) ;; => 115
+2012.05.06.13.54.22: saving population 353
+2012.05.06.13.54.22: generating population 354
+2012.05.06.13.54.22: generating 46
+2012.05.06.14.04.37: keeping the fit
+2012.05.06.14.04.37: (length results) ;; => 47
+2012.05.06.14.04.37: generating 46
+2012.05.06.14.14.46: keeping the fit
+2012.05.06.14.14.46: (length results) ;; => 94
+2012.05.06.14.14.46: generating 18
+2012.05.06.14.19.55: keeping the fit
+2012.05.06.14.19.55: (length results) ;; => 113
+2012.05.06.14.19.55: saving population 354
+2012.05.06.14.19.55: generating population 355
+2012.05.06.14.19.55: generating 46
+2012.05.06.14.30.06: keeping the fit
+2012.05.06.14.30.06: (length results) ;; => 46
+2012.05.06.14.30.06: generating 46
+2012.05.06.14.40.23: keeping the fit
+2012.05.06.14.40.23: (length results) ;; => 92
+2012.05.06.14.40.23: generating 24
+2012.05.06.14.45.38: keeping the fit
+2012.05.06.14.45.38: (length results) ;; => 117
+2012.05.06.14.45.38: saving population 355
+2012.05.06.14.45.39: generating population 356
+2012.05.06.14.45.39: generating 46
+2012.05.06.14.56.04: keeping the fit
+2012.05.06.14.56.04: (length results) ;; => 45
+2012.05.06.14.56.04: generating 46
+2012.05.06.15.06.18: keeping the fit
+2012.05.06.15.06.18: (length results) ;; => 91
+2012.05.06.15.06.18: generating 27
+2012.05.06.15.11.31: keeping the fit
+2012.05.06.15.11.31: (length results) ;; => 119
+2012.05.06.15.11.31: saving population 356
+2012.05.06.15.11.31: generating population 357
+2012.05.06.15.11.31: generating 46
+2012.05.06.15.21.56: keeping the fit
+2012.05.06.15.21.56: (length results) ;; => 46
+2012.05.06.15.21.56: generating 46
+2012.05.06.15.32.12: keeping the fit
+2012.05.06.15.32.12: (length results) ;; => 91
+2012.05.06.15.32.12: generating 27
+2012.05.06.15.37.28: keeping the fit
+2012.05.06.15.37.28: (length results) ;; => 119
+2012.05.06.15.37.28: saving population 357
+2012.05.06.15.37.28: generating population 358
+2012.05.06.15.37.28: generating 46
+2012.05.06.15.47.47: keeping the fit
+2012.05.06.15.47.47: (length results) ;; => 46
+2012.05.06.15.47.47: generating 46
+2012.05.06.15.57.57: keeping the fit
+2012.05.06.15.57.57: (length results) ;; => 93
+2012.05.06.15.57.57: generating 21
+2012.05.06.16.03.10: keeping the fit
+2012.05.06.16.03.10: (length results) ;; => 115
+2012.05.06.16.03.10: saving population 358
+2012.05.06.16.03.10: generating population 359
+2012.05.06.16.03.10: generating 46
+2012.05.06.16.13.35: keeping the fit
+2012.05.06.16.13.35: (length results) ;; => 47
+2012.05.06.16.13.35: generating 46
+2012.05.06.16.23.51: keeping the fit
+2012.05.06.16.23.51: (length results) ;; => 93
+2012.05.06.16.23.51: generating 21
+2012.05.06.16.29.04: keeping the fit
+2012.05.06.16.29.04: (length results) ;; => 115
+2012.05.06.16.29.04: saving population 359
+2012.05.06.16.29.04: generating population 360
+2012.05.06.16.29.04: generating 46
+2012.05.06.16.39.19: keeping the fit
+2012.05.06.16.39.19: (length results) ;; => 47
+2012.05.06.16.39.19: generating 46
+2012.05.06.16.49.37: keeping the fit
+2012.05.06.16.49.37: (length results) ;; => 94
+2012.05.06.16.49.37: generating 18
+2012.05.06.16.54.48: keeping the fit
+2012.05.06.16.54.48: (length results) ;; => 113
+2012.05.06.16.54.48: saving population 360
+2012.05.06.16.54.48: generating population 361
+2012.05.06.16.54.48: generating 46
+2012.05.06.17.05.01: keeping the fit
+2012.05.06.17.05.01: (length results) ;; => 46
+2012.05.06.17.05.01: generating 46
+2012.05.06.17.15.14: keeping the fit
+2012.05.06.17.15.14: (length results) ;; => 92
+2012.05.06.17.15.14: generating 24
+2012.05.06.17.20.30: keeping the fit
+2012.05.06.17.20.30: (length results) ;; => 117
+2012.05.06.17.20.30: saving population 361
+2012.05.06.17.20.31: generating population 362
+2012.05.06.17.20.31: generating 46
+2012.05.06.17.30.39: keeping the fit
+2012.05.06.17.30.39: (length results) ;; => 47
+2012.05.06.17.30.39: generating 46
+2012.05.06.17.40.56: keeping the fit
+2012.05.06.17.40.56: (length results) ;; => 93
+2012.05.06.17.40.56: generating 21
+2012.05.06.17.46.07: keeping the fit
+2012.05.06.17.46.07: (length results) ;; => 115
+2012.05.06.17.46.07: saving population 362
+2012.05.06.17.46.08: generating population 363
+2012.05.06.17.46.08: generating 46
+2012.05.06.17.56.25: keeping the fit
+2012.05.06.17.56.25: (length results) ;; => 47
+2012.05.06.17.56.25: generating 46
+2012.05.06.18.06.44: keeping the fit
+2012.05.06.18.06.44: (length results) ;; => 93
+2012.05.06.18.06.44: generating 21
+2012.05.06.18.11.57: keeping the fit
+2012.05.06.18.11.57: (length results) ;; => 115
+2012.05.06.18.11.57: saving population 363
+2012.05.06.18.11.57: generating population 364
+2012.05.06.18.11.57: generating 46
+2012.05.06.18.22.15: keeping the fit
+2012.05.06.18.22.15: (length results) ;; => 46
+2012.05.06.18.22.15: generating 46
+2012.05.06.18.32.28: keeping the fit
+2012.05.06.18.32.28: (length results) ;; => 91
+2012.05.06.18.32.28: generating 27
+2012.05.06.18.37.45: keeping the fit
+2012.05.06.18.37.45: (length results) ;; => 119
+2012.05.06.18.37.45: saving population 364
+2012.05.06.18.37.45: generating population 365
+2012.05.06.18.37.45: generating 46
+2012.05.06.18.48.16: keeping the fit
+2012.05.06.18.48.16: (length results) ;; => 46
+2012.05.06.18.48.16: generating 46
+2012.05.06.18.58.36: keeping the fit
+2012.05.06.18.58.36: (length results) ;; => 92
+2012.05.06.18.58.36: generating 24
+2012.05.06.19.03.49: keeping the fit
+2012.05.06.19.03.49: (length results) ;; => 117
+2012.05.06.19.03.49: saving population 365
+2012.05.06.19.03.50: generating population 366
+2012.05.06.19.03.50: generating 46
+2012.05.06.19.14.13: keeping the fit
+2012.05.06.19.14.13: (length results) ;; => 46
+2012.05.06.19.14.13: generating 46
+2012.05.06.19.24.26: keeping the fit
+2012.05.06.19.24.26: (length results) ;; => 93
+2012.05.06.19.24.26: generating 21
+2012.05.06.19.29.52: keeping the fit
+2012.05.06.19.29.52: (length results) ;; => 115
+2012.05.06.19.29.52: saving population 366
+2012.05.06.19.29.52: generating population 367
+2012.05.06.19.29.52: generating 46
+2012.05.06.19.40.06: keeping the fit
+2012.05.06.19.40.06: (length results) ;; => 47
+2012.05.06.19.40.06: generating 46
+2012.05.06.19.50.19: keeping the fit
+2012.05.06.19.50.19: (length results) ;; => 93
+2012.05.06.19.50.19: generating 21
+2012.05.06.19.55.32: keeping the fit
+2012.05.06.19.55.32: (length results) ;; => 115
+2012.05.06.19.55.32: saving population 367
+2012.05.06.19.55.32: generating population 368
+2012.05.06.19.55.32: generating 46
+2012.05.06.20.05.47: keeping the fit
+2012.05.06.20.05.47: (length results) ;; => 46
+2012.05.06.20.05.47: generating 46
+2012.05.06.20.16.04: keeping the fit
+2012.05.06.20.16.04: (length results) ;; => 92
+2012.05.06.20.16.04: generating 24
+2012.05.06.20.21.20: keeping the fit
+2012.05.06.20.21.20: (length results) ;; => 117
+2012.05.06.20.21.20: saving population 368
+2012.05.06.20.21.20: generating population 369
+2012.05.06.20.21.20: generating 46
+2012.05.06.20.31.33: keeping the fit
+2012.05.06.20.31.33: (length results) ;; => 46
+2012.05.06.20.31.33: generating 46
+2012.05.06.20.41.46: keeping the fit
+2012.05.06.20.41.46: (length results) ;; => 93
+2012.05.06.20.41.46: generating 21
+2012.05.06.20.46.56: keeping the fit
+2012.05.06.20.46.56: (length results) ;; => 115
+2012.05.06.20.46.56: saving population 369
+2012.05.06.20.46.57: generating population 370
+2012.05.06.20.46.57: generating 46
+2012.05.06.20.57.18: keeping the fit
+2012.05.06.20.57.18: (length results) ;; => 46
+2012.05.06.20.57.18: generating 46
+2012.05.06.21.07.34: keeping the fit
+2012.05.06.21.07.34: (length results) ;; => 93
+2012.05.06.21.07.34: generating 21
+2012.05.06.21.12.49: keeping the fit
+2012.05.06.21.12.49: (length results) ;; => 115
+2012.05.06.21.12.49: saving population 370
+2012.05.06.21.12.50: generating population 371
+2012.05.06.21.12.50: generating 46
+2012.05.06.21.23.07: keeping the fit
+2012.05.06.21.23.07: (length results) ;; => 46
+2012.05.06.21.23.07: generating 46
+2012.05.06.21.33.23: keeping the fit
+2012.05.06.21.33.23: (length results) ;; => 92
+2012.05.06.21.33.23: generating 24
+2012.05.06.21.38.33: keeping the fit
+2012.05.06.21.38.33: (length results) ;; => 117
+2012.05.06.21.38.33: saving population 371
+2012.05.06.21.38.34: generating population 372
+2012.05.06.21.38.34: generating 46
+2012.05.06.21.48.53: keeping the fit
+2012.05.06.21.48.53: (length results) ;; => 45
+2012.05.06.21.48.53: generating 46
+2012.05.06.21.59.00: keeping the fit
+2012.05.06.21.59.00: (length results) ;; => 91
+2012.05.06.21.59.00: generating 27
+2012.05.06.22.04.18: keeping the fit
+2012.05.06.22.04.18: (length results) ;; => 119
+2012.05.06.22.04.18: saving population 372
+2012.05.06.22.04.18: generating population 373
+2012.05.06.22.04.18: generating 46
+2012.05.06.22.14.48: keeping the fit
+2012.05.06.22.14.48: (length results) ;; => 46
+2012.05.06.22.14.48: generating 46
+2012.05.06.22.25.15: keeping the fit
+2012.05.06.22.25.15: (length results) ;; => 92
+2012.05.06.22.25.15: generating 24
+2012.05.06.22.30.33: keeping the fit
+2012.05.06.22.30.33: (length results) ;; => 117
+2012.05.06.22.30.33: saving population 373
+2012.05.06.22.30.33: generating population 374
+2012.05.06.22.30.33: generating 46
+2012.05.06.22.40.40: keeping the fit
+2012.05.06.22.40.40: (length results) ;; => 46
+2012.05.06.22.40.40: generating 46
+2012.05.06.22.50.57: keeping the fit
+2012.05.06.22.50.57: (length results) ;; => 93
+2012.05.06.22.50.57: generating 21
+2012.05.06.22.56.08: keeping the fit
+2012.05.06.22.56.08: (length results) ;; => 115
+2012.05.06.22.56.08: saving population 374
+2012.05.06.22.56.08: generating population 375
+2012.05.06.22.56.08: generating 46
+2012.05.06.23.06.30: keeping the fit
+2012.05.06.23.06.30: (length results) ;; => 47
+2012.05.06.23.06.30: generating 46
+2012.05.06.23.16.47: keeping the fit
+2012.05.06.23.16.47: (length results) ;; => 93
+2012.05.06.23.16.47: generating 21
+2012.05.06.23.21.58: keeping the fit
+2012.05.06.23.21.58: (length results) ;; => 115
+2012.05.06.23.21.58: saving population 375
+2012.05.06.23.21.58: generating population 376
+2012.05.06.23.21.58: generating 46
+2012.05.06.23.32.17: keeping the fit
+2012.05.06.23.32.17: (length results) ;; => 45
+2012.05.06.23.32.17: generating 46
+2012.05.06.23.42.29: keeping the fit
+2012.05.06.23.42.29: (length results) ;; => 91
+2012.05.06.23.42.29: generating 27
+2012.05.06.23.47.49: keeping the fit
+2012.05.06.23.47.49: (length results) ;; => 119
+2012.05.06.23.47.49: saving population 376
+2012.05.06.23.47.50: generating population 377
+2012.05.06.23.47.50: generating 46
+2012.05.06.23.58.07: keeping the fit
+2012.05.06.23.58.07: (length results) ;; => 47
+2012.05.06.23.58.07: generating 46
+2012.05.07.00.08.18: keeping the fit
+2012.05.07.00.08.18: (length results) ;; => 92
+2012.05.07.00.08.18: generating 24
+2012.05.07.00.13.30: keeping the fit
+2012.05.07.00.13.30: (length results) ;; => 117
+2012.05.07.00.13.30: saving population 377
+2012.05.07.00.13.31: generating population 378
+2012.05.07.00.13.31: generating 46
+2012.05.07.00.23.48: keeping the fit
+2012.05.07.00.23.48: (length results) ;; => 46
+2012.05.07.00.23.48: generating 46
+2012.05.07.00.34.03: keeping the fit
+2012.05.07.00.34.03: (length results) ;; => 91
+2012.05.07.00.34.03: generating 27
+2012.05.07.00.39.20: keeping the fit
+2012.05.07.00.39.20: (length results) ;; => 119
+2012.05.07.00.39.20: saving population 378
+2012.05.07.00.39.20: generating population 379
+2012.05.07.00.39.20: generating 46
+2012.05.07.00.49.38: keeping the fit
+2012.05.07.00.49.38: (length results) ;; => 44
+2012.05.07.00.49.38: generating 46
+2012.05.07.00.59.50: keeping the fit
+2012.05.07.00.59.50: (length results) ;; => 90
+2012.05.07.00.59.50: generating 30
+2012.05.07.01.05.05: keeping the fit
+2012.05.07.01.05.05: (length results) ;; => 121
+2012.05.07.01.05.05: saving population 379
+2012.05.07.01.05.05: generating population 380
+2012.05.07.01.05.05: generating 46
+2012.05.07.01.15.24: keeping the fit
+2012.05.07.01.15.24: (length results) ;; => 46
+2012.05.07.01.15.24: generating 46
+2012.05.07.01.25.40: keeping the fit
+2012.05.07.01.25.40: (length results) ;; => 92
+2012.05.07.01.25.40: generating 24
+2012.05.07.01.30.54: keeping the fit
+2012.05.07.01.30.54: (length results) ;; => 117
+2012.05.07.01.30.54: saving population 380
+2012.05.07.01.30.55: generating population 381
+2012.05.07.01.30.55: generating 46
+2012.05.07.01.41.10: keeping the fit
+2012.05.07.01.41.10: (length results) ;; => 46
+2012.05.07.01.41.10: generating 46
+2012.05.07.01.51.30: keeping the fit
+2012.05.07.01.51.30: (length results) ;; => 91
+2012.05.07.01.51.30: generating 27
+2012.05.07.01.56.44: keeping the fit
+2012.05.07.01.56.44: (length results) ;; => 119
+2012.05.07.01.56.44: saving population 381
+2012.05.07.01.56.45: generating population 382
+2012.05.07.01.56.45: generating 46
+2012.05.07.02.07.23: keeping the fit
+2012.05.07.02.07.23: (length results) ;; => 46
+2012.05.07.02.07.23: generating 46
+2012.05.07.02.17.36: keeping the fit
+2012.05.07.02.17.36: (length results) ;; => 92
+2012.05.07.02.17.36: generating 24
+2012.05.07.02.23.05: keeping the fit
+2012.05.07.02.23.05: (length results) ;; => 117
+2012.05.07.02.23.05: saving population 382
+2012.05.07.02.23.06: generating population 383
+2012.05.07.02.23.06: generating 46
+2012.05.07.02.33.22: keeping the fit
+2012.05.07.02.33.22: (length results) ;; => 46
+2012.05.07.02.33.22: generating 46
+2012.05.07.02.43.38: keeping the fit
+2012.05.07.02.43.38: (length results) ;; => 92
+2012.05.07.02.43.38: generating 24
+2012.05.07.02.48.53: keeping the fit
+2012.05.07.02.48.53: (length results) ;; => 117
+2012.05.07.02.48.53: saving population 383
+2012.05.07.02.48.53: generating population 384
+2012.05.07.02.48.53: generating 46
+2012.05.07.02.58.58: keeping the fit
+2012.05.07.02.58.58: (length results) ;; => 46
+2012.05.07.02.58.58: generating 46
+2012.05.07.03.09.17: keeping the fit
+2012.05.07.03.09.17: (length results) ;; => 92
+2012.05.07.03.09.17: generating 24
+2012.05.07.03.14.32: keeping the fit
+2012.05.07.03.14.32: (length results) ;; => 117
+2012.05.07.03.14.32: saving population 384
+2012.05.07.03.14.32: generating population 385
+2012.05.07.03.14.32: generating 46
+2012.05.07.03.24.57: keeping the fit
+2012.05.07.03.24.57: (length results) ;; => 46
+2012.05.07.03.24.57: generating 46
+2012.05.07.03.35.13: keeping the fit
+2012.05.07.03.35.13: (length results) ;; => 93
+2012.05.07.03.35.13: generating 21
+2012.05.07.03.40.27: keeping the fit
+2012.05.07.03.40.27: (length results) ;; => 115
+2012.05.07.03.40.27: saving population 385
+2012.05.07.03.40.27: generating population 386
+2012.05.07.03.40.27: generating 46
+2012.05.07.03.50.46: keeping the fit
+2012.05.07.03.50.46: (length results) ;; => 47
+2012.05.07.03.50.46: generating 46
+2012.05.07.04.01.01: keeping the fit
+2012.05.07.04.01.01: (length results) ;; => 94
+2012.05.07.04.01.01: generating 18
+2012.05.07.04.06.08: keeping the fit
+2012.05.07.04.06.08: (length results) ;; => 113
+2012.05.07.04.06.08: saving population 386
+2012.05.07.04.06.08: generating population 387
+2012.05.07.04.06.08: generating 46
+2012.05.07.04.16.24: keeping the fit
+2012.05.07.04.16.24: (length results) ;; => 45
+2012.05.07.04.16.24: generating 46
+2012.05.07.04.26.38: keeping the fit
+2012.05.07.04.26.38: (length results) ;; => 92
+2012.05.07.04.26.38: generating 24
+2012.05.07.04.31.52: keeping the fit
+2012.05.07.04.31.52: (length results) ;; => 117
+2012.05.07.04.31.52: saving population 387
+2012.05.07.04.31.52: generating population 388
+2012.05.07.04.31.52: generating 46
+2012.05.07.04.42.10: keeping the fit
+2012.05.07.04.42.10: (length results) ;; => 46
+2012.05.07.04.42.10: generating 46
+2012.05.07.04.52.28: keeping the fit
+2012.05.07.04.52.28: (length results) ;; => 92
+2012.05.07.04.52.28: generating 24
+2012.05.07.04.57.43: keeping the fit
+2012.05.07.04.57.43: (length results) ;; => 117
+2012.05.07.04.57.43: saving population 388
+2012.05.07.04.57.43: generating population 389
+2012.05.07.04.57.43: generating 46
+2012.05.07.05.08.03: keeping the fit
+2012.05.07.05.08.03: (length results) ;; => 46
+2012.05.07.05.08.03: generating 46
+2012.05.07.05.18.19: keeping the fit
+2012.05.07.05.18.19: (length results) ;; => 92
+2012.05.07.05.18.19: generating 24
+2012.05.07.05.23.33: keeping the fit
+2012.05.07.05.23.33: (length results) ;; => 117
+2012.05.07.05.23.33: saving population 389
+2012.05.07.05.23.33: generating population 390
+2012.05.07.05.23.33: generating 46
+2012.05.07.05.33.59: keeping the fit
+2012.05.07.05.33.59: (length results) ;; => 46
+2012.05.07.05.33.59: generating 46
+2012.05.07.05.44.11: keeping the fit
+2012.05.07.05.44.11: (length results) ;; => 93
+2012.05.07.05.44.11: generating 21
+2012.05.07.05.49.27: keeping the fit
+2012.05.07.05.49.27: (length results) ;; => 115
+2012.05.07.05.49.27: saving population 390
+2012.05.07.05.49.27: generating population 391
+2012.05.07.05.49.27: generating 46
+2012.05.07.05.59.44: keeping the fit
+2012.05.07.05.59.44: (length results) ;; => 47
+2012.05.07.05.59.44: generating 46
+2012.05.07.06.09.59: keeping the fit
+2012.05.07.06.09.59: (length results) ;; => 93
+2012.05.07.06.09.59: generating 21
+2012.05.07.06.15.12: keeping the fit
+2012.05.07.06.15.12: (length results) ;; => 115
+2012.05.07.06.15.12: saving population 391
+2012.05.07.06.15.12: generating population 392
+2012.05.07.06.15.12: generating 46
+2012.05.07.06.25.33: keeping the fit
+2012.05.07.06.25.33: (length results) ;; => 47
+2012.05.07.06.25.33: generating 46
+2012.05.07.06.35.42: keeping the fit
+2012.05.07.06.35.42: (length results) ;; => 94
+2012.05.07.06.35.42: generating 18
+2012.05.07.06.40.53: keeping the fit
+2012.05.07.06.40.53: (length results) ;; => 113
+2012.05.07.06.40.53: saving population 392
+2012.05.07.06.40.53: generating population 393
+2012.05.07.06.40.53: generating 46
+2012.05.07.06.51.09: keeping the fit
+2012.05.07.06.51.09: (length results) ;; => 46
+2012.05.07.06.51.09: generating 46
+2012.05.07.07.01.26: keeping the fit
+2012.05.07.07.01.26: (length results) ;; => 92
+2012.05.07.07.01.26: generating 24
+2012.05.07.07.06.47: keeping the fit
+2012.05.07.07.06.47: (length results) ;; => 117
+2012.05.07.07.06.47: saving population 393
+2012.05.07.07.06.48: generating population 394
+2012.05.07.07.06.48: generating 46
+2012.05.07.07.17.02: keeping the fit
+2012.05.07.07.17.02: (length results) ;; => 46
+2012.05.07.07.17.02: generating 46
+2012.05.07.07.27.25: keeping the fit
+2012.05.07.07.27.25: (length results) ;; => 93
+2012.05.07.07.27.25: generating 21
+2012.05.07.07.32.33: keeping the fit
+2012.05.07.07.32.33: (length results) ;; => 115
+2012.05.07.07.32.33: saving population 394
+2012.05.07.07.32.34: generating population 395
+2012.05.07.07.32.34: generating 46
+2012.05.07.07.42.52: keeping the fit
+2012.05.07.07.42.52: (length results) ;; => 45
+2012.05.07.07.42.52: generating 46
+2012.05.07.07.53.07: keeping the fit
+2012.05.07.07.53.07: (length results) ;; => 91
+2012.05.07.07.53.07: generating 27
+2012.05.07.07.58.26: keeping the fit
+2012.05.07.07.58.26: (length results) ;; => 119
+2012.05.07.07.58.26: saving population 395
+2012.05.07.07.58.26: generating population 396
+2012.05.07.07.58.26: generating 46
+2012.05.07.08.08.50: keeping the fit
+2012.05.07.08.08.50: (length results) ;; => 46
+2012.05.07.08.08.50: generating 46
+2012.05.07.08.19.08: keeping the fit
+2012.05.07.08.19.08: (length results) ;; => 92
+2012.05.07.08.19.08: generating 24
+2012.05.07.08.24.28: keeping the fit
+2012.05.07.08.24.28: (length results) ;; => 117
+2012.05.07.08.24.28: saving population 396
+2012.05.07.08.24.28: generating population 397
+2012.05.07.08.24.28: generating 46
+2012.05.07.08.34.38: keeping the fit
+2012.05.07.08.34.38: (length results) ;; => 47
+2012.05.07.08.34.38: generating 46
+2012.05.07.08.44.54: keeping the fit
+2012.05.07.08.44.54: (length results) ;; => 93
+2012.05.07.08.44.54: generating 21
+2012.05.07.08.50.08: keeping the fit
+2012.05.07.08.50.08: (length results) ;; => 115
+2012.05.07.08.50.08: saving population 397
+2012.05.07.08.50.08: generating population 398
+2012.05.07.08.50.08: generating 46
+2012.05.07.09.00.28: keeping the fit
+2012.05.07.09.00.28: (length results) ;; => 46
+2012.05.07.09.00.28: generating 46
+2012.05.07.09.10.43: keeping the fit
+2012.05.07.09.10.43: (length results) ;; => 93
+2012.05.07.09.10.43: generating 21
+2012.05.07.09.15.55: keeping the fit
+2012.05.07.09.15.55: (length results) ;; => 115
+2012.05.07.09.15.55: saving population 398
+2012.05.07.09.15.56: generating population 399
+2012.05.07.09.15.56: generating 46
+2012.05.07.09.26.14: keeping the fit
+2012.05.07.09.26.14: (length results) ;; => 46
+2012.05.07.09.26.14: generating 46
+2012.05.07.09.36.29: keeping the fit
+2012.05.07.09.36.29: (length results) ;; => 93
+2012.05.07.09.36.29: generating 21
+2012.05.07.09.41.42: keeping the fit
+2012.05.07.09.41.42: (length results) ;; => 115
+2012.05.07.09.41.42: saving population 399
+2012.05.07.09.41.43: generating population 400
+2012.05.07.09.41.43: generating 46
+2012.05.07.09.51.54: keeping the fit
+2012.05.07.09.51.54: (length results) ;; => 45
+2012.05.07.09.51.54: generating 46
+2012.05.07.10.02.15: keeping the fit
+2012.05.07.10.02.15: (length results) ;; => 91
+2012.05.07.10.02.15: generating 27
+2012.05.07.10.07.31: keeping the fit
+2012.05.07.10.07.31: (length results) ;; => 119
+2012.05.07.10.07.31: saving population 400
+2012.05.07.10.07.32: generating population 401
+2012.05.07.10.07.32: generating 46
+2012.05.07.10.17.54: keeping the fit
+2012.05.07.10.17.54: (length results) ;; => 47
+2012.05.07.10.17.54: generating 46
+
+T
+SOFTWARE-EVOLUTION(4): (setf *dir* "../results/runtime-2/")
+
+"../results/runtime-2/"
+SOFTWARE-EVOLUTION(5): (setf *note-level* 1)
+
+1
+SOFTWARE-EVOLUTION(6): (setf *tsize* 4)
+
+4
+SOFTWARE-EVOLUTION(7): (advise-thread-pool-size 46)
+
+NIL
+SOFTWARE-EVOLUTION(8): (let ((last 400))
+                         (setf *pop* (restore (file-for-run last)))
+                         (loop for n from last to 1000 do (note 1 "saving population ~d" n)
+                              (store *pop* (file-for-run n))
+                              (note 1 "generating population ~d" (1+ n))
+                              (setf *pop* (biased-step *pop*))))
+
+2012.05.07.23.30.30: saving population 400
+2012.05.07.23.30.31: generating population 401
+2012.05.07.23.30.31: generating 46
+2012.05.07.23.40.39: keeping the fit
+2012.05.07.23.40.39: (length results) ;; => 46
+2012.05.07.23.40.39: generating 46
+2012.05.07.23.50.51: keeping the fit
+2012.05.07.23.50.51: (length results) ;; => 92
+2012.05.07.23.50.51: generating 24
+2012.05.07.23.56.01: keeping the fit
+2012.05.07.23.56.01: (length results) ;; => 117
+2012.05.07.23.56.01: saving population 401
+2012.05.07.23.56.01: generating population 402
+2012.05.07.23.56.01: generating 46
+2012.05.08.00.06.06: keeping the fit
+2012.05.08.00.06.06: (length results) ;; => 44
+2012.05.08.00.06.06: generating 46
+2012.05.08.00.16.24: keeping the fit
+2012.05.08.00.16.24: (length results) ;; => 91
+2012.05.08.00.16.24: generating 27
+2012.05.08.00.21.40: keeping the fit
+2012.05.08.00.21.40: (length results) ;; => 119
+2012.05.08.00.21.40: saving population 402
+2012.05.08.00.21.40: generating population 403
+2012.05.08.00.21.40: generating 46
+2012.05.08.00.31.58: keeping the fit
+2012.05.08.00.31.58: (length results) ;; => 47
+2012.05.08.00.31.58: generating 46
+2012.05.08.00.42.10: keeping the fit
+2012.05.08.00.42.10: (length results) ;; => 93
+2012.05.08.00.42.10: generating 21
+2012.05.08.00.47.23: keeping the fit
+2012.05.08.00.47.23: (length results) ;; => 115
+2012.05.08.00.47.23: saving population 403
+2012.05.08.00.47.23: generating population 404
+2012.05.08.00.47.23: generating 46
+2012.05.08.00.57.39: keeping the fit
+2012.05.08.00.57.39: (length results) ;; => 46
+2012.05.08.00.57.39: generating 46
+2012.05.08.01.07.49: keeping the fit
+2012.05.08.01.07.49: (length results) ;; => 93
+2012.05.08.01.07.49: generating 21
+2012.05.08.01.12.59: keeping the fit
+2012.05.08.01.12.59: (length results) ;; => 115
+2012.05.08.01.12.59: saving population 404
+2012.05.08.01.12.59: generating population 405
+2012.05.08.01.12.59: generating 46
+2012.05.08.01.23.17: keeping the fit
+2012.05.08.01.23.17: (length results) ;; => 46
+2012.05.08.01.23.17: generating 46
+2012.05.08.01.33.28: keeping the fit
+2012.05.08.01.33.28: (length results) ;; => 91
+2012.05.08.01.33.28: generating 27
+2012.05.08.01.38.41: keeping the fit
+2012.05.08.01.38.41: (length results) ;; => 119
+2012.05.08.01.38.41: saving population 405
+2012.05.08.01.38.41: generating population 406
+2012.05.08.01.38.41: generating 46
+2012.05.08.01.48.54: keeping the fit
+2012.05.08.01.48.54: (length results) ;; => 46
+2012.05.08.01.48.54: generating 46
+2012.05.08.01.59.14: keeping the fit
+2012.05.08.01.59.14: (length results) ;; => 92
+2012.05.08.01.59.14: generating 24
+2012.05.08.02.04.28: keeping the fit
+2012.05.08.02.04.28: (length results) ;; => 117
+2012.05.08.02.04.28: saving population 406
+2012.05.08.02.04.29: generating population 407
+2012.05.08.02.04.29: generating 46
+2012.05.08.02.14.44: keeping the fit
+2012.05.08.02.14.44: (length results) ;; => 46
+2012.05.08.02.14.44: generating 46
+2012.05.08.02.25.02: keeping the fit
+2012.05.08.02.25.02: (length results) ;; => 93
+2012.05.08.02.25.02: generating 21
+2012.05.08.02.30.12: keeping the fit
+2012.05.08.02.30.12: (length results) ;; => 115
+2012.05.08.02.30.12: saving population 407
+2012.05.08.02.30.13: generating population 408
+2012.05.08.02.30.13: generating 46
+2012.05.08.02.40.32: keeping the fit
+2012.05.08.02.40.32: (length results) ;; => 46
+2012.05.08.02.40.32: generating 46
+2012.05.08.02.50.48: keeping the fit
+2012.05.08.02.50.48: (length results) ;; => 93
+2012.05.08.02.50.48: generating 21
+2012.05.08.02.56.00: keeping the fit
+2012.05.08.02.56.00: (length results) ;; => 115
+2012.05.08.02.56.00: saving population 408
+2012.05.08.02.56.00: generating population 409
+2012.05.08.02.56.00: generating 46
+2012.05.08.03.06.13: keeping the fit
+2012.05.08.03.06.13: (length results) ;; => 47
+2012.05.08.03.06.13: generating 46
+2012.05.08.03.16.28: keeping the fit
+2012.05.08.03.16.28: (length results) ;; => 93
+2012.05.08.03.16.28: generating 21
+2012.05.08.03.21.37: keeping the fit
+2012.05.08.03.21.37: (length results) ;; => 115
+2012.05.08.03.21.37: saving population 409
+2012.05.08.03.21.37: generating population 410
+2012.05.08.03.21.37: generating 46
+2012.05.08.03.31.53: keeping the fit
+2012.05.08.03.31.53: (length results) ;; => 46
+2012.05.08.03.31.53: generating 46
+2012.05.08.03.42.04: keeping the fit
+2012.05.08.03.42.04: (length results) ;; => 92
+2012.05.08.03.42.04: generating 24
+2012.05.08.03.47.17: keeping the fit
+2012.05.08.03.47.17: (length results) ;; => 117
+2012.05.08.03.47.17: saving population 410
+2012.05.08.03.47.17: generating population 411
+2012.05.08.03.47.17: generating 46
+2012.05.08.03.57.37: keeping the fit
+2012.05.08.03.57.37: (length results) ;; => 45
+2012.05.08.03.57.37: generating 46
+2012.05.08.04.07.55: keeping the fit
+2012.05.08.04.07.55: (length results) ;; => 91
+2012.05.08.04.07.55: generating 27
+2012.05.08.04.13.11: keeping the fit
+2012.05.08.04.13.11: (length results) ;; => 119
+2012.05.08.04.13.11: saving population 411
+2012.05.08.04.13.11: generating population 412
+2012.05.08.04.13.11: generating 46
+2012.05.08.04.23.29: keeping the fit
+2012.05.08.04.23.29: (length results) ;; => 46
+2012.05.08.04.23.29: generating 46
+2012.05.08.04.33.47: keeping the fit
+2012.05.08.04.33.47: (length results) ;; => 93
+2012.05.08.04.33.47: generating 21
+2012.05.08.04.38.58: keeping the fit
+2012.05.08.04.38.58: (length results) ;; => 115
+2012.05.08.04.38.58: saving population 412
+2012.05.08.04.38.58: generating population 413
+2012.05.08.04.38.58: generating 46
+2012.05.08.04.49.14: keeping the fit
+2012.05.08.04.49.14: (length results) ;; => 46
+2012.05.08.04.49.14: generating 46
+2012.05.08.04.59.27: keeping the fit
+2012.05.08.04.59.27: (length results) ;; => 92
+2012.05.08.04.59.27: generating 24
+2012.05.08.05.04.42: keeping the fit
+2012.05.08.05.04.42: (length results) ;; => 117
+2012.05.08.05.04.42: saving population 413
+2012.05.08.05.04.42: generating population 414
+2012.05.08.05.04.42: generating 46
+2012.05.08.05.15.01: keeping the fit
+2012.05.08.05.15.01: (length results) ;; => 46
+2012.05.08.05.15.01: generating 46
+2012.05.08.05.25.23: keeping the fit
+2012.05.08.05.25.23: (length results) ;; => 92
+2012.05.08.05.25.23: generating 24
+2012.05.08.05.30.35: keeping the fit
+2012.05.08.05.30.35: (length results) ;; => 117
+2012.05.08.05.30.35: saving population 414
+2012.05.08.05.30.35: generating population 415
+2012.05.08.05.30.35: generating 46
+2012.05.08.05.40.52: keeping the fit
+2012.05.08.05.40.52: (length results) ;; => 46
+2012.05.08.05.40.52: generating 46
+2012.05.08.05.51.04: keeping the fit
+2012.05.08.05.51.04: (length results) ;; => 92
+2012.05.08.05.51.04: generating 24
+2012.05.08.05.56.18: keeping the fit
+2012.05.08.05.56.18: (length results) ;; => 117
+2012.05.08.05.56.18: saving population 415
+2012.05.08.05.56.18: generating population 416
+2012.05.08.05.56.18: generating 46
+2012.05.08.06.06.37: keeping the fit
+2012.05.08.06.06.37: (length results) ;; => 45
+2012.05.08.06.06.37: generating 46
+2012.05.08.06.16.49: keeping the fit
+2012.05.08.06.16.49: (length results) ;; => 91
+2012.05.08.06.16.49: generating 27
+2012.05.08.06.22.01: keeping the fit
+2012.05.08.06.22.01: (length results) ;; => 119
+2012.05.08.06.22.01: saving population 416
+2012.05.08.06.22.01: generating population 417
+2012.05.08.06.22.01: generating 46
+2012.05.08.06.32.22: keeping the fit
+2012.05.08.06.32.22: (length results) ;; => 45
+2012.05.08.06.32.22: generating 46
+2012.05.08.06.42.34: keeping the fit
+2012.05.08.06.42.34: (length results) ;; => 91
+2012.05.08.06.42.34: generating 27
+2012.05.08.06.47.51: keeping the fit
+2012.05.08.06.47.51: (length results) ;; => 119
+2012.05.08.06.47.51: saving population 417
+2012.05.08.06.47.52: generating population 418
+2012.05.08.06.47.52: generating 46
+2012.05.08.06.58.15: keeping the fit
+2012.05.08.06.58.15: (length results) ;; => 46
+2012.05.08.06.58.15: generating 46
+2012.05.08.07.08.28: keeping the fit
+2012.05.08.07.08.28: (length results) ;; => 93
+2012.05.08.07.08.28: generating 21
+2012.05.08.07.13.44: keeping the fit
+2012.05.08.07.13.44: (length results) ;; => 115
+2012.05.08.07.13.44: saving population 418
+2012.05.08.07.13.45: generating population 419
+2012.05.08.07.13.45: generating 46
+2012.05.08.07.23.59: keeping the fit
+2012.05.08.07.23.59: (length results) ;; => 46
+2012.05.08.07.23.59: generating 46
+2012.05.08.07.34.07: keeping the fit
+2012.05.08.07.34.07: (length results) ;; => 93
+2012.05.08.07.34.07: generating 21
+2012.05.08.07.39.17: keeping the fit
+2012.05.08.07.39.17: (length results) ;; => 115
+2012.05.08.07.39.17: saving population 419
+2012.05.08.07.39.17: generating population 420
+2012.05.08.07.39.17: generating 46
+2012.05.08.07.49.33: keeping the fit
+2012.05.08.07.49.33: (length results) ;; => 46
+2012.05.08.07.49.33: generating 46
+2012.05.08.07.59.48: keeping the fit
+2012.05.08.07.59.48: (length results) ;; => 92
+2012.05.08.07.59.48: generating 24
+2012.05.08.08.04.59: keeping the fit
+2012.05.08.08.04.59: (length results) ;; => 117
+2012.05.08.08.04.59: saving population 420
+2012.05.08.08.04.59: generating population 421
+2012.05.08.08.04.59: generating 46
+2012.05.08.08.15.27: keeping the fit
+2012.05.08.08.15.27: (length results) ;; => 46
+2012.05.08.08.15.27: generating 46
+2012.05.08.08.25.43: keeping the fit
+2012.05.08.08.25.43: (length results) ;; => 93
+2012.05.08.08.25.43: generating 21
+2012.05.08.08.30.53: keeping the fit
+2012.05.08.08.30.53: (length results) ;; => 115
+2012.05.08.08.30.53: saving population 421
+2012.05.08.08.30.53: generating population 422
+2012.05.08.08.30.53: generating 46
+2012.05.08.08.41.17: keeping the fit
+2012.05.08.08.41.17: (length results) ;; => 46
+2012.05.08.08.41.17: generating 46
+2012.05.08.08.51.34: keeping the fit
+2012.05.08.08.51.34: (length results) ;; => 93
+2012.05.08.08.51.34: generating 21
+2012.05.08.08.56.52: keeping the fit
+2012.05.08.08.56.52: (length results) ;; => 115
+2012.05.08.08.56.52: saving population 422
+2012.05.08.08.56.53: generating population 423
+2012.05.08.08.56.53: generating 46
+2012.05.08.09.07.11: keeping the fit
+2012.05.08.09.07.11: (length results) ;; => 46
+2012.05.08.09.07.11: generating 46
+2012.05.08.09.17.29: keeping the fit
+2012.05.08.09.17.29: (length results) ;; => 92
+2012.05.08.09.17.29: generating 24
+2012.05.08.09.22.46: keeping the fit
+2012.05.08.09.22.46: (length results) ;; => 117
+2012.05.08.09.22.46: saving population 423
+2012.05.08.09.22.46: generating population 424
+2012.05.08.09.22.46: generating 46
+2012.05.08.09.33.08: keeping the fit
+2012.05.08.09.33.08: (length results) ;; => 47
+2012.05.08.09.33.08: generating 46
+2012.05.08.09.43.26: keeping the fit
+2012.05.08.09.43.26: (length results) ;; => 93
+2012.05.08.09.43.26: generating 21
+2012.05.08.09.48.37: keeping the fit
+2012.05.08.09.48.37: (length results) ;; => 115
+2012.05.08.09.48.37: saving population 424
+2012.05.08.09.48.37: generating population 425
+2012.05.08.09.48.37: generating 46
+2012.05.08.09.58.46: keeping the fit
+2012.05.08.09.58.46: (length results) ;; => 46
+2012.05.08.09.58.46: generating 46
+2012.05.08.10.08.58: keeping the fit
+2012.05.08.10.08.58: (length results) ;; => 93
+2012.05.08.10.08.58: generating 21
+2012.05.08.10.14.07: keeping the fit
+2012.05.08.10.14.07: (length results) ;; => 115
+2012.05.08.10.14.07: saving population 425
+2012.05.08.10.14.07: generating population 426
+2012.05.08.10.14.07: generating 46
+2012.05.08.10.24.21: keeping the fit
+2012.05.08.10.24.21: (length results) ;; => 46
+2012.05.08.10.24.21: generating 46
+2012.05.08.10.34.36: keeping the fit
+2012.05.08.10.34.36: (length results) ;; => 92
+2012.05.08.10.34.36: generating 24
+2012.05.08.10.39.53: keeping the fit
+2012.05.08.10.39.53: (length results) ;; => 117
+2012.05.08.10.39.53: saving population 426
+2012.05.08.10.39.54: generating population 427
+2012.05.08.10.39.54: generating 46
+2012.05.08.10.50.21: keeping the fit
+2012.05.08.10.50.21: (length results) ;; => 46
+2012.05.08.10.50.21: generating 46
+2012.05.08.11.00.30: keeping the fit
+2012.05.08.11.00.30: (length results) ;; => 93
+2012.05.08.11.00.30: generating 21
+2012.05.08.11.05.43: keeping the fit
+2012.05.08.11.05.43: (length results) ;; => 115
+2012.05.08.11.05.43: saving population 427
+2012.05.08.11.05.43: generating population 428
+2012.05.08.11.05.43: generating 46
+2012.05.08.11.15.58: keeping the fit
+2012.05.08.11.15.58: (length results) ;; => 47
+2012.05.08.11.15.58: generating 46
+2012.05.08.11.26.16: keeping the fit
+2012.05.08.11.26.16: (length results) ;; => 93
+2012.05.08.11.26.16: generating 21
+2012.05.08.11.31.25: keeping the fit
+2012.05.08.11.31.25: (length results) ;; => 115
+2012.05.08.11.31.25: saving population 428
+2012.05.08.11.31.26: generating population 429
+2012.05.08.11.31.26: generating 46
+2012.05.08.11.41.43: keeping the fit
+2012.05.08.11.41.43: (length results) ;; => 45
+2012.05.08.11.41.43: generating 46
+2012.05.08.11.51.54: keeping the fit
+2012.05.08.11.51.54: (length results) ;; => 92
+2012.05.08.11.51.54: generating 24
+zsh: killed     sbcl
+NIL
+SOFTWARE-EVOLUTION(8): (let ((last 428))
+                         (setf *pop* (restore (file-for-run last)))
+                         (loop for n from last to 1000 do (note 1 "saving population ~d" n)
+                              (store *pop* (file-for-run n))
+                              (note 1 "generating population ~d" (1+ n))
+                              (setf *pop* (biased-step *pop*))))
+
+2012.05.09.08.45.40: saving population 428
+2012.05.09.08.45.40: generating population 429
+2012.05.09.08.45.40: generating 46
+2012.05.09.08.55.45: keeping the fit
+2012.05.09.08.55.45: (length results) ;; => 47
+2012.05.09.08.55.45: generating 46
+2012.05.09.09.06.05: keeping the fit
+2012.05.09.09.06.05: (length results) ;; => 93
+2012.05.09.09.06.05: generating 21
+2012.05.09.09.11.18: keeping the fit
+2012.05.09.09.11.18: (length results) ;; => 115
+2012.05.09.09.11.18: saving population 429
+2012.05.09.09.11.19: generating population 430
+2012.05.09.09.11.19: generating 46
+2012.05.09.09.21.38: keeping the fit
+2012.05.09.09.21.38: (length results) ;; => 46
+2012.05.09.09.21.38: generating 46
+2012.05.09.09.31.54: keeping the fit
+2012.05.09.09.31.54: (length results) ;; => 92
+2012.05.09.09.31.54: generating 24
+2012.05.09.09.37.07: keeping the fit
+2012.05.09.09.37.07: (length results) ;; => 117
+2012.05.09.09.37.07: saving population 430
+2012.05.09.09.37.07: generating population 431
+2012.05.09.09.37.07: generating 46
+2012.05.09.09.47.20: keeping the fit
+2012.05.09.09.47.20: (length results) ;; => 47
+2012.05.09.09.47.20: generating 46
+2012.05.09.09.57.31: keeping the fit
+2012.05.09.09.57.31: (length results) ;; => 92
+2012.05.09.09.57.31: generating 24
+2012.05.09.10.02.47: keeping the fit
+2012.05.09.10.02.47: (length results) ;; => 117
+2012.05.09.10.02.47: saving population 431
+2012.05.09.10.02.48: generating population 432
+2012.05.09.10.02.48: generating 46
+2012.05.09.10.13.13: keeping the fit
+2012.05.09.10.13.13: (length results) ;; => 47
+2012.05.09.10.13.13: generating 46
+2012.05.09.10.23.28: keeping the fit
+2012.05.09.10.23.28: (length results) ;; => 94
+2012.05.09.10.23.28: generating 18
+2012.05.09.10.28.37: keeping the fit
+2012.05.09.10.28.37: (length results) ;; => 113
+2012.05.09.10.28.37: saving population 432
+2012.05.09.10.28.37: generating population 433
+2012.05.09.10.28.37: generating 46
+2012.05.09.10.38.51: keeping the fit
+2012.05.09.10.38.51: (length results) ;; => 45
+2012.05.09.10.38.51: generating 46
+2012.05.09.10.49.08: keeping the fit
+2012.05.09.10.49.08: (length results) ;; => 90
+2012.05.09.10.49.08: generating 30
+2012.05.09.10.54.21: keeping the fit
+2012.05.09.10.54.21: (length results) ;; => 121
+2012.05.09.10.54.21: saving population 433
+2012.05.09.10.54.21: generating population 434
+2012.05.09.10.54.21: generating 46
+2012.05.09.11.04.31: keeping the fit
+2012.05.09.11.04.31: (length results) ;; => 46
+2012.05.09.11.04.31: generating 46
+2012.05.09.11.14.42: keeping the fit
+2012.05.09.11.14.42: (length results) ;; => 92
+2012.05.09.11.14.42: generating 24
+2012.05.09.11.19.50: keeping the fit
+2012.05.09.11.19.50: (length results) ;; => 117
+2012.05.09.11.19.50: saving population 434
+2012.05.09.11.19.50: generating population 435
+2012.05.09.11.19.50: generating 46
+2012.05.09.11.30.06: keeping the fit
+2012.05.09.11.30.06: (length results) ;; => 46
+2012.05.09.11.30.06: generating 46
+2012.05.09.11.40.19: keeping the fit
+2012.05.09.11.40.19: (length results) ;; => 93
+2012.05.09.11.40.19: generating 21
+2012.05.09.11.45.33: keeping the fit
+2012.05.09.11.45.33: (length results) ;; => 115
+2012.05.09.11.45.33: saving population 435
+2012.05.09.11.45.33: generating population 436
+2012.05.09.11.45.33: generating 46
+2012.05.09.11.55.48: keeping the fit
+2012.05.09.11.55.48: (length results) ;; => 46
+2012.05.09.11.55.48: generating 46
+2012.05.09.12.05.52: keeping the fit
+2012.05.09.12.05.52: (length results) ;; => 92
+2012.05.09.12.05.52: generating 24
+2012.05.09.12.11.06: keeping the fit
+2012.05.09.12.11.06: (length results) ;; => 117
+2012.05.09.12.11.06: saving population 436
+2012.05.09.12.11.07: generating population 437
+2012.05.09.12.11.07: generating 46
+2012.05.09.12.21.23: keeping the fit
+2012.05.09.12.21.23: (length results) ;; => 45
+2012.05.09.12.21.23: generating 46
+2012.05.09.12.31.36: keeping the fit
+2012.05.09.12.31.36: (length results) ;; => 91
+2012.05.09.12.31.36: generating 27
+2012.05.09.12.36.54: keeping the fit
+2012.05.09.12.36.54: (length results) ;; => 119
+2012.05.09.12.36.54: saving population 437
+2012.05.09.12.36.55: generating population 438
+2012.05.09.12.36.55: generating 46
+2012.05.09.12.47.11: keeping the fit
+2012.05.09.12.47.11: (length results) ;; => 47
+2012.05.09.12.47.11: generating 46
+2012.05.09.12.57.17: keeping the fit
+2012.05.09.12.57.17: (length results) ;; => 93
+2012.05.09.12.57.17: generating 21
+2012.05.09.13.02.31: keeping the fit
+2012.05.09.13.02.31: (length results) ;; => 115
+2012.05.09.13.02.31: saving population 438
+2012.05.09.13.02.31: generating population 439
+2012.05.09.13.02.31: generating 46
+2012.05.09.13.12.38: keeping the fit
+2012.05.09.13.12.38: (length results) ;; => 47
+2012.05.09.13.12.38: generating 46
+2012.05.09.13.22.59: keeping the fit
+2012.05.09.13.22.59: (length results) ;; => 93
+2012.05.09.13.22.59: generating 21
+2012.05.09.13.28.08: keeping the fit
+2012.05.09.13.28.08: (length results) ;; => 115
+2012.05.09.13.28.08: saving population 439
+2012.05.09.13.28.09: generating population 440
+2012.05.09.13.28.09: generating 46
+2012.05.09.13.38.23: keeping the fit
+2012.05.09.13.38.23: (length results) ;; => 45
+2012.05.09.13.38.23: generating 46
+2012.05.09.13.48.37: keeping the fit
+2012.05.09.13.48.37: (length results) ;; => 92
+2012.05.09.13.48.37: generating 24
+2012.05.09.13.53.49: keeping the fit
+2012.05.09.13.53.49: (length results) ;; => 117
+2012.05.09.13.53.49: saving population 440
+2012.05.09.13.53.49: generating population 441
+2012.05.09.13.53.49: generating 46
+2012.05.09.14.04.08: keeping the fit
+2012.05.09.14.04.08: (length results) ;; => 46
+2012.05.09.14.04.08: generating 46
+2012.05.09.14.14.23: keeping the fit
+2012.05.09.14.14.23: (length results) ;; => 93
+2012.05.09.14.14.23: generating 21
+2012.05.09.14.19.34: keeping the fit
+2012.05.09.14.19.34: (length results) ;; => 115
+2012.05.09.14.19.34: saving population 441
+2012.05.09.14.19.34: generating population 442
+2012.05.09.14.19.34: generating 46
+2012.05.09.14.29.49: keeping the fit
+2012.05.09.14.29.49: (length results) ;; => 45
+2012.05.09.14.29.49: generating 46
+2012.05.09.14.39.59: keeping the fit
+2012.05.09.14.39.59: (length results) ;; => 90
+2012.05.09.14.39.59: generating 30
+2012.05.09.14.45.23: keeping the fit
+2012.05.09.14.45.23: (length results) ;; => 121
+2012.05.09.14.45.23: saving population 442
+2012.05.09.14.45.23: generating population 443
+2012.05.09.14.45.23: generating 46
+2012.05.09.14.56.02: keeping the fit
+2012.05.09.14.56.02: (length results) ;; => 41
+2012.05.09.14.56.02: generating 46
+2012.05.09.15.07.37: keeping the fit
+2012.05.09.15.07.37: (length results) ;; => 74
+2012.05.09.15.07.37: generating 46
+2012.05.09.15.18.44: keeping the fit
+2012.05.09.15.18.44: (length results) ;; => 108
+2012.05.09.15.18.44: saving population 443
+2012.05.09.15.18.45: generating population 444
+2012.05.09.15.18.45: generating 46
+2012.05.09.15.29.40: keeping the fit
+2012.05.09.15.29.40: (length results) ;; => 35
+2012.05.09.15.29.40: generating 46
+2012.05.09.15.40.41: keeping the fit
+2012.05.09.15.40.41: (length results) ;; => 69
+2012.05.09.15.40.41: generating 46
+2012.05.09.15.52.06: keeping the fit
+2012.05.09.15.52.06: (length results) ;; => 102
+2012.05.09.15.52.06: saving population 444
+2012.05.09.15.52.07: generating population 445
+2012.05.09.15.52.07: generating 46
+2012.05.09.16.03.09: keeping the fit
+2012.05.09.16.03.09: (length results) ;; => 34
+2012.05.09.16.03.09: generating 46
+2012.05.09.16.14.35: keeping the fit
+2012.05.09.16.14.35: (length results) ;; => 72
+2012.05.09.16.14.35: generating 46
+2012.05.09.16.25.42: keeping the fit
+2012.05.09.16.25.42: (length results) ;; => 102
+2012.05.09.16.25.42: saving population 445
+2012.05.09.16.25.42: generating population 446
+2012.05.09.16.25.42: generating 46
+2012.05.09.16.37.04: keeping the fit
+2012.05.09.16.37.04: (length results) ;; => 34
+2012.05.09.16.37.04: generating 46
+2012.05.09.16.48.10: keeping the fit
+2012.05.09.16.48.10: (length results) ;; => 70
+2012.05.09.16.48.10: generating 46
+2012.05.09.16.59.38: keeping the fit
+2012.05.09.16.59.38: (length results) ;; => 106
+2012.05.09.16.59.38: saving population 446
+2012.05.09.16.59.38: generating population 447
+2012.05.09.16.59.38: generating 46
+2012.05.09.17.10.41: keeping the fit
+2012.05.09.17.10.41: (length results) ;; => 35
+2012.05.09.17.10.41: generating 46
+2012.05.09.17.22.04: keeping the fit
+2012.05.09.17.22.04: (length results) ;; => 69
+2012.05.09.17.22.04: generating 46
+2012.05.09.17.33.12: keeping the fit
+2012.05.09.17.33.12: (length results) ;; => 106
+2012.05.09.17.33.12: saving population 447
+2012.05.09.17.33.13: generating population 448
+2012.05.09.17.33.13: generating 46
+2012.05.09.17.44.40: keeping the fit
+2012.05.09.17.44.40: (length results) ;; => 36
+2012.05.09.17.44.40: generating 46
+2012.05.09.17.55.40: keeping the fit
+2012.05.09.17.55.40: (length results) ;; => 73
+2012.05.09.17.55.40: generating 46
+2012.05.09.18.07.08: keeping the fit
+2012.05.09.18.07.08: (length results) ;; => 107
+2012.05.09.18.07.08: saving population 448
+2012.05.09.18.07.09: generating population 449
+2012.05.09.18.07.09: generating 46
+2012.05.09.18.18.38: keeping the fit
+2012.05.09.18.18.38: (length results) ;; => 36
+2012.05.09.18.18.38: generating 46
+2012.05.09.18.29.41: keeping the fit
+2012.05.09.18.29.41: (length results) ;; => 71
+2012.05.09.18.29.41: generating 46
+2012.05.09.18.40.39: keeping the fit
+2012.05.09.18.40.39: (length results) ;; => 102
+2012.05.09.18.40.39: saving population 449
+2012.05.09.18.40.39: generating population 450
+2012.05.09.18.40.39: generating 46
+2012.05.09.18.51.36: keeping the fit
+2012.05.09.18.51.36: (length results) ;; => 35
+2012.05.09.18.51.36: generating 46
+2012.05.09.19.02.33: keeping the fit
+2012.05.09.19.02.33: (length results) ;; => 68
+2012.05.09.19.02.33: generating 46
+2012.05.09.19.13.58: keeping the fit
+2012.05.09.19.13.58: (length results) ;; => 105
+2012.05.09.19.13.58: saving population 450
+2012.05.09.19.13.58: generating population 451
+2012.05.09.19.13.58: generating 46
+2012.05.09.19.25.27: keeping the fit
+2012.05.09.19.25.27: (length results) ;; => 33
+2012.05.09.19.25.27: generating 46
+2012.05.09.19.36.35: keeping the fit
+2012.05.09.19.36.35: (length results) ;; => 69
+2012.05.09.19.36.35: generating 46
+2012.05.09.19.47.37: keeping the fit
+2012.05.09.19.47.37: (length results) ;; => 105
+2012.05.09.19.47.37: saving population 451
+2012.05.09.19.47.37: generating population 452
+2012.05.09.19.47.37: generating 46
+2012.05.09.19.58.40: keeping the fit
+2012.05.09.19.58.40: (length results) ;; => 33
+2012.05.09.19.58.40: generating 46
+2012.05.09.20.09.40: keeping the fit
+2012.05.09.20.09.40: (length results) ;; => 70
+2012.05.09.20.09.40: generating 46
+2012.05.09.20.20.40: keeping the fit
+2012.05.09.20.20.40: (length results) ;; => 105
+2012.05.09.20.20.40: saving population 452
+2012.05.09.20.20.41: generating population 453
+2012.05.09.20.20.41: generating 46
+2012.05.09.20.31.40: keeping the fit
+2012.05.09.20.31.40: (length results) ;; => 37
+2012.05.09.20.31.40: generating 46
+2012.05.09.20.43.03: keeping the fit
+2012.05.09.20.43.03: (length results) ;; => 71
+2012.05.09.20.43.03: generating 46
+2012.05.09.20.54.07: keeping the fit
+2012.05.09.20.54.07: (length results) ;; => 106
+2012.05.09.20.54.07: saving population 453
+2012.05.09.20.54.07: generating population 454
+2012.05.09.20.54.07: generating 46
+2012.05.09.21.05.07: keeping the fit
+2012.05.09.21.05.07: (length results) ;; => 34
+2012.05.09.21.05.07: generating 46
+2012.05.09.21.16.03: keeping the fit
+2012.05.09.21.16.03: (length results) ;; => 68
+2012.05.09.21.16.03: generating 46
+
+debugger invoked on a SIMPLE-ERROR in thread #<THREAD "initial thread" RUNNING {1002A5A011}>:
+  couldn't open "/dev/null": Too many open files
+
+Type HELP for debugger help, or (SB-EXT:QUIT) to exit from SBCL.
+
+restarts (invokable by number or by possibly-abbreviated name):
+  0: [FORCE-VALUES    ] Set future value
+  1:                    FORCE-VALUES
+  2: [TERMINATE-THREAD] SB-THREAD:TERMINATE-THREAD
+  3: [ABORT           ] Exit debugger, returning to top level.
+
+((LAMBDA ()))
+0] 3
+
+SOFTWARE-EVOLUTION(9): (sb-ext:quit)
+8:26 complex:src
+SOFTWARE-EVOLUTION(8): (let ((last 453))
+                         (setf *pop* (restore (file-for-run last)))
+                         (loop for n from last to 1000 do (note 1 "saving population ~d" n)
+                              (store *pop* (file-for-run n))
+                              (note 1 "generating population ~d" (1+ n))
+                              (setf *pop* (biased-step *pop*))))
+
+2012.05.10.08.27.53: saving population 453
+2012.05.10.08.27.53: generating population 454
+2012.05.10.08.27.53: generating 46
+2012.05.10.08.39.13: keeping the fit
+2012.05.10.08.39.13: (length results) ;; => 34
+2012.05.10.08.39.13: generating 46
+2012.05.10.08.50.13: keeping the fit
+2012.05.10.08.50.13: (length results) ;; => 73
+2012.05.10.08.50.13: generating 46
+2012.05.10.09.01.11: keeping the fit
+2012.05.10.09.01.11: (length results) ;; => 109
+2012.05.10.09.01.11: saving population 454
+2012.05.10.09.01.12: generating population 455
+2012.05.10.09.01.12: generating 46
+2012.05.10.09.12.14: keeping the fit
+2012.05.10.09.12.14: (length results) ;; => 36
+2012.05.10.09.12.14: generating 46
+2012.05.10.09.23.31: keeping the fit
+2012.05.10.09.23.31: (length results) ;; => 72
+2012.05.10.09.23.31: generating 46
+2012.05.10.09.34.58: keeping the fit
+2012.05.10.09.34.58: (length results) ;; => 108
+2012.05.10.09.34.58: saving population 455
+2012.05.10.09.34.58: generating population 456
+2012.05.10.09.34.58: generating 46
+2012.05.10.09.46.02: keeping the fit
+2012.05.10.09.46.02: (length results) ;; => 35
+2012.05.10.09.46.02: generating 46
+2012.05.10.09.57.27: keeping the fit
+2012.05.10.09.57.27: (length results) ;; => 69
+2012.05.10.09.57.27: generating 46
+2012.05.10.10.08.29: keeping the fit
+2012.05.10.10.08.29: (length results) ;; => 106
+2012.05.10.10.08.29: saving population 456
+2012.05.10.10.08.29: generating population 457
+2012.05.10.10.08.29: generating 46
+2012.05.10.10.19.27: keeping the fit
+2012.05.10.10.19.27: (length results) ;; => 37
+2012.05.10.10.19.27: generating 46
+2012.05.10.10.31.02: keeping the fit
+2012.05.10.10.31.02: (length results) ;; => 74
+2012.05.10.10.31.02: generating 46
+2012.05.10.10.42.07: keeping the fit
+2012.05.10.10.42.07: (length results) ;; => 112
+2012.05.10.10.42.07: saving population 457
+2012.05.10.10.42.07: generating population 458
+2012.05.10.10.42.07: generating 46
+2012.05.10.10.53.08: keeping the fit
+2012.05.10.10.53.08: (length results) ;; => 36
+2012.05.10.10.53.08: generating 46
+2012.05.10.11.04.28: keeping the fit
+2012.05.10.11.04.28: (length results) ;; => 70
+2012.05.10.11.04.28: generating 46
+2012.05.10.11.15.55: keeping the fit
+2012.05.10.11.15.55: (length results) ;; => 102
+2012.05.10.11.15.55: saving population 458
+2012.05.10.11.15.55: generating population 459
+2012.05.10.11.15.55: generating 46
+2012.05.10.11.26.53: keeping the fit
+2012.05.10.11.26.53: (length results) ;; => 35
+2012.05.10.11.26.53: generating 46
+2012.05.10.11.38.26: keeping the fit
+2012.05.10.11.38.26: (length results) ;; => 71
+2012.05.10.11.38.26: generating 46
+2012.05.10.11.49.27: keeping the fit
+2012.05.10.11.49.27: (length results) ;; => 108
+2012.05.10.11.49.27: saving population 459
+2012.05.10.11.49.27: generating population 460
+2012.05.10.11.49.27: generating 46
+2012.05.10.12.00.27: keeping the fit
+2012.05.10.12.00.27: (length results) ;; => 39
+2012.05.10.12.00.27: generating 46
+2012.05.10.12.11.31: keeping the fit
+2012.05.10.12.11.31: (length results) ;; => 75
+2012.05.10.12.11.31: generating 46
+2012.05.10.12.22.34: keeping the fit
+2012.05.10.12.22.34: (length results) ;; => 112
+2012.05.10.12.22.34: saving population 460
+2012.05.10.12.22.34: generating population 461
+2012.05.10.12.22.34: generating 46
+2012.05.10.12.33.58: keeping the fit
+2012.05.10.12.33.58: (length results) ;; => 34
+2012.05.10.12.33.58: generating 46
+2012.05.10.12.44.59: keeping the fit
+2012.05.10.12.44.59: (length results) ;; => 70
+2012.05.10.12.44.59: generating 46
+2012.05.10.12.56.03: keeping the fit
+2012.05.10.12.56.03: (length results) ;; => 107
+2012.05.10.12.56.03: saving population 461
+2012.05.10.12.56.04: generating population 462
+2012.05.10.12.56.04: generating 46
+2012.05.10.13.07.02: keeping the fit
+2012.05.10.13.07.02: (length results) ;; => 35
+2012.05.10.13.07.02: generating 46
+2012.05.10.13.18.36: keeping the fit
+2012.05.10.13.18.36: (length results) ;; => 72
+2012.05.10.13.18.36: generating 46
+2012.05.10.13.29.40: keeping the fit
+2012.05.10.13.29.40: (length results) ;; => 107
+2012.05.10.13.29.40: saving population 462
+2012.05.10.13.29.40: generating population 463
+2012.05.10.13.29.40: generating 46
+2012.05.10.13.40.43: keeping the fit
+2012.05.10.13.40.43: (length results) ;; => 36
+2012.05.10.13.40.43: generating 46
+2012.05.10.13.51.47: keeping the fit
+2012.05.10.13.51.47: (length results) ;; => 71
+2012.05.10.13.51.47: generating 46
+2012.05.10.14.02.48: keeping the fit
+2012.05.10.14.02.48: (length results) ;; => 110
+2012.05.10.14.02.48: saving population 463
+2012.05.10.14.02.48: generating population 464
+2012.05.10.14.02.48: generating 46
+2012.05.10.14.13.45: keeping the fit
+2012.05.10.14.13.45: (length results) ;; => 35
+2012.05.10.14.13.45: generating 46
+2012.05.10.14.24.44: keeping the fit
+2012.05.10.14.24.44: (length results) ;; => 70
+2012.05.10.14.24.44: generating 46
+2012.05.10.14.35.41: keeping the fit
+2012.05.10.14.35.41: (length results) ;; => 106
+2012.05.10.14.35.41: saving population 464
+2012.05.10.14.35.41: generating population 465
+2012.05.10.14.35.41: generating 46
+2012.05.10.14.47.02: keeping the fit
+2012.05.10.14.47.02: (length results) ;; => 39
+2012.05.10.14.47.02: generating 46
+2012.05.10.14.58.06: keeping the fit
+2012.05.10.14.58.06: (length results) ;; => 74
+2012.05.10.14.58.06: generating 46
+2012.05.10.15.09.10: keeping the fit
+2012.05.10.15.09.10: (length results) ;; => 108
+2012.05.10.15.09.10: saving population 465
+2012.05.10.15.09.10: generating population 466
+2012.05.10.15.09.10: generating 46
+2012.05.10.15.20.14: keeping the fit
+2012.05.10.15.20.14: (length results) ;; => 35
+2012.05.10.15.20.14: generating 46
+2012.05.10.15.31.20: keeping the fit
+2012.05.10.15.31.20: (length results) ;; => 72
+2012.05.10.15.31.20: generating 46
+2012.05.10.15.42.21: keeping the fit
+2012.05.10.15.42.21: (length results) ;; => 107
+2012.05.10.15.42.21: saving population 466
+2012.05.10.15.42.22: generating population 467
+2012.05.10.15.42.22: generating 46
+2012.05.10.15.53.50: keeping the fit
+2012.05.10.15.53.50: (length results) ;; => 32
+2012.05.10.15.53.50: generating 46
+
+debugger invoked on a SIMPLE-ERROR in thread #<THREAD "initial thread" RUNNING {1002A5A011}>:
+  couldn't create pipe: Too many open files
+
+Type HELP for debugger help, or (SB-EXT:QUIT) to exit from SBCL.
+
+restarts (invokable by number or by possibly-abbreviated name):
+  0: [FORCE-VALUES    ] Set future value
+  1:                    FORCE-VALUES
+  2: [TERMINATE-THREAD] SB-THREAD:TERMINATE-THREAD
+  3: [ABORT           ] Exit debugger, returning to top level.
+
+((LAMBDA ()))
+0] 3
+
+SOFTWARE-EVOLUTION(9): (sb-ext:quit)
+20:36 complex:src
