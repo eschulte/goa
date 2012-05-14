@@ -13,16 +13,17 @@
 
 (defvar *raw-times* "Raw run-times.")
 
-#+grab-from-full-pops
+#+save-from-full-pops
 (progn
   (setf *raw-times*
-        (loop :for n :upto 287 :collect
+        (loop :for n :upto 611 :collect
            (let ((pop (restore (file-for-run n))))
              (dolist (var pop) (apply-output var (raw-output var)))
              (let ((pop (remove-if-not #'time-wo-init pop)))
                (mapcar #'time-wo-init pop)))))
   (store *raw-times* "../results/runtime-2.raw-times.store"))
-#-grab-from-full-pops
+
+#+grab-from-full-pops
 (setf *raw-times* (restore "../results/runtime-2.raw-times.store"))
 
 (setf *times*
