@@ -506,6 +506,10 @@ Analysis code in file:src/runtime-2.lisp
          (setf *pop* (biased-step *pop*))))
 #+end_src
 
+** TODO energy-1
+
+Looking at power consumption.
+
 * COMMENT Notes
 ** TODO need to cleanup assembly files from /tmp in guest VMs
 ** exactly /what/ can we measure
@@ -715,7 +719,8 @@ This code is used to publish this page to the =cs.unm.edu= webserver.
                '("opt" :components ("opt-html" "opt-src" "opt-data")))
 #+end_src
 
-* Reading
+* Reading/References
+- [[file:~/reading/reading.org::#sitthi2011genetic][Genetic programming for shader simplification]]
 - [[http://web.mit.edu/newsoffice/2012/faster-fourier-transform-named-one-of-worlds-most-important-emerging-technologies.html][Sparse Fourier Transform]]
 - [[file:~/reading/reading.org::#bruening2003infrastructure][An infrastructure for adaptive dynamic optimization]]
 - [[file:~/reading/reading.org::#frigo1998fftw][FFTW: An adaptive software architecture for the FFT]]
