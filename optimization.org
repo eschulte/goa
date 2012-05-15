@@ -507,6 +507,12 @@ Analysis code in file:src/runtime-2.lisp
 #+end_src
 
 ** TODO energy-1
+   :PROPERTIES:
+   :git-tag:  energy-1
+   :results-dir: energy-1
+   :machine:  real
+   :dates:    2012-05-15
+   :END:
 Looking at power consumption.
 
 *** running
