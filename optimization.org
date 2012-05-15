@@ -285,7 +285,7 @@ To run all overlays daemonized;
   pushd overlays/
   for i in $(seq 46);do
       I=$(printf "%0.2d" i);
-      ../src/run-vm "$I.qcow" "30$I"
+      ../src/run-vm.sh "$I.qcow" "30$I"
       remotes="$remotes \"30$I\""
   done
   popd
