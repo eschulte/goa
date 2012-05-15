@@ -63,7 +63,8 @@ Note: This does not follow the normal test script format but rather it;
    (switch-allocator-traversals
     :accessor switch-allocator-traversals :initform nil)
    (crossbar-traversals :accessor crossbar-traversals :initform nil)
-   (link-traversals :accessor link-traversals :initform nil))
+   (link-traversals :accessor link-traversals :initform nil)
+   (static-power :accessor static-power :initform nil))
   (:documentation
    "Extending the ASM class with a number of parallel run statistics."))
 
