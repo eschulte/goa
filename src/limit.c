@@ -17,7 +17,9 @@ int main(int argc, char *argv[]) {
   setrlimit(RLIMIT_FSIZE, &limit);     // max file size (bytes)
   setrlimit(RLIMIT_MEMLOCK, &limit);   // max memory locked into RAM (bytes)
   setrlimit(RLIMIT_STACK, &limit);     // max stack size (bytes)
-  alarm(360);                          // wall clock seconds
+  alarm(600);                          // wall clock seconds
+                                       // need 600 when modeling power
+                                       // otherwise only need 360
 
   // run
   execvp(argv[1], &argv[1]);

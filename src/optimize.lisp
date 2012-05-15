@@ -82,7 +82,7 @@ Note: This does not follow the normal test script format but rather it;
   "Run parallel program VAR collecting and saving neutrality and all metrics."
   (let ((s-file (pll-to-s var)))
     (handler-case
-        (with-timeout (360)
+        (with-timeout (600)
           (multiple-value-bind (output err exit) (shell "~a ~a" *script* s-file)
             (declare (ignorable err))
             (delete-file s-file)
