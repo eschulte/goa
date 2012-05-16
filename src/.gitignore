@@ -4,3 +4,9 @@ startup-vms
 *.fasl
 limit
 re-run.lisp
+
+# OCaml cruft
+*.cmi
+*.cmx
+*.d
+*.o
