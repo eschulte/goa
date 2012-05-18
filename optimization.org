@@ -511,7 +511,7 @@ Analysis code in file:src/runtime-2.lisp
    :git-tag:  energy-1
    :results-dir: energy-1
    :machine:  real
-   :dates:    2012-05-15
+   :dates:    <2012-05-18 Fri>
    :END:
 Looking at power consumption.
 
