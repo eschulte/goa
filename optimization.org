@@ -563,9 +563,35 @@ Analysis code in file:src/runtime-2.lisp
 [[file:data/energy-1.svg]]
 
 * COMMENT Notes [0/5]
-** TODO debug the lack of any change in power consumption
+** STARTED debug the lack of any change in power consumption
 Are the generated =.s= files identical?
 Is there a bug in file:src/optimize.lisp?
+
+Weird, so even though the other fields may vary, the power consumption
+is staying constant.  I wonder if this could be a bug in Graphite.
+#+begin_src lisp
+(let ((*dir* "results/energy-1/")
+      (stats (list 'static-power 'total-packets-sent 'time-wo-init)))
+  (cons
+   (cons "" (mapcar #'symbol-name stats))
+   (mapcar
+    (lambda (gen)
+      (cons gen
+            (mapcar
+             (lambda (stat)
+               (apply #'+ (mapcar (lambda (el)
+                                    (let ((val (funcall stat el)))
+                                      (if (listp val) (apply #'+ val) val)))
+                                  (restore (file-for-run gen)))))
+             stats)))
+    '(2 40 80))))
+#+end_src
+
+#+RESULTS:
+|    | STATIC-POWER | TOTAL-PACKETS-SENT | TIME-WO-INIT |
+|  2 |    158.30093 |           66962923 |  11786724573 |
+| 40 |    158.30093 |           66835709 |  11787330638 |
+| 80 |    158.30093 |           66918247 |  11811495198 |
 
 ** TODO C code manipulation
 This is more of a task for the top-level software-evolution framework.

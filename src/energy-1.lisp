@@ -23,6 +23,13 @@
                (mapcar #'static-power pop)))))
   (store *raw-powers* "../results/energy-1.raw-powers.store"))
 
+(defun collect-stat (stat num-generations)
+  (loop :for n :upto num-generations :collect
+     (let ((pop (restore (file-for-run n))))
+       (dolist (var pop) (apply-output var (raw-output var)))
+       (let ((pop (remove-if-not stat pop)))
+         (mapcar stat pop)))))
+
 #+grab-from-full-pops
 (setf *raw-times* (restore "../results/runtime-2.raw-times.store"))
 
