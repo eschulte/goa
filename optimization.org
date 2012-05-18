@@ -515,6 +515,8 @@ Analysis code in file:src/runtime-2.lisp
    :END:
 Looking at power consumption.
 
+Definitely a bug somewhere
+
 *** running
 #+begin_src lisp
   (require :software-evolution)
@@ -538,7 +540,47 @@ Looking at power consumption.
          (setf *pop* (biased-step *pop* :test test :key key))))
 #+end_src
 
-* COMMENT Notes
+*** analysis
+Analysis code in file:src/runtime-2.lisp
+
+#+name: energy-1-times
+#+begin_src lisp :package software-evolution
+  ;; (mapcar #'list (cdr *times*))
+  ;; (mapcar #'list (second *raw-times*))
+  *powers*
+#+end_src
+
+#+name: packets-min-energy-plot
+#+header: :exports code
+#+begin_src gnuplot :var data=energy-1-times :file data/energy-1.svg
+  set ylabel 'static-power'
+  set xlabel 'generation'
+  plot data using 0:1:2 w errorbars, \
+       data using 0:1 w lines
+#+end_src
+
+#+Caption: Energy consumption by generation of evolution
+[[file:data/energy-1.svg]]
+
+* COMMENT Notes [0/5]
+** TODO debug the lack of any change in power consumption
+Are the generated =.s= files identical?
+Is there a bug in file:src/optimize.lisp?
+
+** TODO C code manipulation
+This is more of a task for the top-level software-evolution framework.
+
+** TODO look at the best performers
+Use something like the following.
+#+begin_src lisp
+  (mapcar (lambda (gen) (car (sort gen #'< :key #'runtime))) runs)
+#+end_src
+
+Then.
+1. confirm that they *do* have better run times
+2. dig into their ASM and make sure that it seems reasonable
+
+** TODO looking at the results of energy-1
 ** TODO need to cleanup assembly files from /tmp in guest VMs
 ** exactly /what/ can we measure
 - communication by packet
