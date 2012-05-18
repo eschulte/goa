@@ -24,7 +24,7 @@ else
     (
         # compile
         pushd /home/bacon/graphite/tests/benchmarks/fft
-        cp $var ./
+        mv $var ./fft.s
         rm -f fft fft.o
         gcc -I/home/bacon/graphite/common/user \
             -I/home/bacon/graphite/common/misc \
