@@ -79,8 +79,15 @@ class optRep = object (self : 'self_type)
 
 end
 
+let do_opt file (rep :('a,'b) Rep.representation) =
+  (* load the rep, either from a cache or from source *)
+  rep#load file;
+  rep#debug_info();
+  ()
+
 let main () = begin
   Arg.parse !options (fun x -> ()) "optimize [options] program";
   printf "Optimizing %s for %s\n" !program_to_repair !optimize_feature;
+  do_opt !program_to_repair ((new optRep) :>('a,'b) Rep.representation);
 end ;;
 main ()
