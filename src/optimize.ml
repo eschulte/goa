@@ -78,3 +78,8 @@ class optRep = object (self : 'self_type)
       result, [| (self#multi_objective_fitness result) |]
 
 end
+
+let main () = begin
+  printf "Optimizing!\n";
+end ;;
+main ()

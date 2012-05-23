@@ -1,3 +1,5 @@
+GENPROG=/home/eschulte/research/epr/code
+
 OCAML_OPTIONS = \
   -I $(CIL)/ \
   -I $(CIL)/src \
