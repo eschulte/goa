@@ -80,6 +80,7 @@ class optRep = object (self : 'self_type)
 end
 
 let main () = begin
-  printf "Optimizing!\n";
+  Arg.parse !options (fun x -> ()) "optimize [options] program";
+  printf "Optimizing %s for %s\n" !program_to_repair !optimize_feature;
 end ;;
 main ()
