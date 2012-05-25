@@ -1,0 +1,9 @@
+# OCaml cruft
+optimize
+*.cmi
+*.cmx
+*.d
+*.o
+
+# Genprog cruft
+repair*
