@@ -5,7 +5,7 @@
  * such as fastest execution, least communication, lowest energy
  * consumption etc...
  *
- * Options to Use
+ * Options to Use (see optimize.sh in this directory)
  *
  * --popsize 100
  * --tournament-size 2
@@ -14,10 +14,9 @@
  * 
  *)
 open Printf
-open Cil
 open Global
-open Elf
-open Population
+open Fitness
+open Rep
 open Asmrep
 
 let optimize_feature = ref ""
@@ -82,7 +81,10 @@ end
 let do_opt file (rep :('a,'b) Rep.representation) =
   (* load the rep, either from a cache or from source *)
   rep#load file;
+  printf "debug_info\n";
   rep#debug_info();
+  let res, real_value = rep#test_case (Single_Fitness) in
+    debug "result is %b\n" res;
   ()
 
 let main () = begin

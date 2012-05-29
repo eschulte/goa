@@ -7,3 +7,5 @@ optimize
 
 # Genprog cruft
 repair*
+coverage*
+00*
