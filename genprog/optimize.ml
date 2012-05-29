@@ -76,15 +76,21 @@ class optRep = object (self : 'self_type)
         pairs;
       result, [| (self#multi_objective_fitness result) |]
 
+  method debug_info () =
+    Hashtbl.iter (fun k v -> printf "\t%s -- %f\n" !k v) test_results;
+
 end
 
 let do_opt file (rep :('a,'b) Rep.representation) =
   (* load the rep, either from a cache or from source *)
   rep#load file;
-  printf "debug_info\n";
-  rep#debug_info();
   let res, real_value = rep#test_case (Single_Fitness) in
-    debug "result is %b\n" res;
+    if res then begin
+      printf "passed the test\n";
+      rep#debug_info();
+    end
+    else
+      printf "failed the test\n";
   ()
 
 let main () = begin
