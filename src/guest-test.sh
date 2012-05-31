@@ -57,6 +57,6 @@ else
             -- \
             ./tests/benchmarks/fft/fft -p64 -m16
         popd
-    )# 2>/dev/null
+    ) 2>/dev/null
 fi
 quit_free

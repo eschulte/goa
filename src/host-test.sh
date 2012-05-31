@@ -36,7 +36,8 @@ while [ "$output" = "busy" ]; do
 done
 
 ## if successful collect the output file
-log_output=$($LIMIT scp -i $id -P $remote bacon@localhost:$output_path /dev/stdout)
+log_output=$($LIMIT \
+    scp -i $id -P $remote bacon@localhost:$output_path /dev/stdout)
 
 ## return the execution metrics as lisp
 sed_cmd=$(cat <<EOF
@@ -72,5 +73,6 @@ echo "$log_output" \
     |sed "$log_sed_cmd"
 
 # success
-echo "$output"|grep "Exited with return code: 0" >/dev/null 2>/dev/null && exit 0
+echo "$output" \
+    |grep "Exited with return code: 0" >/dev/null 2>/dev/null && exit 0
 exit 1
