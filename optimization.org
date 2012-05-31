@@ -566,7 +566,7 @@ Analysis code in file:src/runtime-2.lisp
 #+Caption: Energy consumption by generation of evolution
 [[file:data/energy-1.svg]]
 
-* COMMENT Notes [0/5]
+* COMMENT Notes [1/4]
 ** STARTED debug the lack of any change in power consumption
 Are the generated =.s= files identical?
 Is there a bug in file:src/optimize.lisp?
@@ -610,8 +610,7 @@ Then.
 1. confirm that they *do* have better run times
 2. dig into their ASM and make sure that it seems reasonable
 
-** TODO looking at the results of energy-1
-** TODO need to cleanup assembly files from /tmp in guest VMs
+** DONE need to cleanup assembly files from /tmp in guest VMs
 ** exactly /what/ can we measure
 - communication by packet
 - runtime
