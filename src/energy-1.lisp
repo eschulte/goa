@@ -31,8 +31,9 @@
          (mapcar stat pop)))))
 
 #+grab-from-full-pops
-(setf *raw-times* (restore "../results/runtime-2.raw-times.store"))
+(setf *raw-powers* (restore "../results/energy-1.raw-powers.store"))
 
+#+analysis
 (setf *powers*
       (mapcar
        (lambda (generation)
