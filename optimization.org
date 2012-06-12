@@ -566,7 +566,80 @@ Analysis code in file:src/runtime-2.lisp
 #+Caption: Energy consumption by generation of evolution
 [[file:data/energy-1.svg]]
 
+** flits
+
+*** analysis
+Analysis code in file:src/runtime-2.lisp
+
+#+name: flits-times
+#+begin_src lisp :package software-evolution
+  *flits*
+#+end_src
+
+#+name: packets-min-energy-plot
+#+header: :exports code :results none
+#+begin_src gnuplot :var data=flits-times :file data/flits.svg
+  set ylabel 'total flits sent'
+  set xlabel 'generation'
+  plot data using 0:1:2 w errorbars, \
+       data using 0:1 w lines
+#+end_src
+
+#+Caption: Energy consumption by generation of evolution
+[[file:data/flits.svg]]
+
 * COMMENT Notes [1/4]
+** fields which show any variance
+#+begin_src lisp :results raw
+(format nil "~{|~{~a~^ ~^|~^ ~}~^|~^~%~}~%"
+        (mapcar
+         (lambda (field)
+           (let* ((values (mapcar (lambda (v) (slot-value v field)) *pop*))
+                  (same   (every  (lambda (it) (equal-it (car values) it))
+                                  (cdr values))))
+             (list field same)))
+         '(FITNESS HISTORY NEUTRAL-P START INIT-FINISH FINISH
+           TRANS-FRACTION TIME-WO-INIT TIME-W-INIT TRANS-TIME TOTAL-PACKETS-SENT
+           TOTAL-FLITS-SENT TOTAL-BYTES-SENT TOTAL-PACKETS-BROADCASTED
+           TOTAL-FLITS-BROADCASTED TOTAL-BYTES-BROADCASTED
+           TOTAL-PACKETS-RECEIVED TOTAL-FLITS-RECEIVED TOTAL-BYTES-RECEIVED
+           AVERAGE-PACKET-LATENCY-IN-CLOCK-CYCLES AVERAGE-PACKET-LATENCY-IN-NS
+           AVERAGE-CONTENTION-DELAY-IN-CLOCK-CYCLES
+           AVERAGE-CONTENTION-DELAY-IN-NS SWITCH-ALLOCATOR-TRAVERSALS
+           CROSSBAR-TRAVERSALS LINK-TRAVERSALS STATIC-POWER)))
+#+end_src
+
+Some difference
+| HISTORY                                  | NIL |
+| START                                    | NIL |
+| INIT-FINISH                              | NIL |
+| FINISH                                   | NIL |
+| TRANS-FRACTION                           | NIL |
+| TIME-WO-INIT                             | NIL |
+| TIME-W-INIT                              | NIL |
+| TRANS-TIME                               | NIL |
+| TOTAL-PACKETS-SENT                       | NIL |
+| TOTAL-FLITS-SENT                         | NIL |
+| TOTAL-BYTES-SENT                         | NIL |
+| TOTAL-PACKETS-RECEIVED                   | NIL |
+| TOTAL-FLITS-RECEIVED                     | NIL |
+| TOTAL-BYTES-RECEIVED                     | NIL |
+| AVERAGE-PACKET-LATENCY-IN-CLOCK-CYCLES   | NIL |
+| AVERAGE-PACKET-LATENCY-IN-NS             | NIL |
+| SWITCH-ALLOCATOR-TRAVERSALS              | NIL |
+| CROSSBAR-TRAVERSALS                      | NIL |
+| LINK-TRAVERSALS                          | NIL |
+
+All the same
+| FITNESS                                  | T   |
+| NEUTRAL-P                                | T   |
+| TOTAL-PACKETS-BROADCASTED                | T   |
+| TOTAL-FLITS-BROADCASTED                  | T   |
+| TOTAL-BYTES-BROADCASTED                  | T   |
+| AVERAGE-CONTENTION-DELAY-IN-CLOCK-CYCLES | T   |
+| AVERAGE-CONTENTION-DELAY-IN-NS           | T   |
+| STATIC-POWER                             | T   |
+
 ** STARTED debug the lack of any change in power consumption
 Are the generated =.s= files identical?
 Is there a bug in file:src/optimize.lisp?
