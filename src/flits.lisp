@@ -16,7 +16,7 @@
 #+save-from-full-pops
 (progn
   (setf *raw-flits*
-        (loop :for n :upto 5 :collect
+        (loop :for n :upto 37 :collect
            (let ((pop (restore (file-for-run n))))
              (dolist (var pop) (apply-output var (raw-output var)))
              (let ((pop (remove-if-not #'total-flits-sent pop)))

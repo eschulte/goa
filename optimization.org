@@ -567,7 +567,6 @@ Analysis code in file:src/runtime-2.lisp
 [[file:data/energy-1.svg]]
 
 ** flits
-
 *** analysis
 Analysis code in file:src/runtime-2.lisp
 
@@ -577,18 +576,41 @@ Analysis code in file:src/runtime-2.lisp
 #+end_src
 
 #+name: packets-min-energy-plot
-#+header: :exports code :results none
+#+header: :exports code :results silent
 #+begin_src gnuplot :var data=flits-times :file data/flits.svg
   set ylabel 'total flits sent'
   set xlabel 'generation'
-  plot data using 0:1:2 w errorbars, \
-       data using 0:1 w lines
+  plot data using 0:1:2 w errorbars title 'stdev', \
+       data using 0:1 w lines title 'mean'
 #+end_src
 
 #+Caption: Energy consumption by generation of evolution
 [[file:data/flits.svg]]
 
-* COMMENT Notes [1/4]
+* COMMENT Notes [1/5]
+** TODO what does "not completely converted" this mean
+: 2012.06.13.11.27.46: (length results) ;; => 112
+: 2012.06.13.11.27.46: saving population 43
+: 2012.06.13.11.27.46: generating population 44
+: 2012.06.13.11.27.46: generating 46
+: 2012.06.13.11.37.58: keeping the fit
+: 2012.06.13.11.37.58: (length results) ;; => 28
+: 2012.06.13.11.37.58: generating 46
+: 2012.06.13.11.48.09: keeping the fit
+: 2012.06.13.11.48.09: (length results) ;; => 53
+: 2012.06.13.11.48.09: generating 46
+: 2012.06.13.11.58.12: keeping the fit
+: 2012.06.13.11.58.12: (length results) ;; => 85
+: 2012.06.13.11.58.12: generating 45
+: printf: 34: 12.41,: not completely converted
+: 2012.06.13.12.08.22: keeping the fit
+: 2012.06.13.12.08.22: (length results) ;; => 115
+: 2012.06.13.12.08.22: saving population 44
+: 2012.06.13.12.08.22: generating population 45
+: 2012.06.13.12.08.22: generating 46
+: printf: 34: 19.47,: not completely converted
+: printf: 34: 12.01,: not completely converted
+
 ** fields which show any variance
 #+begin_src lisp :results raw
 (format nil "~{|~{~a~^ ~^|~^ ~}~^|~^~%~}~%"

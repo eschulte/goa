@@ -121,8 +121,9 @@ Note: This does not follow the normal test script format but rather it;
 (defun biased-step (pop &key (test #'<) (key #'time-wo-init) &aux result)
   "Take a whole-population biased step through neutral space."
   (flet ((new-var ()
-           (let ((t-pop (repeatedly *tsize* (random-elt pop))))
-             (evaluate (mutate (copy (first (sort t-pop test :key key))))))))
+           ;; (let ((t-pop (repeatedly *tsize* (random-elt pop))))
+           ;;   (evaluate (mutate (copy (first (sort t-pop test :key key))))))
+           (evaluate (mutate (copy (first (sort pop test :key key)))))))
     (loop :until (>= (length result) *psize*) :do
        (let* ((to-run (min (thread-pool-size)
                            (floor (* (- *psize* (length result)) 3))))
