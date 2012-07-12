@@ -588,6 +588,15 @@ Analysis code in file:src/runtime-2.lisp
 [[file:data/flits.svg]]
 
 * COMMENT Notes [1/5]
+** fault tolerance stochastic algorithms -- new target applications PARSEC
+http://pages.saclay.inria.fr/olivier.temam/
+#+begin_quote
+At the same time, the emergence of a new kind of high-performance
+applications (illustrated by the PARSEC benchmarks), based on
+stochastic algorithms inherently tolerant to a certain degree of
+inaccuracy
+#+end_quote
+
 ** TODO what does "not completely converted" this mean
 : 2012.06.13.11.27.46: (length results) ;; => 112
 : 2012.06.13.11.27.46: saving population 43
