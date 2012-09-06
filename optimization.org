@@ -190,7 +190,7 @@ http://gitweb.adaptive.cs.unm.edu/optimization.git for anonymous git
 access with the following.
 : git clone http://gitweb.adaptive.cs.unm.edu/optimization.git
 
-Using the scripts in file:src/host-test.sh and file:src/guest-test.sh,
+Using the scripts in file:src/host-test and file:src/guest-test,
 the experimental harness in file:src/optimize.lisp and the [[http://gitweb.adaptive.cs.unm.edu/software-evolution.git][software
 evolution]] framework it is possible to evolve populations of variants
 of the original FFT program to optimize for certain execution
@@ -198,11 +198,11 @@ properties.  The following instructions describe how to evolve a
 population of variant programs using multiple VM back ends for
 parallel fitness evaluation.
 
-1. Copy the file:src/guest-test.sh script into the =/home/bacon/bin/=
+1. Copy the file:src/guest-test script into the =/home/bacon/bin/=
    on the virtual machine.  Power off the virtual machine before
    performing the next step.
    #+begin_src sh
-     scp src/guest-test.sh -P 2222 bacon@localhost:bin/
+     scp src/guest-test -P 2222 bacon@localhost:bin/
      ssh -p 2222 root@localhost poweroff
    #+end_src
 
@@ -220,11 +220,11 @@ parallel fitness evaluation.
      ssh -p 2222 root@localhost poweroff
    #+end_src
 
-3. The current version of file:src/host-test.sh assumes that all
+3. The current version of file:src/host-test assumes that all
    virtual machines are running on =localhost= and that they are
    placed behind different port numbers.  To setup multiple VMs on
    your local machine saving their port numbers to the
-   file:src/REMOTES file (as required by file:src/host-test.sh) follow
+   file:src/REMOTES file (as required by file:src/host-test) follow
    the steps in [[#running-overlays][Running overlays]].
 
 4. Since ssh is apparently /very/ sensitive to widely readable public
@@ -285,7 +285,7 @@ To run all overlays daemonized;
   pushd overlays/
   for i in $(seq 46);do
       I=$(printf "%0.2d" i);
-      ../src/run-vm.sh "$I.qcow" "30$I"
+      ../src/run-vm "$I.qcow" "30$I"
       remotes="$remotes \"30$I\""
   done
   popd
