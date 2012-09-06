@@ -2,12 +2,21 @@
 #
 # Copyright (C) 2012  Eric Schulte
 #
-# Usage:
-#   run-all.sh command args...
+# Usage: run-all user cmd args...
+# run command args... on every overlay
 #
-# Code:
-REMOTES=("2222")
-. $(dirname $0)/REMOTES # allow host-specific remote files
+# user  - user to perform the runs
+# comd  - command to run
+# args  - arguments passed to command
+#
+# The overlays run are those specified in REMOTES
+#
+. $(dirname $0)/common
+
+USER="$1"; shift
+
+exit
+
 for remote in ${REMOTES[@]};do
-    ssh -i data/id_rsa -p $remote bacon@localhost "$@"
+    ssh -i data/id_rsa -p $remote $USER@bacon@localhost "$@"
 done

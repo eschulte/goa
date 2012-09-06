@@ -1,0 +1,104 @@
+#!/bin/bash
+#
+# Usage: do not use
+# utilities shared by all shell scripts
+# 
+
+## Help functions
+SCRIPT="$0"
+help(){
+    HELP_TEXT=$(cat "$SCRIPT" \
+        |sed '/^[^#]/q' \
+        |head -n -1 \
+        |tail -n +3 \
+        |sed -e :a -e '/^\n*$/{$d;N;ba' -e '}' \
+        |cut -c3-)
+    echo "$HELP_TEXT"
+    exit 1
+}
+if echo "$1"|grep "^\-\?\-h" >/dev/null;then help; fi
+
+REMOTES=("2222")
+. $(dirname $0)/REMOTES # allow host-specific remote files
+
+LIMIT="$(dirname $0)/limit"
+
+## Math Functions
+mean(){ awk '{sum += $1;} END {print sum/NR}'; }
+min(){ awk '{if((min == "") || ($1 < min)){ min = $1}} END {print min}'; }
+max(){ awk '{if((max == "") || ($1 > max)){ max = $1}} END {print max}'; }
+
+## VM Functions
+vm_ssh(){
+    local PORT=$1; shift
+    ssh -o 'StrictHostKeyChecking no' -p $PORT $@;
+}
+
+vm_scp(){
+    local PORT=$1; shift
+    scp -o 'StrictHostKeyChecking no' -P $PORT $@;
+}
+
+wait_for_start(){
+    local NAME=$1; shift
+    echo "waiting for the machine to finish booting..."
+    echo -n "CPU usage:"
+    TOTAL=0
+    while [ $TOTAL -lt 2 ] ;do
+        CPU=$(top -b -n 1|grep "\-hda $NAME"|awk '{print $6}'|sed 's/\..*$//')
+        if [ -z "$CPU" ] || [ $CPU -lt 5 ];then TOTAL=$(echo "$TOTAL+1"|bc);
+        else TOTAL=0; fi
+        echo -n " $CPU"
+        sleep 0.5
+    done
+    echo " $CPU"
+}
+
+wait_for_ssh(){
+    local PORT=$1; shift
+    echo "waiting for the machine to respond to ssh..."
+    for ((;;));do
+        echo -n "pinging ";
+        vm_ssh $PORT root@localhost echo hello 2>/dev/null|grep "hello" && break;
+        sleep 5;
+    done
+}
+
+# --------------------------------------------------------------------
+# From here down adopted from the makepkg utility in Arch Linux
+# Copyright (c) 2006-2012 Pacman Development Team <pacman-dev@archlinux.org>
+# (see https://wiki.archlinux.org/index.php/Makepkg)
+if [[ -t 2 ]]; then
+    # prefer terminal safe colored and bold text when tput is supported
+    if tput setaf 0 &>/dev/null; then
+        ALL_OFF="$(tput sgr0)"
+        BOLD="$(tput bold)"
+        BLUE="${BOLD}$(tput setaf 4)"
+        GREEN="${BOLD}$(tput setaf 2)"
+        RED="${BOLD}$(tput setaf 1)"
+        YELLOW="${BOLD}$(tput setaf 3)"
+    else
+        ALL_OFF="\e[1;0m"
+        BOLD="\e[1;1m"
+        BLUE="${BOLD}\e[1;34m"
+        GREEN="${BOLD}\e[1;32m"
+        RED="${BOLD}\e[1;31m"
+        YELLOW="${BOLD}\e[1;33m"
+    fi
+fi
+readonly ALL_OFF BOLD BLUE GREEN RED YELLOW
+
+msg() {
+    local mesg=$1; shift
+    printf "${GREEN}==>${ALL_OFF}${BOLD} ${mesg}${ALL_OFF}\n" "$@"
+}
+
+warning() {
+	local mesg=$1; shift
+	printf "${YELLOW}==> $(gettext "WARNING:")${ALL_OFF}${BOLD} ${mesg}${ALL_OFF}\n" "$@" >&2
+}
+
+error() {
+	local mesg=$1; shift
+	printf "${RED}==> $(gettext "ERROR:")${ALL_OFF}${BOLD} ${mesg}${ALL_OFF}\n" "$@" >&2
+}

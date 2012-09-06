@@ -1,4 +1,10 @@
 #!/bin/sh
+#
+# Usage re-run-flits
+# like `re-run' but specialized for flit runs
+#
+. $(dirname $0)/common
+
 restart(){
 BASE="/nfs/adaptive/eschulte/research/epr/optimization";
 num=$(ls -1tr $BASE/results/flits/|tail -1|sed 's/biased-pop-\(.*\)\.store/\1/')

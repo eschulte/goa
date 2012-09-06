@@ -2,13 +2,13 @@
 #
 # Copyright (C) 2012  Eric Schulte
 #
-# Usage:
-#   guest-test.sh /tmp/variant.s
+# Usage: guest-test.sh variant.s
+# Takes an asm fft file, compiles it, runs it and returns results.
+# 
+# variant.s - path to the variant to test on the guest system
 #
-# Commentary:
-#   Takes an asm fft file, compiles it, runs it and returns results.
-#
-# Code:
+. $(dirname $0)/common
+
 LIMIT="/home/bacon/bin/limit"
 lock="/tmp/lockfile"
 quit_locked(){ echo busy; exit 1; }

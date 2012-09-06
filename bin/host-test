@@ -2,8 +2,7 @@
 #
 # Copyright (C) 2012  Eric Schulte
 #
-# Usage:
-#   host-test.sh variant.s
+# Usage: host-test.sh variant.s
 #
 # Commentary:
 #   This does not follow the normal test script format but rather it;
@@ -13,10 +12,8 @@
 #    4. returns the full set of Graphite debug information in a format
 #       readable by the common lisp `read-from-string' function.
 #
-# Code:
-REMOTES=("2222")
-LIMIT="$(dirname $0)/limit"
-. $(dirname $0)/REMOTES # allow host-specific remote files
+. $(dirname $0)/common
+
 pick_remote(){ echo ${REMOTES[$RANDOM % ${#REMOTES[@]}]}; }
 
 if [ -z "$1" ];then echo "requires an argument"; exit 1;fi

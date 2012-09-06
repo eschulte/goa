@@ -1,4 +1,10 @@
 #!/bin/sh
+#
+# Usage re-run-energy
+# like `re-run' but specialized for energy runs
+#
+. $(dirname $0)/common
+
 restart(){
 BASE="/nfs/adaptive/eschulte/research/epr/opt-real";
 num=$(ls -1tr $BASE/results/energy-1/|tail -1|sed 's/biased-pop-\(.*\)\.store/\1/')

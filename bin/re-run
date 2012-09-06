@@ -1,4 +1,10 @@
 #!/bin/sh
+#
+# Usage: restart
+# runs continually in the background, restarting stalled SBCL sessions
+#
+. $(dirname $0)/common
+
 restart(){
 BASE="/nfs/adaptive/eschulte/research/epr/optimization";
 num=$(ls -1tr $BASE/results/runtime-2/|tail -1|sed 's/biased-pop-\(.*\)\.store/\1/')

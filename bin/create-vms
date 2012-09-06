@@ -1,7 +1,14 @@
 #!/bin/sh
+#
+# Usage: create-vms num
+# Create NUM new overlays based off of tune.qcow.
+#
+# num - the number of overlays to create
+#
+. $(dirname $0)/common
 
 pushd overlays/
-for i in $(seq 32);do
+for i in $(seq $1);do
     j=$(printf "%0.2d" i);
     if [ ! -f "$j.qcow" ];then
         qemu-img create -b ../tune.qcow -f qcow2 "$j.qcow"
