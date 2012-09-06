@@ -28,6 +28,28 @@ mean(){ awk '{sum += $1;} END {print sum/NR}'; }
 min(){ awk '{if((min == "") || ($1 < min)){ min = $1}} END {print min}'; }
 max(){ awk '{if((max == "") || ($1 > max)){ max = $1}} END {print max}'; }
 
+# OS Identification: from http://unix.stackexchange.com/questions/6345
+if [ -f /etc/lsb-release ]; then
+    . /etc/lsb-release
+    OS=$DISTRIB_ID
+elif [ -f /etc/debian_version ]; then
+    OS=Debian
+elif [ -f /etc/arch-release ]; then
+    OS=Arch
+else
+    OS=$(uname -s)
+fi
+
+# OS-specific qemu command
+case $OS in
+    Debian) QEMU_CMD="kvm"      ;;
+    Ubuntu) QEMU_CMD="kvm"      ;;
+    Arch)   QEMU_CMD="qemu-kvm" ;;
+    *)      QEMU_CMD="qemu"     ;;
+esac
+
+DEFAULT_DISK="tune.qcow"
+
 ## VM Functions
 vm_ssh(){
     local PORT=$1; shift
