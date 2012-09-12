@@ -76,11 +76,14 @@ these results.
      apt-get update
    #+end_src
 
-4. Now install the Graphite dependencies,
+4. Now install the Graphite and Parsec dependencies,
    #+begin_src sh
+     # Graphite dependencies
      apt-get install build-essential m4
      apt-get install libboost1.35-dev libboost-filesystem1.35-dev libboost-system1.35-dev
      apt-get install git-core
+     # Parsec dependencies
+     apt-get install automake gettext yasm
      # and an ssh server so we can ssh into this VM
      apt-get install openssh-server
    #+end_src
@@ -135,22 +138,124 @@ these results.
      make ping_pong_app_test CORES=16 PROCS=2
    #+end_src
 
-8. At this point the virtual machine is usable for running
-   applications through Graphite and collecting metrics.  If modeling
-   power consumption then one more dependency must be installed.
-   McPAT is available at http://www.hpl.hp.com/research/mcpat/.  The
-   tarball should be downloaded to the virtual machine and unpacked
-   into the home directory.
+8. To install Parsec, download and unpack the tarball from
+   http://parsec.cs.princeton.edu/download/3.0/parsec-3.0.tar.gz.
    #+begin_src sh
      cd ~/archives/
-     wget http://www.hpl.hp.com/research/mcpat/mcpat0.8_r274.tar.gz
-     cd ~
-     tar xzf archives/mcpat0.8_r274.tar.g
-     sudo apt-get install g++-multilib libc6-dev-i386
-     mv mcpat0.8_r274/ mcpat/
-     cd mcpat/
-     make
+     wget http://parsec.cs.princeton.edu/download/3.0/parsec-3.0.tar.gz
+     cd ~/
+     tar xzf archives/parsec-3.0.tar.gz
    #+end_src
+
+9. Add Parsec and Graphite environment variables to the =~/.bashrc=.
+   #+begin_src sh
+     cat <<EOF >> ~/.bashrc
+     #####################################################################
+     ## Custom Environment Variables for Graphite and Parsec
+     export GRAPHITE_HOME=$HOME/graphite
+     export PARSEC_HOME=$HOME/parsec-3.0
+     
+     if [ -z "${PATH}" ]; then
+       export PATH=${PARSEC_HOME}/bin
+     else
+       export PATH=${PATH}:${PARSEC_HOME}/bin
+     fi
+     
+     # Append `man/' directory to MANPATH
+     if [ -z "${MANPATH}" ]; then
+       export MANPATH=${PARSEC_HOME}/man
+     else
+       export MANPATH=${MANPATH}:${PARSEC_HOME}/man
+     fi
+     
+     # Add directory with hooks library to library search path
+     if [ -z "${LD_LIBRARY_PATH}" ]; then
+       export LD_LIBRARY_PATH="${PARSEC_HOME}/pkgs/libs/hooks/inst/${PARSECPLAT}/lib"
+     else
+       export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${PARSEC_HOME}/pkgs/libs/hooks/inst/${PARSECPLAT}/lib"
+     fi
+     #####################################################################
+     EOF
+   #+end_src
+
+10. Build parsec following these instructions adopted from [[https://github.com/mit-carbon/Graphite/wiki/Adding-and-Running-Applications#Running an application from the PARSEC benchmark suite][Running an
+    application from the PARSEC benchmark suite]].
+
+11. At this point the virtual machine is usable for running
+    applications through Graphite and collecting metrics.  If modeling
+    power consumption then one more dependency must be installed.
+    McPAT is available at http://www.hpl.hp.com/research/mcpat/.  The
+    tarball should be downloaded to the virtual machine and unpacked
+    into the home directory.
+    #+begin_src sh
+      cd ~/archives/
+      wget http://www.hpl.hp.com/research/mcpat/mcpat0.8_r274.tar.gz
+      cd ~
+      tar xzf archives/mcpat0.8_r274.tar.g
+      sudo apt-get install g++-multilib libc6-dev-i386
+      mv mcpat0.8_r274/ mcpat/
+      cd mcpat/
+      make
+    #+end_src
+
+** Running the PARSEC benchmark with Graphite
+[[https://github.com/mit-carbon/Graphite/wiki/Adding-and-Running-Applications#Running an application from the PARSEC benchmark suite][Running an application from the PARSEC benchmark suite]]
+
+Set the environment variables =${PARSEC_HOME}= and =${GRAPHITE_HOME}=
+to point to the root of the PARSEC and Graphite source directories
+respectively.
+
+: $ cd ${PARSEC_HOME} 
+
+Next, start building the tools in PARSEC using the gcc configuration
+file and populate the benchmark directories with a copy of the gcc
+build configuration:
+
+: $ parsecmgmt -a build -p tools
+: $ touch config/parsec.conf
+: $ bldconfadd -n graphite -c gcc -f
+
+Next, use the configuration file located here to build the
+applications: [[http://github.com/downloads/mit-carbon/Graphite/graphite.bldconf][graphite.bldconf]]. Place that file in the
+${PARSEC_HOME}/config directory.
+
+: $ wget http://github.com/downloads/mit-carbon/Graphite/graphite.bldconf -O ${PARSEC_HOME}/config/graphite.bldconf
+
+Edit =graphite.bldconf= to set the GRAPHITE_HOME variable to the root
+of your Graphite source tree.
+
+Had to add
+: build_inplace="TRUE"
+to my =graphite.bldconf= file and then explicitly symlink to it from
+the application directories.
+#+begin_src sh
+  for app in $(ls pkgs/apps);do
+      cd pkgs/apps/$app/parsec/
+      ln -s ../../../../config/graphite.bldconf 
+      cd ../../../../
+  done
+  for app in $(ls pkgs/kernels);do
+      cd pkgs/kernels/$app/parsec/
+      ln -s ../../../../config/graphite.bldconf 
+      cd ../../../../
+  done
+#+end_src
+
+Next build the PARSEC applications and kernels using the
+=graphite.bldconf= configuration file:
+
+: $ ./bin/parsecmgmt -a build -p apps -c graphite
+: $ ./bin/parsecmgmt -a build -p kernels -c graphite
+
+Then return to the Graphite home directory.
+
+: $ cd ${GRAPHITE_HOME}
+
+Set the PARSEC_HOME variable in the file =tests/Makefile.parsec= to
+point to the source of the PARSEC source tree.
+
+Run =make [app]_parsec= to simulate the =[app]= with Graphite using
+the parameters specified in =tests/Makefile.parsec=.
 
 ** Running a Simple Fast Fourier Transform (FFT)
 The FFT benchmark has higher memory requirements than the simple
