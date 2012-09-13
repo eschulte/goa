@@ -222,7 +222,8 @@ from the PARSEC benchmark suite]].
    #+end_src
 
    #+begin_quote
-   For me, [[id:a4a68af3-1474-4abb-bc1c-daa37d20d758][raytrace failed]], but everything else succeeded.
+   For me, [[id:a4a68af3-1474-4abb-bc1c-daa37d20d758][raytrace failed]] to compile, but everything else
+   succeeded. (probably C++ boost library location or some such)
    #+end_quote
 
 8. Then from the Graphite home directory, set the =PARSEC_HOME=
@@ -682,7 +683,14 @@ Analysis code in file:src/runtime-2.lisp
 
 * COMMENT Notes [2/6]
 ** run a PARSEC app w/Graphite
+They all fail, many with missing input files or just incorrect inputs.
+
+May have to move PARSEC under $GRAPHITE_HOME/tests.
+
 *** TODO blackscholes
+    :PROPERTIES:
+    :ID:       506b37be-d9c2-4735-ae43-b907e71d2301
+    :END:
 : cd /home/bacon/parsec-2.1/pkgs/apps/blackscholes/run; /home/bacon/graphite/tools/spawn.py 1 /home/bacon/graphite/carbon_sim.cfg  /home/bacon/pin/intel64/bin/pinbin -mt -t /home/bacon/graphite/lib/pin_sim -c /home/bacon/graphite/carbon_sim.cfg --general/total_cores=64 --general/num_processes=1 --general/enable_shared_mem=true  -- /home/bacon/parsec-2.1/pkgs/apps/blackscholes/inst/amd64-linux.graphite/bin/blackscholes 16 in_4k.txt prices.txt
 : [spawn.py] Starting process: 0 : export CARBON_PROCESS_INDEX=0; export LD_LIBRARY_PATH="/afs/csail/group/carbon/tools/boost_1_38_0/stage/lib"; /home/bacon/pin/intel64/bin/pinbin -mt -t /home/bacon/graphite/lib/pin_sim -c /home/bacon/graphite/carbon_sim.cfg --general/total_cores=64 --general/num_processes=1 --general/enable_shared_mem=true -- /home/bacon/parsec-2.1/pkgs/apps/blackscholes/inst/amd64-linux.graphite/bin/blackscholes 16 in_4k.txt prices.txt
 : PARSEC Benchmark Suite Version 2.1
