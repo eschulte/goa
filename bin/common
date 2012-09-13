@@ -19,7 +19,9 @@ help(){
 if echo "$1"|grep "^\-\?\-h" >/dev/null;then help; fi
 
 REMOTES=("2222")
-. $(dirname $0)/REMOTES # allow host-specific remote files
+if [ -f "$(dirname $0)/REMOTES" ];then
+    . $(dirname $0)/REMOTES # allow host-specific remote files
+fi
 
 LIMIT="$(dirname $0)/limit"
 
