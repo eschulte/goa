@@ -165,7 +165,7 @@ from the PARSEC benchmark suite]].
    #+begin_src sh
      cd ~/archives/
      wget http://coblitz.codeen.org/parsec.cs.princeton.edu/download/2.1/parsec-2.1.tar.gz
-     cd ~/
+     cd ~/graphite/tests/
      # this may take some time...
      tar xzf archives/parsec-2.1.tar.gz
    #+end_src
@@ -174,7 +174,7 @@ from the PARSEC benchmark suite]].
    #+begin_src sh
      cat <<EOF >> ~/.profile
      export GRAPHITE_HOME=$HOME/graphite
-     export PARSEC_HOME=$HOME/parsec-2.1
+     export PARSEC_HOME=$GRAPHITE_HOME/tests/parsec-2.1
      export PARSECDIR=$PARSEC_HOME
      source $PARSEC_HOME/env.sh
      EOF
@@ -193,7 +193,7 @@ from the PARSEC benchmark suite]].
    configuration file and populate the benchmark directories with a
    copy of the gcc build configuration:
    #+begin_src sh
-     cd parsec-2.1/
+     cd ${PARSEC_HOME}
      parsecmgmt -a build -p tools
      bldconfadd -n graphite -c gcc -f
    #+end_src
@@ -231,7 +231,7 @@ from the PARSEC benchmark suite]].
    of the PARSEC source tree.
    #+begin_src sh
      cd ${GRAPHITE_HOME}
-     sed -i 's/^PARSEC_HOME = .*$/PARSEC_HOME=\/home\/bacon\/parsec-2.1/' \
+     sed -i "s/^PARSEC_HOME \?= \?.*$/PARSEC_HOME=\"$(echo $PARSEC_HOME|sed 's/\//\\\//g')\"/" \
          tests/Makefile.parsec
    #+end_src
 
