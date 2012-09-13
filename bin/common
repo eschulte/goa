@@ -45,7 +45,12 @@ fi
 # OS-specific qemu command
 case $OS in
     Debian) QEMU_CMD="kvm"      ;;
-    Ubuntu) QEMU_CMD="kvm"      ;;
+    Ubuntu)
+        if which kvm >/dev/null 2>/dev/null;then
+            QEMU_CMD="kvm"
+        else
+            QEMU_CMD="qemu"
+        fi ;;
     Arch)   QEMU_CMD="qemu-kvm" ;;
     *)      QEMU_CMD="qemu"     ;;
 esac
