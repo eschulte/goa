@@ -105,7 +105,8 @@ these results.
          -m 1G -net nic -net user,hostfwd=tcp:127.0.0.1:2222-:22 -daemonize
    #+end_src
 
-6. Log into =tune= as =bacon=.
+** Running Graphite
+1. Log into =tune= as =bacon=.
    #+begin_src sh
      ssh -p 2222 bacon@localhost
    #+end_src
@@ -132,28 +133,50 @@ these results.
    #+end_src
    run =make= to build Graphite.
 
-7. Confirm that the build was successful by running the following
+2. Confirm that the build was successful by running the following
    which should exit successfully.
    #+begin_src sh
      make ping_pong_app_test CORES=16 PROCS=2
    #+end_src
 
-8. To install Parsec, download and unpack the tarball from
-   http://parsec.cs.princeton.edu/download/3.0/parsec-3.0.tar.gz.
+3. At this point the virtual machine is usable for running
+   applications through Graphite and collecting metrics.  If modeling
+   power consumption then one more dependency must be installed.
+   McPAT is available at http://www.hpl.hp.com/research/mcpat/.  The
+   tarball should be downloaded to the virtual machine and unpacked
+   into the home directory.
    #+begin_src sh
      cd ~/archives/
-     wget http://parsec.cs.princeton.edu/download/3.0/parsec-3.0.tar.gz
-     cd ~/
-     tar xzf archives/parsec-3.0.tar.gz
+     wget http://www.hpl.hp.com/research/mcpat/mcpat0.8_r274.tar.gz
+     cd ~
+     tar xzf archives/mcpat0.8_r274.tar.g
+     sudo apt-get install g++-multilib libc6-dev-i386
+     mv mcpat0.8_r274/ mcpat/
+     cd mcpat/
+     make
    #+end_src
 
-9. Add Parsec and Graphite environment variables to the =~/.bashrc=.
+** Running the PARSEC benchmark with Graphite
+Much of these instructions are adopted from [[https://github.com/mit-carbon/Graphite/wiki/Adding-and-Running-Applications#Running an application from the PARSEC benchmark suite][Running an application
+from the PARSEC benchmark suite]].
+
+1. To install Parsec, download and unpack the tarball from
+   http://coblitz.codeen.org/parsec.cs.princeton.edu/download/2.1/parsec-2.1.tar.gz.
+   #+begin_src sh
+     cd ~/archives/
+     wget http://coblitz.codeen.org/parsec.cs.princeton.edu/download/2.1/parsec-2.1.tar.gz
+     cd ~/
+     # this may take some time...
+     tar xzf archives/parsec-2.1.tar.gz
+   #+end_src
+
+2. Add Parsec and Graphite environment variables to the =~/.bashrc=.
    #+begin_src sh
      cat <<EOF >> ~/.bashrc
      #####################################################################
      ## Custom Environment Variables for Graphite and Parsec
      export GRAPHITE_HOME=$HOME/graphite
-     export PARSEC_HOME=$HOME/parsec-3.0
+     export PARSEC_HOME=$HOME/parsec-2.1
      
      if [ -z "${PATH}" ]; then
        export PATH=${PARSEC_HOME}/bin
@@ -178,34 +201,7 @@ these results.
      EOF
    #+end_src
 
-10. Build parsec following these instructions adopted from [[https://github.com/mit-carbon/Graphite/wiki/Adding-and-Running-Applications#Running an application from the PARSEC benchmark suite][Running an
-    application from the PARSEC benchmark suite]].
-
-11. At this point the virtual machine is usable for running
-    applications through Graphite and collecting metrics.  If modeling
-    power consumption then one more dependency must be installed.
-    McPAT is available at http://www.hpl.hp.com/research/mcpat/.  The
-    tarball should be downloaded to the virtual machine and unpacked
-    into the home directory.
-    #+begin_src sh
-      cd ~/archives/
-      wget http://www.hpl.hp.com/research/mcpat/mcpat0.8_r274.tar.gz
-      cd ~
-      tar xzf archives/mcpat0.8_r274.tar.g
-      sudo apt-get install g++-multilib libc6-dev-i386
-      mv mcpat0.8_r274/ mcpat/
-      cd mcpat/
-      make
-    #+end_src
-
-** Running the PARSEC benchmark with Graphite
-[[https://github.com/mit-carbon/Graphite/wiki/Adding-and-Running-Applications#Running an application from the PARSEC benchmark suite][Running an application from the PARSEC benchmark suite]]
-
-Set the environment variables =${PARSEC_HOME}= and =${GRAPHITE_HOME}=
-to point to the root of the PARSEC and Graphite source directories
-respectively.
-
-: $ cd ${PARSEC_HOME} 
+3. 
 
 Next, start building the tools in PARSEC using the gcc configuration
 file and populate the benchmark directories with a copy of the gcc
