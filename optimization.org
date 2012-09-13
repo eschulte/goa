@@ -231,7 +231,7 @@ from the PARSEC benchmark suite]].
    of the PARSEC source tree.
    #+begin_src sh
      cd ${GRAPHITE_HOME}
-     sed -i "s/^PARSEC_HOME \?= \?.*$/PARSEC_HOME=\"$(echo $PARSEC_HOME|sed 's/\//\\\//g')\"/" \
+     sed -i "s/^PARSEC_HOME \?= \?.*$/PARSEC_HOME=$(echo $PARSEC_HOME|sed 's/\//\\\//g')/" \
          tests/Makefile.parsec
    #+end_src
 
@@ -245,6 +245,32 @@ from the PARSEC benchmark suite]].
    Which results in the following error.
    : ERROR: Unable to open file in_4k.txt.
    #+end_quote
+
+9. Dealing with the above error took some time, I had to
+   1. Run blackscholes using the parsecmgmt tool which creates the
+      =in_4.txt= file.
+      #+begin_src sh
+        parsecmgmt -a run -p blackscholes -c graphite
+      #+end_src
+   2. Rename =in_4k.txt= to =in_4.txt= in =tests/Makefile.parsec=.
+      #+begin_src sh
+        sed -i 's/in_4k/in_4/' ${GRAPHITE_HOME}/tests/Makefile.parsec
+      #+end_src
+   3. Adjust the same =Makefile.parsec= to ensure that it was in the
+      run directory before it tried to run the simulator -- or just
+      run the Makefile command manually, grab the commands it executes
+      from STDOUT, and then run those commands manually from the
+      shell.  That still gave the following warnings, but at least
+      completes successfully.
+      : PARSEC Benchmark Suite Version 2.1
+      : Num of Options: 4
+      : Num of Runs: 100
+      : Size of data: 160
+      : 0          [11485]  ( 0) [ 0]  [routine_re: 780]  *WARNING* pthread_join() is expecting a return value to be passed through value_ptr input, which is unsupported
+      : 1013753    [11485]  ( 0) [ 0]  [routine_re: 780]  *WARNING* pthread_join() is expecting a return value to be passed through value_ptr input, which is unsupported
+      : 1015227    [11485]  ( 0) [ 0]  [routine_re: 780]  *WARNING* pthread_join() is expecting a return value to be passed through value_ptr input, which is unsupported
+      : 1018795    [11485]  ( 0) [ 0]  [routine_re: 780]  *WARNING* pthread_join() is expecting a return value to be passed through value_ptr input, which is unsupported
+      : [spawn.py] Exited with return code: 0
 
 ** Running a Simple Fast Fourier Transform (FFT)
 The FFT benchmark has higher memory requirements than the simple
