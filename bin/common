@@ -44,7 +44,7 @@ fi
 
 # OS-specific qemu command
 case $OS in
-    Debian) QEMU_CMD="kvm"      ;;
+    Debian)
     Ubuntu)
         if which kvm >/dev/null 2>/dev/null;then
             QEMU_CMD="kvm"
