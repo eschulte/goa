@@ -170,88 +170,80 @@ from the PARSEC benchmark suite]].
      tar xzf archives/parsec-2.1.tar.gz
    #+end_src
 
-2. Add Parsec and Graphite environment variables to the =~/.bashrc=.
+2. Add Parsec and Graphite environment variables to =~/.profile=.
    #+begin_src sh
-     cat <<EOF >> ~/.bashrc
-     #####################################################################
-     ## Custom Environment Variables for Graphite and Parsec
+     cat <<EOF >> ~/.profile
      export GRAPHITE_HOME=$HOME/graphite
      export PARSEC_HOME=$HOME/parsec-2.1
-     
-     if [ -z "${PATH}" ]; then
-       export PATH=${PARSEC_HOME}/bin
-     else
-       export PATH=${PATH}:${PARSEC_HOME}/bin
-     fi
-     
-     # Append `man/' directory to MANPATH
-     if [ -z "${MANPATH}" ]; then
-       export MANPATH=${PARSEC_HOME}/man
-     else
-       export MANPATH=${MANPATH}:${PARSEC_HOME}/man
-     fi
-     
-     # Add directory with hooks library to library search path
-     if [ -z "${LD_LIBRARY_PATH}" ]; then
-       export LD_LIBRARY_PATH="${PARSEC_HOME}/pkgs/libs/hooks/inst/${PARSECPLAT}/lib"
-     else
-       export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${PARSEC_HOME}/pkgs/libs/hooks/inst/${PARSECPLAT}/lib"
-     fi
-     #####################################################################
+     export PARSECDIR=$PARSEC_HOME
+     source $PARSEC_HOME/env.sh
      EOF
    #+end_src
 
-3. 
+3. Now we have to fix some odd paths in =config/gcc.bldconf=.
+   #+begin_src sh
+     cd parsec-2.1/
+     sed -i 's/export CC_HOME.*$/export CC_HOME="\/usr"/g' \
+         config/gcc.bldconf
+     sed -i 's/export BINUTIL_HOME.*$/export BINUTIL_HOME="\/usr"/g' \
+         config/gcc.bldconf
+   #+end_src
 
-Next, start building the tools in PARSEC using the gcc configuration
-file and populate the benchmark directories with a copy of the gcc
-build configuration:
+4. Next, start building the tools in PARSEC using the gcc
+   configuration file and populate the benchmark directories with a
+   copy of the gcc build configuration:
+   #+begin_src sh
+     cd parsec-2.1/
+     parsecmgmt -a build -p tools
+     bldconfadd -n graphite -c gcc -f
+   #+end_src
 
-: $ parsecmgmt -a build -p tools
-: $ touch config/parsec.conf
-: $ bldconfadd -n graphite -c gcc -f
+5. Next, use the configuration file located here to build the
+   applications: [[http://github.com/downloads/mit-carbon/Graphite/graphite.bldconf][graphite.bldconf]]. Place that file in the
+   =${PARSEC_HOME}/config= directory.
+   #+begin_src sh
+     wget http://github.com/downloads/mit-carbon/Graphite/graphite.bldconf \
+         -O ${PARSEC_HOME}/config/graphite.bldconf
+   #+end_src
 
-Next, use the configuration file located here to build the
-applications: [[http://github.com/downloads/mit-carbon/Graphite/graphite.bldconf][graphite.bldconf]]. Place that file in the
-${PARSEC_HOME}/config directory.
+6. Edit =graphite.bldconf= to set the =GRAPHITE_HOME= variable to the
+   root of your Graphite source tree and add the =build_inplace= option.
+   #+begin_src sh
+     sed -i "s/export GRAPHITE_HOME.*$/export GRAPHITE_HOME=\"$(echo $GRAPHITE_HOME|sed 's/\//\\\//g')\"/" \
+         ${PARSEC_HOME}/config/graphite.bldconf
+     echo 'build_inplace="TRUE"' >> ${PARSEC_HOME}/config/graphite.bldconf
+   #+end_src
 
-: $ wget http://github.com/downloads/mit-carbon/Graphite/graphite.bldconf -O ${PARSEC_HOME}/config/graphite.bldconf
+7. Next build the PARSEC applications and kernels using the
+   =graphite.bldconf= configuration file:
+   #+begin_src sh
+     parsecmgmt -a build -p apps -c graphite
+     parsecmgmt -a build -p kernels -c graphite
+   #+end_src
 
-Edit =graphite.bldconf= to set the GRAPHITE_HOME variable to the root
-of your Graphite source tree.
+   #+begin_quote
+   For me, [[id:a4a68af3-1474-4abb-bc1c-daa37d20d758][raytrace failed]], but everything else succeeded.
+   #+end_quote
 
-Had to add
-: build_inplace="TRUE"
-to my =graphite.bldconf= file and then explicitly symlink to it from
-the application directories.
-#+begin_src sh
-  for app in $(ls pkgs/apps);do
-      cd pkgs/apps/$app/parsec/
-      ln -s ../../../../config/graphite.bldconf 
-      cd ../../../../
-  done
-  for app in $(ls pkgs/kernels);do
-      cd pkgs/kernels/$app/parsec/
-      ln -s ../../../../config/graphite.bldconf 
-      cd ../../../../
-  done
-#+end_src
+8. Then from the Graphite home directory, set the =PARSEC_HOME=
+   variable in the file =tests/Makefile.parsec= to point to the source
+   of the PARSEC source tree.
+   #+begin_src sh
+     cd ${GRAPHITE_HOME}
+     sed -i 's/^PARSEC_HOME = .*$/PARSEC_HOME=\/home\/bacon\/parsec-2.1/' \
+         tests/Makefile.parsec
+   #+end_src
 
-Next build the PARSEC applications and kernels using the
-=graphite.bldconf= configuration file:
+   Run =make [app]_parsec= to simulate the =[app]= with Graphite using
+   the parameters specified in =tests/Makefile.parsec=. E.g.,
+   #+begin_src sh
+     make blackscholes_parsec
+   #+end_src
 
-: $ ./bin/parsecmgmt -a build -p apps -c graphite
-: $ ./bin/parsecmgmt -a build -p kernels -c graphite
-
-Then return to the Graphite home directory.
-
-: $ cd ${GRAPHITE_HOME}
-
-Set the PARSEC_HOME variable in the file =tests/Makefile.parsec= to
-point to the source of the PARSEC source tree.
-
-Run =make [app]_parsec= to simulate the =[app]= with Graphite using
-the parameters specified in =tests/Makefile.parsec=.
+   #+begin_quote
+   Which results in the following error.
+   : ERROR: Unable to open file in_4k.txt.
+   #+end_quote
 
 ** Running a Simple Fast Fourier Transform (FFT)
 The FFT benchmark has higher memory requirements than the simple
@@ -688,7 +680,252 @@ Analysis code in file:src/runtime-2.lisp
 #+Caption: Energy consumption by generation of evolution
 [[file:data/flits.svg]]
 
-* COMMENT Notes [1/5]
+* COMMENT Notes [2/6]
+** run a PARSEC app w/Graphite
+*** TODO blackscholes
+: cd /home/bacon/parsec-2.1/pkgs/apps/blackscholes/run; /home/bacon/graphite/tools/spawn.py 1 /home/bacon/graphite/carbon_sim.cfg  /home/bacon/pin/intel64/bin/pinbin -mt -t /home/bacon/graphite/lib/pin_sim -c /home/bacon/graphite/carbon_sim.cfg --general/total_cores=64 --general/num_processes=1 --general/enable_shared_mem=true  -- /home/bacon/parsec-2.1/pkgs/apps/blackscholes/inst/amd64-linux.graphite/bin/blackscholes 16 in_4k.txt prices.txt
+: [spawn.py] Starting process: 0 : export CARBON_PROCESS_INDEX=0; export LD_LIBRARY_PATH="/afs/csail/group/carbon/tools/boost_1_38_0/stage/lib"; /home/bacon/pin/intel64/bin/pinbin -mt -t /home/bacon/graphite/lib/pin_sim -c /home/bacon/graphite/carbon_sim.cfg --general/total_cores=64 --general/num_processes=1 --general/enable_shared_mem=true -- /home/bacon/parsec-2.1/pkgs/apps/blackscholes/inst/amd64-linux.graphite/bin/blackscholes 16 in_4k.txt prices.txt
+: PARSEC Benchmark Suite Version 2.1
+: ERROR: Unable to open file in_4k.txt.
+: [spawn.py] Exited with return code: 1
+: make: *** [blackscholes_parsec] Error 1
+
+** DONE building all PARSEC apps w/Graphite
+Everything built but raytrace
+
+*** TODO failure w/cmake while building raytrace
+    :PROPERTIES:
+    :ID:       a4a68af3-1474-4abb-bc1c-daa37d20d758
+    :END:
+figure out what went wrong here
+: /usr/bin/g++ -L/usr/lib64 -L/usr/lib -static -u CarbonStartSim -u CarbonStopSim -L/home/bacon/graphite/lib -L/home/bacon/graphite/os-services-25032-gcc.4.0.0-linux-ia32_intel64/intel64 -L/home/bacon/graphite/contrib/orion -pthread -lcarbon_sim -lorion -los-services -lboost_filesystem-mt -lboost_system-mt -pthread -lstdc++ -lm -O3 -funroll-loops -fprefetch-loop-arrays -fpermissive -static-libgcc -Wl,--hash-style=both,--as-needed -DPARSEC_VERSION=2.1 -fexceptions -I/home/bacon/parsec-2.1/pkgs/tools/cmake/src/Source   -I/home/bacon/parsec-2.1/pkgs/tools/cmake/obj/amd64-linux.graphite/Bootstrap.cmk  cmake.o cmakemain.o cmakewizard.o cmCommandArgumentLexer.o cmCommandArgumentParser.o cmCommandArgumentParserHelper.o cmDepends.o cmDependsC.o cmDocumentationFormatter.o cmDocumentationFormatterText.o cmPolicies.o cmProperty.o cmPropertyMap.o cmPropertyDefinition.o cmPropertyDefinitionMap.o cmMakeDepend.o cmMakefile.o cmExportFileGenerator.o cmExportInstallFileGenerator.o cmInstallDirectoryGenerator.o cmGeneratedFileStream.o cmGlobalGenerator.o cmLocalGenerator.o cmInstallGenerator.o cmInstallExportGenerator.o cmInstallFilesGenerator.o cmInstallScriptGenerator.o cmInstallTargetGenerator.o cmSourceFile.o cmSourceFileLocation.o cmSystemTools.o cmVersion.o cmFileTimeComparison.o cmGlobalUnixMakefileGenerator3.o cmLocalUnixMakefileGenerator3.o cmMakefileExecutableTargetGenerator.o cmMakefileLibraryTargetGenerator.o cmMakefileTargetGenerator.o cmMakefileUtilityTargetGenerator.o cmBootstrapCommands.o cmCommands.o cmTarget.o cmTest.o cmCustomCommand.o cmDocumentVariables.o cmCacheManager.o cmListFileCache.o cmComputeLinkDepends.o cmComputeLinkInformation.o cmOrderDirectories.o cmComputeTargetDepends.o cmComputeComponentGraph.o cmExprLexer.o cmExprParser.o cmExprParserHelper.o cmListFileLexer.o Directory.o Glob.o RegularExpression.o SystemTools.o ProcessUNIX.o String.o System.o -o cmake
+: SystemTools.o: In function `cmsys::SystemTools::ConvertToUnixSlashes(std::basic_string<char, std::char_traits<char>, std::allocator<char> >&)':
+: SystemTools.cxx:(.text+0x462c): warning: Using 'getpwnam' in statically linked applications requires at runtime the shared libraries from the glibc version used for linking
+: /home/bacon/graphite/lib/libcarbon_sim.a(socktransport.o): In function `SockTransport::Socket::connect(char const*, int)':
+: socktransport.cc:(.text+0x15b1): warning: Using 'gethostbyname' in statically linked applications requires at runtime the shared libraries from the glibc version used for linking
+: loading initial cache file /home/bacon/parsec-2.1/pkgs/tools/cmake/obj/amd64-linux.graphite/Bootstrap.cmk/InitialCacheFlags.cmake
+: -- The C compiler identification is GNU
+: -- The CXX compiler identification is GNU
+: -- Check for working C compiler: /usr/bin/gcc
+: -- Check for working C compiler: /usr/bin/gcc -- works
+: -- Detecting C compiler ABI info
+: -- Detecting C compiler ABI info - done
+: -- Check for working CXX compiler: /usr/bin/g++
+: -- Check for working CXX compiler: /usr/bin/g++ -- works
+: -- Detecting CXX compiler ABI info
+: -- Detecting CXX compiler ABI info - done
+: -- CTest cannot determine repository type. Please set UPDATE_TYPE to 'cvs' or 'svn'. CTest update will not work.
+: -- Looking for C++ include iostream
+: -- Looking for C++ include iostream - found
+: -- Check for STD namespace
+: -- Check for STD namespace - found
+: -- Check for ANSI scope
+: -- Check for ANSI scope - found
+: -- Check for sstream
+: -- Check for sstream - found
+: -- Looking for unsetenv
+: -- Looking for unsetenv - found
+: -- Looking for environ
+: Curses libraries were not found. Curses GUI for CMake will not be built.-- Looking for environ - not found.
+: 
+: -- Checking for Large File Support
+: -- Checking for Large File Support - yes
+: -- Checking whether STL classes are in std namespace
+: -- Checking whether STL classes are in std namespace - yes
+: -- Checking whether ANSI stream headers are available
+: -- Checking whether ANSI stream headers are available - yes
+: -- Checking whether ANSI streams are in std namespace
+: -- Checking whether ANSI streams are in std namespace - yes
+: -- Checking whether ANSI string stream is available
+: -- Checking whether ANSI string stream is available - yes
+: -- Checking whether header cstddef is available
+: -- Checking whether header cstddef is available - yes
+: -- Checking whether stl string has operator!= for char*
+: -- Checking whether stl string has operator!= for char* - yes
+: -- Checking whether stl has iterator_traits
+: -- Checking whether stl has iterator_traits - yes
+: -- Checking whether stl has standard template allocator
+: -- Checking whether stl has standard template allocator - yes
+: -- Checking for rebind member of stl allocator
+: -- Checking for rebind member of stl allocator - yes
+: -- Checking for non-standard argument to stl allocator<>::max_size
+: -- Checking for non-standard argument to stl allocator<>::max_size - no
+: -- Checking whether stl containers support allocator objects.
+: -- Performing Test int send(int, void *, socklen_t, int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(int, void *, socklen_t, unsigned int) (curl_cv_func_send_test)
+: -- Performing Test int send(int, void *, socklen_t, unsigned int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(int, void *, unsigned int, int) (curl_cv_func_send_test)
+: -- Performing Test int send(int, void *, unsigned int, int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(int, void *, unsigned int, unsigned int) (curl_cv_func_send_test)
+: -- Performing Test int send(int, void *, unsigned int, unsigned int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(int, char *, size_t, int) (curl_cv_func_send_test)
+: -- Performing Test int send(int, char *, size_t, int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(int, char *, size_t, unsigned int) (curl_cv_func_send_test)
+: -- Performing Test int send(int, char *, size_t, unsigned int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(int, char *, int, int) (curl_cv_func_send_test)
+: -- Performing Test int send(int, char *, int, int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(int, char *, int, unsigned int) (curl_cv_func_send_test)
+: -- Performing Test int send(int, char *, int, unsigned int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(int, char *, socklen_t, int) (curl_cv_func_send_test)
+: -- Performing Test int send(int, char *, socklen_t, int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(int, char *, socklen_t, unsigned int) (curl_cv_func_send_test)
+: -- Performing Test int send(int, char *, socklen_t, unsigned int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(int, char *, unsigned int, int) (curl_cv_func_send_test)
+: -- Performing Test int send(int, char *, unsigned int, int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(int, char *, unsigned int, unsigned int) (curl_cv_func_send_test)
+: -- Performing Test int send(int, char *, unsigned int, unsigned int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(int, const char *, size_t, int) (curl_cv_func_send_test)
+: -- Performing Test int send(int, const char *, size_t, int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(int, const char *, size_t, unsigned int) (curl_cv_func_send_test)
+: -- Performing Test int send(int, const char *, size_t, unsigned int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(int, const char *, int, int) (curl_cv_func_send_test)
+: -- Performing Test int send(int, const char *, int, int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(int, const char *, int, unsigned int) (curl_cv_func_send_test)
+: -- Performing Test int send(int, const char *, int, unsigned int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(int, const char *, socklen_t, int) (curl_cv_func_send_test)
+: -- Performing Test int send(int, const char *, socklen_t, int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(int, const char *, socklen_t, unsigned int) (curl_cv_func_send_test)
+: -- Performing Test int send(int, const char *, socklen_t, unsigned int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(int, const char *, unsigned int, int) (curl_cv_func_send_test)
+: -- Performing Test int send(int, const char *, unsigned int, int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(int, const char *, unsigned int, unsigned int) (curl_cv_func_send_test)
+: -- Performing Test int send(int, const char *, unsigned int, unsigned int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(ssize_t, const void *, size_t, int) (curl_cv_func_send_test)
+: -- Performing Test int send(ssize_t, const void *, size_t, int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(ssize_t, const void *, size_t, unsigned int) (curl_cv_func_send_test)
+: -- Performing Test int send(ssize_t, const void *, size_t, unsigned int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(ssize_t, const void *, int, int) (curl_cv_func_send_test)
+: -- Performing Test int send(ssize_t, const void *, int, int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(ssize_t, const void *, int, unsigned int) (curl_cv_func_send_test)
+: -- Performing Test int send(ssize_t, const void *, int, unsigned int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(ssize_t, const void *, socklen_t, int) (curl_cv_func_send_test)
+: -- Performing Test int send(ssize_t, const void *, socklen_t, int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(ssize_t, const void *, socklen_t, unsigned int) (curl_cv_func_send_test)
+: -- Performing Test int send(ssize_t, const void *, socklen_t, unsigned int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(ssize_t, const void *, unsigned int, int) (curl_cv_func_send_test)
+: -- Performing Test int send(ssize_t, const void *, unsigned int, int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(ssize_t, const void *, unsigned int, unsigned int) (curl_cv_func_send_test)
+: -- Performing Test int send(ssize_t, const void *, unsigned int, unsigned int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(ssize_t, void *, size_t, int) (curl_cv_func_send_test)
+: -- Performing Test int send(ssize_t, void *, size_t, int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(ssize_t, void *, size_t, unsigned int) (curl_cv_func_send_test)
+: -- Performing Test int send(ssize_t, void *, size_t, unsigned int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(ssize_t, void *, int, int) (curl_cv_func_send_test)
+: -- Performing Test int send(ssize_t, void *, int, int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(ssize_t, void *, int, unsigned int) (curl_cv_func_send_test)
+: -- Performing Test int send(ssize_t, void *, int, unsigned int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(ssize_t, void *, socklen_t, int) (curl_cv_func_send_test)
+: -- Performing Test int send(ssize_t, void *, socklen_t, int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(ssize_t, void *, socklen_t, unsigned int) (curl_cv_func_send_test)
+: -- Performing Test int send(ssize_t, void *, socklen_t, unsigned int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(ssize_t, void *, unsigned int, int) (curl_cv_func_send_test)
+: -- Performing Test int send(ssize_t, void *, unsigned int, int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(ssize_t, void *, unsigned int, unsigned int) (curl_cv_func_send_test)
+: -- Performing Test int send(ssize_t, void *, unsigned int, unsigned int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(ssize_t, char *, size_t, int) (curl_cv_func_send_test)
+: -- Performing Test int send(ssize_t, char *, size_t, int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(ssize_t, char *, size_t, unsigned int) (curl_cv_func_send_test)
+: -- Performing Test int send(ssize_t, char *, size_t, unsigned int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(ssize_t, char *, int, int) (curl_cv_func_send_test)
+: -- Performing Test int send(ssize_t, char *, int, int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(ssize_t, char *, int, unsigned int) (curl_cv_func_send_test)
+: -- Performing Test int send(ssize_t, char *, int, unsigned int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(ssize_t, char *, socklen_t, int) (curl_cv_func_send_test)
+: -- Performing Test int send(ssize_t, char *, socklen_t, int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(ssize_t, char *, socklen_t, unsigned int) (curl_cv_func_send_test)
+: -- Performing Test int send(ssize_t, char *, socklen_t, unsigned int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(ssize_t, char *, unsigned int, int) (curl_cv_func_send_test)
+: -- Performing Test int send(ssize_t, char *, unsigned int, int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(ssize_t, char *, unsigned int, unsigned int) (curl_cv_func_send_test)
+: -- Performing Test int send(ssize_t, char *, unsigned int, unsigned int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(ssize_t, const char *, size_t, int) (curl_cv_func_send_test)
+: -- Performing Test int send(ssize_t, const char *, size_t, int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(ssize_t, const char *, size_t, unsigned int) (curl_cv_func_send_test)
+: -- Performing Test int send(ssize_t, const char *, size_t, unsigned int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(ssize_t, const char *, int, int) (curl_cv_func_send_test)
+: -- Performing Test int send(ssize_t, const char *, int, int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(ssize_t, const char *, int, unsigned int) (curl_cv_func_send_test)
+: -- Performing Test int send(ssize_t, const char *, int, unsigned int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(ssize_t, const char *, socklen_t, int) (curl_cv_func_send_test)
+: -- Performing Test int send(ssize_t, const char *, socklen_t, int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(ssize_t, const char *, socklen_t, unsigned int) (curl_cv_func_send_test)
+: -- Performing Test int send(ssize_t, const char *, socklen_t, unsigned int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(ssize_t, const char *, unsigned int, int) (curl_cv_func_send_test)
+: -- Performing Test int send(ssize_t, const char *, unsigned int, int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(ssize_t, const char *, unsigned int, unsigned int) (curl_cv_func_send_test)
+: -- Performing Test int send(ssize_t, const char *, unsigned int, unsigned int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(SOCKET, const void *, size_t, int) (curl_cv_func_send_test)
+: -- Performing Test int send(SOCKET, const void *, size_t, int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(SOCKET, const void *, size_t, unsigned int) (curl_cv_func_send_test)
+: -- Performing Test int send(SOCKET, const void *, size_t, unsigned int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(SOCKET, const void *, int, int) (curl_cv_func_send_test)
+: -- Performing Test int send(SOCKET, const void *, int, int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(SOCKET, const void *, int, unsigned int) (curl_cv_func_send_test)
+: -- Performing Test int send(SOCKET, const void *, int, unsigned int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(SOCKET, const void *, socklen_t, int) (curl_cv_func_send_test)
+: -- Performing Test int send(SOCKET, const void *, socklen_t, int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(SOCKET, const void *, socklen_t, unsigned int) (curl_cv_func_send_test)
+: -- Performing Test int send(SOCKET, const char *, socklen_t, unsigned int) (curl_cv_func_send_test) - Failed
+: -- Performing Test int send(SOCKET, const char *, unsigned int, int) (curl_cv_func_send_test)
+: -- Searching 16 bit integer
+: -- Check size of unsigned short
+: -- Check size of unsigned short - done
+: -- Using unsigned short
+: -- Check if the system is big endian - little endian
+: -- Looking for include files HAVE_STDARG_H
+: -- Looking for include files HAVE_STDARG_H - found
+: -- Looking for include files HAVE_WCHAR_H
+: -- Looking for include files HAVE_WCHAR_H - found
+: -- Looking for asprintf
+: -- Looking for asprintf - not found.
+: -- Looking for setgroups
+: -- Looking for setgroups - not found.
+: running cd "/home/bacon/parsec-2.1/pkgs/tools/cmake/obj/amd64-linux.graphite/CMakeFiles/CMakeTmp" && /home/bacon/parsec-2.1/pkgs/tools/cmake/obj/amd64-linux.graphite/Bootstrap.cmk/cmake -E copy src2.c src.c  2>&1
+: -- Performing Test VA_LIST_ISNOT_ARRAY_DEFINE
+: -- Performing Test VA_LIST_ISNOT_ARRAY_DEFINE - Failed
+: running cd "/home/bacon/parsec-2.1/pkgs/tools/cmake/obj/amd64-linux.graphite/CMakeFiles/CMakeTmp" && /home/bacon/parsec-2.1/pkgs/tools/cmake/obj/amd64-linux.graphite/Bootstrap.cmk/cmake -E copy src2.c src.c  2>&1
+: -- Performing Test HAS_VA_COPY
+: -- Performing Test HAS_VA_COPY - Success
+: running cd "/home/bacon/parsec-2.1/pkgs/tools/cmake/obj/amd64-linux.graphite/CMakeFiles/CMakeTmp" && /home/bacon/parsec-2.1/pkgs/tools/cmake/obj/amd64-linux.graphite/Bootstrap.cmk/cmake -E copy src2.c src.c  2>&1
+: -- Performing Test ATTR_UNUSED_VAR
+: -- Performing Test ATTR_UNUSED_VAR - Success
+: -- Looking for elf.h
+: -- Looking for elf.h - found
+: -- Configuring done
+: -- Generating done
+: -- Build files have been written to: /home/bacon/parsec-2.1/pkgs/tools/cmake/obj/amd64-linux.graphite
+: ---------------------------------------------
+: CMake has bootstrapped.  Now run /usr/bin/make.
+: [PARSEC] Running 'env CXXFLAGS=-O3 -funroll-loops -fprefetch-loop-arrays -fpermissive -static-libgcc -Wl,--hash-style=both,--as-needed -DPARSEC_VERSION=2.1 -fexceptions /usr/bin/make':
+: Scanning dependencies of target cmsys
+: [  0%] Building C object Source/kwsys/CMakeFiles/cmsys.dir/ProcessUNIX.o
+: [  0%] Building C object Source/kwsys/CMakeFiles/cmsys.dir/Base64.o
+: [  1%] Building C object Source/kwsys/CMakeFiles/cmsys.dir/MD5.o
+: [  1%] Building C object Source/kwsys/CMakeFiles/cmsys.dir/Terminal.o
+: [  1%] Building C object Source/kwsys/CMakeFiles/cmsys.dir/System.o
+: [  2%] Building C object Source/kwsys/CMakeFiles/cmsys.dir/String.o
+: [  2%] Building CXX object Source/kwsys/CMakeFiles/cmsys.dir/Directory.o
+: [  3%] Building CXX object Source/kwsys/CMakeFiles/cmsys.dir/DynamicLoader.o
+: [  3%] Building CXX object Source/kwsys/CMakeFiles/cmsys.dir/Glob.o
+: [  3%] Building CXX object Source/kwsys/CMakeFiles/cmsys.dir/RegularExpression.o
+: [  4%] Building CXX object Source/kwsys/CMakeFiles/cmsys.dir/SystemTools.o
+: [  4%] Building CXX object Source/kwsys/CMakeFiles/cmsys.dir/CommandLineArguments.o
+: [  5%] Building CXX object Source/kwsys/CMakeFiles/cmsys.dir/Registry.o
+: [  5%] Building CXX object Source/kwsys/CMakeFiles/cmsys.dir/IOStream.o
+: [  5%] Building CXX object Source/kwsys/CMakeFiles/cmsys.dir/SystemInformation.o
+: Linking CXX static library libcmsys.a
+: [  5%] Built target cmsys
+: Scanning dependencies of target cmsysTestDynload
+: [  6%] Building C object Source/kwsys/CMakeFiles/cmsysTestDynload.dir/testDynload.o
+: Linking C shared module libcmsysTestDynload.so
+: /usr/bin/ld: /usr/lib/gcc/x86_64-linux-gnu/4.3.2/crtbeginT.o: relocation R_X86_64_32 against `__DTOR_END__' can not be used when making a shared object; recompile with -fPIC
+: /usr/lib/gcc/x86_64-linux-gnu/4.3.2/crtbeginT.o: could not read symbols: Bad value
+: collect2: ld returned 1 exit status
+: make[2]: *** [Source/kwsys/libcmsysTestDynload.so] Error 1
+: make[1]: *** [Source/kwsys/CMakeFiles/cmsysTestDynload.dir/all] Error 2
+: make: *** [all] Error 2
+: [PARSEC] Error: 'env CXXFLAGS=-O3 -funroll-loops -fprefetch-loop-arrays -fpermissive -static-libgcc -Wl,--hash-style=both,--as-needed -DPARSEC_VERSION=2.1 -fexceptions /usr/bin/make' failed.
+
 ** fault tolerance stochastic algorithms -- new target applications PARSEC
 http://pages.saclay.inria.fr/olivier.temam/
 #+begin_quote
