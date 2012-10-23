@@ -1,6 +1,7 @@
 #+Title: Optimization
-#+Options: ^:nil toc:1
+#+Options: ^:nil toc:2
 #+Startup: hideblocks
+#+Style: <style type="text/css">pre{background:#232323; color:#E6E1DC;}</style>
 
 * Introduction
 During compilation and linking, non-functional properties of software
@@ -414,6 +415,29 @@ To run all overlays daemonized;
   REMOTES=($remotes)
   EOF
 #+end_src
+
+** Running Clang and LLVM
+1. Log into =tune= as =root=
+
+2. Install subversion.
+   #+begin_src sh
+     apt-get install subversion
+   #+end_src
+
+3. Install the llvm/clang source from SVN.
+   #+begin_src sh
+     cd /usr/local/src/
+     svn co http://llvm.org/svn/llvm-project/llvm/trunk llvm
+     cd llvm/tools/
+     svn co http://llvm.org/svn/llvm-project/cfe/trunk clang
+     cd ../
+   #+end_src
+
+4. Configure build and install.
+   #+begin_src sh
+     ./configure
+     make
+   #+end_src
 
 * Experimental Runs
   :PROPERTIES:
