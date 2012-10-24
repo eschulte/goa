@@ -437,6 +437,8 @@ To run all overlays daemonized;
    #+begin_src sh
      ./configure
      make
+     make install
+     make clean
    #+end_src
 
 * Experimental Runs
