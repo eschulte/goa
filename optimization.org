@@ -733,7 +733,7 @@ Analysis code in file:src/runtime-2.lisp
 #+Caption: Energy consumption by generation of evolution
 [[file:data/flits.svg]]
 
-* COMMENT Notes [2/6]
+* COMMENT Notes [3/6]
 ** run a PARSEC app w/Graphite
 They all fail, many with missing input files or just incorrect inputs.
 
@@ -1099,8 +1099,10 @@ is staying constant.  I wonder if this could be a bug in Graphite.
 | 40 |    158.30093 |           66835709 |  11787330638 |
 | 80 |    158.30093 |           66918247 |  11811495198 |
 
-** TODO C code manipulation
+** DONE C code manipulation
 This is more of a task for the top-level software-evolution framework.
+
+Looks like I should be able to use [[https://github.com/eschulte/clang-mutate][clang-mutate]] for this.
 
 ** TODO look at the best performers
 Use something like the following.
