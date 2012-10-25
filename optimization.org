@@ -416,7 +416,7 @@ To run all overlays daemonized;
   EOF
 #+end_src
 
-** Running Clang and LLVM
+** Running LLVM/Clang and clang-mutate
 1. Log into =tune= as =root=
 
 2. Install subversion.
@@ -424,21 +424,22 @@ To run all overlays daemonized;
      apt-get install subversion
    #+end_src
 
-3. Install the llvm/clang source from SVN.
+3. Install the llvm/clang from SVN.
    #+begin_src sh
      cd /usr/local/src/
      svn co http://llvm.org/svn/llvm-project/llvm/trunk llvm
      cd llvm/tools/
      svn co http://llvm.org/svn/llvm-project/cfe/trunk clang
      cd ../
+     ./configure && make install && make clean
    #+end_src
 
-4. Configure build and install.
+4. Install [[https://github.com/eschulte/clang-mutate][clang-mutate]] from git.
    #+begin_src sh
-     ./configure
-     make
-     make install
-     make clean
+     cd /usr/local/src/
+     git clone git://github.com/eschulte/clang-mutate.git
+     cd clang-mutate
+     make install && make clean
    #+end_src
 
 * Experimental Runs
