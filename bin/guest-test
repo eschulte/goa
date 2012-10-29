@@ -2,61 +2,36 @@
 #
 # Copyright (C) 2012  Eric Schulte
 #
-# Usage: guest-test.sh variant.s
-# Takes an asm fft file, compiles it, runs it and returns results.
-# 
-# variant.s - path to the variant to test on the guest system
+# Usage: guest-test program variant
+# build and run VARIANT of PROGRAM returning graphite output
 #
 . $(dirname $0)/common
+. /home/bacon/.profile
+. /home/bacon/.bashrc
 
 LIMIT="/home/bacon/bin/limit"
-lock="/tmp/lockfile"
-quit_locked(){ echo busy; exit 1; }
-quit_free(){ rm -f $lock; exit 0; }
-debug(){ echo $1; }
+LOCK="/tmp/lockfile"
+quit_locked(){ echo busy; exit  1; }
+quit_free(){ rm -f $LOCK; exit $1; }
 
 # atomic check and set on the VM lock
-(umask 222; echo $$ >$lock) 2>/dev/null || quit_locked;
+(umask 222; echo $$ >$LOCK) 2>/dev/null || quit_locked;
 
-var=$1
-if [ -z "$1" ];then
-    echo "The first argument must be the path to an ASM FFT file."
-else
-    (
-        debug "compiling"
-        pushd /home/bacon/graphite/tests/benchmarks/fft
-        rm -f fft*
-        mv $var ./fft.s
-        gcc -I/home/bacon/graphite/common/user \
-            -I/home/bacon/graphite/common/misc \
-            -c -Wall -O2 -DTARGET_X86_64 -std=c99 \
-            -c -o fft.o fft.s || exit 1
-        g++ fft.o -o fft -static \
-            -u CarbonStartSim \
-            -u CarbonStopSim \
-            -u pthread_create \
-            -u pthread_join \
-            -L/home/bacon/graphite/lib -los-services \
-            -L/home/bacon/graphite/os-services-25032-gcc.4.0.0-linux-ia32_intel64/intel64 \
-            -L/home/bacon/graphite/contrib/orion \
-            -L/home/bacon/graphite/lib -pthread \
-            -lcarbon_sim -los-services \
-            -lboost_filesystem-mt -lboost_system-mt -pthread -lorion || exit 1
-        rm -f ~/graphite/output_files/sim.out
-        popd
-        pushd ~/graphite/
-        debug "running"
-        GRAPHITE_HOME="/home/bacon/graphite" \
-            $LIMIT ./tools/spawn.py 1 carbon_sim.cfg \
-            /home/bacon/pin/intel64/bin/pinbin \
-            -mt -t ./lib/pin_sim \
-            -c carbon_sim.cfg \
-            --general/total_cores=64 \
-            --general/num_processes=1 \
-            --general/enable_shared_mem=true \
-            -- \
-            ./tests/benchmarks/fft/fft -p64 -m16
-        popd
-    ) 2>/dev/null
-fi
-quit_free
+PROGRAM=$1
+VARIANT=$2
+if [ -z "$1" ];then help; fi
+pushd /home/bacon/benchmark/$PROGRAM >/dev/null 2>/dev/null
+case $PROGRAM in
+    blackscholes)
+        RUNDIR=~/graphite/tests/parsec/pkgs/apps/blackscholes/run
+        (mv $VARIANT blackscholes.c && make clean && make) >/dev/null 2>/dev/null
+        RESULTS="$($LIMIT /home/bacon/bin/graphite-run ./blackscholes 4 $RUNDIR/in_4.txt $RUNDIR/prices.txt 2>/dev/null)"
+        RETURN=$?
+        ;;
+    *)
+        echo "$0: '$PROGRAM' is not a recognized program" >&2;
+        quit_free 1
+        ;;
+esac
+echo "$RESULTS"
+quit_free $RETURN

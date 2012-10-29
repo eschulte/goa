@@ -1,0 +1,19 @@
+#!/bin/bash
+#
+# run a program with Graphite's spawn.py
+#
+mkdir -p output_files/
+/home/bacon/graphite/tools/spawn.py 1      \
+    /home/bacon/graphite/carbon_sim.cfg    \
+    /home/bacon/pin/intel64/bin/pinbin     \
+    -mt                                    \
+    -t /home/bacon/graphite/lib/pin_sim    \
+    -c /home/bacon/graphite/carbon_sim.cfg \
+    --general/total_cores=64               \
+    --general/num_processes=1              \
+    --general/enable_shared_mem=true       \
+    -- $@
+RESULT=$?
+cat output_files/sim.out
+rm -rf output_files/
+exit $RESULT
