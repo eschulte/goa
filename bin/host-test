@@ -33,15 +33,5 @@ while [ "$output" = "busy" ]; do
     if [ "$output" = "busy" ];then sleep 1; fi
 done
 
-## return the execution metrics as lisp
-sed_cmd=$(cat <<EOF
-s/^ \+//;
-s/ \+| \+/ /g;
-s/(//g;
-s/)//g;
-s/\([a-zA-Z]\) \([a-zA-Z]\)/\1-\2/g;
-EOF
-)
-
 # runtime metrics
 echo "$output"

@@ -1,0 +1,21 @@
+#!/bin/bash
+# 
+# return the execution metrics as lisp
+# 
+sed_cmd=$(cat <<EOF
+s/\[spawn.py\] //;
+s/://;
+s/start time/start/;
+s/stop time/stop/;
+s/shutdown time/shutdown/;
+s/\([a-z]\) \([a-z]\)/\1-\2/g;
+s/|//g;
+s/^ \+//;
+s/([^)]\+)//g;
+s/tile /tile-/g
+s/ \+/ /g;
+EOF
+)
+sed '/Starting process/d;/Simulation timers/d' \
+    |tr [A-Z] [a-z] \
+    |sed "$sed_cmd"
