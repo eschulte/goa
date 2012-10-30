@@ -4,3 +4,6 @@ startup-vms
 *.fasl
 limit
 re-run.lisp
+*.cache
+*.go
+*.output
