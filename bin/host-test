@@ -27,11 +27,30 @@ output="busy"
 err=""
 while [ "$output" = "busy" ]; do
     remote=$(pick_remote)
-    scp -P $remote $var bacon@localhost:/tmp/ >/dev/null
+    scp -P $remote $var bacon@localhost:/tmp/ >/dev/null 2>/dev/null
     output=$(ssh -t -p $remote bacon@localhost "$cmd" 2>/dev/null)
     err=$?
     if [ "$output" = "busy" ];then sleep 1; fi
 done
 
-# runtime metrics
-echo "$output"
+# post process
+sed_cmd=$(cat <<EOF
+s/\[spawn.py\] //;
+s/://;
+s/start time/start/;
+s/stop time/stop/;
+s/shutdown time/shutdown/;
+s/\([a-z]\) \([a-z]\)/\1-\2/g;
+s/|//g;
+s/^ \+//;
+s/([^)]\+)//g;
+s/tile /tile-/g;
+s/^(parsec/parsec/;
+s/	/ /g;
+s/ \+/ /g;
+EOF
+)
+echo "$output"|sed '/Starting process/d;/Simulation timers/d' \
+    |tr [A-Z] [a-z] \
+    |sed "$sed_cmd"
+exit $err
