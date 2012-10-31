@@ -5,4 +5,4 @@
 *.pdf
 
 # The virtual machine itself
-tune.qcow
+*.qcow
