@@ -7,3 +7,4 @@ re-run.lisp
 *.cache
 *.go
 *.output
+*.gz
