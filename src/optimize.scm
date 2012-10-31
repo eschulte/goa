@@ -15,6 +15,16 @@
  (ice-9 match) (ice-9 format)
  (sevo utility) (sevo sevo))
 
+(define-syntax unwind-msg-protect
+  (syntax-rules ()
+    "Do BODY-FORM, protecting with UNWIND-FORMS."
+    ((unwind-protect msg body-form unwind-forms ...)
+     (catch #t
+       (lambda () (prog1 body-form unwind-forms ...))
+       (lambda args
+         (format #t ";; [Error ~s] ~S" msg args)
+         unwind-forms ... (apply throw args))))))
+
 (define cache-file "run.cache.gz")
 (define num-threads #f)
 (define program "blackscholes")
