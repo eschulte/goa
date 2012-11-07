@@ -1,0 +1,13 @@
+#!/bin/bash
+#
+# Usage: active-vms
+# List the active vms and their ports
+#
+#  TODO: would be nice to fold this into the top output to mark each
+#        VM as active or inactive e.g., CPU usage above or below 50%
+#
+. bin/common
+ps auxwww|grep -v grep|grep qemu-kvm|grep hostfwd \
+    |sed 's/^[^[:space:]]* *//g;s/ .*hda / /;s/\.qcow.*127.0.0.1:/ /;s/-:22.*$//;' \
+    |awk '{printf "%-5d %-4d %s\n", $1,$3,$2}' \
+    |sort -n

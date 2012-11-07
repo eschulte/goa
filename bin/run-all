@@ -15,8 +15,7 @@
 
 USER="$1"; shift
 
-exit
-
 for remote in ${REMOTES[@]};do
-    ssh -i data/id_rsa -p $remote $USER@bacon@localhost "$@"
+    msg "$remote";
+    ssh -i data/id_rsa -p $remote $USER@localhost "$@";
 done

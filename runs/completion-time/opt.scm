@@ -28,7 +28,7 @@
 (define cache-file "run.cache.gz")
 (define num-threads 48)
 (define program "blackscholes")
-(define source (from-file "../data/blackscholes.c"))
+(define source (from-file "blackscholes.c"))
 (define original '((edit-history source) (cflags "2>/dev/null")))
 
 (define evaluate
@@ -38,7 +38,7 @@
         (apply values
           (with-temp-file-of (path "/tmp/clang-mutate-" ".c" (genome variant))
             (call-with-values
-                (lambda () (command-to-string "../bin/host-test" program path))
+                (lambda () (command-to-string "host-test" program path))
               (lambda (stdout err)
                 (list
                  (map (lambda (line)

@@ -14,11 +14,9 @@ fi
 
 for i in $(seq $1);do
     I=$(printf "%0.2d" $i);
-    echo "starting $I"
-    qemu-kvm -hda overlays/$I.qcow -m 2G \
-        -cdrom data/debian-5010-amd64-netinst.iso \
-        -net nic -net user,hostfwd=tcp:127.0.0.1:30$I-:22 \
-        -nographic -daemonize || error "error starting $I"
+    msg "starting $I"
+    $(dirname $0)/run-vm "overlays/$I.qcow" "30$I" \
+        || error "error starting overlays/$I.qcow at 30$I"
 done
 reset
 exit 0

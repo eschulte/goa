@@ -1,15 +1,13 @@
 #!/bin/bash
 #
-# Usage: run-vm [disk] [port] [no-wait]
-# run a many-bugs virtual machine with ssh access to a port
+# Usage: run-vm [disk] [port]
+# run a virtual machine with ssh access to a port
 #
 # disk      image or overlay to use
 #           (defaults to tune.qcow)
 #
 # port      port on which to listen for ssh connections
 #           (2222)
-#
-# no-wait   if supplied, don't wait for ssh access
 #
 . $(dirname $0)/common
 
@@ -26,8 +24,7 @@ if [ -z "$2" ];then PORT=2222
 ps auxwww|grep "\-hda $DISK"|grep -v "grep" >/dev/null && \
     echo "overlay is already running" && exit 1
 
-sh -c "$QEMU_CMD -hda $DISK -nographic -m 1G \
-    -net nic -net user,hostfwd=tcp:127.0.0.1:$PORT-:22 -daemonize" && \
-    echo "starting $DISK..."  && \
-    echo "on port $PORT"  && \
-    if [ -z "$3" ];then wait_for_ssh $PORT;fi
+# run
+qemu-kvm -hda $HDA -m 2G \
+    -net nic -net user,hostfwd=tcp:127.0.0.1:$PORT-:22 \
+    -nographic -daemonize

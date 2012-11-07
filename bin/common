@@ -10,10 +10,6 @@ contains(){
     echo "$it"|grep "$item" >/dev/null 2>/dev/null
 }
 
-warn(){ echo "$@" 1>&2; }
-
-error(){ echo "$@" 1>&2; exit 1; }
-
 SCRIPT="$0"
 help(){
     HELP_TEXT=$(cat "$SCRIPT" \
@@ -22,7 +18,8 @@ help(){
         |tail -n +3 \
         |sed -e :a -e '/^\n*$/{$d;N;ba' -e '}' \
         |cut -c3-)
-    error "$HELP_TEXT"
+    echo "$HELP_TEXT"
+    exit 1
 }
 if $(contains "$1" "^\-\?\-h\(elp\|$\)");then help; fi
 
@@ -30,9 +27,10 @@ REMOTES=("2222")
 if [ -f "$(dirname $0)/REMOTES" ];then
     . $(dirname $0)/REMOTES # allow host-specific remote files
 fi
-rand_remote(){ echo ${REMOTES[$RANDOM % ${#REMOTES[@]}]}; }
 
 LIMIT="$(dirname $0)/limit"
+
+rand_remote(){ echo ${REMOTES[$RANDOM % ${#REMOTES[@]}]}; }
 
 ## Math Functions
 mean(){ awk '{sum += $1;} END {print sum/NR}'; }
@@ -102,7 +100,7 @@ wait_for_ssh(){
 }
 
 # --------------------------------------------------------------------
-# From here down adopted from the makepkg utility in Arch Linux
+# From here to break adopted from the makepkg utility in Arch Linux
 # Copyright (c) 2006-2012 Pacman Development Team <pacman-dev@archlinux.org>
 # (see https://wiki.archlinux.org/index.php/Makepkg)
 if [[ -t 2 ]]; then
@@ -138,4 +136,5 @@ warning() {
 error() {
 	local mesg=$1; shift
 	printf "${RED}==> $(gettext "ERROR:")${ALL_OFF}${BOLD} ${mesg}${ALL_OFF}\n" "$@" >&2
+        exit 1
 }
