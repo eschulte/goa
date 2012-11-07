@@ -9,7 +9,7 @@
 
 pushd overlays/
 for i in $(seq $1);do
-    j=$(printf "%0.2d" i);
+    j=$(printf "%0.2d" $i);
     if [ ! -f "$j.qcow" ];then
         qemu-img create -b ../tune.qcow -f qcow2 "$j.qcow"
     fi

@@ -5,6 +5,15 @@
 # 
 
 ## Help functions
+contains(){
+    local it="$1"; local item="$2";
+    echo "$it"|grep "$item" >/dev/null 2>/dev/null
+}
+
+warn(){ echo "$@" 1>&2; }
+
+error(){ echo "$@" 1>&2; exit 1; }
+
 SCRIPT="$0"
 help(){
     HELP_TEXT=$(cat "$SCRIPT" \
@@ -13,10 +22,9 @@ help(){
         |tail -n +3 \
         |sed -e :a -e '/^\n*$/{$d;N;ba' -e '}' \
         |cut -c3-)
-    echo "$HELP_TEXT"
-    exit 1
+    error "$HELP_TEXT"
 }
-if echo "$1"|grep "^\-\?\-h" >/dev/null;then help; fi
+if $(contains "$1" "^\-\?\-h\(elp\|$\)");then help; fi
 
 REMOTES=("2222")
 if [ -f "$(dirname $0)/REMOTES" ];then

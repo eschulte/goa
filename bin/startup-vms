@@ -7,12 +7,18 @@
 # 
 . $(dirname $0)/common
 
-pushd overlays/
+if [ ! $(basename $(pwd)) == "optimization" ];then
+    echo "must run this from the optimization directory" >&2;
+    exit 1
+fi
+
 for i in $(seq $1);do
-    I=$(printf "%0.2d" i);
-    screen -X screen -t $I-VM \
-        qemu-kvm -hda $I.cqow -nographic -m 1G \
-        -cdrom ../data/debian-5010-amd64-netinst.iso \
-        -net nic -net user,hostfwd=tcp:127.0.0.1:30$I-:22
+    I=$(printf "%0.2d" $i);
+    echo "starting $I"
+    qemu-kvm -hda overlays/$I.qcow -m 2G \
+        -cdrom data/debian-5010-amd64-netinst.iso \
+        -net nic -net user,hostfwd=tcp:127.0.0.1:30$I-:22 \
+        -nographic -daemonize || error "error starting $I"
 done
-popd
+reset
+exit 0
