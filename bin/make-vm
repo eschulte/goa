@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Usage: make-overlay name [disk]
+# Usage: make-vm name [disk]
 # make an overlay based off of the many-bugs disk
 #
 # name      name of the overlay
