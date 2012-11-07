@@ -1,2 +1,4 @@
 blackscholes.c
 output
+*.go
+*.gz

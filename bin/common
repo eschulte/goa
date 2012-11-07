@@ -64,14 +64,16 @@ esac
 DEFAULT_DISK="tune.qcow"
 
 ## VM Functions
+SSH_ID=$(dirname $0)/../data/id_rsa
+
 vm_ssh(){
     local PORT=$1; shift
-    ssh -o 'StrictHostKeyChecking no' -p $PORT $@;
+    ssh -q -o 'StrictHostKeyChecking no' -i $SSH_ID -p $PORT $@;
 }
 
 vm_scp(){
     local PORT=$1; shift
-    scp -o 'StrictHostKeyChecking no' -P $PORT $@;
+    scp -q -o 'StrictHostKeyChecking no' -i $SSH_ID -P $PORT $@;
 }
 
 wait_for_start(){

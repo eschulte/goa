@@ -64,8 +64,8 @@
 (when (file-exists? cache-file)
   (read-memoized cache-file))
 
-(evolve (repeatedly 20 (rand-mutate 0.8 original)) multi-obj-fitness
-        #:max-gen 2
+(evolve (repeatedly 100 (rand-mutate 0.8 original)) multi-obj-fitness
+        #:max-gen 250
         #:num-threads num-threads)
 
 (write-memoized cache-file)

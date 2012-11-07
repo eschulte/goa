@@ -25,8 +25,8 @@ output="busy"
 err=""
 while [ "$output" = "busy" ]; do
     remote=$(rand_remote)
-    scp -P $remote $var bacon@localhost:/tmp/ >/dev/null 2>/dev/null
-    output=$(ssh -t -p $remote bacon@localhost "$cmd" 2>/dev/null)
+    vm_scp $remote $var bacon@localhost:/tmp/ >/dev/null 2>/dev/null
+    output=$(vm_ssh  $remote -t bacon@localhost "$cmd" 2>/dev/null)
     err=$?
     if [ "$output" = "busy" ];then sleep 1; fi
 done
