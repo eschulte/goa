@@ -13,8 +13,6 @@
 #
 . $(dirname $0)/common
 
-pick_remote(){ echo ${REMOTES[$RANDOM % ${#REMOTES[@]}]}; }
-
 if [ -z "$2" ];then help; exit 1;fi
 program=$1
 var=$2
@@ -26,7 +24,7 @@ output_path="graphite/output_files/sim.out"
 output="busy"
 err=""
 while [ "$output" = "busy" ]; do
-    remote=$(pick_remote)
+    remote=$(rand_remote)
     scp -P $remote $var bacon@localhost:/tmp/ >/dev/null 2>/dev/null
     output=$(ssh -t -p $remote bacon@localhost "$cmd" 2>/dev/null)
     err=$?

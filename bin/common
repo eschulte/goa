@@ -30,6 +30,7 @@ REMOTES=("2222")
 if [ -f "$(dirname $0)/REMOTES" ];then
     . $(dirname $0)/REMOTES # allow host-specific remote files
 fi
+rand_remote(){ echo ${REMOTES[$RANDOM % ${#REMOTES[@]}]}; }
 
 LIMIT="$(dirname $0)/limit"
 

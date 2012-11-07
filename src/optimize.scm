@@ -29,7 +29,7 @@
 (define num-threads #f)
 (define program "blackscholes")
 (define source (from-file "../data/blackscholes.c"))
-(define original '((edit-history source)))
+(define original '((edit-history source) (cflags "2>/dev/null")))
 
 (define evaluate
   (memoize 'evaluate
@@ -65,6 +65,7 @@
   (read-memoized cache-file))
 
 (evolve (repeatedly 20 (rand-mutate 0.8 original)) multi-obj-fitness
-        #:max-gen 2)
+        #:max-gen 2
+        #:num-threads num-threads)
 
-(write-memoized cache-file #:overwrite #t)
+(write-memoized cache-file)

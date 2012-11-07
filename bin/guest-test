@@ -24,9 +24,14 @@ pushd /home/bacon/benchmark/$PROGRAM >/dev/null 2>/dev/null
 case $PROGRAM in
     blackscholes)
         RUNDIR=~/graphite/tests/parsec/pkgs/apps/blackscholes/run
-        (mv $VARIANT blackscholes.c && make clean && make) >/dev/null 2>/dev/null
-        RESULTS="$($LIMIT /home/bacon/bin/graphite-run ./blackscholes 4 $RUNDIR/in_4.txt $RUNDIR/prices.txt 2>/dev/null)"
-        RETURN=$?
+        (cp $VARIANT blackscholes.c && make clean && make) >/dev/null 2>/dev/null
+        if [ $? -eq 0 ];then
+            RESULTS="$($LIMIT /home/bacon/bin/graphite-run ./blackscholes 4 $RUNDIR/in_4.txt $RUNDIR/prices.txt 2>/dev/null)"
+            RETURN=$?
+        else
+            RESULTS="compile-failure"
+            RETURN=1
+        fi
         ;;
     *)
         echo "$0: '$PROGRAM' is not a recognized program" >&2;
