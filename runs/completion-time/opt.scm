@@ -53,8 +53,8 @@
                  err)))))))))
 
 (define (multi-obj-fitness variant)
-  "Calculate the total combined fitness of PHENOME based on `evaluate' output."
-  (let ((fail-with (lambda args (apply format (cons #t args)) 0)))
+  "Calculate the total combined fitness of VARIANT based on `evaluate' output."
+  (let ((fail-with (lambda args (apply format (cons (current-error-port) args)) 0)))
     (let-values (((stdout err) (evaluate variant)))
       (catch #t
         (lambda ()
@@ -69,8 +69,7 @@
         (lambda (key . args)
           (case key
             ((out-of-range wrong-type-arg)
-             (format (current-error-port) ";; [~S] ~S" key args)
-             0)
+             (fail-with ";; [~S] ~S" key args))
             (else
              (write-memoized cache-file)
              (apply throw (cons key args)))))))))
