@@ -2,3 +2,5 @@ blackscholes.c
 output
 *.go
 *.gz
+stderr
+stdout

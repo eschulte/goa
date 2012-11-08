@@ -56,14 +56,24 @@
   "Calculate the total combined fitness of PHENOME based on `evaluate' output."
   (let ((fail-with (lambda args (apply format (cons #t args)) 0)))
     (let-values (((stdout err) (evaluate variant)))
-      (cond
-       ((not (zero? err)) 0)
-       ((not (list? stdout))
-        (fail-with "mangled STDOUT: ~a" stdout))
-       ((all number? (assoc-ref stdout #:completion-time))
-        (/ 1 (apply max (assoc-ref stdout #:completion-time))))
-       (else
-        (fail-with "bad metrics: ~a" (assoc stdout #:completion-time)))))))
+      (catch #t
+        (lambda ()
+          (cond
+           ((not (zero? err)) 0)
+           ((not (list? stdout))
+            (fail-with "mangled STDOUT: ~a" stdout))
+           ((all number? (assoc-ref stdout #:completion-time))
+            (/ 1 (apply max (assoc-ref stdout #:completion-time))))
+           (else
+            (fail-with "bad metrics: ~a" (assoc stdout #:completion-time)))))
+        (lambda (key . args)
+          (case key
+            ((out-of-range wrong-type-arg)
+             (format (current-error-port) ";; [~S] ~S" key args)
+             0)
+            (else
+             (write-memoized cache-file)
+             (apply throw (cons key args)))))))))
 
 (when (file-exists? cache-file)
   (read-memoized cache-file))
