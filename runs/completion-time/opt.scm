@@ -9,13 +9,6 @@
 ;; such as fastest execution, least communication, lowest energy
 ;; consumption etc...
 
-;;; TODO:
-
-;; - evolution: abort if everyone in the population has 0 fitness
-;; - slow down the mutation rate
-;; - possibly increase the tournament rate
-;; - make sure we catch *every* error
-
 ;;; Code:
 (use-modules
  (srfi srfi-1) (srfi srfi-11) (srfi srfi-69) (srfi srfi-88)
@@ -44,7 +37,7 @@
         (apply values
           (with-temp-file-of (path "/tmp/clang-mutate-" ".c" (genome variant))
             (call-with-values
-                (lambda () (command-to-string "host-test" program path))
+                (lambda () (command-to-string "timeout" "60" "host-test" program path))
               (lambda (stdout err)
                 (list
                  (if (string? stdout)
@@ -94,6 +87,6 @@
         #:cross-p 0.2
         #:tournament-size 6
         #:max-gen 250
-        #:num-threads #f)
+        #:num-threads 96)
 
 (write-memoized cache-file)
