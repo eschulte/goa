@@ -55,24 +55,22 @@
 (define (multi-obj-fitness variant)
   "Calculate the total combined fitness of VARIANT based on `evaluate' output."
   (let ((fail-with (lambda args (apply format (cons (current-error-port) args)) 0)))
-    (let-values (((stdout err) (evaluate variant)))
-      (catch #t
-        (lambda ()
+    (catch #t
+      (lambda ()
+        (let-values (((stdout err) (evaluate variant)))
           (cond
+           ((not (number? err))
+            (fail-with "[mof] non-numeric err: ~a~%" err))
            ((not (zero? err)) 0)
            ((not (list? stdout))
-            (fail-with "mangled STDOUT: ~a" stdout))
+            (fail-with "[mof] mangled STDOUT: ~a~%" stdout))
            ((all number? (assoc-ref stdout #:completion-time))
             (/ 1 (apply max (assoc-ref stdout #:completion-time))))
            (else
-            (fail-with "bad metrics: ~a" (assoc stdout #:completion-time)))))
-        (lambda (key . args)
-          (case key
-            ((out-of-range wrong-type-arg)
-             (fail-with ";; [~S] ~S" key args))
-            (else
-             (write-memoized cache-file)
-             (apply throw (cons key args)))))))))
+            (fail-with "[mof] bad metrics: ~a~%"
+                       (assoc stdout #:completion-time))))))
+      (lambda (key . args)
+        (fail-with "[mof] ~S: ~S~%" key args)))))
 
 (when (file-exists? cache-file)
   (read-memoized cache-file))
