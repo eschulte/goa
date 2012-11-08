@@ -33,7 +33,6 @@
          unwind-forms ... (apply throw args))))))
 
 (define cache-file "run.cache.gz")
-(define num-threads 48)
 (define program "blackscholes")
 (define source (from-file "blackscholes.c"))
 (define original '((edit-history source) (cflags "2>/dev/null")))
@@ -61,29 +60,40 @@
 
 (define (multi-obj-fitness variant)
   "Calculate the total combined fitness of VARIANT based on `evaluate' output."
-  (let ((fail-with (lambda args (apply format (cons #t args)) 0)))
-    (catch #t
-      (lambda ()
-        (let-values (((stdout err) (evaluate variant)))
-          (cond
-           ((not (number? err))
-            (fail-with "[mof] non-numeric err: ~a~%" err))
-           ((not (zero? err)) 0)
-           ((not (list? stdout))
-            (fail-with "[mof] mangled STDOUT: ~a~%" stdout))
-           ((all number? (assoc-ref stdout #:completion-time))
-            (/ 1 (apply max (assoc-ref stdout #:completion-time))))
-           (else
-            (fail-with "[mof] bad metrics: ~a~%"
-                       (assoc stdout #:completion-time))))))
-      (lambda (key . args)
-        (fail-with "[mof] ~S: ~S~%" key args)))))
+  (catch #t
+    (lambda ()
+      (let-values (((stdout err) (evaluate variant)))
+        (catch #t
+          (lambda ()
+            (let ((fail-with
+                   (lambda (fmt . args)
+                     (apply format #t
+                            (string-concatenate (cons "(mof ~S) " fmt))
+                            (cons stdout err) args) 0)))
+              (cond
+               ((not (number? err))
+                (fail-with "non-numeric err: ~a~%" err))
+               ((not (zero? err)) 0)
+               ((not (list? stdout))
+                (fail-with "mangled STDOUT: ~a~%" stdout))
+               ((all number? (assoc-ref stdout #:completion-time))
+                (/ 1 (apply max (assoc-ref stdout #:completion-time))))
+               (else
+                (fail-with "bad metrics: ~a~%"
+                           (assoc stdout #:completion-time))))))
+          (lambda (key . args)
+            (fail-with "~S: ~S~%" key args)))))
+    (lambda args
+      (format #t "failure in evaluate: ~S" args) 0)))
 
 (when (file-exists? cache-file)
   (read-memoized cache-file))
 
 (evolve (repeatedly 100 (rand-mutate 0.8 original)) multi-obj-fitness
+        #:mut-p 0.2
+        #:cross-p 0.2
+        #:tournament-size 6
         #:max-gen 250
-        #:num-threads num-threads)
+        #:num-threads #f)
 
 (write-memoized cache-file)
