@@ -14,8 +14,8 @@
 . $(dirname $0)/common
 
 USER="$1"; shift
-
 for remote in ${REMOTES[@]};do
     msg "$remote";
-    vm_ssh $remote $USER@localhost "$@";
+    vm_ssh $remote $USER@localhost "$@" &
 done
+wait $(jobs -l|awk '{print $2}')

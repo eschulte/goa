@@ -18,17 +18,24 @@ guest_test="/home/bacon/bin/guest-test"
 cmd="$guest_test $program /tmp/$(basename $var)"
 output_path="graphite/output_files/sim.out"
 
+first_few(){
+    local orig="$1";
+    echo "$orig"|head -1|cut -c1-4
+}
+
 ## run remotely and collect output and return value
 output="busy"
 err=""
 remote=$(my_remote)
-while [ "$output" = "busy" ]; do
+while [ "$(first_few $output)" == "busy" ]; do
+    echo -e "\tchecking ${remote}" >&2
     vm_scp $remote $var bacon@localhost:/tmp/ >/dev/null 2>/dev/null
     output=$(vm_ssh  $remote -t bacon@localhost "$cmd" 2>/dev/null)
     err=$?
-    if [ "$output" = "busy" ];then sleep 0.125; fi
+    if [ "$output" == "busy" ];then sleep 0.125; fi
     remote=$(rand_remote)
 done
+echo -e "\texecuted ${remote}" >&2
 
 # post process
 sed_cmd=$(cat <<EOF

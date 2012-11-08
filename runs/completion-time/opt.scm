@@ -37,7 +37,8 @@
         (apply values
           (with-temp-file-of (path "/tmp/clang-mutate-" ".c" (genome variant))
             (call-with-values
-                (lambda () (command-to-string "timeout" "60" "host-test" program path))
+                ;; (command-to-string "timeout" "120" "host-test" program path)
+                (lambda () (command-to-string "host-test" program path))
               (lambda (stdout err)
                 (list
                  (if (string? stdout)

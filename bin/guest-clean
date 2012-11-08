@@ -1,0 +1,8 @@
+#!/bin/bash
+#
+# Usage: guest-clean
+#
+case $1 in
+    variants) rm /tmp/clang-mutate*;;
+    lock)     rm /tmp/lockfile;;
+esac
