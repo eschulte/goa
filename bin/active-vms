@@ -7,7 +7,6 @@
 #        VM as active or inactive e.g., CPU usage above or below 50%
 #
 . bin/common
-ps auxwww|grep -v grep|grep qemu-kvm|grep hostfwd \
-    |sed 's/^[^[:space:]]* *//g;s/ .*hda / /;s/\.qcow.*127.0.0.1:/ /;s/-:22.*$//;' \
-    |awk '{printf "%-5d %-4d %s\n", $1,$3,$2}' \
-    |sort -n
+ps ax -o pcpu,pid,args|grep -v grep|grep qemu-kvm|grep hostfwd \
+    |sed 's/qemu-kvm -hda //;s/\.qcow.*127.0.0.1:/ /;s/-:22.*$//;' \
+    |sort -rn
