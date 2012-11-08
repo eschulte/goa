@@ -41,25 +41,29 @@
                 (lambda () (command-to-string "host-test" program path))
               (lambda (stdout err)
                 (list
-                 (map (lambda (line)
-                        (let ((split (remove empty?
-                                             (string-split line #\space))))
-                          (cons (string->keyword (car split))
-                                (map (lambda (cell) (or (string->number cell) cell))
-                                     (cdr split)))))
-                      (remove empty? (string-split stdout #\newline)))
+                 (if (string? stdout)
+                     (map (lambda (line)
+                            (let ((split (remove empty?
+                                                 (string-split line #\space))))
+                              (cons (string->keyword (car split))
+                                    (map (lambda (c) (or (string->number c) c))
+                                         (cdr split)))))
+                          (remove empty? (string-split stdout #\newline)))
+                     #f)
                  err)))))))))
 
 (define (multi-obj-fitness variant)
   "Calculate the total combined fitness of PHENOME based on `evaluate' output."
-  (let-values (((metrics err) (evaluate variant)))
-    (let ((vals (assoc-ref metrics #:completion-time)))
-      (if (not (zero? err)) 0
-          (if (all number? vals)
-              (/ 1 (apply max vals))
-              (begin (format #t "bad for completion-time:~a~%~a"
-                             vals variant)
-                     0))))))
+  (let ((fail-with (lambda args (apply format (cons #t args)) 0)))
+    (let-values (((stdout err) (evaluate variant)))
+      (cond
+       ((not (zero? err)) 0)
+       ((not (list? stdout))
+        (fail-with "mangled STDOUT: ~a" stdout))
+       ((all number? (assoc-ref stdout #:completion-time))
+        (/ 1 (apply max (assoc-ref stdout #:completion-time))))
+       (else
+        (fail-with "bad metrics: ~a" (assoc stdout #:completion-time)))))))
 
 (when (file-exists? cache-file)
   (read-memoized cache-file))
