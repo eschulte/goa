@@ -3,7 +3,9 @@
 # Usage: startup-vms NUM
 # start up all NUM VM overlays
 #
-# NUM - number of machines to start up
+# NUM - number of machines to start up,
+#       alternately the range of numbers,
+#       args fed to `seq'
 # 
 . $(dirname $0)/common
 
@@ -12,7 +14,7 @@ if [ ! $(basename $(pwd)) == "optimization" ];then
     exit 1
 fi
 
-for i in $(seq $1);do
+for i in $(seq $@);do
     I=$(printf "%0.2d" $i);
     msg "starting $I"
     $(dirname $0)/run-vm "overlays/$I.qcow" "30$I" \

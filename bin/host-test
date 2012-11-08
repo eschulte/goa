@@ -1,7 +1,5 @@
 #!/bin/bash
 #
-# Copyright (C) 2012  Eric Schulte
-#
 # Usage: host-test program variant
 #
 # Commentary:
@@ -23,12 +21,13 @@ output_path="graphite/output_files/sim.out"
 ## run remotely and collect output and return value
 output="busy"
 err=""
+remote=$(my_remote)
 while [ "$output" = "busy" ]; do
-    remote=$(rand_remote)
     vm_scp $remote $var bacon@localhost:/tmp/ >/dev/null 2>/dev/null
     output=$(vm_ssh  $remote -t bacon@localhost "$cmd" 2>/dev/null)
     err=$?
     if [ "$output" = "busy" ];then sleep 0.125; fi
+    remote=$(rand_remote)
 done
 
 # post process

@@ -32,6 +32,8 @@ LIMIT="$(dirname $0)/limit"
 
 rand_remote(){ echo ${REMOTES[$RANDOM % ${#REMOTES[@]}]}; }
 
+my_remote(){ echo ${REMOTES[$(expr $$ % ${#REMOTES[@]})]}; }
+
 ## Math Functions
 mean(){ awk '{sum += $1;} END {print sum/NR}'; }
 min(){ awk '{if((min == "") || ($1 < min)){ min = $1}} END {print min}'; }
