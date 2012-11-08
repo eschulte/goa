@@ -14,6 +14,7 @@
 ;; - evolution: abort if everyone in the population has 0 fitness
 ;; - slow down the mutation rate
 ;; - possibly increase the tournament rate
+;; - make sure we catch *every* error
 
 ;;; Code:
 (use-modules
@@ -60,7 +61,7 @@
 
 (define (multi-obj-fitness variant)
   "Calculate the total combined fitness of VARIANT based on `evaluate' output."
-  (let ((fail-with (lambda args (apply format (cons (current-error-port) args)) 0)))
+  (let ((fail-with (lambda args (apply format (cons #t args)) 0)))
     (catch #t
       (lambda ()
         (let-values (((stdout err) (evaluate variant)))
