@@ -28,7 +28,7 @@ while [ "$output" = "busy" ]; do
     vm_scp $remote $var bacon@localhost:/tmp/ >/dev/null 2>/dev/null
     output=$(vm_ssh  $remote -t bacon@localhost "$cmd" 2>/dev/null)
     err=$?
-    if [ "$output" = "busy" ];then sleep 0.25; fi
+    if [ "$output" = "busy" ];then sleep 0.125; fi
 done
 
 # post process
