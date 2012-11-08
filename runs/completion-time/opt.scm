@@ -9,6 +9,12 @@
 ;; such as fastest execution, least communication, lowest energy
 ;; consumption etc...
 
+;;; TODO:
+
+;; - evolution: abort if everyone in the population has 0 fitness
+;; - slow down the mutation rate
+;; - possibly increase the tournament rate
+
 ;;; Code:
 (use-modules
  (srfi srfi-1) (srfi srfi-11) (srfi srfi-69) (srfi srfi-88)
