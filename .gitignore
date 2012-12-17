@@ -6,3 +6,6 @@
 
 # The virtual machine itself
 *.qcow
+
+# Ignore the shell runner
+sh-runner
