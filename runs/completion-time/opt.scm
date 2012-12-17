@@ -38,7 +38,12 @@
           (with-temp-file-of (path "/tmp/clang-mutate-" ".c" (genome variant))
             (call-with-values
                 ;; (command-to-string "timeout" "120" "host-test" program path)
-                (lambda () (command-to-string "host-test" program path))
+                (lambda ()
+                  (catch #t
+                    (lambda () (command-to-string "host-test" program path))
+                    (lambda args
+                      (apply format #t ";; evaluation error: ~S~%" args)
+                      (values "" 1))))
               (lambda (stdout err)
                 (list
                  (if (string? stdout)
@@ -54,31 +59,28 @@
 
 (define (multi-obj-fitness variant)
   "Calculate the total combined fitness of VARIANT based on `evaluate' output."
-  (catch #t
-    (lambda ()
-      (let-values (((stdout err) (evaluate variant)))
+  (lambda ()
+    (let-values (((stdout err) (evaluate variant)))
+      (let ((fail-with
+             (lambda (fmt . args)
+               (apply format #t
+                      (string-concatenate (cons "(mof ~S) " fmt))
+                      (cons stdout err) args) 0)))
         (catch #t
           (lambda ()
-            (let ((fail-with
-                   (lambda (fmt . args)
-                     (apply format #t
-                            (string-concatenate (cons "(mof ~S) " fmt))
-                            (cons stdout err) args) 0)))
-              (cond
-               ((not (number? err))
-                (fail-with "non-numeric err: ~a~%" err))
-               ((not (zero? err)) 0)
-               ((not (list? stdout))
-                (fail-with "mangled STDOUT: ~a~%" stdout))
-               ((all number? (assoc-ref stdout #:completion-time))
-                (/ 1 (apply max (assoc-ref stdout #:completion-time))))
-               (else
-                (fail-with "bad metrics: ~a~%"
-                           (assoc stdout #:completion-time))))))
+            (cond
+             ((not (number? err))
+              (fail-with "non-numeric err: ~a~%" err))
+             ((not (zero? err)) 0)
+             ((not (list? stdout))
+              (fail-with "mangled STDOUT: ~a~%" stdout))
+             ((all number? (assoc-ref stdout #:completion-time))
+              (/ 1 (apply max (assoc-ref stdout #:completion-time))))
+             (else
+              (fail-with "bad metrics: ~a~%"
+                         (assoc stdout #:completion-time)))))
           (lambda (key . args)
-            (fail-with "~S: ~S~%" key args)))))
-    (lambda args
-      (format #t "failure in evaluate: ~S" args) 0)))
+            (fail-with "~S: ~S~%" key args)))))))
 
 (when (file-exists? cache-file)
   (read-memoized cache-file))
