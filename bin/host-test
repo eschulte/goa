@@ -4,7 +4,7 @@
 #
 # Commentary:
 #   does not follow the normal test script format, rather it;
-#    1. takes the path to a .s asm file
+#    1. takes the path to a .c source file
 #    2. copies that file to a VM
 #    3. runs the resulting program in Graphite in the VM
 #    4. returns the full set of Graphite debug info as lisp
