@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Usage: host-test program variant
+# Usage: host-test program rep variant
 #
 # Commentary:
 #   does not follow the normal test script format, rather it;
@@ -11,11 +11,12 @@
 #
 . $(dirname $0)/common
 
-if [ -z "$2" ];then help; exit 1;fi
+if [ -z "$3" ];then help; exit 1;fi
 program=$1
-var=$2
+rep=$2
+var=$3
 guest_test="/home/bacon/bin/guest-test"
-cmd="$guest_test $program /tmp/$(basename $var)"
+cmd="$guest_test $program $rep /tmp/$(basename $var)"
 output_path="graphite/output_files/sim.out"
 
 first_few(){
