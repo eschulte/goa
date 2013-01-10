@@ -31,14 +31,14 @@ case $PROGRAM in
         case $REP in
             CIL|CLANG) (cp $VARIANT blackscholes.c && make clean && make);;
             ASM)       (cp $VARIANT blackscholes.s && make clean && make);;
-        esac >/dev/null 2>/dev/null ;;
-    if [ $? -eq 0 ];then
-        RESULTS="$(g_run ./blackscholes 4 $RUNDIR/in_4.txt $RUNDIR/prices.txt)"
-        RETURN=$?
-    else
-        RESULTS="compile-failure"
-        RETURN=1
-    fi
+        esac >/dev/null 2>/dev/null
+        if [ $? -eq 0 ];then
+            RESULTS="$(g_run ./blackscholes 4 $RUNDIR/in_4.txt $RUNDIR/prices.txt)"
+            RETURN=$?
+        else
+            RESULTS="compile-failure"
+            RETURN=1
+        fi;;
 
     *) error "'$PROGRAM' is not a recognized program";;
 esac
