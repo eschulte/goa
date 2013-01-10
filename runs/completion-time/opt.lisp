@@ -7,7 +7,7 @@
 
 (defvar *test* "host-test")
 (defvar *prog* "blackscholes")
-(defvar *orig* (from-file (make-instance 'cil) "blackscholes.c"))
+(defvar *orig* (from-file (make-instance 'asm) "blackscholes.s"))
 (setf *population* (repeatedly 100 (copy *orig*)))
 
 (defun parse-stdout (stdout)
@@ -20,7 +20,7 @@
        (split-sequence #\Newline stdout :remove-empty-subseqs t)))
 
 (defun evaluate (variant)
-  (with-temp-file-of (file "c") (genome variant)
+  (with-temp-file-of (file "s") (genome variant)
     (multiple-value-bind (stdout err-output exit)
         (shell "~a ~a ~a" *test* *prog* file)
       (declare (ignorable output err-output))
@@ -33,9 +33,6 @@
 ;; Sanity Check
 (format t "original programs has fitness ~a~%" (multi-obj-fitness *orig*))
 
-;; Optimize
-(store (evolve #'multi-obj-fitness)
-       (make-pathname
-        :directory (pathname-directory pathname)
-        :name (pathname-name pathname)
-        :type "store"))
+;; Optimize -- this will just run forever
+#+run
+(evolve #'multi-obj-fitness)
