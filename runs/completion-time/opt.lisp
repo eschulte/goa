@@ -33,6 +33,7 @@
   (/ 1 (apply #'max (cdr (assoc :completion-time output)))))
 
 (defun test (variant) (multi-obj-fitness (evaluate variant)))
+(memoize test)
 
 ;; Sanity Check
 #+sanity
@@ -48,3 +49,7 @@
   (setf (fitness *orig*) (test *orig*))
   (setf *population* (repeatedly 100 (copy *orig*)))
   (sb-thread:make-thread (lambda () (evolve test)) :name "optimizer"))
+
+;; Save progress
+#+save
+(store *memoization-data* "cache.store")
