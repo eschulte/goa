@@ -9,3 +9,6 @@
 
 # Ignore the shell runner
 sh-runner
+
+# Ignore serialized lisp objects
+*.store

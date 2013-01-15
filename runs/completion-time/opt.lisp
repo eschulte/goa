@@ -3,13 +3,14 @@
 (require 'software-evolution)
 (in-package :software-evolution)
 
+#+complex
 (advise-thread-pool-size 40)
 
 (defvar *test* "host-test")
 (defvar *prog* "blackscholes")
 (defvar *orig* (from-file (make-instance 'asm) "blackscholes.s"))
 (defvar *output* nil)
-(setf *population* (repeatedly 100 (copy *orig*)))
+(defvar *work-dir* "../../sh-runner/work/")
 
 (defun parse-stdout (stdout)
   (mapcar
@@ -27,14 +28,23 @@
       (declare (ignorable output err-output))
       (when (zerop exit) (parse-stdout stdout)))))
 
-(defun multi-obj-fitness (variant)
+(defun multi-obj-fitness (output)
   "Calculate the total combined fitness of VARIANT based on `evaluate' output."
-  (/ 1 (apply #'max (assoc-ref (evaluate variant) :completion-time))))
+  (/ 1 (apply #'max (cdr (assoc :completion-time output)))))
+
+(defun test (variant) (multi-obj-fitness (evaluate variant)))
 
 ;; Sanity Check
-(setf *output* (evaluate *orig*))
-(format t "original programs has fitness ~a~%" (multi-obj-fitness *orig*))
+#+sanity
+(let ((orig-fit (multi-obj-fitness (evaluate *orig*))))
+  (assert (and (numberp orig-fit) (> orig-fit 0))
+          ((multi-obj-fitness *output*))
+          "Fitness of the original is ~S but should be a number >0"
+          orig-fit))
 
 ;; Optimize -- this will just run forever
 #+run
-(evolve #'multi-obj-fitness)
+(progn
+  (setf (fitness *orig*) (test *orig*))
+  (setf *population* (repeatedly 100 (copy *orig*)))
+  (sb-thread:make-thread (lambda () (evolve test)) :name "optimizer"))
