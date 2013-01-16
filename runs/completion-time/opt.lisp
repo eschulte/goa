@@ -4,7 +4,7 @@
 (in-package :software-evolution)
 
 #+complex
-(advise-thread-pool-size 40)
+(advise-thread-pool-size 46)
 
 (defvar *test* "host-test")
 (defvar *prog* "blackscholes")
@@ -30,10 +30,12 @@
 
 (defun multi-obj-fitness (output)
   "Calculate the total combined fitness of VARIANT based on `evaluate' output."
-  (/ 1 (apply #'max (cdr (assoc :completion-time output)))))
+  (if (null output)
+      0
+    (/ 1 (apply #'max (cdr (assoc :completion-time output))))))
 
 (defun test (variant) (multi-obj-fitness (evaluate variant)))
-(memoize test)
+(memoize #'test)
 
 ;; Sanity Check
 #+sanity
