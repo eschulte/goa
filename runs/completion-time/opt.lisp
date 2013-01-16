@@ -52,6 +52,13 @@
   (setf *population* (repeatedly 100 (copy *orig*)))
   (sb-thread:make-thread (lambda () (evolve test)) :name "optimizer"))
 
+;; Track progress
+#+progress
+(sb-thread:make-thread
+ (lambda () (loop :while *running* :do
+		  (push (mapcar #'fitness *population*) *fitnesses*)
+		  (sleep 300)))
+
 ;; Save progress
 #+save
 (store *memoization-data* "cache.store")
