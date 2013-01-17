@@ -7,10 +7,12 @@
 (advise-thread-pool-size 46)
 
 (defvar *test* "host-test")
+(defvar *fitness-predicate* #'<)
 (defvar *prog* "blackscholes")
 (defvar *orig* (from-file (make-instance 'asm) "blackscholes.s"))
 (defvar *output* nil)
 (defvar *work-dir* "../../sh-runner/work/")
+(setf *max-population-size* 100)
 
 (defun parse-stdout (stdout)
   (mapcar
@@ -30,9 +32,8 @@
 
 (defun multi-obj-fitness (output)
   "Calculate the total combined fitness of VARIANT based on `evaluate' output."
-  (if (null output)
-      0
-    (/ 1 (apply #'max (cdr (assoc :completion-time output))))))
+  ;; TODO: switch `:completion-time' with cycles.
+  (when output (apply #'max (cdr (assoc :completion-time output)))))
 
 (defun test (variant) (multi-obj-fitness (evaluate variant)))
 (memoize #'test)
