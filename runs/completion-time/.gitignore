@@ -5,3 +5,4 @@ output
 *.gz
 stderr
 stdout
+scratch.lisp

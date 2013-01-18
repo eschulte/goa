@@ -12,7 +12,7 @@
 (defvar *orig* (from-file (make-instance 'asm) "blackscholes.s"))
 (defvar *output* nil)
 (defvar *work-dir* "../../sh-runner/work/")
-(setf *max-population-size* 100)
+(setf *max-population-size* 46)
 
 (defun parse-stdout (stdout)
   (mapcar
@@ -33,7 +33,9 @@
 (defun multi-obj-fitness (output)
   "Calculate the total combined fitness of VARIANT based on `evaluate' output."
   ;; TODO: switch `:completion-time' with cycles.
-  (when output (apply #'max (cdr (assoc :completion-time output)))))
+  (if output
+      (reduce #'+ (cdr (assoc :INSTRUCTIONS output)))
+      double-float-positive-infinity))
 
 (defun test (variant) (multi-obj-fitness (evaluate variant)))
 (memoize #'test)
@@ -46,27 +48,13 @@
           "Fitness of the original is ~S but should be a number >0"
           orig-fit))
 
-;; Optimize -- this will just run forever
+;; Run -- this will just run forever
 #+run
 (progn
-  (setf (fitness *orig*) (test *orig*))
-  (setf *population* (repeatedly 100 (copy *orig*)))
-  (sb-thread:make-thread (lambda () (evolve test)) :name "optimizer"))
+  (dotimes (n 46)
+    (sb-thread:make-thread (lambda () (evolve #'test)) :name "optimizer"))
 
-;; Track progress
-#+progress
-(sb-thread:make-thread
- (lambda () (loop :while *running* :do
-		  (push (mapcar #'fitness *population*) *fitnesses*)
-		  (sleep 300)))
-
-;; Idea: Replace `evolve' with the non-parallel version, and then just
-;;       run 46 top-level threads, each with its own instance of the
-;;       `evolve' function.  Each thread should then set `*running*'
-;;       to nil.
-(dotimes ((n 46))
-  (sb-thread:make-thread (lambda () (evolve #'test) (setf *running* nil)))
-
-;; Save progress
-#+save
-(store *memoization-data* "cache.store")
+  (sb-thread:make-thread
+   (lambda () (loop :while *running* :for i :upfrom 0 :do
+                 (store *population* (format nil "pop-~5,'0d.store" i))
+                 (sleep 300)))))
