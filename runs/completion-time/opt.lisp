@@ -5,7 +5,11 @@
 
 #+complex
 (advise-thread-pool-size 46)
-
+(defvar infinity
+  #+sbcl
+  SB-EXT:DOUBLE-FLOAT-POSITIVE-INFINITY
+  #-(or sbcl)
+  (error "must specify a positive infinity value"))
 (defvar *test* "host-test")
 (defvar *fitness-predicate* #'<)
 (defvar *prog* "blackscholes")
@@ -35,9 +39,11 @@
   ;; TODO: switch `:completion-time' with cycles.
   (if output
       (reduce #'+ (cdr (assoc :INSTRUCTIONS output)))
-      double-float-positive-infinity))
+      infinity))
 
-(defun test (variant) (multi-obj-fitness (evaluate variant)))
+(defun test (variant)
+  (incf *fitness-evals*)
+  (multi-obj-fitness (evaluate variant)))
 (memoize #'test)
 
 ;; Sanity Check
