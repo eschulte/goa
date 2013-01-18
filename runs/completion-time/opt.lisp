@@ -59,6 +59,13 @@
 		  (push (mapcar #'fitness *population*) *fitnesses*)
 		  (sleep 300)))
 
+;; Idea: Replace `evolve' with the non-parallel version, and then just
+;;       run 46 top-level threads, each with its own instance of the
+;;       `evolve' function.  Each thread should then set `*running*'
+;;       to nil.
+(dotimes ((n 46))
+  (sb-thread:make-thread (lambda () (evolve #'test) (setf *running* nil)))
+
 ;; Save progress
 #+save
 (store *memoization-data* "cache.store")
