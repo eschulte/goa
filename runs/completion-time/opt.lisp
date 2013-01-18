@@ -3,8 +3,6 @@
 (require 'software-evolution)
 (in-package :software-evolution)
 
-#+complex
-(advise-thread-pool-size 46)
 (defvar infinity
   #+sbcl
   SB-EXT:DOUBLE-FLOAT-POSITIVE-INFINITY
@@ -16,7 +14,7 @@
 (defvar *orig* (from-file (make-instance 'asm) "blackscholes.s"))
 (defvar *output* nil)
 (defvar *work-dir* "../../sh-runner/work/")
-(setf *max-population-size* 46)
+(setf *max-population-size* 256)
 
 (defun parse-stdout (stdout)
   (mapcar
@@ -27,11 +25,11 @@
                      (cdr fields)))))
        (split-sequence #\Newline stdout :remove-empty-subseqs t)))
 
-(defun evaluate (variant)
+(defmethod evaluate ((variant asm))
   (with-temp-file-of (file "s") (genome-string variant)
     (multiple-value-bind (stdout err-output exit)
         (shell "~a ~a ~a ~a" *test* *prog* "ASM" file)
-      (declare (ignorable output err-output))
+      (declare (ignorable err-output))
       (when (zerop exit) (parse-stdout stdout)))))
 
 (defun multi-obj-fitness (output)
@@ -54,13 +52,20 @@
           "Fitness of the original is ~S but should be a number >0"
           orig-fit))
 
+(setf *population* (repeatedly *max-population-size* (copy *orig*)))
+
 ;; Run -- this will just run forever
 #+run
 (progn
   (dotimes (n 46)
-    (sb-thread:make-thread (lambda () (evolve #'test)) :name "optimizer"))
+    (sb-thread:make-thread (lambda () (evolve #'test))
+                           :name (format nil "optimizer-~d" n)))
 
   (sb-thread:make-thread
    (lambda () (loop :while *running* :for i :upfrom 0 :do
-                 (store *population* (format nil "pop-~5,'0d.store" i))
-                 (sleep 300)))))
+            (store
+             `((:time  . ,(get-internal-real-time))
+               (:evals . ,*fitness-evals*)
+               (:pop   . ,*population*))
+             (format nil "pops/~5,'0d.store" i))
+            (sleep 300)))))
