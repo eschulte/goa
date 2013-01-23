@@ -40,6 +40,19 @@ case $PROGRAM in
             RETURN=1
         fi;;
 
+    sort)
+        pushd ~/graphite/tests/apps/sort > /dev/null
+        case $REP in
+            CIL|CLANG) (cp $VARIANT sort.c && make);;
+            ASM)       echo "ASM rep not supported for a sorter">&2; exit 1;;
+        esac >/dev/null 2>/dev/null
+        RETURN=$?
+        if [ $RETURN -eq 0 ];then
+            RESULTS=$(cat ~/graphite/output_files/sim.out)
+        else
+            RESULTS=""
+        fi;;
+    
     *) error "'$PROGRAM' is not a recognized program";;
 esac
 echo "$RESULTS"
