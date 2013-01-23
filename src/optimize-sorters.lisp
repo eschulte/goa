@@ -47,7 +47,6 @@
           (multiple-value-bind (stdout stderr exit)
               (shell "~a ~a ~a ~a" *test* *prog* "CIL" file)
             (declare (ignorable stderr))
-            (format t "exit ~S~%~S~%" exit stdout)
             (when (zerop exit) (multi-obj-fitness (parse-stdout stdout)))))
         infinity)))
 
@@ -62,7 +61,7 @@
 (progn
   (setf (fitness *orig*) (test *orig*))
   (setf *population* (repeatedly *max-population-size* (copy *orig*)))
-  (loop :for i :upto 48 :do
+  (loop :for i :upto 46 :do
      (sb-thread:make-thread
       (lambda ()
         (evolve #'test
