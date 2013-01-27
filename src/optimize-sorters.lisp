@@ -65,7 +65,7 @@
      (sb-thread:make-thread
       (lambda ()
         (evolve #'test
-                :period 8192
+                :period 1024
                 :period-func (lambda ()
                                (store
                                 *population*
