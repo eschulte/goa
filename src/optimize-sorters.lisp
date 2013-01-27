@@ -11,17 +11,19 @@
   #-(or sbcl)
   (error "must specify a positive infinity value"))
 
-(defvar *test* "../../bin/host-test")
+(defvar *func-test* "../../bin/test-file.sh")
+
+(defvar *opt-test* "../../bin/host-test")
 
 (defvar *fitness-predicate* #'<)
 
 (defvar *prog* "sort")
 
-(defvar *orig* (from-file (make-instance 'cil) "data/sort.c"))
+(defvar *orig* (from-file (make-instance 'cil) "data/bubble.c"))
 
 (defvar *work-dir* "sh-runner/work/")
 
-(setf *max-population-size* 128)
+(setf *max-population-size* (expt 2 8))
 
 (setf *tournament-size* 2)
 
@@ -41,14 +43,21 @@
       infinity))
 
 (defmethod evaluate ((variant cil))
-  (with-temp-file (file)
-    (or (ignore-errors
-          (string-to-file (genome variant) file)
-          (multiple-value-bind (stdout stderr exit)
-              (shell "~a ~a ~a ~a" *test* *prog* "CIL" file)
-            (declare (ignorable stderr))
-            (when (zerop exit) (multi-obj-fitness (parse-stdout stdout)))))
-        infinity)))
+  (or
+   (ignore-errors
+     ;; first ensure that VARIANT is functional
+     ((lambda (tests-passed)
+        (assert (= 10 tests-passed) (tests-passed variant)
+                "Variant only passed ~d of 10 tests: ~S" tests-passed variant))
+      (parse-integer (shell "~a ~a" *func-test* (phenome variant))))
+     ;; if so, then check the runtime of VARIANT
+     (with-temp-file (file)
+       (string-to-file (genome variant) file)
+       (multiple-value-bind (stdout stderr exit)
+           (shell "~a ~a ~a ~a" *opt-test* *prog* "CIL" file)
+         (declare (ignorable stderr))
+         (when (zerop exit) (multi-obj-fitness (parse-stdout stdout))))))
+   infinity))
 
 (defun test (variant)
   (incf *fitness-evals*)
