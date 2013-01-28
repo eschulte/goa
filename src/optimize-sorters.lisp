@@ -80,3 +80,8 @@
                                 *population*
                                 (format nil "pops/~d.store" *fitness-evals*)))))
       :name (format nil "opt-~d" i))))
+
+(defun opt-threads ()
+  (remove-if-not (lambda (thread)
+                   (string= "opt" (subseq (sb-thread:thread-name thread) 0 3)))
+                 (sb-thread:list-all-threads)))
