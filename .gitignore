@@ -12,3 +12,4 @@ sh-runner
 
 # Ignore serialized lisp objects
 *.store
+results
