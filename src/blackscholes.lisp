@@ -1,4 +1,5 @@
 ;;; neutral.lisp --- generate neutral versions of blackscholes
+(require :software-evolution)
 (in-package :software-evolution)
 (mapc (lambda (pkg) (require pkg) (use-package pkg))
       (list :cl-ppcre :curry-compose-reader-macros))
@@ -23,9 +24,9 @@
                           "data/blackscholes.m4.s"))
 
 (defvar *steps* 10 "Number of neutral steps to take.")
-(defvar *size* 100 "Size of each neutral step.")
+(defvar *size* 500 "Size of each neutral step.")
 
-(defvar *neutral-walk* (list (list *orig*))
+(defvar *neutral-walk* (list (list (edits *orig*)))
   "Variable to hold the results of the walk.")
 
 (defun test (variant)
@@ -37,6 +38,7 @@
           (parse-integer stdout)
           0))))
 (memoize #'test :key [#'edits #'car])
+;; (un-memoize 'test)
 
 (defun neutralp (variant)
   (setf (fitness variant) (test variant))
@@ -48,7 +50,10 @@
   (loop :for i :from 1 :to *steps* :do
      (push nil *neutral-walk*)
      (loop :until (= (length (first *neutral-walk*)) *size*) :do
-        (let ((new (mutate (copy (random-elt (second *neutral-walk*))))))
-          (when (neutralp new) (push new (first *neutral-walk*))))))
+        (let ((new (copy *orig*)))
+          (setf (edits new) (copy-tree (random-elt (second *neutral-walk*))))
+          (setf new (mutate new))
+          (when (neutralp new)
+            (push (copy-tree (edits new)) (first *neutral-walk*))))))
   ;; save the results
   (store *neutral-walk* "neutral-walk.store"))
