@@ -1,0 +1,82 @@
+#!/bin/bash
+#
+# Usage: x264-test EXECUTABLE [OPTIONS...]
+#
+# EXECUTABLE -- executable of x264 to test
+#
+# OPTIONS:
+# -t,--test --- the specific test to run
+#
+#               default: run all tests and print the number of tests
+#                        which passed.  If this is neutral, then exit
+#                        with 0.
+#
+# -l,--limit -- optionally specify limit script
+#
+#               default: use the limit located next to this script
+#
+BASE="$(dirname $0)"
+TEST=""
+LIMIT="$BASE/limit"
+declare -a INPUTS
+declare -a OUTPUTS
+HELP_TEXT=$(cat "$0" \
+        |sed '/^[^#]/q' \
+        |head -n -1 \
+        |tail -n +3 \
+        |sed -e :a -e '/^\n*$/{$d;N;ba' -e '}' \
+        |cut -c3-)
+if [ $(grep "\-h" <(echo "$1")) ];then echo "$HELP_TEXT"; exit 0; fi
+PROG="$(dirname $1)/$(basename $1)"; shift;
+INPUT="$BASE/../data/eledream_640x360_8.y4m"
+
+eval set -- $(getopt -o ht:l: -l help,test:,limit: -- "$@" \
+              || echo "$HELP_TEXT" && exit 1;)
+
+while [ $# -gt 0 ];do
+    case $1 in
+        -h|--help)  echo "$HELP_TEXT" && exit 0;;
+        -t|--test)  TEST="$2"; shift;;
+        -l|--limit) LIMIT="$2"; shift;;
+        (--) shift; break;;
+        (-*) error "unrecognized option $1";;
+        (*)  break;;
+    esac
+    shift
+done
+
+FLAGS=''
+FLAGS+=' --quiet --qp 20 --partitions b8x8,i4x4 --ref 5 --direct auto'
+FLAGS+=' --b-pyramid --weightb --mixed-refs --no-fast-pskip --me umh'
+FLAGS+=' --subme 7 --analyse b8x8,i4x4 --threads 1'
+
+run(){
+    
+    case $1 in
+        0)  # encoding of the normal file
+            local file=$(mktemp)
+            sh -c "$LIMIT $PROG $FLAGS -o $file $INPUT >/dev/null 2>/dev/null"
+            INFO=$(ffprobe $file 2>&1|grep Stream)
+            rm $file
+            diff -w <(echo "$INFO") \
+                    <(echo "Stream #0:0: Video: h264 (Main), yuv420p, 640x360, 25 fps, 25 tbr, 1200k tbn, 50 tbc")
+            ;;
+        1)  # value printed to STDOUT
+            diff <($LIMIT $PROG $FLAGS -o /dev/null $INPUT 2>&1|grep -v PARSEC|head -1) \
+                 <(echo "yuv4mpeg: 640x360@25/1fps, 0:0") \
+                 >/dev/null 2>/dev/null
+            ;;
+    esac; }
+
+# Actually run
+if [ -z "$TEST" ];then
+    count=0
+    for i in $(seq 0 1);do
+        if $(run $i);then count=$(($count + 1));fi
+    done
+    echo "$count"
+    exit 0
+else
+    if $(run $TEST);then exit 0;fi
+fi
+exit 1
