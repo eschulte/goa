@@ -57,3 +57,9 @@
             (push (copy-tree (edits new)) (first *neutral-walk*))))))
   ;; save the results
   (store *neutral-walk* "neutral-walk.store"))
+
+#+save
+(loop :for step :in (reverse *neutral-walk*) :as s-count :from 0 :do
+   (loop :for ind :in step :as n-count :from 0 :do
+      (string-to-file (genome-string (copy *orig* :edits ind))
+                      (format nil "bs-walk/~d-~3,'0d.s" s-count n-count))))
