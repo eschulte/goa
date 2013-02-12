@@ -18,9 +18,7 @@
     "-DPARSEC_VERSION=3.0-beta-20120904" "-pthread" "-DENABLE_THREADS" "-DNCO=4"
     "-L/usr/lib64" "-L/usr/lib"))
 
-(defvar *orig* (from-file (make-instance 'asm
-                            :linker "g++"
-                            :flags (mapconcat #'identity *flags* " "))
+(defvar *orig* (from-file (make-instance 'asm :linker "g++" :flags *flags*)
                           "data/blackscholes.m4.s"))
 
 (defvar *steps* 10 "Number of neutral steps to take.")
