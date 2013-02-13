@@ -59,8 +59,8 @@ run(){
             INFO=$(ffprobe $file 2>&1|grep Stream)
             rm $file
             diff -w <(echo "$INFO") \
-                    <(echo "Stream #0:0: Video: h264 (Main), yuv420p, 640x360, 25 fps, 25 tbr, 1200k tbn, 50 tbc")
-            ;;
+                    <(echo "Stream #0:0: Video: h264 (Main), yuv420p, 640x360, 25 fps, 25 tbr, 1200k tbn, 50 tbc") \
+            >/dev/null 2>/dev/null;;
         1)  # value printed to STDOUT
             diff <($LIMIT $PROG $FLAGS -o /dev/null $INPUT 2>&1|grep -v PARSEC|head -1) \
                  <(echo "yuv4mpeg: 640x360@25/1fps, 0:0") \
