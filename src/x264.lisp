@@ -6,22 +6,20 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (enable-curry-compose-reader-macros))
 
-(defvar *work-dir* nil)
+(defvar *work-dir* "sh-runner/work")
 
-(defvar *test* "bin/x264-test")
+(defvar *test* "../../bin/x264-test")
 
 (defvar *num-tests* 2 "Number of tests in `*test*'.")
 
-(defvar *asm-lib* "data/libx264-asm.a")
+(defvar *asm-lib* "../../data/libx264-asm.a")
 
 (defvar *flags*
   `("-D_GNUCC" ,*asm-lib*
     "-L/usr/lib32" "-L/usr/lib" "-L/usr/lib32" "-L/usr/lib"
     "-lm" "-lpthread" "-s"))
 
-(defvar *orig* (from-file (make-instance 'cil
-                            :compiler "cilly"
-                            :flags (mapconcat #'identity *flags* " "))
+(defvar *orig* (from-file (make-instance 'cil :compiler "cilly" :flags *flags*)
                           "data/x264_comb.c"))
 
 (defvar *steps* 10 "Number of neutral steps to take.")
@@ -45,16 +43,28 @@
   (setf (fitness variant) (test variant))
   (= *num-tests* (fitness variant)))
 
+(defun neutral-walker ()
+  (loop :while *running* :do
+     (let ((new (copy *orig*)))
+       (setf (edits new) (copy-tree (random-elt (second *neutral-walk*))))
+       (setf new (mutate new))
+       ;; check if the variant is neutral
+       (when (neutralp new)
+         (push (copy-tree (edits new)) (first *neutral-walk*))
+         ;; check if we should move on to the next step
+         (when (>= (length (first *neutral-walk*)) *size*)
+           (push nil *neutral-walk*)
+           ;; check if we are done
+           (when (> (length *neutral-walk*) *steps*)
+             (setf *running* nil)))))))
+
 #+run
 (progn
+  ;; setup
+  (setf *running* t)
+  (push nil *neutral-walk*)
   ;; take the neutral walk
-  (loop :for i :from 1 :to *steps* :do
-     (push nil *neutral-walk*)
-     (loop :until (= (length (first *neutral-walk*)) *size*) :do
-        (let ((new (copy *orig*)))
-          (setf (edits new) (copy-tree (random-elt (second *neutral-walk*))))
-          (setf new (mutate new))
-          (when (neutralp new)
-            (push (copy-tree (edits new)) (first *neutral-walk*))))))
+  (loop :for i :below 46 :do (sb-thread:make-thread #'neutral-walker))
+  (loop :until (not *running*) :do (sleep 10))
   ;; save the results
   (store *neutral-walk* "neutral-walk.store"))
