@@ -138,7 +138,7 @@ OUTPUTS[4]="16
 16.092639923095703125"
 
 # Actually run
-AWK_NEAR='{print ($1 < 0.0000000001) ? 0 : 1}'
+AWK_NEAR='{print ($1 < 0.00001) ? 0 : 1}'
 if [ -z "$TEST" ];then
     count=0
     for i in $(seq 0 $((${#INPUTS[@]} - 1)));do

@@ -13,10 +13,8 @@
 (defvar *num-tests* 5 "Number of tests in `*test*'.")
 
 (defvar *flags*
-  '("-m32"  "-O3" "-g" "-funroll-loops" "-fprefetch-loop-arrays" "-fpermissive"
-    "-fno-exceptions" "-static-libgcc" "-Wl,--hash-style=both,--as-needed"
-    "-DPARSEC_VERSION=3.0-beta-20120904" "-pthread" "-DENABLE_THREADS" "-DNCO=4"
-    "-L/usr/lib64" "-L/usr/lib"))
+  '("-L/usr/lib64" "-L/usr/lib" "-static" "-u" "CarbonStartSim"
+    "-u" "CarbonStopSim" "-pthread" "-lstdc++" "-lm"))
 
 (defvar *orig* (from-file (make-instance 'asm :linker "g++" :flags *flags*)
                           "data/blackscholes.m4.s"))
@@ -42,17 +40,29 @@
   (setf (fitness variant) (test variant))
   (= *num-tests* (fitness variant)))
 
+(defun neutral-walker ()
+  (loop :while *running* :do
+     (let ((new (copy *orig*)))
+       (setf (edits new) (copy-tree (random-elt (second *neutral-walk*))))
+       (setf new (mutate new))
+       ;; check if the variant is neutral
+       (when (neutralp new)
+         (push (copy-tree (edits new)) (first *neutral-walk*))
+         ;; check if we should move on to the next step
+         (when (>= (length (first *neutral-walk*)) *size*)
+           (push nil *neutral-walk*)
+           ;; check if we are done
+           (when (> (length *neutral-walk*) *steps*)
+             (setf *running* nil)))))))
+
 #+run
 (progn
+  ;; setup
+  (setf *running* t)
+  (push nil *neutral-walk*)
   ;; take the neutral walk
-  (loop :for i :from 1 :to *steps* :do
-     (push nil *neutral-walk*)
-     (loop :until (= (length (first *neutral-walk*)) *size*) :do
-        (let ((new (copy *orig*)))
-          (setf (edits new) (copy-tree (random-elt (second *neutral-walk*))))
-          (setf new (mutate new))
-          (when (neutralp new)
-            (push (copy-tree (edits new)) (first *neutral-walk*))))))
+  (loop :for i :below 46 :do (sb-thread:make-thread #'neutral-walker))
+  (loop :until (not *running*) :do (sleep 10))
   ;; save the results
   (store *neutral-walk* "neutral-walk.store"))
 
