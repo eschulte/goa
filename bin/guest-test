@@ -10,6 +10,8 @@
 . /home/bacon/.profile
 . /home/bacon/.bashrc
 
+THREADS=8
+INPUT=./input
 LIMIT="/home/bacon/bin/limit"
 LOCK="/tmp/lockfile"
 quit_locked(){ echo busy; exit  1; }
@@ -25,25 +27,27 @@ VARIANT=$3
 if [ -z "$1" ];then help; fi
 
 BS_LFLAGS=''
-BS_LFLAGS+='-L/usr/lib64 -L/usr/lib -static -u CarbonStartSim -u CarbonStopSim '
-BS_LFLAGS+='-L/home/bacon/graphite/lib '
-BS_LFLAGS+='-L/home/bacon/graphite/os-services-25032-gcc.4.0.0-linux-ia32_intel64/intel64 '
-BS_LFLAGS+='-L/home/bacon/graphite/contrib/orion -pthread -lcarbon_sim '
-BS_LFLAGS+='-lorion -los-services -lboost_filesystem-gcc42-mt-1_35 '
-BS_LFLAGS+='-lboost_system-gcc42-mt-1_35 -pthread -lstdc++ -lm '
+BS_LFLAGS+='-L/usr/lib64 -L/usr/lib -static -u CarbonStartSim -u CarbonStopSim'
+BS_LFLAGS+='-L/home/bacon/graphite/lib'
+BS_LFLAGS+='-L/home/bacon/graphite/os-services-25032-gcc.4.0.0-linux-ia32_intel64/intel64'
+BS_LFLAGS+='-pthread -lcarbon_sim -los-services'
+BS_LFLAGS+='-lboost_filesystem-gcc42-mt-1_35 -lboost_system-gcc42-mt-1_35'
+BS_LFLAGS+='-pthread -lstdc++ -lm'
 
 pushd /home/bacon/benchmark/$PROGRAM >/dev/null 2>/dev/null
 case $PROGRAM in
 
     blackscholes)
-        RUNDIR=~/graphite/tests/parsec/pkgs/apps/blackscholes/run
+        RUNDIR=
         case $REP in
-            CIL|CLANG) (cp $VARIANT blackscholes.c && make clean && make);;
-            ASM)       (gcc $VARIANT $BS_LFLAGS -o blackscholes);;
+            # cd ~/graphite/tests/parsec/pkgs/apps/blackscholes/run
+            # (cp $VARIANT blackscholes.c && make clean && make)
+            CIL|CLANG) echo "CIL/CLANG blackscholes is broke" >&2; exit 1 ;;
+            ASM) (gcc $VARIANT $BS_LFLAGS -o blackscholes) ;;
         esac >/dev/null 2>/dev/null
         if [ $? -eq 0 ];then
-            RESULTS="$(g_run ./blackscholes 4 $RUNDIR/in_4.txt $RUNDIR/prices.txt)"
-            RETURN=$?
+                RESULTS="$(g_run ./blackscholes $THREADS $INPUT)"
+                RETURN=$?
         else
             RESULTS="compile-failure"
             RETURN=1
