@@ -54,8 +54,7 @@ case $PROGRAM in
         else
             RESULTS="compile-failure"
             RETURN=1
-        fi
-        rm -f $exe;;
+        fi;;
 
     sort)
         pushd ~/graphite/tests/apps/sort > /dev/null
@@ -72,5 +71,6 @@ case $PROGRAM in
     
     *) error "'$PROGRAM' is not a recognized program";;
 esac
+rm -f $exe; rm -f $VARIANT
 echo "$RESULTS"
 quit_free $RETURN
