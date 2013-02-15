@@ -132,6 +132,7 @@ these results.
      PIN_HOME = /home/bacon/pin
      EOF
    #+end_src
+   and change the =KERNEL= line in =common/Makefile.common= to =LENNY=.
    run =make= to build Graphite.
 
 2. Confirm that the build was successful by running the following
