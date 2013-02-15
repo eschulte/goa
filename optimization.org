@@ -45,7 +45,7 @@ these results.
 
 1. We will create a Qemu virtual machine and install the Debian 5.0.9
    specifically =debian-5010-i386-netinst.iso= from
-   http://cdimage.debian.org/mirror/cdimage/archive/5.0.9/i386/iso-cd/.
+   http://cdimage.debian.org/debian-cd/6.0.6/i386/iso-cd/debian-6.0.6-i386-businesscard.iso
    #+begin_src sh
      # create the disk
      qemu-img create -f qcow2 tune.qcow 4G
@@ -62,29 +62,14 @@ these results.
    | new user login name | bacon         |
    | new user password   | password      |
 
-   As Debian Lenny is no longer supported, You will not be able to
-   find a working mirror.  When you are confronted with the warning
-   that no working mirror has been found, select the =<Go Back>=
-   option, and then continue installing a minimal system with no
-   working mirror.  Finish the instillation and Reboot.
-
-3. After booting into the working system, log in as root and add old
-   Lenny archive URLs to =/etc/apt/sources.list=.
-   #+begin_src sh
-     cp /etc/apt/sources.list /etc/apt/sources.list.backup
-     echo "deb http://archive.debian.org/debian/ lenny main" >> /etc/apt/sources.list
-     echo "deb http://archive.debian.org/debian-security lenny/updates main" >> /etc/apt/sources.list
-     apt-get update
-   #+end_src
-
-4. Now install the Graphite and Parsec dependencies,
+3. Now install the Graphite and Parsec dependencies,
    #+begin_src sh
      # Graphite dependencies
-     apt-get install build-essential m4
-     apt-get install libboost1.35-dev libboost-filesystem1.35-dev libboost-system1.35-dev
+     apt-get install build-essential libtool automake autoconf autotools-dev
+     apt-get install libboost1.42-dev libboost-filesystem1.42-dev libboost-system1.42-dev
      apt-get install git-core
      # Parsec dependencies
-     apt-get install automake gettext yasm
+     apt-get install gettext yasm
      # and an ssh server so we can ssh into this VM
      apt-get install openssh-server
    #+end_src
@@ -98,9 +83,10 @@ these results.
      shutdown -h 0
    #+end_src
 
-5. Start up the virtual machine with network access so we can connect
+4. Start up the virtual machine with network access so we can connect
    with ssh -- allowing copy-paste from the local machine, use of a
-   normal terminal, and other niceties.
+   normal terminal, and other niceties (note: you may also use the
+   =bin/run-vm= script distributed in this repository).
    #+begin_src sh
      qemu-kvm -hda tune.qcow -nographic -cdrom data/debian-5010-amd64-netinst.iso \
          -m 1G -net nic -net user,hostfwd=tcp:127.0.0.1:2222-:22 -daemonize
