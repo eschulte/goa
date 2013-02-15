@@ -9,7 +9,7 @@ mkdir -p output_files/
     -mt                                    \
     -t /home/bacon/graphite/lib/pin_sim    \
     -c /home/bacon/graphite/carbon_sim.cfg \
-    --general/total_cores=64               \
+    --general/total_cores=12               \
     --general/num_processes=1              \
     --general/enable_shared_mem=true       \
     -- $@
