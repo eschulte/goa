@@ -68,3 +68,9 @@
   (loop :until (not *running*) :do (sleep 10))
   ;; save the results
   (store *neutral-walk* "neutral-walk.store"))
+
+#+save
+(loop :for step :in (reverse *neutral-walk*) :as s-count :from 0 :do
+   (loop :for ind :in step :as n-count :from 0 :do
+      (string-to-file (genome-string (copy *orig* :edits ind))
+                      (format nil "x264-walk/~d-~3,'0d.s" s-count n-count))))
