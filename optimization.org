@@ -737,6 +737,15 @@ Analysis code in file:src/runtime-2.lisp
 [[file:data/flits.svg]]
 
 * COMMENT Notes [3/6]
+** install setup a VM through ssh
+Start qemu with the -curses flag
+: qemu-system-x86_64 tune.qcow -cdrom data/debian-6.0.6-amd64-netinst.iso -curses
+you'll see a black screen with something like "640x480" in the middle.
+Press "h" then press return, then at the next prompt type "install
+vga=normal fb=false" and hit return, at this point you should be good
+to go.
+http://debian.2.n7.nabble.com/Problems-with-Squeeze-alpha1-in-qemu-td1858999.html
+
 ** run a PARSEC app w/Graphite
 They all fail, many with missing input files or just incorrect inputs.
 
