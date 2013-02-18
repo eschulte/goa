@@ -87,7 +87,6 @@ case $PROGRAM in
             RETURN=1
         fi;;
 
-
     sort)
         pushd ~/graphite/tests/apps/sort > /dev/null
         case $REP in
