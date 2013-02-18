@@ -45,10 +45,10 @@ these results.
 
 1. We will create a Qemu virtual machine and install the Debian 5.0.9
    specifically =debian-5010-i386-netinst.iso= from
-   http://cdimage.debian.org/mirror/cdimage/archive/5.0.9/i386/iso-cd/.
+   http://cdimage.debian.org/debian-cd/6.0.6/amd64/iso-cd/debian-6.0.6-amd64-netinst.iso
    #+begin_src sh
      # create the disk
-     qemu-img create -f qcow2 tune.qcow 4G
+     qemu-img create -f qcow2 tune.qcow 24G
      # install the operating system
      qemu-system-x86_64 tune.qcow -cdrom debian-5010-i386-netinst.iso -boot d
    #+end_src
@@ -62,40 +62,30 @@ these results.
    | new user login name | bacon         |
    | new user password   | password      |
 
-   As Debian Lenny is no longer supported, You will not be able to
-   find a working mirror.  When you are confronted with the warning
-   that no working mirror has been found, select the =<Go Back>=
-   option, and then continue installing a minimal system with no
-   working mirror.  Finish the instillation and Reboot.
+   When it comes time to select which packages to install, deselect
+   "Graphical desktop environment" and do select "SSH server".
 
-3. After booting into the working system, log in as root and add old
-   Lenny archive URLs to =/etc/apt/sources.list=.
-   #+begin_src sh
-     cp /etc/apt/sources.list /etc/apt/sources.list.backup
-     echo "deb http://archive.debian.org/debian/ lenny main" >> /etc/apt/sources.list
-     echo "deb http://archive.debian.org/debian-security lenny/updates main" >> /etc/apt/sources.list
-     apt-get update
-   #+end_src
+   After the setup completes reboot and log in as root.
 
 4. Now install the Graphite and Parsec dependencies,
    #+begin_src sh
      # Graphite dependencies
-     apt-get install build-essential m4
-     apt-get install libboost1.35-dev libboost-filesystem1.35-dev libboost-system1.35-dev
+     apt-get update
+     apt-get install build-essential libtool automake autoconf autotools-dev
+     apt-get install libboost1.42-dev libboost-filesystem1.42-dev libboost-system1.42-dev
      apt-get install git-core
      # Parsec dependencies
-     apt-get install automake gettext yasm
-     # and an ssh server so we can ssh into this VM
-     apt-get install openssh-server
+     apt-get install gettext yasm
+     # So the bacon user can have sudo
+     apt-get install sudo
    #+end_src
    give the =bacon= user =sudo= permissions,
    #+begin_src sh
-     apt-get install sudo
      echo "bacon   ALL=(ALL) ALL" >> /etc/sudoers
    #+end_src
    and shutdown the machine.
    #+begin_src sh
-     shutdown -h 0
+     shutdown -h now
    #+end_src
 
 5. Start up the virtual machine with network access so we can connect
@@ -112,27 +102,16 @@ these results.
      ssh -p 2222 bacon@localhost
    #+end_src
    and install Graphite following these instructions from
-   https://github.com/mit-carbon/Graphite/wiki/Getting-Started,
-   #+begin_src sh
-     wget http://www.cs.virginia.edu/kim/publicity/pin/kits/pin-2.6-27887-gcc.4.0.0-ia32_intel64-linux.tar.gz
-     tar xzf pin-2.6-27887-gcc.4.0.0-ia32_intel64-linux.tar.gz
-     cd pin
-     git clone git://github.com/mit-carbon/Graphite.git graphite
-   #+end_src
-   and update the =TARGET_ARCH= and =PIN_HOME= variables in =~/graphite/Makefile.config=.
+   https://github.com/mit-carbon/Graphite/wiki/Getting-Started, after
+   getting version 53271 of pin from [[http://www.pintool.org/downloads.html][PIN|downloads]] decompress it to
+   =~/pin=.  Then set this location into =~/graphite/Makefile.config=.
    #+begin_src sh
      cat <<EOF > ~/graphite/Makefile.config
-     # Use ia32 for 32-bit, x86_64 for 64-bit
-     TARGET_ARCH = x86_64 # <-(may be different depending on your host?)
-
-     # change only if a different (more up-to-date) version of Boost is installed
-     BOOST_VERSION = 1_35
-
      # where Pin is uzipped to
      PIN_HOME = /home/bacon/pin
      EOF
    #+end_src
-   run =make= to build Graphite.
+   Run =make= to build Graphite.
 
 2. Confirm that the build was successful by running the following
    which should exit successfully.
@@ -157,18 +136,25 @@ these results.
      make
    #+end_src
 
+   To enable power modeling, in =~/graphite/carbon_sim.cfg= set
+   =enable_power_modeling= to =true=.
+   #+begin_src sh
+     sed 's/enable_power_modeling = false/enable_power_modeling = true/' \
+         -i ~/graphite/carbon_sim.cfg
+   #+end_src
+
 ** Running the PARSEC benchmark with Graphite
 Much of these instructions are adopted from [[https://github.com/mit-carbon/Graphite/wiki/Adding-and-Running-Applications#Running an application from the PARSEC benchmark suite][Running an application
 from the PARSEC benchmark suite]].
 
 1. To install Parsec, download and unpack the tarball from
-   http://coblitz.codeen.org/parsec.cs.princeton.edu/download/2.1/parsec-2.1.tar.gz.
+   http://parsec.cs.princeton.edu/download/3.0/parsec-3.0.tar.gz
    #+begin_src sh
      cd ~/archives/
-     wget http://coblitz.codeen.org/parsec.cs.princeton.edu/download/2.1/parsec-2.1.tar.gz
+     wget http://parsec.cs.princeton.edu/download/3.0/parsec-3.0.tar.gz
      cd ~/graphite/tests/
      # this may take some time...
-     tar xzf archives/parsec-2.1.tar.gz
+     tar xzf archives/parsec-3.0.tar.gz
    #+end_src
 
 2. Add Parsec and Graphite environment variables to =~/.profile=.
@@ -177,57 +163,14 @@ from the PARSEC benchmark suite]].
      export GRAPHITE_HOME=$HOME/graphite
      export PARSEC_HOME=$GRAPHITE_HOME/tests/parsec-2.1
      export PARSECDIR=$PARSEC_HOME
+     export xxPARSECDIRxx=$PARSECDIR
      source $PARSEC_HOME/env.sh
      EOF
    #+end_src
 
-3. Now we have to fix some odd paths in =config/gcc.bldconf=.
-   #+begin_src sh
-     cd parsec-2.1/
-     sed -i 's/export CC_HOME.*$/export CC_HOME="\/usr"/g' \
-         config/gcc.bldconf
-     sed -i 's/export BINUTIL_HOME.*$/export BINUTIL_HOME="\/usr"/g' \
-         config/gcc.bldconf
-   #+end_src
+3. We can largely just follow the instructions on the [[https://github.com/mit-carbon/Graphite/wiki/Adding-and-Running-Applications#Running%20an%20application%20from%20the%20PARSEC%20benchmark%20suite][graphite wiki]].
 
-4. Next, start building the tools in PARSEC using the gcc
-   configuration file and populate the benchmark directories with a
-   copy of the gcc build configuration:
-   #+begin_src sh
-     cd ${PARSEC_HOME}
-     parsecmgmt -a build -p tools
-     bldconfadd -n graphite -c gcc -f
-   #+end_src
-
-5. Next, use the configuration file located here to build the
-   applications: [[http://github.com/downloads/mit-carbon/Graphite/graphite.bldconf][graphite.bldconf]]. Place that file in the
-   =${PARSEC_HOME}/config= directory.
-   #+begin_src sh
-     wget http://github.com/downloads/mit-carbon/Graphite/graphite.bldconf \
-         -O ${PARSEC_HOME}/config/graphite.bldconf
-   #+end_src
-
-6. Edit =graphite.bldconf= to set the =GRAPHITE_HOME= variable to the
-   root of your Graphite source tree and add the =build_inplace= option.
-   #+begin_src sh
-     sed -i "s/export GRAPHITE_HOME.*$/export GRAPHITE_HOME=\"$(echo $GRAPHITE_HOME|sed 's/\//\\\//g')\"/" \
-         ${PARSEC_HOME}/config/graphite.bldconf
-     echo 'build_inplace="TRUE"' >> ${PARSEC_HOME}/config/graphite.bldconf
-   #+end_src
-
-7. Next build the PARSEC applications and kernels using the
-   =graphite.bldconf= configuration file:
-   #+begin_src sh
-     parsecmgmt -a build -p apps -c graphite
-     parsecmgmt -a build -p kernels -c graphite
-   #+end_src
-
-   #+begin_quote
-   For me, [[id:a4a68af3-1474-4abb-bc1c-daa37d20d758][raytrace failed]] to compile, but everything else
-   succeeded. (probably C++ boost library location or some such)
-   #+end_quote
-
-8. Then from the Graphite home directory, set the =PARSEC_HOME=
+4. Then from the Graphite home directory, set the =PARSEC_HOME=
    variable in the file =tests/Makefile.parsec= to point to the source
    of the PARSEC source tree.
    #+begin_src sh
@@ -236,42 +179,12 @@ from the PARSEC benchmark suite]].
          tests/Makefile.parsec
    #+end_src
 
-   Run =make [app]_parsec= to simulate the =[app]= with Graphite using
-   the parameters specified in =tests/Makefile.parsec=. E.g.,
+   Run =make parsec_setup= and =make [app]_parsec= to simulate the
+   =[app]= with Graphite using the parameters specified in
+   =tests/Makefile.parsec=. E.g.,
    #+begin_src sh
      make blackscholes_parsec
    #+end_src
-
-   #+begin_quote
-   Which results in the following error.
-   : ERROR: Unable to open file in_4k.txt.
-   #+end_quote
-
-9. Dealing with the above error took some time, I had to
-   1. Run blackscholes using the parsecmgmt tool which creates the
-      =in_4.txt= file.
-      #+begin_src sh
-        parsecmgmt -a run -p blackscholes -c graphite
-      #+end_src
-   2. Rename =in_4k.txt= to =in_4.txt= in =tests/Makefile.parsec=.
-      #+begin_src sh
-        sed -i 's/in_4k/in_4/' ${GRAPHITE_HOME}/tests/Makefile.parsec
-      #+end_src
-   3. Adjust the same =Makefile.parsec= to ensure that it was in the
-      run directory before it tried to run the simulator -- or just
-      run the Makefile command manually, grab the commands it executes
-      from STDOUT, and then run those commands manually from the
-      shell.  That still gave the following warnings, but at least
-      completes successfully.
-      : PARSEC Benchmark Suite Version 2.1
-      : Num of Options: 4
-      : Num of Runs: 100
-      : Size of data: 160
-      : 0          [11485]  ( 0) [ 0]  [routine_re: 780]  *WARNING* pthread_join() is expecting a return value to be passed through value_ptr input, which is unsupported
-      : 1013753    [11485]  ( 0) [ 0]  [routine_re: 780]  *WARNING* pthread_join() is expecting a return value to be passed through value_ptr input, which is unsupported
-      : 1015227    [11485]  ( 0) [ 0]  [routine_re: 780]  *WARNING* pthread_join() is expecting a return value to be passed through value_ptr input, which is unsupported
-      : 1018795    [11485]  ( 0) [ 0]  [routine_re: 780]  *WARNING* pthread_join() is expecting a return value to be passed through value_ptr input, which is unsupported
-      : [spawn.py] Exited with return code: 0
 
 ** Running a Simple Fast Fourier Transform (FFT)
 The FFT benchmark has higher memory requirements than the simple
@@ -737,6 +650,15 @@ Analysis code in file:src/runtime-2.lisp
 [[file:data/flits.svg]]
 
 * COMMENT Notes [3/6]
+** install setup a VM through ssh
+Start qemu with the -curses flag
+: qemu-system-x86_64 tune.qcow -cdrom data/debian-6.0.6-amd64-netinst.iso -curses
+you'll see a black screen with something like "640 x 480 Graphic mode"
+in the middle.  Press "h" then press return, then at the next prompt
+type "install vga=normal fb=false" and hit return, at this point you
+should be good to go.
+http://debian.2.n7.nabble.com/Problems-with-Squeeze-alpha1-in-qemu-td1858999.html
+
 ** run a PARSEC app w/Graphite
 They all fail, many with missing input files or just incorrect inputs.
 

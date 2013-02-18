@@ -1,0 +1,23 @@
+#!/bin/bash
+#
+# run a program with Graphite's spawn.py
+#
+OUT=$(mktemp -d)
+GRAPHITE_HOME=/home/bacon/graphite
+PIN_HOME=/home/bacon/pin
+$GRAPHITE_HOME/tools/spawn_master.py 1 \
+    $GRAPHITE_HOME/carbon_sim.cfg      \
+    $PIN_HOME/intel64/bin/pinbin       \
+    -tool_exit_timeout 1               \
+    -mt -t                             \
+    $GRAPHITE_HOME/lib/pin_sim -c      \
+    $GRAPHITE_HOME/carbon_sim.cfg      \
+    --general/total_cores=12           \
+    --general/num_processes=1          \
+    --general/enable_shared_mem=true   \
+    --general/output_dir=$OUT          \
+    -- $@
+RESULT=$?
+cat $OUT/sim.out
+rm -rf $OUT
+exit $RESULT
