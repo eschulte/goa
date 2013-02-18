@@ -35,18 +35,35 @@ BS_LFLAGS+='-pthread -lcarbon_sim -lorion -los-services '
 BS_LFLAGS+='-lboost_filesystem-gcc42-mt-1_35 -lboost_system-gcc42-mt-1_35 '
 BS_LFLAGS+='-pthread -lstdc++ -lm'
 
+X264_LFLAGS=''
+X264_LFLAGS+='-D_GNUCC x264/libx264-asm.a '
+X264_LFLAGS+='-L/usr/lib32 -L/usr/lib -static '
+X264_LFLAGS+='-u CarbonStartSim -u CarbonStopSim '
+X264_LFLAGS+='-L/home/bacon/graphite/lib '
+X264_LFLAGS+='-L/home/bacon/graphite/os-services-25032-gcc.4.0.0-linux-ia32_intel64/intel64 '
+X264_LFLAGS+='-L/home/bacon/graphite/contrib/orion '
+X264_LFLAGS+='-pthread -lcarbon_sim -lorion -los-services '
+X264_LFLAGS+='-lboost_filesystem-gcc42-mt-1_35 '
+X264_LFLAGS+='-lboost_system-gcc42-mt-1_35 '
+X264_LFLAGS+='-pthread -lstdc++ '
+X264_LFLAGS+='-lm '
+X264_LFLAGS+='-L/usr/lib32 -L/usr/lib -static '
+X264_LFLAGS+='-u CarbonStartSim -u CarbonStopSim '
+X264_LFLAGS+='-L/home/bacon/graphite/lib '
+X264_LFLAGS+='-L/home/bacon/graphite/os-services-25032-gcc.4.0.0-linux-ia32_intel64/intel64 '
+X264_LFLAGS+='-L/home/bacon/graphite/contrib/orion '
+X264_LFLAGS+='-pthread -lcarbon_sim -lorion -los-services '
+X264_LFLAGS+='-lboost_filesystem-gcc42-mt-1_35 '
+X264_LFLAGS+='-lboost_system-gcc42-mt-1_35 '
+X264_LFLAGS+='-pthread -lstdc++ -lm  -lm -lpthread -s'
+
 exe=$(mktemp)
 case $PROGRAM in
 
     blackscholes)
-        RUNDIR=
         case $REP in
-            # cd ~/graphite/tests/parsec/pkgs/apps/blackscholes/run
-            # (cp $VARIANT blackscholes.c && make clean && make)
-            CIL|CLANG|cil|clang)
-                echo "CIL/CLANG blackscholes is broke" >&2; exit 1 ;;
-            ASM|asm)
-                (gcc $VARIANT $BS_LFLAGS -o $exe) ;;
+            ASM|asm) (gcc $VARIANT $BS_LFLAGS -o $exe) ;;
+            *) echo "$REP not supported with $PROGRAM!">&2; exit 1 ;;
         esac >/dev/null 2>/dev/null
         if [ $? -eq 0 ];then
                 RESULTS="$(g_run $exe $THREADS $INPUT /dev/null)"
@@ -55,6 +72,21 @@ case $PROGRAM in
             RESULTS="compile-failure"
             RETURN=1
         fi;;
+
+    x264)
+        THREADS=1
+        case $REP in
+            CIL|cil) (gcc $VARIANT $X264_LFLAGS -o $EXE) ;;
+            *) echo "$REP not supported with $PROGRAM!">&2; exit 1 ;;
+        esac >/dev/null 2>/dev/null
+        if [ $? -eq 0 ];then
+                RESULTS="$(g_run $exe $THREADS $INPUT /dev/null)"
+                RETURN=$?
+        else
+            RESULTS="compile-failure"
+            RETURN=1
+        fi;;
+
 
     sort)
         pushd ~/graphite/tests/apps/sort > /dev/null
