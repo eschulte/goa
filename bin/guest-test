@@ -57,16 +57,16 @@ X264_LFLAGS+='-lboost_filesystem-gcc42-mt-1_35 '
 X264_LFLAGS+='-lboost_system-gcc42-mt-1_35 '
 X264_LFLAGS+='-pthread -lstdc++ -lm  -lm -lpthread -s'
 
-exe=$(mktemp)
+EXE=$(mktemp)
 case $PROGRAM in
 
     blackscholes)
         case $REP in
-            ASM|asm) (gcc $VARIANT $BS_LFLAGS -o $exe) ;;
+            ASM|asm) (gcc $VARIANT $BS_LFLAGS -o $EXE) ;;
             *) echo "$REP not supported with $PROGRAM!">&2; exit 1 ;;
         esac >/dev/null 2>/dev/null
         if [ $? -eq 0 ];then
-                RESULTS="$(g_run $exe $THREADS $INPUT /dev/null)"
+                RESULTS="$(g_run $EXE $THREADS $INPUT /dev/null)"
                 RETURN=$?
         else
             RESULTS="compile-failure"
@@ -76,11 +76,14 @@ case $PROGRAM in
     x264)
         THREADS=1
         case $REP in
-            CIL|cil) (gcc $VARIANT $X264_LFLAGS -o $EXE) ;;
+            
+            CIL|cil)
+                echo "gcc $VARIANT $X264_LFLAGS -o $EXE";
+                (gcc $VARIANT $X264_LFLAGS -o $EXE) ;;
             *) echo "$REP not supported with $PROGRAM!">&2; exit 1 ;;
-        esac >/dev/null 2>/dev/null
+        esac
         if [ $? -eq 0 ];then
-                RESULTS="$(g_run $exe $THREADS $INPUT /dev/null)"
+                RESULTS="$(g_run $EXE $THREADS $INPUT /dev/null)"
                 RETURN=$?
         else
             RESULTS="compile-failure"
@@ -102,6 +105,6 @@ case $PROGRAM in
     
     *) error "'$PROGRAM' is not a recognized program";;
 esac
-rm -f $exe; rm -f $VARIANT
+rm -f $EXE; rm -f $VARIANT
 echo "$RESULTS"
 quit_free $RETURN
