@@ -18,6 +18,14 @@
 
 (defvar *num-tests* 5 "Number of tests in `*test*'.")
 
+(defvar *script* "./host-test.sh"
+  "Script used to evaluate variants.
+Note: This does not follow the normal test script format but rather it;
+1. takes the path to a .s asm file
+2. copies that file to a VM
+3. runs the resulting program in Graphite in the VM
+4. returns the full set of Graphite debug information")
+
 (defvar *flags*
   '("-L/usr/lib64" "-L/usr/lib" "-static" "-u" "CarbonStartSim"
     "-u" "CarbonStopSim" "-pthread" "-lstdc++" "-lm"))
@@ -94,12 +102,13 @@
 (memoize #'test :key [#'edits #'car])
 ;; (un-memoize 'test)
 
-(defun graphite-test (variant)
-  (multiple-value-bind (stdout stderr errno) (shell "cat /tmp/output")
-    (declare (ignorable stderr))
-    (if (zerop errno)
-        (energy-delay-product (group-stats (parse-stdout stdout)))
-        infinity)))
+(defun graphite-metrics (variant)
+  (with-temp-file-of (asm "s") (genome-string variant)
+    (multiple-value-bind (stdout stderr errno) (shell "~a ~a" *script* asm)
+      (declare (ignorable stderr))
+      (if (zerop errno)
+          (energy-delay-product (group-stats (parse-stdout stdout)))
+          infinity))))
 
 (defun neutralp (variant)
   (setf (fitness variant) (test variant))
