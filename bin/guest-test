@@ -67,7 +67,6 @@ case $PROGRAM in
             *) echo "$REP not supported with $PROGRAM!">&2; exit 1 ;;
         esac >/dev/null 2>/dev/null
         if [ $? -eq 0 ];then
-            echo "compile success"; exit 0
             RESULTS="$(g_run $EXE $THREADS $INPUT /dev/null)"
             RETURN=$?
         else
