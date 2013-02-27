@@ -9,15 +9,15 @@ int main(int argc, char *argv[]) {
   struct rlimit limit;
   limit.rlim_cur = 360; limit.rlim_max = 360;
   setrlimit(RLIMIT_CPU, &limit);       // cpu seconds
-  limit.rlim_cur = 512; limit.rlim_max = 512;
+  limit.rlim_cur = 1024; limit.rlim_max = 1024;
   setrlimit(RLIMIT_NPROC, &limit);     // number of spawned processes
-  limit.rlim_cur = 512; limit.rlim_max = 512;
+  limit.rlim_cur = 1024; limit.rlim_max = 1024;
   setrlimit(RLIMIT_NOFILE, &limit);    // number of open files
-  limit.rlim_cur = 8388480; limit.rlim_max = 8388480;
+  limit.rlim_cur = 17179607040; limit.rlim_max = 17179607040;
   setrlimit(RLIMIT_FSIZE, &limit);     // max file size (bytes)
   setrlimit(RLIMIT_MEMLOCK, &limit);   // max memory locked into RAM (bytes)
   setrlimit(RLIMIT_STACK, &limit);     // max stack size (bytes)
-  alarm(600);                          // wall clock seconds
+  alarm(1440);                          // wall clock seconds
                                        // need 600 when modeling power
                                        // otherwise only need 360
 
