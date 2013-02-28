@@ -27,13 +27,14 @@ VARIANT=$3
 if [ -z "$1" ];then help; fi
 
 BS_LFLAGS=''
-BS_LFLAGS+='-L/usr/lib64 -L/usr/lib -static -u CarbonStartSim -u CarbonStopSim '
+BS_LFLAGS+='-L/usr/lib64 -L/usr/lib '
+BS_LFLAGS+='-L/home/bacon/graphite/tests/parsec/pkgs/libs/hooks/inst/amd64-linux.graphite/lib '
+BS_LFLAGS+='-static '
+BS_LFLAGS+='-u CarbonStartSim -u CarbonStopSim -u pthread_create -u pthread_join '
 BS_LFLAGS+='-L/home/bacon/graphite/lib '
-BS_LFLAGS+='-L/home/bacon/graphite/os-services-25032-gcc.4.0.0-linux-ia32_intel64/intel64 '
-BS_LFLAGS+='-L/home/bacon/graphite/contrib/orion '
-BS_LFLAGS+='-pthread -lcarbon_sim -lorion -los-services '
-BS_LFLAGS+='-lboost_filesystem-gcc42-mt-1_35 -lboost_system-gcc42-mt-1_35 '
-BS_LFLAGS+='-pthread -lstdc++ -lm'
+BS_LFLAGS+='-L/home/bacon/graphite/contrib/dsent '
+BS_LFLAGS+='-lhooks -lcarbon_sim -ldsent_contrib '
+BS_LFLAGS+='-lboost_filesystem-mt -lboost_system-mt -lpthread -lstdc++ -lm'
 
 X264_LFLAGS=''
 X264_LFLAGS+='-D_GNUCC x264/libx264-asm.a '
@@ -57,17 +58,17 @@ X264_LFLAGS+='-lboost_filesystem-gcc42-mt-1_35 '
 X264_LFLAGS+='-lboost_system-gcc42-mt-1_35 '
 X264_LFLAGS+='-pthread -lstdc++ -lm  -lm -lpthread -s'
 
-exe=$(mktemp)
+EXE=$(mktemp)
 case $PROGRAM in
 
     blackscholes)
         case $REP in
-            ASM|asm) (gcc $VARIANT $BS_LFLAGS -o $exe) ;;
+            ASM|asm) (gcc $VARIANT $BS_LFLAGS -o $EXE) ;;
             *) echo "$REP not supported with $PROGRAM!">&2; exit 1 ;;
         esac >/dev/null 2>/dev/null
         if [ $? -eq 0 ];then
-                RESULTS="$(g_run $exe $THREADS $INPUT /dev/null)"
-                RETURN=$?
+            RESULTS="$(g_run $EXE $THREADS $INPUT /dev/null)"
+            RETURN=$?
         else
             RESULTS="compile-failure"
             RETURN=1
@@ -76,17 +77,19 @@ case $PROGRAM in
     x264)
         THREADS=1
         case $REP in
-            CIL|cil) (gcc $VARIANT $X264_LFLAGS -o $EXE) ;;
+            
+            CIL|cil)
+                echo "gcc $VARIANT $X264_LFLAGS -o $EXE";
+                (gcc $VARIANT $X264_LFLAGS -o $EXE) ;;
             *) echo "$REP not supported with $PROGRAM!">&2; exit 1 ;;
-        esac >/dev/null 2>/dev/null
+        esac
         if [ $? -eq 0 ];then
-                RESULTS="$(g_run $exe $THREADS $INPUT /dev/null)"
-                RETURN=$?
+            RESULTS="$(g_run $EXE $THREADS $INPUT /dev/null)"
+            RETURN=$?
         else
             RESULTS="compile-failure"
             RETURN=1
         fi;;
-
 
     sort)
         pushd ~/graphite/tests/apps/sort > /dev/null
@@ -103,6 +106,6 @@ case $PROGRAM in
     
     *) error "'$PROGRAM' is not a recognized program";;
 esac
-rm -f $exe; rm -f $VARIANT
+rm -f $EXE; rm -f $VARIANT
 echo "$RESULTS"
 quit_free $RETURN
