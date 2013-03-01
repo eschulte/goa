@@ -24,7 +24,11 @@ Note: This does not follow the normal test script format but rather it;
 3. runs the resulting program in Graphite in the VM
 4. returns the full set of Graphite debug information")
 
-(defvar *orig* (from-file (make-instance 'asm) "data/blackscholes.m4.s"))
+(defclass graphite-asm (asm)
+  ((stats :accessor stats :initform :not-run)))
+
+(defvar *orig* (from-file (make-instance 'graphite-asm)
+                          "data/blackscholes.m4.s"))
 
 (defun parse-stdout (stdout)
   "Parse the Graphite output of host-test."
@@ -77,13 +81,18 @@ Note: This does not follow the normal test script format but rather it;
                                     :dram-performance-model-summary))))))))
 
 (defun test (variant)
-  (with-temp-file-of (asm "s") (genome-string variant)
-    (multiple-value-bind (stdout stderr errno)
-        (shell "~a blackscholes asm ~a" *script* asm)
-      (declare (ignorable stderr))
-      (if (zerop errno)
-          (energy-delay-product (group-stats (parse-stdout stdout)))
-          infinity))))
+  (case (stats variant)
+    (:not-run (with-temp-file-of (asm "s") (genome-string variant)
+                (incf *fitness-evals*)
+                (multiple-value-bind (stdout stderr errno)
+                    (shell "~a blackscholes asm ~a" *script* asm)
+                  (declare (ignorable stderr))
+                  (if (zerop errno)
+                      (setf (stats variant) (group-stats (parse-stdout stdout)))
+                      (setf (stats variant) :failed))
+                  (test variant))))
+    (:failed infinity)
+    (t (energy-delay-product (stats variant)))))
 
 (defvar *mutate-chance* nil
   "Chance that each new individual will be mutated.")
@@ -130,3 +139,8 @@ Note: This does not follow the normal test script format but rather it;
   (setf *population* (repeatedly *max-population-size* (copy *orig*)))
   (loop :for i :upto 24 :do
      (sb-thread:make-thread #'evolver :name (format nil "opt-~d" i))))
+
+(defun opt-threads ()
+  (remove-if-not (lambda (thread)
+                   (string= "opt" (subseq (sb-thread:thread-name thread) 0 3)))
+                 (sb-thread:list-all-threads)))
