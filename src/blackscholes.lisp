@@ -14,11 +14,9 @@
 
 (defvar *work-dir* "sh-runner/work/")
 
-(defvar *test* "../../bin/blackscholes-test")
-
 (defvar *num-tests* 5 "Number of tests in `*test*'.")
 
-(defvar *script* "./host-test.sh"
+(defvar *script* "../../bin/host-test"
   "Script used to evaluate variants.
 Note: This does not follow the normal test script format but rather it;
 1. takes the path to a .s asm file
@@ -26,20 +24,7 @@ Note: This does not follow the normal test script format but rather it;
 3. runs the resulting program in Graphite in the VM
 4. returns the full set of Graphite debug information")
 
-(defvar *flags*
-  '("-L/usr/lib64" "-L/usr/lib" "-static" "-u" "CarbonStartSim"
-    "-u" "CarbonStopSim" "-pthread" "-lstdc++" "-lm"))
-
-(defvar *orig* (from-file (make-instance 'asm :linker "g++" :flags *flags*)
-                          "data/blackscholes.m4.s"))
-
-(defvar *steps* 10 "Number of neutral steps to take.")
-(defvar *size* 500 "Size of each neutral step.")
-
-(defvar *neutral-walk* (list (list (edits *orig*)))
-  "Variable to hold the results of the walk.")
-
-(defvar *stdout*)
+(defvar *orig* (from-file (make-instance 'asm) "data/blackscholes.m4.s"))
 
 (defun parse-stdout (stdout)
   "Parse the Graphite output of host-test."
@@ -80,9 +65,9 @@ Note: This does not follow the normal test script format but rather it;
   (flet ((energy (group)
            (+ (reduce #'+ (cdr (assoc :static-power group)))
               (reduce #'+ (cdr (assoc :dynamic-energy group))))))
-    (* 
+    (*
      ;; Runtime
-     (reduce #'+ (aget :completion-time (group-stats (parse-stdout *stdout*))))
+     (reduce #'+ (aget :completion-time stats))
      ;; Energy
      (reduce #'+ (mapcar #'energy
                          (cons
@@ -92,56 +77,56 @@ Note: This does not follow the normal test script format but rather it;
                                     :dram-performance-model-summary))))))))
 
 (defun test (variant)
-  (with-temp-file (file)
-    (phenome variant :bin file)
-    (multiple-value-bind (stdout stderr errno) (shell "~a ~a" *test* file)
-      (declare (ignorable stderr))
-      (if (zerop errno)
-          (parse-integer stdout)
-          0))))
-(memoize #'test :key [#'edits #'car])
-;; (un-memoize 'test)
-
-(defun graphite-metrics (variant)
   (with-temp-file-of (asm "s") (genome-string variant)
-    (multiple-value-bind (stdout stderr errno) (shell "~a ~a" *script* asm)
+    (multiple-value-bind (stdout stderr errno)
+        (shell "~a blackscholes asm ~a" *script* asm)
       (declare (ignorable stderr))
       (if (zerop errno)
           (energy-delay-product (group-stats (parse-stdout stdout)))
           infinity))))
 
-(defun neutralp (variant)
-  (setf (fitness variant) (test variant))
-  (= *num-tests* (fitness variant)))
+(defvar *mutate-chance* nil
+  "Chance that each new individual will be mutated.")
 
-(defun neutral-walker ()
+(setf ;; Evolutionary parameters
+ *max-population-size* (expt 2 8)
+ *tournament-size*     2
+ *fitness-predicate*   #'<
+ *mutate-chance*       0.2
+ *cross-chance*        0.2)
+
+(defun tourny (&optional (predicate *fitness-predicate*) &aux competitors)
+  "Select an individual from *POPULATION* with a tournament of size NUMBER."
+  (assert *population* (*population*) "Empty population.")
+  (extremum (dotimes (no *tournament-size* competitors)
+              (declare (ignorable no))
+              (push (random-elt *population*) competitors))
+            predicate :key #'test))
+
+(defun mutant ()
+  "Generate a new mutant from a *POPULATION*."
+  (let ((copy (copy (tourny #'test))))
+    (if (< (random 1.0) *mutate-chance*)
+        (mutate copy)
+        copy)))
+
+(defun crossed ()
+  "Generate a new individual from *POPULATION* using crossover."
+  (crossover (tourny) (tourny)))
+
+(defun new-individual ()
+  "Generate a new individual from *POPULATION*."
+  (if (< (random 1.0) *cross-chance*) (crossed) (mutant)))
+
+(defun evolver ()
   (loop :while *running* :do
-     (let ((new (copy *orig*)))
-       (setf (edits new) (copy-tree (random-elt (second *neutral-walk*))))
-       (setf new (mutate new))
-       ;; check if the variant is neutral
-       (when (neutralp new)
-         (push (copy-tree (edits new)) (first *neutral-walk*))
-         ;; check if we should move on to the next step
-         (when (>= (length (first *neutral-walk*)) *size*)
-           (push nil *neutral-walk*)
-           ;; check if we are done
-           (when (> (length *neutral-walk*) *steps*)
-             (setf *running* nil)))))))
+     (push (new-individual) *population*)
+     (loop :while (> (length *population*) *max-population-size*) :do
+        (let ((loser (nth (random (length *population*)) *population*)))
+          (setf *population* (remove loser *population* :count 1))))))
 
 #+run
 (progn
-  ;; setup
-  (setf *running* t)
-  (push nil *neutral-walk*)
-  ;; take the neutral walk
-  (loop :for i :below 46 :do (sb-thread:make-thread #'neutral-walker))
-  (loop :until (not *running*) :do (sleep 10))
-  ;; save the results
-  (store *neutral-walk* "neutral-walk.store"))
-
-#+save
-(loop :for step :in (reverse *neutral-walk*) :as s-count :from 0 :do
-   (loop :for ind :in step :as n-count :from 0 :do
-      (string-to-file (genome-string (copy *orig* :edits ind))
-                      (format nil "bs-walk/~d-~3,'0d.s" s-count n-count))))
+  (setf *population* (repeatedly *max-population-size* (copy *orig*)))
+  (loop :for i :upto 24 :do
+     (sb-thread:make-thread #'evolver :name (format nil "opt-~d" i))))
