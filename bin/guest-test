@@ -11,14 +11,15 @@ BASE=$(dirname $0)
 . /home/bacon/.profile
 . /home/bacon/.bashrc
 
-THREADS=8
+THREADS=4
 INPUT="/home/bacon/input"
-LIMIT="/home/bacon/bin/limit"
+LIMIT="/home/bacon/bin/easy-limit"
 LOCK="/tmp/lockfile"
+EXE=$(mktemp)
 quit_locked(){ echo busy; exit  1; }
-quit_free(){ rm -f $LOCK; exit $1; }
+quit_free(){ rm -f $LOCK; rm -f $EXE; rm -f $VARIANT; exit $1; }
 g_run(){ $LIMIT /home/bacon/bin/graphite-run $@ 2>/dev/null; }
-b_test(){ ${BASE}/blackscholes-test $1; }
+b_test(){ $LIMIT ${BASE}/blackscholes-test $1; }
 
 # atomic check and set on the VM lock
 (umask 222; echo $$ >$LOCK) 2>/dev/null || quit_locked;
@@ -60,13 +61,12 @@ X264_LFLAGS+='-lboost_filesystem-gcc42-mt-1_35 '
 X264_LFLAGS+='-lboost_system-gcc42-mt-1_35 '
 X264_LFLAGS+='-pthread -lstdc++ -lm  -lm -lpthread -s'
 
-EXE=$(mktemp)
 case $PROGRAM in
 
     blackscholes)
         case $REP in
             ASM|asm) (gcc $VARIANT $BS_LFLAGS -o $EXE) ;;
-            *) echo "$REP not supported with $PROGRAM!">&2; exit 1 ;;
+            *) echo "$REP not supported with $PROGRAM!">&2; quit_free 1 ;;
         esac >/dev/null 2>/dev/null
         if [ $? -eq 0 ];then
             RESULT="$(b_test $EXE)"
@@ -85,11 +85,10 @@ case $PROGRAM in
     x264)
         THREADS=1
         case $REP in
-            
             CIL|cil)
                 echo "gcc $VARIANT $X264_LFLAGS -o $EXE";
                 (gcc $VARIANT $X264_LFLAGS -o $EXE) ;;
-            *) echo "$REP not supported with $PROGRAM!">&2; exit 1 ;;
+            *) echo "$REP not supported with $PROGRAM!">&2; quit_free 1 ;;
         esac
         if [ $? -eq 0 ];then
             RESULTS="$(g_run $EXE $THREADS $INPUT /dev/null)"
@@ -103,7 +102,7 @@ case $PROGRAM in
         pushd ~/graphite/tests/apps/sort > /dev/null
         case $REP in
             CIL|CLANG) (cp $VARIANT sort.c && make);;
-            ASM)       echo "ASM rep not supported for a sorter">&2; exit 1;;
+            ASM) echo "ASM rep not supported for a sorter">&2; quit_free 1;;
         esac >/dev/null 2>/dev/null
         RETURN=$?
         if [ $RETURN -eq 0 ];then
@@ -114,6 +113,5 @@ case $PROGRAM in
     
     *) error "'$PROGRAM' is not a recognized program";;
 esac
-rm -f $EXE; rm -f $VARIANT
 echo "$RESULTS"
 quit_free $RETURN
