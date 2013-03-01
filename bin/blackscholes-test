@@ -11,16 +11,11 @@
 #                        which passed.  If this is neutral, then exit
 #                        with 0.
 #
-# -l,--limit -- optionally specify limit script
-#
-#               default: use the limit located next to this script
-#
 # -r,--raw ---- show the raw error
 #
 BASE="$(dirname $0)"
 TEST=""
 RAW=""
-LIMIT="$BASE/limit"
 declare -a INPUTS
 declare -a OUTPUTS
 HELP_TEXT=$(cat "$0" \
@@ -32,14 +27,13 @@ HELP_TEXT=$(cat "$0" \
 if [ $(grep "\-h" <(echo "$1")) ];then echo "$HELP_TEXT"; exit 0; fi
 PROG="$(dirname $1)/$(basename $1)"; shift;
 
-eval set -- $(getopt -o ht:l:r -l help,test:,limit:,raw -- "$@" \
+eval set -- $(getopt -o ht:r -l help,test:,raw -- "$@" \
               || echo "$HELP_TEXT" && exit 1;)
 
 while [ $# -gt 0 ];do
     case $1 in
         -h|--help)  echo "$HELP_TEXT" && exit 0;;
         -t|--test)  TEST="$2"; shift;;
-        -l|--limit) LIMIT="$2"; shift;;
         -r|--raw)   RAW="yes";;
         (--) shift; break;;
         (-*) error "unrecognized option $1";;
@@ -57,8 +51,9 @@ num_diff(){ # diff of numerical closeness
     paste $1 $2|awk "$AWK_CMD"; }
 
 run(){ # return the difference between oracle and program output
-    # $LIMIT $PROG 2 <(echo "${INPUTS[$1]}") /dev/stdout|egrep "^[[:digit:]]" >&2
-    num_diff <($LIMIT $PROG 2 <(echo "${INPUTS[$1]}") /dev/stdout|egrep "^[[:digit:]]") <(echo "${OUTPUTS[$1]}"); }
+    # $PROG 2 <(echo "${INPUTS[$1]}") /dev/stdout|egrep "^[[:digit:]]" >&2
+    num_diff <($PROG 2 <(echo "${INPUTS[$1]}") /dev/stdout|egrep "^[[:digit:]]") <(echo "${OUTPUTS[$1]}");
+}
 
 INPUTS[0]="1
 42.00 40.00 0.1000 0.00 0.20 0.50 C 0.00 4.759423036851750055"
@@ -70,7 +65,7 @@ INPUTS[1]="2
 42.00 40.00 0.1000 0.00 0.20 0.50 P 0.00 0.808600016880314021"
 OUTPUTS[1]="2
 4.759420394897460938
-0.000000000000000000"
+0.808597564697265625"
 
 INPUTS[2]="4
 42.00 40.00 0.1000 0.00 0.20 0.50 C 0.00 4.759423036851750055
@@ -80,8 +75,8 @@ INPUTS[2]="4
 OUTPUTS[2]="4
 4.759420394897460938
 0.808597564697265625
-0.000000000000000000
-0.000000000000000000"
+3.714603424072265625
+8.591663360595703125"
 
 INPUTS[3]="8
 42.00 40.00 0.1000 0.00 0.20 0.50 C 0.00 4.759423036851750055
@@ -97,10 +92,10 @@ OUTPUTS[3]="8
 0.808597564697265625
 3.714603424072265625
 8.591663360595703125
-0.000000000000000000
-0.000000000000000000
-0.000000000000000000
-0.000000000000000000"
+2.133378982543945312
+10.895606994628906250
+14.421577453613281250
+18.630859375000000000"
 
 INPUTS[4]="16
 42.00 40.00 0.1000 0.00 0.20 0.50 C 0.00 4.759423036851750055
@@ -128,14 +123,14 @@ OUTPUTS[4]="16
 10.895606994628906250
 14.421577453613281250
 18.630859375000000000
-0.000000000000000000
-0.000000000000000000
-0.000000000000000000
-0.000000000000000000
-0.000000000000000000
-0.000000000000000000
-0.000000000000000000
-0.000000000000000000"
+1.814987182617187500
+5.850273132324218750
+10.308151245117187500
+0.003523707389831543
+1.140726089477539062
+4.216762542724609375
+11.135246276855468750
+16.092636108398437500"
 
 # Actually run
 AWK_NEAR='{print ($1 < 0.00001) ? 0 : 1}'
