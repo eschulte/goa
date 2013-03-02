@@ -17,7 +17,7 @@ LIMIT="/home/bacon/bin/easy-limit"
 LOCK="/tmp/lockfile"
 EXE=$(mktemp)
 quit_locked(){ echo busy; exit  1; }
-quit_free(){ rm -f $LOCK; rm -f $EXE; rm -f $VARIANT; exit $1; }
+quit_free(){ rm -f $LOCK; rm -f $EXE; rm -f $VARIANT; rm -rf /tmp/*; exit $1; }
 g_run(){ $LIMIT /home/bacon/bin/graphite-run $@ 2>/dev/null; }
 b_test(){ $LIMIT ${BASE}/blackscholes-test $1; }
 
