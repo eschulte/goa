@@ -17,7 +17,6 @@ rep=$2
 var=$3
 guest_test="/home/bacon/bin/guest-test"
 cmd="$guest_test $program $rep /tmp/$(basename $var)"
-output_path="graphite/output_files/sim.out"
 
 first_few(){
     local orig="$1";
