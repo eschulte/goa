@@ -110,7 +110,7 @@ case $PROGRAM in
         else
             RESULTS=""
         fi;;
-    
+
     *) error "'$PROGRAM' is not a recognized program";;
 esac
 echo "$RESULTS"
