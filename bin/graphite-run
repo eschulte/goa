@@ -7,7 +7,7 @@
 # -c,--cores       specify the number of cores (default: 8)
 # -t,--threads     specify the number of threads (default: 1)
 #
-CORES=8
+CORES=4
 THREADS=1
 eval set -- $(getopt -o c:t: -l cores:,threads: -- $@)
 while [ $# -gt 0 ];do

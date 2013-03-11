@@ -12,6 +12,11 @@
   #-(or sbcl)
   (error "must specify a positive infinity value"))
 
+(defvar *max-ind-evals* 4
+  "Maximum number of times to evaluate an individual in graphite.
+This would be 1 but some graphite metrics are non-deterministic, so we
+take a mean.")
+
 (defvar *work-dir* "sh-runner/work/")
 
 (defvar *num-tests* 5 "Number of tests in `*test*'.")
@@ -25,7 +30,8 @@ Note: This does not follow the normal test script format but rather it;
 4. returns the full set of Graphite debug information")
 
 (defclass graphite-asm (asm)
-  ((stats :accessor stats :initform :not-run)))
+  ((stats  :accessor stats  :initform nil)
+   (broken :accessor broken :initform nil)))
 
 (defvar *orig* (from-file (make-instance 'graphite-asm)
                           "data/blackscholes.m4.s"))
@@ -80,21 +86,27 @@ Note: This does not follow the normal test script format but rather it;
                                   '(:cache-l1-i :cache-l1-d :cache-l2
                                     :dram-performance-model-summary))))))))
 
-(defun test (variant)
-  (case (stats variant)
-    (:not-run (with-temp-file-of (asm "s") (genome-string variant)
-                (incf *fitness-evals*)
-                (multiple-value-bind (stdout stderr errno)
-                    (shell "~a blackscholes asm ~a" *script* asm)
-                  (declare (ignorable stderr))
-                  (if (zerop errno)
-                      (setf (stats variant) (group-stats (parse-stdout stdout)))
-                      (setf (stats variant) :failed))
-                  (test variant))))
-    (:failed infinity)
-    (t (energy-delay-product (stats variant)))))
+(defun graphite-run (variant)
+  (with-temp-file-of (asm "s") (genome-string variant)
+    (incf *fitness-evals*)
+    (multiple-value-bind (stdout stderr errno)
+        (shell "~a blackscholes asm ~a" *script* asm)
+      (declare (ignorable stderr))
+      (values (zerop errno)
+              (when (zerop errno) (group-stats (parse-stdout stdout)))))))
 
-(defvar *mutate-chance* nil
+(defun test (variant)
+  (when (and (not (broken variant))
+             (< (length (stats variant)) *max-ind-evals*))
+    (multiple-value-bind (neutral stats) (graphite-run variant)
+        (if neutral
+            (push stats (stats variant))
+            (setf (broken variant) t))))
+  (if (broken variant)
+      infinity
+      (mean (mapcar #'energy-delay-product (stats variant)))))
+
+(defvar *mutate-chance* 0.2
   "Chance that each new individual will be mutated.")
 
 (setf ;; Evolutionary parameters
@@ -107,14 +119,12 @@ Note: This does not follow the normal test script format but rather it;
 (defun tourny (&optional (predicate *fitness-predicate*) &aux competitors)
   "Select an individual from *POPULATION* with a tournament of size NUMBER."
   (assert *population* (*population*) "Empty population.")
-  (extremum (dotimes (no *tournament-size* competitors)
-              (declare (ignorable no))
-              (push (random-elt *population*) competitors))
+  (extremum (repeatedly *tournament-size* (random-elt *population*))
             predicate :key #'test))
 
 (defun mutant ()
   "Generate a new mutant from a *POPULATION*."
-  (let ((copy (copy (tourny #'test))))
+  (let ((copy (copy (tourny))))
     (if (< (random 1.0) *mutate-chance*)
         (mutate copy)
         copy)))
