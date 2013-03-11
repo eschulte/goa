@@ -30,8 +30,21 @@ Note: This does not follow the normal test script format but rather it;
 4. returns the full set of Graphite debug information")
 
 (defclass graphite-asm (asm)
-  ((stats  :accessor stats  :initform nil)
-   (broken :accessor broken :initform nil)))
+  ((stats  :initarg :stats  :accessor stats  :initform nil)
+   (broken :initarg :broken :accessor broken :initform nil)))
+
+(defmethod copy ((graphite-asm graphite-asm)
+                 &key (edits (copy-tree (edits graphite-asm)))
+                   (fitness (fitness graphite-asm))
+                   (stats (stats graphite-asm)))
+  (make-instance (type-of graphite-asm)
+    :edits edits
+    :fitness fitness
+    :addr-map (copy-tree (addr-map graphite-asm))
+    :genome (copy-tree (genome graphite-asm))
+    :linker (linker graphite-asm)
+    :flags (flags graphite-asm)
+    :stats stats))
 
 (defvar *orig* (from-file (make-instance 'graphite-asm)
                           "data/blackscholes.m4.s"))
@@ -119,12 +132,13 @@ Note: This does not follow the normal test script format but rather it;
 (defun tourny (&optional (predicate *fitness-predicate*) &aux competitors)
   "Select an individual from *POPULATION* with a tournament of size NUMBER."
   (assert *population* (*population*) "Empty population.")
-  (extremum (repeatedly *tournament-size* (random-elt *population*))
-            predicate :key #'test))
+  (copy (extremum (repeatedly *tournament-size* (random-elt *population*))
+                  predicate :key #'test)
+        :stats nil))
 
 (defun mutant ()
   "Generate a new mutant from a *POPULATION*."
-  (let ((copy (copy (tourny))))
+  (let ((copy (tourny)))
     (if (< (random 1.0) *mutate-chance*)
         (mutate copy)
         copy)))
