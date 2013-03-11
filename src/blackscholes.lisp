@@ -119,6 +119,9 @@ Note: This does not follow the normal test script format but rather it;
       infinity
       (mean (mapcar #'energy-delay-product (stats variant)))))
 
+(defun quick-test (variant)
+  (let ((*max-ind-evals* 1)) (test variant)))
+
 (defvar *mutate-chance* 0.2
   "Chance that each new individual will be mutated.")
 
@@ -129,23 +132,22 @@ Note: This does not follow the normal test script format but rather it;
  *mutate-chance*       0.2
  *cross-chance*        0.2)
 
-(defun tourny (&optional (predicate *fitness-predicate*) &aux competitors)
+(defun tourny (&optional (predicate *fitness-predicate*) (key #'test))
   "Select an individual from *POPULATION* with a tournament of size NUMBER."
   (assert *population* (*population*) "Empty population.")
-  (copy (extremum (repeatedly *tournament-size* (random-elt *population*))
-                  predicate :key #'test)
-        :stats nil))
+  (extremum (repeatedly *tournament-size* (random-elt *population*))
+            predicate :key key))
 
 (defun mutant ()
   "Generate a new mutant from a *POPULATION*."
-  (let ((copy (tourny)))
+  (let ((copy (copy (tourny) :stats nil)))
     (if (< (random 1.0) *mutate-chance*)
         (mutate copy)
         copy)))
 
 (defun crossed ()
   "Generate a new individual from *POPULATION* using crossover."
-  (crossover (tourny) (tourny)))
+  (crossover (copy (tourny) :stats nil) (copy (tourny) :stats nil)))
 
 (defun new-individual ()
   "Generate a new individual from *POPULATION*."
@@ -155,6 +157,7 @@ Note: This does not follow the normal test script format but rather it;
   (loop :while *running* :do
      (push (new-individual) *population*)
      (loop :while (> (length *population*) *max-population-size*) :do
+        ;; (tourny :predicate #'> :key #'quick-test)
         (let ((loser (nth (random (length *population*)) *population*)))
           (setf *population* (remove loser *population* :count 1))))))
 
