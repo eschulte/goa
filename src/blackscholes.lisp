@@ -171,3 +171,54 @@ Note: This does not follow the normal test script format but rather it;
   (remove-if-not (lambda (thread)
                    (string= "opt" (subseq (sb-thread:thread-name thread) 0 3)))
                  (sb-thread:list-all-threads)))
+
+;;; Notes:
+;; 2013-03-11 17:00 ----- started run
+;; 2013-03-12 10:15 ----- doubled population size
+
+;;; Observations:
+;;
+;; at 2013-03-12 10:15
+;;
+;; (mapcar [#'length #'stats] *population*)
+;; (0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+;;  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+;;  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+;;  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0
+;;  0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+;;  0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 1 0 0 4 0 1 0 0 0 1 1 0 0 2 1 2 2 2 0 0 0 0
+;;  2 2 4 0 1 4 0 0 4 3 4 3 1 1 2 2 4 4 4 4 4 5)
+;; (mapcar [#'length #'edits] *population*)
+;; (3 4 4 2 3 4 1 3 2 3 2 1 1 3 7 3 1 2 6 1 2 3 1 3 2 1 3 2 1 7 1 3 4 3 3 3 2 4 2
+;;  2 1 5 1 3 2 1 3 2 6 1 1 3 1 1 2 1 3 4 2 3 6 3 5 2 1 3 0 1 4 1 3 1 1 3 3 3 2 2
+;;  4 4 2 1 1 2 2 5 1 3 2 2 6 6 3 2 2 3 2 3 5 4 1 6 2 7 2 6 2 1 2 2 1 4 2 2 2 4 6
+;;  1 3 4 1 2 2 3 1 1 1 3 3 1 3 4 4 3 2 5 2 3 3 1 1 4 3 1 1 5 2 3 4 3 2 4 1 3 2 2
+;;  2 2 2 1 4 3 4 2 3 4 4 4 2 3 1 4 4 4 3 3 3 1 3 1 4 3 1 3 1 2 3 1 3 2 4 2 1 3 5
+;;  6 2 2 1 1 8 3 1 3 2 2 1 3 3 1 3 3 4 4 4 3 2 4 3 2 8 2 1 5 4 2 1 2 2 2 6 2 2 1
+;;  4 1 6 3 4 3 5 1 3 2 3 4 4 3 6 2 2 3 3 3 1 2)
+;;
+;; at 2013-03-12 10:19
+;;
+;; - some of the virtual machines have large /tmp directories with lockfiles
+;; - cleaned them up with the new bin/cond-clean script
+;;
+;; at 2013-03-12 10:48
+;; 
+;; (mapcar [#'energy-delay-product #'car #'stats]
+;;         (remove-if [#'zerop #'length #'stats] *population*))
+;; (1.2153501e9 1.2153254e9 1.2149624e9 1.2153268e9 1.2149618e9 1.2150474e9
+;;  1.2151401e9 1.2148028e9 1.2153265e9 1.2153262e9 1.2153272e9 1.215321e9
+;;  1.215327e9 1.215048e9 1.2150523e9 1.2153265e9 1.2150486e9 1.2150486e9
+;;  1.2149617e9 1.2153274e9 1.2149624e9 1.2150776e9 1.2148165e9)
+;; (apply #'min (mapcar [#'energy-delay-product #'car #'stats]
+;;                      (remove-if [#'zerop #'length #'stats] *population*)))
+;; 1.2148028e9
+;; (energy-delay-product (car (stats *orig*)))
+;; 1.2153262e9
+;; 
+;; Need more exploitation
+;;
+;; at 2013-03-12 10:54
+;;
+;; - setting *tournament-size* to 4
+;; - pushed a couple of *orig*'s into *population*
