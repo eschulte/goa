@@ -117,7 +117,7 @@ Note: This does not follow the normal test script format but rather it;
             (setf (broken variant) t))))
   (if (broken variant)
       infinity
-      (mean (mapcar #'energy-delay-product (stats variant)))))
+      (mean (remove-if #'zerop (mapcar #'energy-delay-product (stats variant))))))
 
 (defun quick-test (variant)
   (let ((*max-ind-evals* 1)) (test variant)))
