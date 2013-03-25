@@ -1,8 +1,0 @@
-blackscholes.c
-blackscholes.s
-output
-*.go
-*.gz
-stderr
-stdout
-scratch.lisp
