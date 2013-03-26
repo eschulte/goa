@@ -21,6 +21,7 @@ TEST=""
 RAW=""
 PERF=""
 ORACLE=""
+if [ -z "$LIMIT" ];then LIMIT="${BASE}/limit"; fi
 declare -a INPUTS
 declare -a OUTPUTS
 HELP_TEXT=$(cat "$0" \
@@ -188,6 +189,7 @@ else
         if [ $(run $TEST|awk "$AWK_NEAR") -eq 0 ];then exit 0;fi
     else
         run $TEST
+        exit 0
     fi
 fi
 exit 1
