@@ -58,8 +58,6 @@ AWK_CMD+='END { print diff }'
 num_diff(){ # diff of numerical closeness
     paste $1 $2|awk "$AWK_CMD"; }
 
-clean(){ egrep "^[[:digit:]]"; }
-
 input(){
     if [ $1 -gt 4 ];then
         cat "$BASE/$1.in";
@@ -82,18 +80,17 @@ run(){ # return the difference between oracle and program output
             perf stat -x, -o $perf \
                 $PROG $NUM <(input $1) $out >/dev/null
             echo "Test $1"
-            echo "$(num_diff <(cat $out|clean) <(output $1)),error"
+            echo "$(num_diff <(cat $out) <(output $1)),error"
             cat $perf|tail -n +3
-            echo ""
             rm -r $perf $out
         else
             num_diff \
-                <($PROG $NUM <(input $1) /dev/stdout|clean) \
+                <($PROG $NUM <(input $1) >(cat) >/dev/null) \
                 <(output $1)
         fi
     else
         cat <<EOF
-OUTPUTS[$i]="$($PROG $NUM <(echo "${INPUTS[$1]}") /dev/stdout|clean)"
+OUTPUTS[$i]="$($PROG $NUM <(echo "${INPUTS[$1]}") >(cat) >/dev/null)"
 EOF
     fi; }
 
