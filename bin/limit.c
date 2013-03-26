@@ -7,7 +7,7 @@ int main(int argc, char *argv[]) {
 
   // resource/time limits
   struct rlimit limit;
-  limit.rlim_cur = 720; limit.rlim_max = 720;
+  limit.rlim_cur = 8; limit.rlim_max = 8;
   setrlimit(RLIMIT_CPU, &limit);       // cpu seconds
   limit.rlim_cur = 1024; limit.rlim_max = 1024;
   setrlimit(RLIMIT_NPROC, &limit);     // number of spawned processes
@@ -17,9 +17,8 @@ int main(int argc, char *argv[]) {
   setrlimit(RLIMIT_FSIZE, &limit);     // max file size (bytes)
   setrlimit(RLIMIT_MEMLOCK, &limit);   // max memory locked into RAM (bytes)
   setrlimit(RLIMIT_STACK, &limit);     // max stack size (bytes)
-  alarm(1440);                         // wall clock seconds
-                                       // need 600 when modeling power
-                                       // otherwise only need 360
+  alarm(12);                           // wall clock seconds
+                                       // scaled back w/o graphite
 
   // run
   execvp(argv[1], &argv[1]);
