@@ -1,2 +1,4 @@
 REMOTES
 limit
+*.in
+*.out
