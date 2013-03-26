@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Usage: blackscholes-test EXECUTABLE [OPTIONS...]
-# 
+#
 # Run the given executable comparing its output against known good
 # output.  Return the total difference between the outputs.
 #
@@ -13,7 +13,7 @@
 # -r,--raw ---- show the raw error
 # -p,--perf --- return profiling information gathered with linux perf
 # -o,--oracle - print full output to generate new oracle output
-# 
+#
 #
 BASE="$(dirname $0)"
 NUM="2"
@@ -37,11 +37,11 @@ eval set -- $(getopt -o n:ht:rpo -l num:,help,test:,raw,perf,oracle -- "$@" \
 
 while [ $# -gt 0 ];do
     case $1 in
-        -h|--help)  echo "$HELP_TEXT" && exit 0;;
-        -n|--num)   NUM="$2"; shift;;
-        -t|--test)  TEST="$2"; shift;;
-        -r|--raw)   RAW="yes";;
-        -r|--raw)   PERF="yes";;
+        -h|--help)   echo "$HELP_TEXT" && exit 0;;
+        -n|--num)    NUM="$2"; shift;;
+        -t|--test)   TEST="$2"; shift;;
+        -r|--raw)    RAW="yes";;
+        -p|--perf)   PERF="yes"; RAW="yes";;
         -o|--oracle) ORACLE="yes"; RAW="yes";;
         (--) shift; break;;
         (-*) error "unrecognized option $1";;
@@ -60,11 +60,37 @@ num_diff(){ # diff of numerical closeness
 
 clean(){ egrep "^[[:digit:]]"; }
 
+input(){
+    if [ $1 -gt 4 ];then
+        cat "$BASE/$1.in";
+    else
+        echo "${INPUTS[$1]}"
+    fi; }
+
+output(){
+    if [ $1 -gt 4 ];then
+        cat "$BASE/$1.out";
+    else
+        echo "${OUTPUTS[$1]}"
+    fi; }
+
 run(){ # return the difference between oracle and program output
     if [ -z "$ORACLE" ];then
-        num_diff \
-            <($PROG $NUM <(echo "${INPUTS[$1]}") /dev/stdout|clean) \
-            <(echo "${OUTPUTS[$1]}")
+        if [ ! -z "$PERF" ];then
+            local perf=$(mktemp);
+            local out=$(mktemp);
+            perf stat -x, -o $perf \
+                $PROG $NUM <(input $1) $out >/dev/null
+            echo "Test $1"
+            echo "$(num_diff <(cat $out|clean) <(output $1)),error"
+            cat $perf|tail -n +3
+            echo ""
+            rm -r $perf $out
+        else
+            num_diff \
+                <($PROG $NUM <(input $1) /dev/stdout|clean) \
+                <(output $1)
+        fi
     else
         cat <<EOF
 OUTPUTS[$i]="$($PROG $NUM <(echo "${INPUTS[$1]}") /dev/stdout|clean)"
