@@ -22,13 +22,14 @@ between it's output and the oracle output.")
 (defvar *orig* (from-file (make-instance 'asm :linker "g++")
                           "data/blackscholes/asms/bs-g++-O0.s"))
 
-(defvar *max-err* (/ 83096.7 (expt 10 6))
-  "Maximum error allowed, 1 millionth of the output.")
+(defvar *max-err* (/ 83096.7 (expt 10 3)) ;; 83096.7 is sum of all outputs
+  "Maximum error allowed, 3 orders of magnitude below total output.")
 
 (defun parse-stdout (stdout)
   (mapcar (lambda-bind ((val key))
             (cons (intern (string-upcase key))
-                  (ignore-errors (parse-number val))))
+                  (or (ignore-errors (parse-number val))
+                      infinity)))
           (mapcar {split-sequence #\,}
                   (cdr (split-sequence #\Newline
                                        (regex-replace-all ":HG" stdout "")
@@ -50,8 +51,14 @@ between it's output and the oracle output.")
 
 (defvar *neutral* nil)
 
-(loop :until (> (length *neutral*) 99) :do
-   (let ((new (copy *orig*)))
-     (mutate new)
-     (setf (fitness new) (test new))
-     (when (neutralp new) (push new *neutral*))))
+(loop :for step :from 3 :to 10 :do
+   (let ((prev (copy-tree *neutral*)))
+     (setf *neutral* nil)
+     (loop :until (>= (length *neutral*) 100) :as i :from 0 :do
+        (let ((new (copy (random-elt prev))))
+          (mutate new)
+          (setf (fitness new) (test new))
+          (format t "~S/~S edits:~S error:~S~%"
+                  i (length *neutral*) (edits new) (aget 'error (fitness new)))
+          (when (neutralp new) (push new *neutral*))))
+     (store *neutral* (format nil "results/bs-neut/~d.store" step))))

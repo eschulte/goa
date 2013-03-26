@@ -31,7 +31,7 @@ HELP_TEXT=$(cat "$0" \
         |sed -e :a -e '/^\n*$/{$d;N;ba' -e '}' \
         |cut -c3-)
 if [ $(grep "\-h" <(echo "$1")) ];then echo "$HELP_TEXT"; exit 0; fi
-PROG="$(dirname $1)/$(basename $1)"; shift;
+PROG="$LIMIT $(dirname $1)/$(basename $1)"; shift;
 
 eval set -- $(getopt -o n:ht:rpo -l num:,help,test:,raw,perf,oracle -- "$@" \
               || echo "$HELP_TEXT" && exit 1;)
