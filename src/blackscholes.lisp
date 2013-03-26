@@ -51,7 +51,8 @@ between it's output and the oracle output.")
 
 (defvar *neutral* nil)
 
-(loop :for step :from 3 :to 10 :do
+#+run
+(loop :for step :upto 10 :do
    (let ((prev (copy-tree *neutral*)))
      (setf *neutral* nil)
      (loop :until (>= (length *neutral*) 100) :as i :from 0 :do
