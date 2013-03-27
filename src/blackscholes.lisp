@@ -8,6 +8,9 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (enable-curry-compose-reader-macros))
 
+(defclass asm-perf (asm)
+  ((stats  :initarg :stats  :accessor stats  :initform nil)))
+
 (defvar infinity
   #+sbcl
   SB-EXT:DOUBLE-FLOAT-POSITIVE-INFINITY
@@ -19,10 +22,13 @@
 Take the path to a blackscholes executable, and returns the difference
 between it's output and the oracle output.")
 
-(defvar *orig* (from-file (make-instance 'asm :linker "g++")
+(defvar *orig* (from-file (make-instance 'asm-perf :linker "g++")
                           "data/blackscholes/asms/bs-g++-O0.s"))
 
-(defvar *max-err* (/ 83096.7 (expt 10 3)) ;; 83096.7 is sum of all outputs
+(defvar *output-size* 83096.7
+  "Sum of all output from a correct run of the original.")
+
+(defvar *max-err* (/ *output-size* (expt 10 3))
   "Maximum error allowed, 3 orders of magnitude below total output.")
 
 (defun parse-stdout (stdout)
@@ -45,12 +51,18 @@ between it's output and the oracle output.")
           `((error . ,infinity))))))
 
 (defun neutralp (asm)
-  (when-let ((err (cdr (assoc 'error (fitness asm)))))
+  (when-let ((err (cdr (assoc 'error (stats asm)))))
     (and (numberp err)
          (< err *max-err*))))
 
+(defun multi-obj (asm)
+  (unless (stats asm) (setf (stats asm) (test asm)))
+  (or (when (neutralp asm) (aget 'instructions (stats asm)))
+      infinity))
+
 (defvar *neutral* nil)
 
+
 #+run
 (loop :for step :upto 10 :do
    (let ((prev (copy-tree *neutral*)))
@@ -63,3 +75,64 @@ between it's output and the oracle output.")
                   i (length *neutral*) (edits new) (aget 'error (fitness new)))
           (when (neutralp new) (push new *neutral*))))
      (store *neutral* (format nil "results/bs-neut/~d.store" step))))
+
+
+#+analysis
+(progn
+(setf *neutral* (loop :for step :from 1 :to 10 :collect
+                   (restore (format nil "results/bs-neut/~d.store" step))))
+
+;; write out to a txt file
+(with-open-file (out "results/bs-neut.data" :direction :output)
+  (loop :for step :from 1 :upto 10 :collect
+     (mapcar [{format out "~a ~{~a~^ ~}~%" step} {mapcar #'cdr} #'fitness]
+             (restore (format nil "results/bs-neut/~d.store" step)))))
+
+(mapcar [{aget 'stalled-cycles-frontend} #'fitness] (car *neutral*))
+
+(defun range (sample) (abs (- (apply #'max sample) (apply #'min sample))))
+
+(defvar *metrics*
+  (loop :for metric :in (mapcar #'car (fitness *orig*)) :collect
+     (let ((vals (remove nil (mapcan {mapcar [{aget metric} #'fitness]} *neutral*))))
+       (cons metric
+             (mapcar #'float (list (aget metric (fitness *orig*))
+                                   (mean vals)
+                                   (standard-deviation vals)
+                                   (range vals)))))))
+
+(defvar *dev-by-step*
+  (loop :for step :below 10 :collect
+     (let ((fits (mapcar #'fitness (nth step *neutral*))))
+       (list (+ 1 step)
+             (reduce #'+ (mapcar (lambda (metric)
+                                   (let ((vals (mapcar {aget metric} fits)))
+                                     (if (zerop (reduce #'+ vals))
+                                         0
+                                         (let ((std  (standard-deviation vals))
+                                               (mean (mean vals)))
+                                           (/ std mean)))))
+                                 (mapcar #'car (fitness *orig*)))))))
+  "Total Deviation by step away from the original.")
+)
+
+
+;;; Artificial Selection
+;; see blackscholes-w-graphite.lisp for eviction and other pop tricks
+(setf
+ (fitness *orig*) (multi-obj *orig*)
+ *max-population-size* (expt 2 7)
+ *fitness-predicate* #'<
+ *population* (loop :for n :upto *max-population-size* :collect (copy *orig*))
+ *base* "results/bs-evo")
+
+(sb-thread:make-thread
+ (lambda ()
+   (evolve #'multi-obj
+           :period 128
+           :period-func
+           (lambda ()
+             (store *population*
+                    (format nil "~a/pop-~d.store" *base* *fitness-evals*))
+             (store *memoized-data*
+                    (format nil "~a/mem-~d.store" *base* *fitness-evals*))))))
