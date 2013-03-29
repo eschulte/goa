@@ -13,6 +13,7 @@
 # -r,--raw ---- show the raw error
 # -p,--perf --- return profiling information gathered with linux perf
 # -o,--oracle - print full output to generate new oracle output
+# -b,--bad ---- use the bad old version of perf
 #
 #
 BASE="$(dirname $0)"
@@ -21,6 +22,7 @@ TEST=""
 RAW=""
 PERF=""
 ORACLE=""
+BAD=""
 if [ -z "$LIMIT" ];then LIMIT="${BASE}/limit"; fi
 declare -a INPUTS
 declare -a OUTPUTS
@@ -33,8 +35,9 @@ HELP_TEXT=$(cat "$0" \
 if [ $(grep "\-h" <(echo "$1")) ];then echo "$HELP_TEXT"; exit 0; fi
 PROG="$LIMIT $(dirname $1)/$(basename $1)"; shift;
 
-eval set -- $(getopt -o n:ht:rpo -l num:,help,test:,raw,perf,oracle -- "$@" \
-              || echo "$HELP_TEXT" && exit 1;)
+eval set -- \
+    $(getopt -o n:ht:rpob -l num:,help,test:,raw,perf,oracle,bad -- "$@" \
+    || echo "$HELP_TEXT" && exit 1;)
 
 while [ $# -gt 0 ];do
     case $1 in
@@ -44,6 +47,7 @@ while [ $# -gt 0 ];do
         -r|--raw)    RAW="yes";;
         -p|--perf)   PERF="yes"; RAW="yes";;
         -o|--oracle) ORACLE="yes"; RAW="yes";;
+        -b|--bad)    BAD="yes";;
         (--) shift; break;;
         (-*) error "unrecognized option $1";;
         (*)  break;;
@@ -78,10 +82,18 @@ run(){ # return the difference between oracle and program output
         if [ ! -z "$PERF" ];then
             local perf=$(mktemp);
             local out=$(mktemp);
-            perf stat -x, -o $perf \
-                $PROG $NUM <(input $1) $out >/dev/null
+            if [ -z "$BAD" ];then
+                perf stat -x, -o $perf \
+                    $PROG $NUM <(input $1) $out >/dev/null
+            else
+                perf stat $PROG $NUM <(input $1) $out 2>$perf >/dev/null
+            fi
             echo "Test $1"
-            echo "$(num_diff <(cat $out) <(output $1)),error"
+            if [ -z "$BAD" ];then
+                echo "$(num_diff <(cat $out) <(output $1)),error"
+            else
+                echo " $(num_diff <(cat $out) <(output $1)) error"
+            fi
             cat $perf|tail -n +3
             rm -r $perf $out
         else

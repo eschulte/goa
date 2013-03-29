@@ -17,7 +17,9 @@
   #-(or sbcl)
   (error "must specify a positive infinity value"))
 
-(defvar *test-fmt* "./bin/bs-test ~a -n 1 -t 12000 -r -p"
+(defvar *test-fmt*
+  #+new-perf "./bin/bs-test ~a -n 1 -t 12000 -r -p"
+  #+old-perf "./bin/bs-test ~a -n 1 -t 12000 -r -p -b"
   "Script used to evaluate variants.
 Take the path to a blackscholes executable, and returns the difference
 between it's output and the oracle output.")
@@ -31,6 +33,7 @@ between it's output and the oracle output.")
 (defvar *max-err* (/ *output-size* (expt 10 3))
   "Maximum error allowed, 3 orders of magnitude below total output.")
 
+#+new-perf
 (defun parse-stdout (stdout)
   (mapcar (lambda-bind ((val key))
             (cons (intern (string-upcase key))
@@ -41,13 +44,23 @@ between it's output and the oracle output.")
                                        (regex-replace-all ":HG" stdout "")
                                        :remove-empty-subseqs t)))))
 
+#+old-perf
+(defun parse-stdout (stdout)
+  (remove nil
+    (mapcar (lambda (line)
+              (register-groups-bind (val key) (" +([0-9.-e]+) +([^ ]+)" line)
+                (cons (intern (string-upcase key))
+                      (or (ignore-errors (parse-number val)) infinity))))
+            (remove-if (lambda (line) (scan "Performance counter" line))
+                       (split-sequence #\Newline stdout
+                                       :remove-empty-subseqs t)))))
+
 (defun test (asm)
   (software-evolution::with-temp-file (bin)
     (phenome asm :bin bin)
     (multiple-value-bind (stdout stderr errno) (shell *test-fmt* bin)
       (declare (ignorable stderr))
-      (if (zerop errno)
-          (parse-stdout stdout)
+      (or (ignore-errors (when (zerop errno) (parse-stdout stdout)))
           `((error . ,infinity))))))
 
 (defun neutralp (asm)
@@ -94,7 +107,8 @@ between it's output and the oracle output.")
 
 (defvar *metrics*
   (loop :for metric :in (mapcar #'car (fitness *orig*)) :collect
-     (let ((vals (remove nil (mapcan {mapcar [{aget metric} #'fitness]} *neutral*))))
+     (let ((vals (remove nil
+                   (mapcan {mapcar [{aget metric} #'fitness]} *neutral*))))
        (cons metric
              (mapcar #'float (list (aget metric (fitness *orig*))
                                    (mean vals)
@@ -121,18 +135,19 @@ between it's output and the oracle output.")
 ;; see blackscholes-w-graphite.lisp for eviction and other pop tricks
 (setf
  (fitness *orig*) (multi-obj *orig*)
- *max-population-size* (expt 2 7)
+ *max-population-size* (expt 2 5)
  *fitness-predicate* #'<
  *population* (loop :for n :upto *max-population-size* :collect (copy *orig*))
  *base* "results/bs-evo")
 
 (sb-thread:make-thread
  (lambda ()
-   (evolve #'multi-obj
-           :period 128
-           :period-func
-           (lambda ()
-             (store *population*
-                    (format nil "~a/pop-~d.store" *base* *fitness-evals*))
-             (store *memoized-data*
-                    (format nil "~a/mem-~d.store" *base* *fitness-evals*))))))
+   (evolve
+    #'multi-obj
+    :period (expt 2 8)
+    :period-func
+    (lambda ()
+      (store (mapcar (lambda (ind)
+                       `((:edits . ,(edits ind)) (:stats . ,(stats ind))))
+                     *population*) 
+             (format nil "~a/pop-~d.store" *base* *fitness-evals*))))))
