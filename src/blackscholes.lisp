@@ -17,6 +17,10 @@
   #-(or sbcl)
   (error "must specify a positive infinity value"))
 
+;; do one of these depending on the perf version on your machine
+;; (push :old-perf *features)
+;; (push :new-perf *features)
+
 (defvar *test-fmt*
   #+new-perf "./bin/bs-test ~a -n 1 -t 12000 -r -p"
   #+old-perf "./bin/bs-test ~a -n 1 -t 12000 -r -p -b"
@@ -56,7 +60,7 @@ between it's output and the oracle output.")
                                        :remove-empty-subseqs t)))))
 
 (defun test (asm)
-  (software-evolution::with-temp-file (bin)
+  (with-temp-file (bin)
     (phenome asm :bin bin)
     (multiple-value-bind (stdout stderr errno) (shell *test-fmt* bin)
       (declare (ignorable stderr))
@@ -133,21 +137,26 @@ between it's output and the oracle output.")
 
 ;;; Artificial Selection
 ;; see blackscholes-w-graphite.lisp for eviction and other pop tricks
+#+run
+(progn
 (setf
  (fitness *orig*) (multi-obj *orig*)
- *max-population-size* (expt 2 5)
+ *max-population-size* (expt 2 6)
  *fitness-predicate* #'<
  *population* (loop :for n :upto *max-population-size* :collect (copy *orig*))
  *base* "results/bs-evo")
 
-(sb-thread:make-thread
- (lambda ()
-   (evolve
-    #'multi-obj
-    :period (expt 2 8)
-    :period-func
+(loop :for i :below 40 :do
+   (sb-thread:make-thread
     (lambda ()
-      (store (mapcar (lambda (ind)
-                       `((:edits . ,(edits ind)) (:stats . ,(stats ind))))
-                     *population*) 
-             (format nil "~a/pop-~d.store" *base* *fitness-evals*))))))
+      (evolve
+       #'multi-obj
+       :period (expt 2 7)
+       :period-func
+       (lambda ()
+         (store (mapcar (lambda (ind)
+                          `((:edits . ,(edits ind)) (:stats . ,(stats ind))))
+                        *population*) 
+                (format nil "~a/pop-~d.store" *base* *fitness-evals*)))))
+    :name (format nil "opt-~d" i)))
+)
