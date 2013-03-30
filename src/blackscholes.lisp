@@ -9,7 +9,7 @@
   (enable-curry-compose-reader-macros))
 
 (defclass asm-perf (asm)
-  ((stats  :initarg :stats  :accessor stats  :initform nil)))
+  ((stats :initarg :stats :accessor stats :initform nil)))
 
 (defvar infinity
   #+sbcl
@@ -18,8 +18,8 @@
   (error "must specify a positive infinity value"))
 
 ;; do one of these depending on the perf version on your machine
-;; (push :old-perf *features)
-;; (push :new-perf *features)
+;; (push :old-perf *features*)
+;; (push :new-perf *features*)
 
 (defvar *test-fmt*
   #+new-perf "./bin/bs-test ~a -n 1 -t 12000 -r -p"
@@ -74,13 +74,19 @@ between it's output and the oracle output.")
 
 (defun multi-obj (asm)
   (unless (stats asm) (setf (stats asm) (test asm)))
-  (or (when (neutralp asm) (aget 'instructions (stats asm)))
+  (or (ignore-errors
+        (when (and (neutralp asm)
+                   (aget 'instructions (stats asm))
+                   (aget 'error (stats asm)))
+          (let ((err (aget 'error (stats asm))))
+            (* (aget 'instructions (stats asm))
+               (+ 1 (/ err *max-err*))))))
       infinity))
 
-(defvar *neutral* nil)
-
 
-#+run
+#+run-neut
+(progn
+(defvar *neutral* nil)
 (loop :for step :upto 10 :do
    (let ((prev (copy-tree *neutral*)))
      (setf *neutral* nil)
@@ -92,6 +98,7 @@ between it's output and the oracle output.")
                   i (length *neutral*) (edits new) (aget 'error (fitness new)))
           (when (neutralp new) (push new *neutral*))))
      (store *neutral* (format nil "results/bs-neut/~d.store" step))))
+)
 
 
 #+analysis
@@ -141,7 +148,8 @@ between it's output and the oracle output.")
 (progn
 (setf
  (fitness *orig*) (multi-obj *orig*)
- *max-population-size* (expt 2 6)
+ *max-population-size* (expt 2 7)
+ *tournament-size* 2
  *fitness-predicate* #'<
  *population* (loop :for n :upto *max-population-size* :collect (copy *orig*))
  *base* "results/bs-evo")
@@ -151,7 +159,8 @@ between it's output and the oracle output.")
     (lambda ()
       (evolve
        #'multi-obj
-       :period (expt 2 7)
+       :filter #'neutralp
+       :period (expt 2 8)
        :period-func
        (lambda ()
          (store (mapcar (lambda (ind)
