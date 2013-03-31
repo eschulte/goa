@@ -152,7 +152,7 @@ between it's output and the oracle output.")
 (setf
  (fitness *orig*) (multi-obj *orig*)
  *max-population-size* (expt 2 7)
- *tournament-size* 2
+ *tournament-size* 4
  *fitness-predicate* #'<
  *population* (loop :for n :upto *max-population-size* :collect (copy *orig*))
  *base* "results/bs-evo")
@@ -162,11 +162,19 @@ between it's output and the oracle output.")
     (lambda ()
       (evolve
        #'multi-obj
-       :filter #'neutralp
+       :filter (lambda (var) (< (fitness var) (* 10 (fitness *orig*))))
        :period (expt 2 8)
        :period-func
        (lambda ()
          (store *population* 
-                (format nil "~a/pop-~d.store" *base* *fitness-evals*)))))
+                (format nil "~a/pop-~d.store" *base* *fitness-evals*))
+         (store (mapcar (lambda (var)
+                          `((:fit   . ,(fitness var))
+                            (:edits . ,(length (edits var)))
+                            (:size  . ,(length (genome var)))
+                            (:error . ,(aget :error (stats var)))
+                            (:instr . ,(aget :instructions (stats var)))))
+                        *population*)
+                (format nil "~a/pop-~d-stats.store" *base* *fitness-evals*)))))
     :name (format nil "opt-~d" i)))
 )
