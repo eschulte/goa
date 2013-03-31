@@ -84,6 +84,24 @@ between it's output and the oracle output.")
                (length (genome asm))))))
       infinity))
 
+(defun clean-stats (asm &aux stats)
+  (push (assoc 'error (stats asm)) stats)
+  (mapc (lambda-bind ((cl . bs))
+          (push (cons bs (cdr (or (assoc bs (stats asm))
+                                  (assoc cl (stats asm)))))
+                stats))
+        '((COMMON-LISP-USER::TASK-CLOCK              . TASK-CLOCK)
+          (COMMON-LISP-USER::CONTEXT-SWITCHES        . CONTEXT-SWITCHES)
+          (COMMON-LISP-USER::CPU-MIGRATIONS          . CPU-MIGRATIONS)
+          (COMMON-LISP-USER::PAGE-FAULTS             . PAGE-FAULTS)
+          (COMMON-LISP-USER::CYCLES                  . CYCLES)
+          (COMMON-LISP-USER::STALLED-CYCLES-FRONTEND . STALLED-CYCLES-FRONTEND)
+          (COMMON-LISP-USER::STALLED-CYCLES-BACKEND  . STALLED-CYCLES-BACKEND)
+          (COMMON-LISP-USER::INSTRUCTIONS            . INSTRUCTIONS)
+          (COMMON-LISP-USER::BRANCHES                . BRANCHES)
+          (COMMON-LISP-USER::BRANCH-MISSES           . BRANCH-MISSES)))
+  (setf (stats asm) stats))
+
 
 #+run-neut
 (progn
