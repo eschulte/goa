@@ -147,12 +147,10 @@ between it's output and the oracle output.")
 ;; see blackscholes-w-graphite.lisp for eviction and other pop tricks
 #+run
 (progn
-(defvar *edits* nil             "Hold elided edits.")
 (defvar *base* "results/bs-evo" "Where to store incremental results.")
 
 (setf
  (fitness *orig*) (multi-obj *orig*)
- *edit-consolidation-function* (lambda (hash edits) (push (cons hash edits) *edits*))
  *max-population-size* (expt 2 7)
  *tournament-size* 4
  *fitness-predicate* #'<
@@ -168,15 +166,11 @@ between it's output and the oracle output.")
        :period-func
        (lambda ()
          (sb-ext:gc :force t)
+         (store *consolidated-edits*
+                (format nil "~a/~d-edits.store" *base* *fitness-evals*))
+         (setf *consolidated-edits* nil)
+         (sb-ext:gc :force t)
          (store *population* 
-                (format nil "~a/pop-~d.store" *base* *fitness-evals*))
-         (store (mapcar (lambda (var)
-                          `((:fit   . ,(fitness var))
-                            (:edits . ,(length (edits var)))
-                            (:size  . ,(length (genome var)))
-                            (:error . ,(aget :error (stats var)))
-                            (:instr . ,(aget :instructions (stats var)))))
-                        *population*)
-                (format nil "~a/pop-~d-stats.store" *base* *fitness-evals*)))))
+                (format nil "~a/~d-pop.store" *base* *fitness-evals*)))))
     :name (format nil "opt-~d" i)))
 )
