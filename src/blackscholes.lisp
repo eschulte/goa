@@ -164,9 +164,7 @@ between it's output and the oracle output.")
        :period (expt 2 8)
        :period-func
        (lambda ()
-         (store (mapcar (lambda (ind)
-                          `((:edits . ,(edits ind)) (:stats . ,(stats ind))))
-                        *population*) 
+         (store *population* 
                 (format nil "~a/pop-~d.store" *base* *fitness-evals*)))))
     :name (format nil "opt-~d" i)))
 )
