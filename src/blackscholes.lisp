@@ -79,8 +79,9 @@ between it's output and the oracle output.")
                    (aget 'instructions (stats asm))
                    (aget 'error (stats asm)))
           (let ((err (aget 'error (stats asm))))
-            (* (aget 'instructions (stats asm))
-               (+ 1 (/ err *max-err*))))))
+            (+ (* (aget 'instructions (stats asm))
+                  (+ 1 (/ err *max-err*)))
+               (length (genome asm))))))
       infinity))
 
 
