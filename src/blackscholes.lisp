@@ -37,10 +37,12 @@ between it's output and the oracle output.")
 (defvar *max-err* (/ *output-size* (expt 10 3))
   "Maximum error allowed, 3 orders of magnitude below total output.")
 
+
+
 #+new-perf
 (defun parse-stdout (stdout)
   (mapcar (lambda-bind ((val key))
-            (cons (intern (string-upcase key))
+            (cons (make-keyword (string-upcase key))
                   (or (ignore-errors (parse-number val))
                       infinity)))
           (mapcar {split-sequence #\,}
@@ -53,7 +55,7 @@ between it's output and the oracle output.")
   (remove nil
     (mapcar (lambda (line)
               (register-groups-bind (val key) (" +([0-9.-e]+) +([^ ]+)" line)
-                (cons (intern (string-upcase key))
+                (cons (make-keyword (string-upcase key))
                       (or (ignore-errors (parse-number val)) infinity))))
             (remove-if (lambda (line) (scan "Performance counter" line))
                        (split-sequence #\Newline stdout
@@ -68,7 +70,7 @@ between it's output and the oracle output.")
           `((error . ,infinity))))))
 
 (defun neutralp (asm)
-  (when-let ((err (cdr (assoc 'error (stats asm)))))
+  (when-let ((err (cdr (assoc :error (stats asm)))))
     (and (numberp err)
          (< err *max-err*))))
 
@@ -76,31 +78,13 @@ between it's output and the oracle output.")
   (unless (stats asm) (setf (stats asm) (test asm)))
   (or (ignore-errors
         (when (and (neutralp asm)
-                   (aget 'instructions (stats asm))
-                   (aget 'error (stats asm)))
-          (let ((err (aget 'error (stats asm))))
-            (+ (* (aget 'instructions (stats asm))
+                   (aget :instructions (stats asm))
+                   (aget :error (stats asm)))
+          (let ((err (aget :error (stats asm))))
+            (+ (* (aget :instructions (stats asm))
                   (+ 1 (/ err *max-err*)))
                (length (genome asm))))))
       infinity))
-
-(defun clean-stats (asm &aux stats)
-  (push (assoc 'error (stats asm)) stats)
-  (mapc (lambda-bind ((cl . bs))
-          (push (cons bs (cdr (or (assoc bs (stats asm))
-                                  (assoc cl (stats asm)))))
-                stats))
-        '((COMMON-LISP-USER::TASK-CLOCK              . TASK-CLOCK)
-          (COMMON-LISP-USER::CONTEXT-SWITCHES        . CONTEXT-SWITCHES)
-          (COMMON-LISP-USER::CPU-MIGRATIONS          . CPU-MIGRATIONS)
-          (COMMON-LISP-USER::PAGE-FAULTS             . PAGE-FAULTS)
-          (COMMON-LISP-USER::CYCLES                  . CYCLES)
-          (COMMON-LISP-USER::STALLED-CYCLES-FRONTEND . STALLED-CYCLES-FRONTEND)
-          (COMMON-LISP-USER::STALLED-CYCLES-BACKEND  . STALLED-CYCLES-BACKEND)
-          (COMMON-LISP-USER::INSTRUCTIONS            . INSTRUCTIONS)
-          (COMMON-LISP-USER::BRANCHES                . BRANCHES)
-          (COMMON-LISP-USER::BRANCH-MISSES           . BRANCH-MISSES)))
-  (setf (stats asm) stats))
 
 
 #+run-neut
