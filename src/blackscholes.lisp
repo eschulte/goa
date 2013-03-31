@@ -155,7 +155,7 @@ between it's output and the oracle output.")
  *population* (loop :for n :upto *max-population-size* :collect (copy *orig*))
  *base* "results/bs-evo")
 
-(loop :for i :below 40 :do
+(loop :for i :from 1 :to 7 :do
    (sb-thread:make-thread
     (lambda ()
       (evolve
