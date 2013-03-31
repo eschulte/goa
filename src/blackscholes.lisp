@@ -37,8 +37,6 @@ between it's output and the oracle output.")
 (defvar *max-err* (/ *output-size* (expt 10 3))
   "Maximum error allowed, 3 orders of magnitude below total output.")
 
-
-
 #+new-perf
 (defun parse-stdout (stdout)
   (mapcar (lambda-bind ((val key))
@@ -149,13 +147,16 @@ between it's output and the oracle output.")
 ;; see blackscholes-w-graphite.lisp for eviction and other pop tricks
 #+run
 (progn
+(defvar *edits* nil             "Hold elided edits.")
+(defvar *base* "results/bs-evo" "Where to store incremental results.")
+
 (setf
  (fitness *orig*) (multi-obj *orig*)
+ *edit-consolidation-function* (lambda (hash edits) (push (cons hash edits) *edits*))
  *max-population-size* (expt 2 7)
  *tournament-size* 4
  *fitness-predicate* #'<
- *population* (loop :for n :upto *max-population-size* :collect (copy *orig*))
- *base* "results/bs-evo")
+ *population* (loop :for n :upto *max-population-size* :collect (copy *orig*)))
 
 (loop :for i :from 1 :to 7 :do
    (sb-thread:make-thread
@@ -166,6 +167,7 @@ between it's output and the oracle output.")
        :period (expt 2 8)
        :period-func
        (lambda ()
+         (sb-ext:gc :force t)
          (store *population* 
                 (format nil "~a/pop-~d.store" *base* *fitness-evals*))
          (store (mapcar (lambda (var)
