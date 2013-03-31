@@ -22,7 +22,7 @@
 ;; (push :new-perf *features*)
 
 (defvar *test-fmt*
-  #+new-perf "./bin/bs-test ~a -n 1 -t 12000 -r -p"
+  #+new-perf "../../bin/bs-test ~a -n 1 -t 12000 -r -p"
   #+old-perf "./bin/bs-test ~a -n 1 -t 12000 -r -p -b"
   "Script used to evaluate variants.
 Take the path to a blackscholes executable, and returns the difference
@@ -149,6 +149,8 @@ between it's output and the oracle output.")
 (progn
 (defvar *base* "results/bs-evo" "Where to store incremental results.")
 
+(setf *work-dir* "sh-runner/work/")
+
 (setf
  (fitness *orig*) (multi-obj *orig*)
  *max-population-size* (expt 2 7)
@@ -162,13 +164,9 @@ between it's output and the oracle output.")
       (evolve
        #'multi-obj
        :filter (lambda (var) (< (fitness var) (* 10 (fitness *orig*))))
-       :period (expt 2 8)
+       :period (expt 2 12)
        :period-func
        (lambda ()
-         (sb-ext:gc :force t)
-         (store *consolidated-edits*
-                (format nil "~a/~d-edits.store" *base* *fitness-evals*))
-         (setf *consolidated-edits* nil)
          (sb-ext:gc :force t)
          (store *population* 
                 (format nil "~a/~d-pop.store" *base* *fitness-evals*)))))
