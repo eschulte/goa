@@ -79,14 +79,16 @@ output(){
 
 run(){ # return the difference between oracle and program output
     if [ -z "$ORACLE" ];then
+        local out=$(mktemp);
         if [ ! -z "$PERF" ];then
             local perf=$(mktemp);
-            local out=$(mktemp);
             if [ -z "$BAD" ];then
                 perf stat -x, -o $perf \
                     $PROG $NUM <(input $1) $out >/dev/null
+                RETURN=$?
             else
                 perf stat $PROG $NUM <(input $1) $out 2>$perf >/dev/null
+                RETURN=$?
             fi
             echo "Test $1"
             if [ -z "$BAD" ];then
@@ -95,12 +97,13 @@ run(){ # return the difference between oracle and program output
                 echo " $(num_diff <(cat $out) <(output $1)) error"
             fi
             cat $perf|tail -n +3
-            rm -r $perf $out
+            rm -r $perf
         else
-            num_diff \
-                <($PROG $NUM <(input $1) >(cat) >/dev/null) \
-                <(output $1)
+            $PROG $NUM <(input $1) $out >/dev/null
+            RETURN=$?
+            num_diff $out <(output $1)
         fi
+        rm -f $out
     else
         cat <<EOF
 OUTPUTS[$i]="$($PROG $NUM <(echo "${INPUTS[$1]}") >(cat) >/dev/null)"
@@ -195,13 +198,13 @@ if [ -z "$TEST" ];then
         fi
     done
     if [ -z "$RAW" ];then echo "$count";fi
-    exit 0
+    exit $RETURN
 else
     if [ -z "$RAW" ];then
         if [ $(run $TEST|awk "$AWK_NEAR") -eq 0 ];then exit 0;fi
     else
         run $TEST
-        exit 0
+        exit $RETURN
     fi
 fi
 exit 1
