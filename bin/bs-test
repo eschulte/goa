@@ -83,12 +83,13 @@ run(){ # return the difference between oracle and program output
         if [ ! -z "$PERF" ];then
             local perf=$(mktemp);
             if [ -z "$BAD" ];then
-                perf stat -x, -o $perf \
-                    $PROG $NUM <(input $1) $out >/dev/null
+                $PROG $NUM <(input $1) $out >/dev/null
                 RETURN=$?
+                perf stat -x, -o $perf $PROG $NUM <(input $1) $out >/dev/null
             else
-                perf stat $PROG $NUM <(input $1) $out 2>$perf >/dev/null
+                $PROG $NUM <(input $1) $out >/dev/null
                 RETURN=$?
+                perf stat $PROG $NUM <(input $1) $out 2>$perf >/dev/null
             fi
             echo "Test $1"
             if [ -z "$BAD" ];then
@@ -201,7 +202,7 @@ if [ -z "$TEST" ];then
     exit $RETURN
 else
     if [ -z "$RAW" ];then
-        if [ $(run $TEST|awk "$AWK_NEAR") -eq 0 ];then exit 0;fi
+        if [ $(run $TEST|awk "$AWK_NEAR") -eq 0 ];then exit $RETURN;fi
     else
         run $TEST
         exit $RETURN
