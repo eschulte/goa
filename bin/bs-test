@@ -33,7 +33,7 @@ HELP_TEXT=$(cat "$0" \
         |sed -e :a -e '/^\n*$/{$d;N;ba' -e '}' \
         |cut -c3-)
 if [ $(grep "\-h" <(echo "$1")) ];then echo "$HELP_TEXT"; exit 0; fi
-PROG="$LIMIT $(dirname $1)/$(basename $1)"; shift;
+PROG="$(dirname $1)/$(basename $1)"; shift;
 
 eval set -- \
     $(getopt -o n:ht:rpob -l num:,help,test:,raw,perf,oracle,bad -- "$@" \
@@ -83,13 +83,13 @@ run(){ # return the difference between oracle and program output
         if [ ! -z "$PERF" ];then
             local perf=$(mktemp);
             if [ -z "$BAD" ];then
-                $PROG $NUM <(input $1) $out >/dev/null
+                $LIMIT $PROG $NUM <(input $1) $out >/dev/null
                 RETURN=$?
-                perf stat -x, -o $perf $PROG $NUM <(input $1) $out >/dev/null
+                $LIMIT perf stat -x, -o $perf $PROG $NUM <(input $1) $out >/dev/null
             else
-                $PROG $NUM <(input $1) $out >/dev/null
+                $LIMIT $PROG $NUM <(input $1) $out >/dev/null
                 RETURN=$?
-                perf stat $PROG $NUM <(input $1) $out 2>$perf >/dev/null
+                $LIMIT perf stat $PROG $NUM <(input $1) $out 2>$perf >/dev/null
             fi
             echo "Test $1"
             if [ -z "$BAD" ];then
@@ -100,14 +100,14 @@ run(){ # return the difference between oracle and program output
             cat $perf|tail -n +3
             rm -r $perf
         else
-            $PROG $NUM <(input $1) $out >/dev/null
+            $LIMIT $PROG $NUM <(input $1) $out >/dev/null
             RETURN=$?
             num_diff $out <(output $1)
         fi
         rm -f $out
     else
         cat <<EOF
-OUTPUTS[$i]="$($PROG $NUM <(echo "${INPUTS[$1]}") >(cat) >/dev/null)"
+OUTPUTS[$i]="$($LIMIT $PROG $NUM <(echo "${INPUTS[$1]}") >(cat) >/dev/null)"
 EOF
     fi; }
 
