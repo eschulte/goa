@@ -137,10 +137,10 @@ between it's output and the oracle output.")
 
 (setf
  (fitness *orig*) (multi-obj *orig*)
- *max-population-size* (expt 2 7)
+ *max-population-size* (expt 2 10)
  *tournament-size* 4
  *fitness-predicate* #'<
- *population* (loop :for n :upto *max-population-size* :collect (copy *orig*)))
+ *population* (loop :for n :below *max-population-size* :collect (copy *orig*)))
 
 (loop :for i :from 1 :to 7 :do
    (sb-thread:make-thread
