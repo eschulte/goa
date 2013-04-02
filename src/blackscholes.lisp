@@ -151,8 +151,25 @@ between it's output and the oracle output.")
        :period (expt 2 12)
        :period-func
        (lambda ()
+         ;; free memory before these memory-hog operations
          (sb-ext:gc :force t)
-         (store *population* 
+         ;; save stats on the run to a file
+         (let ((log (format nil "~a/stats" *base*))
+               (multi-obj (mapcar #'multi-obj *population*))
+               (error (mapcar [{aget :error} #'stats] *population*))
+               (instrs (mapcar [{aget :instructions} #'stats] *population*))
+               (length (mapcar [#'length #'genome] *population*)))
+           (flet ((stats (samp)
+                    (list (mean samp) (apply #'min samp) (apply #'max samp))))
+             (with-open-file (out log :direction :output :if-exists :append)
+               (format out "~&~{~a~^ ~}~%"
+                       `(,*fitness-evals*
+                         ,@(stats multi-obj)
+                         ,@(stats error)
+                         ,@(stats instrs)
+                         ,@(stats length))))))
+         ;; store the population in a file
+         (store *population*
                 (format nil "~a/~d-pop.store" *base* *fitness-evals*)))))
     :name (format nil "opt-~d" i)))
 )
