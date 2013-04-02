@@ -17,13 +17,7 @@
   #-(or sbcl)
   (error "must specify a positive infinity value"))
 
-;; do one of these depending on the perf version on your machine
-;; (push :old-perf *features*)
-;; (push :new-perf *features*)
-
-(defvar *test-fmt*
-  #+new-perf "../../bin/bs-test ~a -n 1 -t 12000 -r -p"
-  #+old-perf "./bin/bs-test ~a -n 1 -t 12000 -r -p -b"
+(defvar *test-fmt* "../../bin/bs-test ~a -n 1 -t 12000 -r -p"
   "Script used to evaluate variants.
 Take the path to a blackscholes executable, and returns the difference
 between it's output and the oracle output.")
@@ -37,7 +31,6 @@ between it's output and the oracle output.")
 (defvar *max-err* (/ *output-size* (expt 10 3))
   "Maximum error allowed, 3 orders of magnitude below total output.")
 
-#+new-perf
 (defun parse-stdout (stdout)
   (mapcar (lambda-bind ((val key))
             (cons (make-keyword (string-upcase key))
@@ -46,17 +39,6 @@ between it's output and the oracle output.")
           (mapcar {split-sequence #\,}
                   (cdr (split-sequence #\Newline
                                        (regex-replace-all ":HG" stdout "")
-                                       :remove-empty-subseqs t)))))
-
-#+old-perf
-(defun parse-stdout (stdout)
-  (remove nil
-    (mapcar (lambda (line)
-              (register-groups-bind (val key) (" +([0-9.-e]+) +([^ ]+)" line)
-                (cons (make-keyword (string-upcase key))
-                      (or (ignore-errors (parse-number val)) infinity))))
-            (remove-if (lambda (line) (scan "Performance counter" line))
-                       (split-sequence #\Newline stdout
                                        :remove-empty-subseqs t)))))
 
 (defun test (asm)
