@@ -61,7 +61,7 @@ AWK_CMD+='BEGIN{ diff=0; }'
 AWK_CMD+='{ diff+=abs($1-$2); }'
 AWK_CMD+='END { print diff }'
 num_diff(){ # diff of numerical closeness
-    paste $1 $2|awk "$AWK_CMD"; }
+    paste <(awk '{print $1}' $1) <(awk '{print $1}' $2)|awk "$AWK_CMD"; }
 
 input(){
     if [ $1 -gt 4 ];then
