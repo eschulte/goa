@@ -13,8 +13,6 @@
 # -r,--raw ---- show the raw error
 # -p,--perf --- return profiling information gathered with linux perf
 # -o,--oracle - print full output to generate new oracle output
-# -b,--bad ---- use the bad old version of perf
-#
 #
 BASE="$(dirname $0)"
 NUM="2"
@@ -22,7 +20,6 @@ TEST=""
 RAW=""
 PERF=""
 ORACLE=""
-BAD=""
 if [ -z "$LIMIT" ];then LIMIT="${BASE}/limit"; fi
 declare -a INPUTS
 declare -a OUTPUTS
@@ -36,7 +33,7 @@ if [ $(grep "\-h" <(echo "$1")) ];then echo "$HELP_TEXT"; exit 0; fi
 PROG="$(dirname $1)/$(basename $1)"; shift;
 
 eval set -- \
-    $(getopt -o n:ht:rpob -l num:,help,test:,raw,perf,oracle,bad -- "$@" \
+    $(getopt -o n:ht:rpo -l num:,help,test:,raw,perf,oracle -- "$@" \
     || echo "$HELP_TEXT" && exit 1;)
 
 while [ $# -gt 0 ];do
@@ -47,7 +44,6 @@ while [ $# -gt 0 ];do
         -r|--raw)    RAW="yes";;
         -p|--perf)   PERF="yes"; RAW="yes";;
         -o|--oracle) ORACLE="yes"; RAW="yes";;
-        -b|--bad)    BAD="yes";;
         (--) shift; break;;
         (-*) error "unrecognized option $1";;
         (*)  break;;
@@ -82,21 +78,11 @@ run(){ # return the difference between oracle and program output
         local out=$(mktemp);
         if [ ! -z "$PERF" ];then
             local perf=$(mktemp);
-            if [ -z "$BAD" ];then
-                $LIMIT $PROG $NUM <(input $1) $out >/dev/null
-                RETURN=$?
-                $LIMIT perf stat -x, -o $perf $PROG $NUM <(input $1) $out >/dev/null
-            else
-                $LIMIT $PROG $NUM <(input $1) $out >/dev/null
-                RETURN=$?
-                $LIMIT perf stat $PROG $NUM <(input $1) $out 2>$perf >/dev/null
-            fi
+            $LIMIT $PROG $NUM <(input $1) $out >/dev/null
+            RETURN=$?
+            $LIMIT perf stat -x, -o $perf $PROG $NUM <(input $1) $out >/dev/null
             echo "Test $1"
-            if [ -z "$BAD" ];then
-                echo "$(num_diff <(cat $out) <(output $1)),error"
-            else
-                echo " $(num_diff <(cat $out) <(output $1)) error"
-            fi
+            echo "$(num_diff <(cat $out) <(output $1)),error"
             cat $perf|tail -n +3
             rm -r $perf
         else
