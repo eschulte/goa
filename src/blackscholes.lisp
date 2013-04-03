@@ -37,9 +37,9 @@ between it's output and the oracle output.")
                   (or (ignore-errors (parse-number val))
                       infinity)))
           (mapcar {split-sequence #\,}
-                  (cdr (split-sequence #\Newline
-                                       (regex-replace-all ":HG" stdout "")
-                                       :remove-empty-subseqs t)))))
+                  (split-sequence #\Newline
+                                  (regex-replace-all ":HG" stdout "")
+                                  :remove-empty-subseqs t))))
 
 (defun test (asm)
   (with-temp-file (bin)
@@ -137,7 +137,7 @@ between it's output and the oracle output.")
 
 (setf
  (fitness *orig*) (multi-obj *orig*)
- *max-population-size* (expt 2 10)
+ *max-population-size* (expt 2 9)
  *tournament-size* 4
  *fitness-predicate* #'<
  *population* (loop :for n :below *max-population-size* :collect (copy *orig*)))
