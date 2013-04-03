@@ -73,22 +73,27 @@ output(){
         echo "${OUTPUTS[$1]}"
     fi; }
 
+interpret_return(){ if [ -z "$1" ];then echo 0;else echo 1; fi; }
+
 run(){ # return the difference between oracle and program output
     if [ -z "$ORACLE" ];then
         local out=$(mktemp);
         if [ ! -z "$PERF" ];then
             local perf=$(mktemp);
-            $LIMIT $PROG $NUM <(input $1) $out >/dev/null
-            RETURN=$?
-            $LIMIT perf stat -x, -o $perf $PROG $NUM <(input $1) $out >/dev/null
-            echo "Test $1"
-            echo "$(num_diff <(cat $out) <(output $1)),error"
+            RETURN=$($LIMIT perf stat -x, -o $perf $PROG $NUM <(input $1) $out \
+                3>&1 1>/dev/null 2>&3)
+            if [ -z "$RETURN" ];then
+                echo "$(num_diff <(cat $out) <(output $1)),error"
+            fi
+            RETURN=$(interpret_return $RETURN)
             cat $perf|tail -n +3
             rm -r $perf
         else
             $LIMIT $PROG $NUM <(input $1) $out >/dev/null
             RETURN=$?
-            num_diff $out <(output $1)
+            if [ $RETURN -eq 0 ];then
+                num_diff $out <(output $1)
+            fi
         fi
         rm -f $out
     else
