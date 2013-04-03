@@ -82,8 +82,10 @@ run(){ # return the difference between oracle and program output
             local perf=$(mktemp);
             RETURN=$($LIMIT perf stat -x, -o $perf $PROG $NUM <(input $1) $out \
                 3>&1 1>/dev/null 2>&3)
-            if [ -z "$RETURN" ];then
+            if [ -f "$out" ];then
                 echo "$(num_diff <(cat $out) <(output $1)),error"
+            else
+                echo "$(num_diff /dev/null <(output $1)),error"
             fi
             RETURN=$(interpret_return $RETURN)
             cat $perf|tail -n +3
@@ -91,9 +93,7 @@ run(){ # return the difference between oracle and program output
         else
             $LIMIT $PROG $NUM <(input $1) $out >/dev/null
             RETURN=$?
-            if [ $RETURN -eq 0 ];then
-                num_diff $out <(output $1)
-            fi
+            num_diff $out <(output $1)
         fi
         rm -f $out
     else
