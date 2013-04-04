@@ -137,10 +137,13 @@ between it's output and the oracle output.")
 
 (setf
  (fitness *orig*) (multi-obj *orig*)
- *max-population-size* (expt 2 9)
+ *max-population-size* (expt 2 10)
  *tournament-size* 4
  *fitness-predicate* #'<
  *population* (loop :for n :below *max-population-size* :collect (copy *orig*)))
+
+(defvar *inc-counter* 0
+  "To only save the population a fraction of the time stats are saved.")
 
 (loop :for i :from 1 :to 7 :do
    (sb-thread:make-thread
@@ -148,7 +151,7 @@ between it's output and the oracle output.")
       (evolve
        #'multi-obj
        :filter (lambda (var) (< (fitness var) (* 10 (fitness *orig*))))
-       :period (expt 2 12)
+       :period (expt 2 9)
        :period-func
        (lambda ()
          ;; free memory before these memory-hog operations
@@ -163,13 +166,16 @@ between it's output and the oracle output.")
                     (list (mean samp) (apply #'min samp) (apply #'max samp))))
              (with-open-file (out log :direction :output :if-exists :append)
                (format out "~&~{~a~^ ~}~%"
-                       `(,*fitness-evals*
-                         ,@(stats multi-obj)
-                         ,@(stats error)
-                         ,@(stats instrs)
-                         ,@(stats length))))))
-         ;; store the population in a file
-         (store *population*
-                (format nil "~a/~d-pop.store" *base* *fitness-evals*)))))
+                       (mapcar #'float
+                               `(,*fitness-evals*
+                                 ,@(stats multi-obj)
+                                 ,@(stats error)
+                                 ,@(stats instrs)
+                                 ,@(stats length)))))))
+         (when (zerop (mod *inc-counter* 8))
+           ;; store the population in a file
+           (store *population*
+                  (format nil "~a/~d-pop.store" *base* *fitness-evals*)))
+         (incf *inc-counter*))))
     :name (format nil "opt-~d" i)))
 )
