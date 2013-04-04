@@ -1,0 +1,41 @@
+During compilation and linking, non-functional properties of software
+such as running time and executable size may be optimized.  Such
+techniques have been extensively researched and implementations can be
+found in many of the cornerstones of modern software development
+environments such as GCC.
+
+Current techniques almost exclusively rely on operations which may be
+formally proven to preserve program semantics.  Using a much looser
+test-suite based definition of program behavior we are able to evolve
+neutral program variants not reachable through semantic-preserving
+operations alone (see [1]).
+
+Some of these neutral variants may have desirable non-functional
+characteristics such as faster running times, reduced energy
+consumption or a smaller executable size.  By assigning fitness to
+neutral variants based on such non-functional characteristics it
+should be possible to optimize software in more radical ways than
+possible using existing techniques.  Here we investigate the
+application of neutral variants to software optimization.
+
+Modern system emulators and profilers allow fine-grained monitoring of
+aspects of program execution, such as energy consumption and
+communication overhead, which may be difficult to predict a-priori.
+We tool such as Graphite [2] and Linux perf [3] to calculate the
+fitness of program variants in a multi-objective EC system for
+software optimization.  We hypothesize a number of benefits to such a
+software optimization system, including the following.
+- more radical software transformation than possible through semantic
+  preserving transformations
+- optimization of software properties not readily predictable through
+  static analysis
+- multi-objective fitness weights allow a natural method for
+  developers to specify priorities for non-functional optimization
+
+Footnotes: 
+[1]  http://arxiv.org/abs/1204.4224
+
+[2]  http://groups.csail.mit.edu/carbon/?page_id=111
+
+[3]  https://perf.wiki.kernel.org/index.php/Main_Page
+
