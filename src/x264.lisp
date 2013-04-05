@@ -23,12 +23,14 @@
   (zerop (cdr (assoc :exit (stats asm)))))
 
 (defun multi-obj (cil)
-  (unless (stats cil) (setf (stats cil) (test cil)))
   (or (ignore-errors
+        (unless (stats cil) (setf (stats cil) (test cil)))
         (when (neutralp cil)
           (+ (aget :instructions (stats cil))
              (length (genome cil)))))
       infinity))
+
+(defvar *base* "../../results/x264-1" "Where to store incremental results.")
 
 (defun checkpoint ()
   ;; free memory before these memory-hog operations
@@ -36,10 +38,13 @@
   ;; save stats on the run to a file
   (let ((log (format nil "~a/stats" *base*))
         (fitness (mapcar #'fitness *population*))
-        (instrs (mapcar [{aget :instructions} #'stats] *population*))
+        (instrs (remove nil
+                  (mapcar [{aget :instructions} #'stats] *population*)))
         (length (mapcar [#'length #'genome] *population*)))
     (flet ((stats (samp)
-             (list (mean samp) (apply #'min samp) (apply #'max samp))))
+             (if (null samp)
+                 (list 0 0 0)
+                 (list (mean samp) (apply #'min samp) (apply #'max samp)))))
       (with-open-file (out log :direction :output :if-exists :append)
         (format out "~&~{~a~^ ~}~%"
                 (mapcar #'float
@@ -57,8 +62,6 @@
 ;;; Artificial Selection
 #+run
 (progn
-
-(defvar *base* "results/x264-1" "Where to store incremental results.")
 
 (setf *work-dir* "sh-runner/work/")
 
