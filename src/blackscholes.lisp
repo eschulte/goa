@@ -1,21 +1,5 @@
-(mapcar #'require '(:software-evolution :memoize :cl-store))
-(defpackage :bs-opt
-  (:use :common-lisp :alexandria :metabang-bind :curry-compose-reader-macros
-        :software-evolution :software-evolution-utility
-        :split-sequence :memoize :cl-store :elf :cl-ppcre)
-  (:shadow :type :magic-number))
-(in-package :bs-opt)
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (enable-curry-compose-reader-macros))
-
-(defclass asm-perf (asm)
-  ((stats :initarg :stats :accessor stats :initform nil)))
-
-(defvar infinity
-  #+sbcl
-  SB-EXT:DOUBLE-FLOAT-POSITIVE-INFINITY
-  #-(or sbcl)
-  (error "must specify a positive infinity value"))
+(load "src/perf-opt.lisp")
+(in-package :perf-opt)
 
 (defvar *test-fmt* "../../bin/bs-test ~a -n 1 -t 12000 -r -p"
   "Script used to evaluate variants.
@@ -30,25 +14,6 @@ between it's output and the oracle output.")
 
 (defvar *max-err* (/ *output-size* (expt 10 3))
   "Maximum error allowed, 3 orders of magnitude below total output.")
-
-(defun parse-stdout (stdout)
-  (mapcar (lambda-bind ((val key))
-            (cons (make-keyword (string-upcase key))
-                  (or (ignore-errors (parse-number val))
-                      infinity)))
-          (mapcar {split-sequence #\,}
-                  (split-sequence #\Newline
-                                  (regex-replace-all ":HG" stdout "")
-                                  :remove-empty-subseqs t))))
-
-(defun test (asm)
-  (with-temp-file (bin)
-    (phenome asm :bin bin)
-    (multiple-value-bind (stdout stderr errno) (shell *test-fmt* bin)
-      (declare (ignorable stderr))
-      (cons `(:exit . ,errno)
-            (or (ignore-errors (parse-stdout stdout))
-                `((:error . ,infinity)))))))
 
 (defun neutralp (asm)
   (when-let ((err (cdr (assoc :error (stats asm)))))
