@@ -16,6 +16,9 @@
                             :compiler "cilly" :flags *flags*)
                           "data/x264_comb.c"))
 
+(defvar *stat-mod* 0
+  "To only save the population a fraction of the time stats are saved.")
+
 (defun neutralp (asm)
   (zerop (cdr (assoc :exit (stats asm)))))
 
@@ -27,6 +30,29 @@
              (length (genome cil)))))
       infinity))
 
+(defun checkpoint ()
+  ;; free memory before these memory-hog operations
+  (sb-ext:gc :force t)
+  ;; save stats on the run to a file
+  (let ((log (format nil "~a/stats" *base*))
+        (fitness (mapcar #'fitness *population*))
+        (instrs (mapcar [{aget :instructions} #'stats] *population*))
+        (length (mapcar [#'length #'genome] *population*)))
+    (flet ((stats (samp)
+             (list (mean samp) (apply #'min samp) (apply #'max samp))))
+      (with-open-file (out log :direction :output :if-exists :append)
+        (format out "~&~{~a~^ ~}~%"
+                (mapcar #'float
+                        `(,*fitness-evals*
+                          ,@(stats fitness)
+                          ,@(stats instrs)
+                          ,@(stats length)))))))
+  (when (zerop (mod *stat-mod* 8))
+    ;; store the population in a file
+    (store *population*
+           (format nil "~a/~d-pop.store" *base* *fitness-evals*)))
+  (incf *stat-mod*))
+
 
 ;;; Artificial Selection
 #+run
@@ -35,9 +61,6 @@
 (defvar *base* "results/x264-1" "Where to store incremental results.")
 
 (setf *work-dir* "sh-runner/work/")
-
-(defvar *stat-mod* 0
-  "To only save the population a fraction of the time stats are saved.")
 
 (setf
  (fitness *orig*) (multi-obj *orig*)
@@ -53,28 +76,7 @@
        #'multi-obj
        :filter #'neutralp
        :period (expt 2 7)
-       :period-func
-       (lambda ()
-         ;; free memory before these memory-hog operations
-         (sb-ext:gc :force t)
-         ;; save stats on the run to a file
-         (let ((log (format nil "~a/stats" *base*))
-               (fitness (mapcar #'fitness *population*))
-               (instrs (mapcar [{aget :instructions} #'stats] *population*))
-               (length (mapcar [#'length #'genome] *population*)))
-           (flet ((stats (samp)
-                    (list (mean samp) (apply #'min samp) (apply #'max samp))))
-             (with-open-file (out log :direction :output :if-exists :append)
-               (format out "~&~{~a~^ ~}~%"
-                       (mapcar #'float
-                               `(,*fitness-evals*
-                                 ,@(stats fitness)
-                                 ,@(stats instrs)
-                                 ,@(stats length)))))))
-         (when (zerop (mod *inc-counter* 8))
-           ;; store the population in a file
-           (store *population*
-                  (format nil "~a/~d-pop.store" *base* *fitness-evals*)))
-         (incf *inc-counter*))))
+       :period-func #'checkpoint
+       ))
     :name (format nil "opt-~d" i)))
 )
