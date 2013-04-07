@@ -2,10 +2,10 @@
 (load "src/perf-opt.lisp")
 (in-package :perf-opt)
 
-(defvar *test-fmt* "./bin/x264-test ~a -p -d"
+(defvar *test-fmt* "../../bin/x264-test ~a -p -d"
   "Script used to evaluate variants.")
 
-(defvar *asm-lib* "./data/libx264-asm.a")
+(defvar *asm-lib* "../../data/libx264-asm.a")
 
 (defvar *flags*
   `("-D_GNUCC" ,*asm-lib*
@@ -30,7 +30,7 @@
              (length (genome cil)))))
       infinity))
 
-(defvar *base* "../../results/x264-1" "Where to store incremental results.")
+(defvar *base* "results/x264-1" "Where to store incremental results.")
 
 (defun checkpoint ()
   ;; free memory before these memory-hog operations
