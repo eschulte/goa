@@ -26,11 +26,13 @@
   (or (ignore-errors
         (unless (stats cil) (setf (stats cil) (test cil)))
         (when (neutralp cil)
-          (+ (aget :instructions (stats cil))
-             (length (genome cil)))))
+          (let ((orig-instrs 1882872477)
+                (orig-length 2628540))
+            (+ (/ (aget :instructions (stats cil)) orig-instrs)
+               (/ (length (genome cil)) orig-length)))))
       infinity))
 
-(defvar *base* "results/x264-1" "Where to store incremental results.")
+(defvar *base* "results/x264-2" "Where to store incremental results.")
 
 (defun checkpoint ()
   ;; free memory before these memory-hog operations
