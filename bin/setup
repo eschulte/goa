@@ -1,23 +1,36 @@
 #!/bin/bash
 #
-# Setup the benchmarks
+# Usage: setup [OPTIONS...]
+#  setup the benchmarks
+#
+# Options:
+#  -a,--action ----- unpack or compile, default is both
+#  -s,--suite ------ specific benchmark suite
+#  -b,--benchmark -- specific benchmark program
 #
 . $(dirname $0)/common
-
 BASE="$(dirname $0)"
 
-## PARSEC applications
-PARSEC_DIR="${BASE}/../benchmarks/parsec-3.0"
-if [ ! -d "$PARSEC_DIR" ];then
-    msg "downloading PARSEC"
-    cd data
-    wget http://parsec.cs.princeton.edu/download/3.0/parsec-3.0.tar.gz
-    msg "unpacking PARSEC"
-    cd ../benchmarks/
-    tar xzf ../data/parsec-3.0.tar.gz
-    cd ../
-fi
+## Parse Options
+ACTION=""
+SUITE="parsec"
+BENCHMARK=""
+eval set \
+    -- $(getopt -o a:s:b:c:f: -l action:,suite:,benchmark:,compiler:,flag: \
+    -- "$@" || echo "$HELP_TEXT" && exit 1;)
+while [ $# -gt 0 ];do
+    case $1 in
+        -a|--action) ACTION="$2"; shift;;
+        -s|--suite) SUITE="$2"; shift;;
+        -b|--benchmark) BENCHMARK="$2"; shift;;
+        (--) shift; break;;
+        (-*) error "unrecognized option $1";;
+        (*)  break;;
+    esac
+    shift
+done
 
+## PARSEC applications
 declare -a PARSEC_APPS
 PARSEC_APPS+=(blackscholes)
 PARSEC_APPS+=(bodytrack)
@@ -30,12 +43,11 @@ PARSEC_APPS+=(swaptions)
 PARSEC_APPS+=(vips)
 PARSEC_APPS+=(x264)
 
-cd "$PARSEC_DIR"
-source env.sh
-for pkg in ${PARSEC_APPS[@]};do
+parsec_unpack(){
+    local pkg=$1;
     PKG_DIR="pkgs/apps/$pkg"
     if [ -d "../$pkg" ];then
-        warning "$pkg already exists"
+        msg "$pkg already exists"
     else
         mkdir -p ../$pkg
 
@@ -52,4 +64,53 @@ for pkg in ${PARSEC_APPS[@]};do
             warning "no input for $pkg"
         fi
     fi
-done
+}
+
+parsec_compile(){
+    local pkg=$1;
+    SRC_DIR="../$pkg/src"
+    if [ ! -d "$SRC_DIR" ];then
+        error "$SRC_DIR doesn't exist"
+    else
+        cd "$SRC_DIR"
+        if [ -f "$pkg.s" ];then
+            msg "$pkg.s already exists"
+        else
+            msg "compiling $pkg"
+            case $pkg in
+                blackscholes) g++ -DNCO=4 blackscholes.c -S -o blackscholes.s ;;
+            esac
+        fi
+    fi
+}
+
+parsec_apps(){
+    if [ -z "$BENCHMARK" ];then
+        for pkg in ${PARSEC_APPS[@]};do echo "$pkg";done
+    else
+        echo "$BENCHMARK"
+    fi
+}
+
+case $SUITE in
+    parsec)
+        PARSEC_DIR="${BASE}/../benchmarks/parsec-3.0"
+        if [ ! -d "$PARSEC_DIR" ];then
+            msg "downloading PARSEC"
+            cd data
+            wget http://parsec.cs.princeton.edu/download/3.0/parsec-3.0.tar.gz
+            msg "unpacking PARSEC"
+            cd ../benchmarks/
+            tar xzf ../data/parsec-3.0.tar.gz
+            cd ../
+        fi
+        cd "$PARSEC_DIR"
+        source env.sh
+        if [ -z "$ACTION" ] || [ "$ACTION" == "unpack" ];then
+            for pkg in $(parsec_apps);do parsec_unpack $pkg; done
+        fi
+        if [ -z "$ACTION" ] || [ "$ACTION" == "compile" ];then
+            for pkg in $(parsec_apps);do parsec_compile $pkg; done
+        fi
+        ;;
+esac
