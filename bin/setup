@@ -78,7 +78,12 @@ parsec_compile(){
         else
             msg "compiling $pkg"
             case $pkg in
-                blackscholes) g++ -DNCO=4 blackscholes.c -S -o blackscholes.s ;;
+                blackscholes)
+                    g++ -DNCO=4 blackscholes.c -S -o blackscholes.s ;;
+                bodytrack)
+                    warning "bodytrack compilation not configured";;
+                facesim)
+                    
             esac
         fi
     fi
