@@ -1,10 +1,93 @@
 Optimization Notes                                         -*- org -*-
 
-* Reproduction Instructions
+* Work Plan
+:   train energy    memory       benchmarks       baselines       write
+:     models      fitness func       |         (Rinard, O2 O3)      |
+:      |              |              |                |             |
+:      |              v              |                v             |
+:      +--> begin evolutionary <-----+------------> apply           |
+:                 runs                            baselines         |
+:                  |                                  |             |
+:                  v                                  v             |
+:            lists of bests --------------> compare performance     |
+:                  |                        against baselines       |
+:                  v                                  |             |
+:             minimize and                            |             |
+:               analyze                               |   table     |
+:                  |                                  |  results    |
+:                  |                                  +------------>|
+:        +---------+----------+                                     |
+:        |                    |                                     |
+:        v                    v                                     |
+:    taxonomy of      compare to known                              |
+:   optimizations       techniques             find loop            |
+:        |                    |               perforation, etc...   |
+:        |                    +------------------------------------>|
+:        |                                                          |
+:        |                                                          |
+:        |                                      taxonomy            |
+:        +--------------------------------------------------------->|
+:                                                                   |
+:                                                                   |
+:                                                                   v
+:                                                                finished
+:                                                                 paper
+
+Optional Additional Topics
+- Application of the Breeders Equation to Software
+- Evolve a Pareto frontier of solutions instead of single program
+
+* Tasks [0/8]
+** TODO Train Energy Models
+Both at UVA on Intel and at UNM on AMD.
+
+** TODO Build a Memory Fitness Function
+We could use the "bubble" and the "reporter" from [[#mars2011bubble]].
+Measuring the values of HW counters against the bubble could give us
+coefficients for a memory linear model.
+
+** TODO Find Warehouse Compute Benchmark Applications
+** TODO Evolutionary Runs
+| benchmark     | Energy UVA | Energy UNM | Memory UVA | Memory UNM |
+|---------------+------------+------------+------------+------------|
+| PARSEC        |            |            |            |            |
+|---------------+------------+------------+------------+------------|
+| blackscholes  |            |            |            |            |
+| bodytrack     |            |            |            |            |
+| facesim       |            |            |            |            |
+| ferret        |            |            |            |            |
+| fluidanimate  |            |            |            |            |
+| freqmine      |            |            |            |            |
+| raytrace      |            |            |            |            |
+| swaptions     |            |            |            |            |
+| vips          |            |            |            |            |
+| x264          |            |            |            |            |
+| canneal       |            |            |            |            |
+| dedup         |            |            |            |            |
+| streamcluster |            |            |            |            |
+|---------------+------------+------------+------------+------------|
+| SPEC          |            |            |            |            |
+|---------------+------------+------------+------------+------------|
+|               |            |            |            |            |
+|---------------+------------+------------+------------+------------|
+| Warehouse     |            |            |            |            |
+|---------------+------------+------------+------------+------------|
+
+** TODO Baseline Runs
+** TODO Build table results table
+** TODO Analyze Optimizations
+** TODO Build optimization Taxonomy
+* Setup and Reproduction Instructions
 The following instructions may be used to reproduce and expand upon
 these results.
 
-** Virtual Machine Setup
+** Installing PARSEC
+The PARSEC homepage is at http://parsec.cs.princeton.edu/.  Download
+the [[http://parsec.cs.princeton.edu/download/3.0/parsec-3.0.tar.gz][PARSEC tarball]], and unpack it into the benchmarks sub-directory of
+this repository.
+
+** Using the Graphite Virtual Machine
+*** Virtual Machine Setup
 
 1. We will create a Qemu virtual machine and install the Debian 5.0.9
    specifically =debian-5010-i386-netinst.iso= from
@@ -59,7 +142,7 @@ these results.
          -m 1G -net nic -net user,hostfwd=tcp:127.0.0.1:2222-:22 -daemonize
    #+end_src
 
-** Running Graphite
+*** Running Graphite
 1. Log into =tune= as =bacon=.
    #+begin_src sh
      ssh -p 2222 bacon@localhost
@@ -106,12 +189,13 @@ these results.
          -i ~/graphite/carbon_sim.cfg
    #+end_src
 
-** Running the PARSEC benchmark with Graphite
+*** Running the PARSEC benchmark with Graphite
 Much of these instructions are adopted from [[https://github.com/mit-carbon/Graphite/wiki/Adding-and-Running-Applications#Running an application from the PARSEC benchmark suite][Running an application
 from the PARSEC benchmark suite]].
 
-1. To install Parsec, download and unpack the tarball from
-   http://parsec.cs.princeton.edu/download/3.0/parsec-3.0.tar.gz
+1. To install Parsec in the virtual machine for use with Graphite,
+   download and unpack the tarball from
+   http://parsec.cs.princeton.edu/download/3.0/parsec-3.0.tar.gz.
    #+begin_src sh
      cd ~/archives/
      wget http://parsec.cs.princeton.edu/download/3.0/parsec-3.0.tar.gz
@@ -150,7 +234,7 @@ from the PARSEC benchmark suite]].
      make blackscholes_parsec
    #+end_src
 
-** Running a Simple Fast Fourier Transform (FFT)
+*** Running a Simple Fast Fourier Transform (FFT)
 The FFT benchmark has higher memory requirements than the simple
 ping-pong test, so for this we'll have to increase the memory of the
 VM by passing the =-m 1G= flag to the call to =qemu-kvm=.
@@ -182,7 +266,7 @@ the following.
 : Overall transpose time            :         27878043
 : Overall transpose fraction        :          0.34904
 
-** Evolving a Population of Variants
+*** Evolving a Population of Variants
 This experimental setup is held in a git directory available from
 http://gitweb.adaptive.cs.unm.edu/optimization.git for anonymous git
 access with the following.
@@ -253,7 +337,7 @@ parallel fitness evaluation.
    default configuration of things like population size, tournament
    size, and the features optimized for.
 
-** Running overlays
+*** Running overlays
   :PROPERTIES:
   :shebang:  #!/bin/sh
   :CUSTOM_ID: running-overlays
@@ -293,7 +377,7 @@ To run all overlays daemonized;
   EOF
 #+end_src
 
-** Running LLVM/Clang and clang-mutate
+*** Running LLVM/Clang and clang-mutate
 1. Log into =tune= as =root=
 
 2. Install subversion.
@@ -319,900 +403,3 @@ To run all overlays daemonized;
      make install && make clean
    #+end_src
 
-* Experimental Runs
-
-* Old Experimental Runs
-  :PROPERTIES:
-  :exports: code
-  :eval:     no-export
-  :END:
-
-#+Caption: Listing of runs.
-#+RESULTS: results-summary
-| run                        | state    | git-tag            | machine | results-dir |
-|----------------------------+----------+--------------------+---------+-------------|
-| First Serial Run           | CANCELED | first-serial-run   | loaf    | first-run   |
-| First Parallel Run         | CANCELED | first-parallel-run | real    | first-run   |
-| Parallel Runtime Run       | DONE     | pll-runtime-run    | real    | pll-2       |
-| Communication Minimization | DONE     | packets-min        | complex | packets-min |
-| runtime-2                  | STARTED  | runtime-2          | complex | runtime-2   |
-
-#+name: results-summary
-#+begin_src emacs-lisp :exports results
-  (let ((fields (list "git-tag" "machine" "results-dir")))
-    (append (list (cons "run" (cons "state" fields)) 'hline)
-            (remove-if-not
-             (lambda (entry) (nth 2 entry))
-             (save-restriction
-               (org-narrow-to-subtree)
-               (cdr
-                (org-map-entries
-                 (lambda ()
-                   (cons (org-get-heading t t)
-                         (cons (org-get-todo-state)
-                               (mapcar (lambda (field) (org-entry-get (point) field))
-                                       fields))))))))))
-#+end_src
-
-** CANCELED First Serial Run
-   - State "CANCELED"   from "STARTED"    [2012-04-20 Fri 11:30] \\
-     accidentally rebooted the machine
-   :PROPERTIES:
-   :git-tag:  first-serial-run
-   :results-dir: first-run
-   :dates:    <2012-04-10 Tue>
-   :machine:  loaf
-   :END:
-Running very slowly with only 1 VM running evaluations in the
-background.
-
-#+name: first-run-generation-times
-#+begin_src lisp :package software-evolution
-  (let ((*a-dir* "results/first-run/"))
-    (mapcar #'list (mapcar #'float (stat (read-run :steps 18)))))
-#+end_src
-
-#+name: first-run-generation-times-plot
-#+header: :file data/first-run-generation-times-plot.svg
-#+begin_src gnuplot :var data=first-run-generation-times
-  set xlabel 'generations'
-  set ylabel 'time-wo-init'
-  plot data
-#+end_src
-
-#+Caption: time-wo-init by generation: too few generations for a trend to develop
-[[file:data/first-run-generation-times-plot.svg]]
-
-** CANCELED First Parallel Run
-   - State "CANCELED"   from "DONE"       [2012-04-16 Mon 15:08]
-   :PROPERTIES:
-   :git-tag:  first-parallel-run
-   :results-dir: first-run
-   :dates:    <2012-04-12 Thu>--<2012-04-13 Fri>
-   :machine:  real
-   :END:
-Failed to collect appropriate statistics, only have running time for
-the first generation.
-
-** DONE Parallel Runtime Run
-   :PROPERTIES:
-   :git-tag:  pll-runtime-run
-   :results-dir: pll-2
-   :dates:    <2012-04-15 Sun>
-   :machine:  real
-   :END:
-Looks to be working, saving the full population at every generation.
-
-*** Analysis
-Analysis code in file:src/pll-2.lisp
-
-#+name: pll-2-runtimes
-#+begin_src lisp :package software-evolution
-  (mapcar #'list (cdr *times*))
-#+end_src
-
-#+name: pll-2-runtimes-plot
-#+header: :exports code
-#+begin_src gnuplot :var data=pll-2-runtimes :file data/pll-2-runtimes.svg
-ylabel 'time-wo-init'
-xlabel 'generation'
-plot data
-#+end_src
-
-#+Caption: Ugh, selection must not have been working, probably a bug...
-[[file:data/pll-2-runtimes.svg]]
-
-*** Use the following to restart a failing run
-#+begin_src lisp
-  (require :software-evolution)
-  (in-package :software-evolution)
-  (load "optimize.lisp")
-  (setf *dir* "../results/pll-2/")
-  (setf *pop* (restore "../results/pll-2/biased-pop-126.store"))
-  (setf *note-level* 1)
-  (advise-thread-pool-size 46)
-  (loop for n from 126 to 300 do (note 1 "saving population ~d" n)
-       (store *pop* (file-for-run n))
-       (note 1 "generating population ~d" (1+ n))
-       (setf *pop* (biased-step *pop*)))
-#+end_src
-
-** DONE Communication Minimization
-   :PROPERTIES:
-   :results-dir: packets-min
-   :machine:  complex
-   :git-tag:  packets-min
-   :END:
-
-*** Analysis
-Analysis code in file:src/packet-min.lisp
-
-#+name: packets-min-runtimes
-#+begin_src lisp :package software-evolution
-  (mapcar #'list (cdr *packets*))
-#+end_src
-
-#+name: packets-min-runtimes-plot
-#+header: :exports code
-#+begin_src gnuplot :var data=packets-min-runtimes :file data/packets-min-runtimes.svg
-set ylabel 'total-packets-sent'
-set xlabel 'generation'
-plot data
-#+end_src
-
-#+Caption: Ugh, same bug
-[[file:data/packets-min-runtimes.svg]]
-
-*** Restarting a stalled run
-#+begin_src lisp
-  (require :software-evolution)
-  (in-package :software-evolution)
-  (load "optimize.lisp")
-  (setf *dir* "../results/packets-min/")
-  (setf *note-level* 1)
-  (setf *note-out* (open "../results/packets-min.session"
-                         :direction :output
-                         :if-exists :append))
-  (advise-thread-pool-size 46)
-  ;; (biased-walk *orig* :steps 1000 :key #'total-packets-sent)
-  (let* ((restart 24)
-         (*pop* (restore (file-for-run restart))))
-    (loop for n from restart to 1000 do (note 1 "saving population ~d" n)
-         (store *pop* (file-for-run n))
-         (note 1 "generating population ~d" (1+ n))
-         (setf *pop* (biased-step *pop* :key #'total-packets-sent))))
-#+end_src
-
-** STARTED runtime-2
-   :PROPERTIES:
-   :git-tag:  runtime-2
-   :results-dir: runtime-2
-   :machine:  complex
-   :dates:    2012-04-27
-   :END:
-
-Appears to be working, but slowly.
-
-*** Analysis
-Analysis code in file:src/runtime-2.lisp
-
-#+name: runtime-2-times
-#+begin_src lisp :package software-evolution
-  ;; (mapcar #'list (cdr *times*))
-  ;; (mapcar #'list (second *raw-times*))
-  *times*
-#+end_src
-
-#+name: packets-min-runtimes-plot
-#+header: :exports code
-#+begin_src gnuplot :var data=runtime-2-times :file data/runtime-2.svg
-  set ylabel 'time-wo-init'
-  set xlabel 'generation'
-  plot data using 0:1:2 w errorbars, \
-       data using 0:1 w lines
-#+end_src
-
-#+Caption: Run times by generation of evolution
-[[file:data/runtime-2.svg]]
-
-*** running
-#+begin_src lisp
-  (require :software-evolution)
-  (in-package :software-evolution)
-  (load "optimize.lisp")
-  (setf *dir* "../results/runtime-2/")
-  (setf *note-level* 1)
-  (setf *tsize* 4)
-  (advise-thread-pool-size 46)
-  (let ((starting-file (file-for-run 0)))
-    (unless (probe-file starting-file)
-      (progn (evaluate *orig*)
-             (store (list *orig*) starting-file))))
-  (let ((last 0))
-    (setf *pop* (restore (file-for-run last)))
-    (loop for n from last to 1000 do (note 1 "saving population ~d" n)
-         (store *pop* (file-for-run n))
-         (note 1 "generating population ~d" (1+ n))
-         (setf *pop* (biased-step *pop*))))
-#+end_src
-
-** TODO energy-1
-   :PROPERTIES:
-   :git-tag:  energy-1
-   :results-dir: energy-1
-   :machine:  real
-   :dates:    <2012-05-18 Fri>
-   :END:
-Looking at power consumption.
-
-Definitely a bug somewhere
-
-*** running
-#+begin_src lisp
-  (require :software-evolution)
-  (in-package :software-evolution)
-  (load "optimize.lisp")
-  (setf *dir* "../results/energy-1/")
-  (setf *note-level* 1)
-  (setf *tsize* 4)
-  (advise-thread-pool-size 46)
-  (let ((starting-file (file-for-run 0)))
-    (unless (probe-file starting-file)
-      (progn (evaluate *orig*)
-             (store (list *orig*) starting-file))))
-  (let ((last 0)
-        (key #'static-power)
-        (test (lambda (a b) (< (mean a) (mean b)))))
-    (setf *pop* (restore (file-for-run last)))
-    (loop for n from last to 1000 do (note 1 "saving population ~d" n)
-         (store *pop* (file-for-run n))
-         (note 1 "generating population ~d" (1+ n))
-         (setf *pop* (biased-step *pop* :test test :key key))))
-#+end_src
-
-*** analysis
-Analysis code in file:src/runtime-2.lisp
-
-#+name: energy-1-times
-#+begin_src lisp :package software-evolution
-  ;; (mapcar #'list (cdr *times*))
-  ;; (mapcar #'list (second *raw-times*))
-  *powers*
-#+end_src
-
-#+name: packets-min-energy-plot
-#+header: :exports code
-#+begin_src gnuplot :var data=energy-1-times :file data/energy-1.svg
-  set ylabel 'static-power'
-  set xlabel 'generation'
-  plot data using 0:1:2 w errorbars, \
-       data using 0:1 w lines
-#+end_src
-
-#+Caption: Energy consumption by generation of evolution
-[[file:data/energy-1.svg]]
-
-** flits
-*** analysis
-Analysis code in file:src/runtime-2.lisp
-
-#+name: flits-times
-#+begin_src lisp :package software-evolution
-  *flits*
-#+end_src
-
-#+name: packets-min-energy-plot
-#+header: :exports code :results silent
-#+begin_src gnuplot :var data=flits-times :file data/flits.svg
-  set ylabel 'total flits sent'
-  set xlabel 'generation'
-  plot data using 0:1:2 w errorbars title 'stdev', \
-       data using 0:1 w lines title 'mean'
-#+end_src
-
-#+Caption: Energy consumption by generation of evolution
-[[file:data/flits.svg]]
-
-* COMMENT Notes [3/6]
-** install setup a VM through ssh
-Start qemu with the -curses flag
-: qemu-system-x86_64 tune.qcow -cdrom data/debian-6.0.6-amd64-netinst.iso -curses
-you'll see a black screen with something like "640 x 480 Graphic mode"
-in the middle.  Press "h" then press return, then at the next prompt
-type "install vga=normal fb=false" and hit return, at this point you
-should be good to go.
-http://debian.2.n7.nabble.com/Problems-with-Squeeze-alpha1-in-qemu-td1858999.html
-
-** run a PARSEC app w/Graphite
-They all fail, many with missing input files or just incorrect inputs.
-
-May have to move PARSEC under $GRAPHITE_HOME/tests.
-
-*** TODO blackscholes
-    :PROPERTIES:
-    :ID:       506b37be-d9c2-4735-ae43-b907e71d2301
-    :END:
-: cd /home/bacon/parsec-2.1/pkgs/apps/blackscholes/run; /home/bacon/graphite/tools/spawn.py 1 /home/bacon/graphite/carbon_sim.cfg  /home/bacon/pin/intel64/bin/pinbin -mt -t /home/bacon/graphite/lib/pin_sim -c /home/bacon/graphite/carbon_sim.cfg --general/total_cores=64 --general/num_processes=1 --general/enable_shared_mem=true  -- /home/bacon/parsec-2.1/pkgs/apps/blackscholes/inst/amd64-linux.graphite/bin/blackscholes 16 in_4k.txt prices.txt
-: [spawn.py] Starting process: 0 : export CARBON_PROCESS_INDEX=0; export LD_LIBRARY_PATH="/afs/csail/group/carbon/tools/boost_1_38_0/stage/lib"; /home/bacon/pin/intel64/bin/pinbin -mt -t /home/bacon/graphite/lib/pin_sim -c /home/bacon/graphite/carbon_sim.cfg --general/total_cores=64 --general/num_processes=1 --general/enable_shared_mem=true -- /home/bacon/parsec-2.1/pkgs/apps/blackscholes/inst/amd64-linux.graphite/bin/blackscholes 16 in_4k.txt prices.txt
-: PARSEC Benchmark Suite Version 2.1
-: ERROR: Unable to open file in_4k.txt.
-: [spawn.py] Exited with return code: 1
-: make: *** [blackscholes_parsec] Error 1
-
-** DONE building all PARSEC apps w/Graphite
-Everything built but raytrace
-
-*** TODO failure w/cmake while building raytrace
-    :PROPERTIES:
-    :ID:       a4a68af3-1474-4abb-bc1c-daa37d20d758
-    :END:
-figure out what went wrong here
-: /usr/bin/g++ -L/usr/lib64 -L/usr/lib -static -u CarbonStartSim -u CarbonStopSim -L/home/bacon/graphite/lib -L/home/bacon/graphite/os-services-25032-gcc.4.0.0-linux-ia32_intel64/intel64 -L/home/bacon/graphite/contrib/orion -pthread -lcarbon_sim -lorion -los-services -lboost_filesystem-mt -lboost_system-mt -pthread -lstdc++ -lm -O3 -funroll-loops -fprefetch-loop-arrays -fpermissive -static-libgcc -Wl,--hash-style=both,--as-needed -DPARSEC_VERSION=2.1 -fexceptions -I/home/bacon/parsec-2.1/pkgs/tools/cmake/src/Source   -I/home/bacon/parsec-2.1/pkgs/tools/cmake/obj/amd64-linux.graphite/Bootstrap.cmk  cmake.o cmakemain.o cmakewizard.o cmCommandArgumentLexer.o cmCommandArgumentParser.o cmCommandArgumentParserHelper.o cmDepends.o cmDependsC.o cmDocumentationFormatter.o cmDocumentationFormatterText.o cmPolicies.o cmProperty.o cmPropertyMap.o cmPropertyDefinition.o cmPropertyDefinitionMap.o cmMakeDepend.o cmMakefile.o cmExportFileGenerator.o cmExportInstallFileGenerator.o cmInstallDirectoryGenerator.o cmGeneratedFileStream.o cmGlobalGenerator.o cmLocalGenerator.o cmInstallGenerator.o cmInstallExportGenerator.o cmInstallFilesGenerator.o cmInstallScriptGenerator.o cmInstallTargetGenerator.o cmSourceFile.o cmSourceFileLocation.o cmSystemTools.o cmVersion.o cmFileTimeComparison.o cmGlobalUnixMakefileGenerator3.o cmLocalUnixMakefileGenerator3.o cmMakefileExecutableTargetGenerator.o cmMakefileLibraryTargetGenerator.o cmMakefileTargetGenerator.o cmMakefileUtilityTargetGenerator.o cmBootstrapCommands.o cmCommands.o cmTarget.o cmTest.o cmCustomCommand.o cmDocumentVariables.o cmCacheManager.o cmListFileCache.o cmComputeLinkDepends.o cmComputeLinkInformation.o cmOrderDirectories.o cmComputeTargetDepends.o cmComputeComponentGraph.o cmExprLexer.o cmExprParser.o cmExprParserHelper.o cmListFileLexer.o Directory.o Glob.o RegularExpression.o SystemTools.o ProcessUNIX.o String.o System.o -o cmake
-: SystemTools.o: In function `cmsys::SystemTools::ConvertToUnixSlashes(std::basic_string<char, std::char_traits<char>, std::allocator<char> >&)':
-: SystemTools.cxx:(.text+0x462c): warning: Using 'getpwnam' in statically linked applications requires at runtime the shared libraries from the glibc version used for linking
-: /home/bacon/graphite/lib/libcarbon_sim.a(socktransport.o): In function `SockTransport::Socket::connect(char const*, int)':
-: socktransport.cc:(.text+0x15b1): warning: Using 'gethostbyname' in statically linked applications requires at runtime the shared libraries from the glibc version used for linking
-: loading initial cache file /home/bacon/parsec-2.1/pkgs/tools/cmake/obj/amd64-linux.graphite/Bootstrap.cmk/InitialCacheFlags.cmake
-: -- The C compiler identification is GNU
-: -- The CXX compiler identification is GNU
-: -- Check for working C compiler: /usr/bin/gcc
-: -- Check for working C compiler: /usr/bin/gcc -- works
-: -- Detecting C compiler ABI info
-: -- Detecting C compiler ABI info - done
-: -- Check for working CXX compiler: /usr/bin/g++
-: -- Check for working CXX compiler: /usr/bin/g++ -- works
-: -- Detecting CXX compiler ABI info
-: -- Detecting CXX compiler ABI info - done
-: -- CTest cannot determine repository type. Please set UPDATE_TYPE to 'cvs' or 'svn'. CTest update will not work.
-: -- Looking for C++ include iostream
-: -- Looking for C++ include iostream - found
-: -- Check for STD namespace
-: -- Check for STD namespace - found
-: -- Check for ANSI scope
-: -- Check for ANSI scope - found
-: -- Check for sstream
-: -- Check for sstream - found
-: -- Looking for unsetenv
-: -- Looking for unsetenv - found
-: -- Looking for environ
-: Curses libraries were not found. Curses GUI for CMake will not be built.-- Looking for environ - not found.
-: 
-: -- Checking for Large File Support
-: -- Checking for Large File Support - yes
-: -- Checking whether STL classes are in std namespace
-: -- Checking whether STL classes are in std namespace - yes
-: -- Checking whether ANSI stream headers are available
-: -- Checking whether ANSI stream headers are available - yes
-: -- Checking whether ANSI streams are in std namespace
-: -- Checking whether ANSI streams are in std namespace - yes
-: -- Checking whether ANSI string stream is available
-: -- Checking whether ANSI string stream is available - yes
-: -- Checking whether header cstddef is available
-: -- Checking whether header cstddef is available - yes
-: -- Checking whether stl string has operator!= for char*
-: -- Checking whether stl string has operator!= for char* - yes
-: -- Checking whether stl has iterator_traits
-: -- Checking whether stl has iterator_traits - yes
-: -- Checking whether stl has standard template allocator
-: -- Checking whether stl has standard template allocator - yes
-: -- Checking for rebind member of stl allocator
-: -- Checking for rebind member of stl allocator - yes
-: -- Checking for non-standard argument to stl allocator<>::max_size
-: -- Checking for non-standard argument to stl allocator<>::max_size - no
-: -- Checking whether stl containers support allocator objects.
-: -- Performing Test int send(int, void *, socklen_t, int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(int, void *, socklen_t, unsigned int) (curl_cv_func_send_test)
-: -- Performing Test int send(int, void *, socklen_t, unsigned int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(int, void *, unsigned int, int) (curl_cv_func_send_test)
-: -- Performing Test int send(int, void *, unsigned int, int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(int, void *, unsigned int, unsigned int) (curl_cv_func_send_test)
-: -- Performing Test int send(int, void *, unsigned int, unsigned int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(int, char *, size_t, int) (curl_cv_func_send_test)
-: -- Performing Test int send(int, char *, size_t, int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(int, char *, size_t, unsigned int) (curl_cv_func_send_test)
-: -- Performing Test int send(int, char *, size_t, unsigned int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(int, char *, int, int) (curl_cv_func_send_test)
-: -- Performing Test int send(int, char *, int, int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(int, char *, int, unsigned int) (curl_cv_func_send_test)
-: -- Performing Test int send(int, char *, int, unsigned int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(int, char *, socklen_t, int) (curl_cv_func_send_test)
-: -- Performing Test int send(int, char *, socklen_t, int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(int, char *, socklen_t, unsigned int) (curl_cv_func_send_test)
-: -- Performing Test int send(int, char *, socklen_t, unsigned int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(int, char *, unsigned int, int) (curl_cv_func_send_test)
-: -- Performing Test int send(int, char *, unsigned int, int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(int, char *, unsigned int, unsigned int) (curl_cv_func_send_test)
-: -- Performing Test int send(int, char *, unsigned int, unsigned int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(int, const char *, size_t, int) (curl_cv_func_send_test)
-: -- Performing Test int send(int, const char *, size_t, int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(int, const char *, size_t, unsigned int) (curl_cv_func_send_test)
-: -- Performing Test int send(int, const char *, size_t, unsigned int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(int, const char *, int, int) (curl_cv_func_send_test)
-: -- Performing Test int send(int, const char *, int, int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(int, const char *, int, unsigned int) (curl_cv_func_send_test)
-: -- Performing Test int send(int, const char *, int, unsigned int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(int, const char *, socklen_t, int) (curl_cv_func_send_test)
-: -- Performing Test int send(int, const char *, socklen_t, int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(int, const char *, socklen_t, unsigned int) (curl_cv_func_send_test)
-: -- Performing Test int send(int, const char *, socklen_t, unsigned int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(int, const char *, unsigned int, int) (curl_cv_func_send_test)
-: -- Performing Test int send(int, const char *, unsigned int, int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(int, const char *, unsigned int, unsigned int) (curl_cv_func_send_test)
-: -- Performing Test int send(int, const char *, unsigned int, unsigned int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(ssize_t, const void *, size_t, int) (curl_cv_func_send_test)
-: -- Performing Test int send(ssize_t, const void *, size_t, int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(ssize_t, const void *, size_t, unsigned int) (curl_cv_func_send_test)
-: -- Performing Test int send(ssize_t, const void *, size_t, unsigned int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(ssize_t, const void *, int, int) (curl_cv_func_send_test)
-: -- Performing Test int send(ssize_t, const void *, int, int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(ssize_t, const void *, int, unsigned int) (curl_cv_func_send_test)
-: -- Performing Test int send(ssize_t, const void *, int, unsigned int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(ssize_t, const void *, socklen_t, int) (curl_cv_func_send_test)
-: -- Performing Test int send(ssize_t, const void *, socklen_t, int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(ssize_t, const void *, socklen_t, unsigned int) (curl_cv_func_send_test)
-: -- Performing Test int send(ssize_t, const void *, socklen_t, unsigned int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(ssize_t, const void *, unsigned int, int) (curl_cv_func_send_test)
-: -- Performing Test int send(ssize_t, const void *, unsigned int, int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(ssize_t, const void *, unsigned int, unsigned int) (curl_cv_func_send_test)
-: -- Performing Test int send(ssize_t, const void *, unsigned int, unsigned int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(ssize_t, void *, size_t, int) (curl_cv_func_send_test)
-: -- Performing Test int send(ssize_t, void *, size_t, int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(ssize_t, void *, size_t, unsigned int) (curl_cv_func_send_test)
-: -- Performing Test int send(ssize_t, void *, size_t, unsigned int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(ssize_t, void *, int, int) (curl_cv_func_send_test)
-: -- Performing Test int send(ssize_t, void *, int, int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(ssize_t, void *, int, unsigned int) (curl_cv_func_send_test)
-: -- Performing Test int send(ssize_t, void *, int, unsigned int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(ssize_t, void *, socklen_t, int) (curl_cv_func_send_test)
-: -- Performing Test int send(ssize_t, void *, socklen_t, int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(ssize_t, void *, socklen_t, unsigned int) (curl_cv_func_send_test)
-: -- Performing Test int send(ssize_t, void *, socklen_t, unsigned int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(ssize_t, void *, unsigned int, int) (curl_cv_func_send_test)
-: -- Performing Test int send(ssize_t, void *, unsigned int, int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(ssize_t, void *, unsigned int, unsigned int) (curl_cv_func_send_test)
-: -- Performing Test int send(ssize_t, void *, unsigned int, unsigned int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(ssize_t, char *, size_t, int) (curl_cv_func_send_test)
-: -- Performing Test int send(ssize_t, char *, size_t, int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(ssize_t, char *, size_t, unsigned int) (curl_cv_func_send_test)
-: -- Performing Test int send(ssize_t, char *, size_t, unsigned int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(ssize_t, char *, int, int) (curl_cv_func_send_test)
-: -- Performing Test int send(ssize_t, char *, int, int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(ssize_t, char *, int, unsigned int) (curl_cv_func_send_test)
-: -- Performing Test int send(ssize_t, char *, int, unsigned int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(ssize_t, char *, socklen_t, int) (curl_cv_func_send_test)
-: -- Performing Test int send(ssize_t, char *, socklen_t, int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(ssize_t, char *, socklen_t, unsigned int) (curl_cv_func_send_test)
-: -- Performing Test int send(ssize_t, char *, socklen_t, unsigned int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(ssize_t, char *, unsigned int, int) (curl_cv_func_send_test)
-: -- Performing Test int send(ssize_t, char *, unsigned int, int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(ssize_t, char *, unsigned int, unsigned int) (curl_cv_func_send_test)
-: -- Performing Test int send(ssize_t, char *, unsigned int, unsigned int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(ssize_t, const char *, size_t, int) (curl_cv_func_send_test)
-: -- Performing Test int send(ssize_t, const char *, size_t, int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(ssize_t, const char *, size_t, unsigned int) (curl_cv_func_send_test)
-: -- Performing Test int send(ssize_t, const char *, size_t, unsigned int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(ssize_t, const char *, int, int) (curl_cv_func_send_test)
-: -- Performing Test int send(ssize_t, const char *, int, int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(ssize_t, const char *, int, unsigned int) (curl_cv_func_send_test)
-: -- Performing Test int send(ssize_t, const char *, int, unsigned int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(ssize_t, const char *, socklen_t, int) (curl_cv_func_send_test)
-: -- Performing Test int send(ssize_t, const char *, socklen_t, int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(ssize_t, const char *, socklen_t, unsigned int) (curl_cv_func_send_test)
-: -- Performing Test int send(ssize_t, const char *, socklen_t, unsigned int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(ssize_t, const char *, unsigned int, int) (curl_cv_func_send_test)
-: -- Performing Test int send(ssize_t, const char *, unsigned int, int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(ssize_t, const char *, unsigned int, unsigned int) (curl_cv_func_send_test)
-: -- Performing Test int send(ssize_t, const char *, unsigned int, unsigned int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(SOCKET, const void *, size_t, int) (curl_cv_func_send_test)
-: -- Performing Test int send(SOCKET, const void *, size_t, int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(SOCKET, const void *, size_t, unsigned int) (curl_cv_func_send_test)
-: -- Performing Test int send(SOCKET, const void *, size_t, unsigned int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(SOCKET, const void *, int, int) (curl_cv_func_send_test)
-: -- Performing Test int send(SOCKET, const void *, int, int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(SOCKET, const void *, int, unsigned int) (curl_cv_func_send_test)
-: -- Performing Test int send(SOCKET, const void *, int, unsigned int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(SOCKET, const void *, socklen_t, int) (curl_cv_func_send_test)
-: -- Performing Test int send(SOCKET, const void *, socklen_t, int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(SOCKET, const void *, socklen_t, unsigned int) (curl_cv_func_send_test)
-: -- Performing Test int send(SOCKET, const char *, socklen_t, unsigned int) (curl_cv_func_send_test) - Failed
-: -- Performing Test int send(SOCKET, const char *, unsigned int, int) (curl_cv_func_send_test)
-: -- Searching 16 bit integer
-: -- Check size of unsigned short
-: -- Check size of unsigned short - done
-: -- Using unsigned short
-: -- Check if the system is big endian - little endian
-: -- Looking for include files HAVE_STDARG_H
-: -- Looking for include files HAVE_STDARG_H - found
-: -- Looking for include files HAVE_WCHAR_H
-: -- Looking for include files HAVE_WCHAR_H - found
-: -- Looking for asprintf
-: -- Looking for asprintf - not found.
-: -- Looking for setgroups
-: -- Looking for setgroups - not found.
-: running cd "/home/bacon/parsec-2.1/pkgs/tools/cmake/obj/amd64-linux.graphite/CMakeFiles/CMakeTmp" && /home/bacon/parsec-2.1/pkgs/tools/cmake/obj/amd64-linux.graphite/Bootstrap.cmk/cmake -E copy src2.c src.c  2>&1
-: -- Performing Test VA_LIST_ISNOT_ARRAY_DEFINE
-: -- Performing Test VA_LIST_ISNOT_ARRAY_DEFINE - Failed
-: running cd "/home/bacon/parsec-2.1/pkgs/tools/cmake/obj/amd64-linux.graphite/CMakeFiles/CMakeTmp" && /home/bacon/parsec-2.1/pkgs/tools/cmake/obj/amd64-linux.graphite/Bootstrap.cmk/cmake -E copy src2.c src.c  2>&1
-: -- Performing Test HAS_VA_COPY
-: -- Performing Test HAS_VA_COPY - Success
-: running cd "/home/bacon/parsec-2.1/pkgs/tools/cmake/obj/amd64-linux.graphite/CMakeFiles/CMakeTmp" && /home/bacon/parsec-2.1/pkgs/tools/cmake/obj/amd64-linux.graphite/Bootstrap.cmk/cmake -E copy src2.c src.c  2>&1
-: -- Performing Test ATTR_UNUSED_VAR
-: -- Performing Test ATTR_UNUSED_VAR - Success
-: -- Looking for elf.h
-: -- Looking for elf.h - found
-: -- Configuring done
-: -- Generating done
-: -- Build files have been written to: /home/bacon/parsec-2.1/pkgs/tools/cmake/obj/amd64-linux.graphite
-: ---------------------------------------------
-: CMake has bootstrapped.  Now run /usr/bin/make.
-: [PARSEC] Running 'env CXXFLAGS=-O3 -funroll-loops -fprefetch-loop-arrays -fpermissive -static-libgcc -Wl,--hash-style=both,--as-needed -DPARSEC_VERSION=2.1 -fexceptions /usr/bin/make':
-: Scanning dependencies of target cmsys
-: [  0%] Building C object Source/kwsys/CMakeFiles/cmsys.dir/ProcessUNIX.o
-: [  0%] Building C object Source/kwsys/CMakeFiles/cmsys.dir/Base64.o
-: [  1%] Building C object Source/kwsys/CMakeFiles/cmsys.dir/MD5.o
-: [  1%] Building C object Source/kwsys/CMakeFiles/cmsys.dir/Terminal.o
-: [  1%] Building C object Source/kwsys/CMakeFiles/cmsys.dir/System.o
-: [  2%] Building C object Source/kwsys/CMakeFiles/cmsys.dir/String.o
-: [  2%] Building CXX object Source/kwsys/CMakeFiles/cmsys.dir/Directory.o
-: [  3%] Building CXX object Source/kwsys/CMakeFiles/cmsys.dir/DynamicLoader.o
-: [  3%] Building CXX object Source/kwsys/CMakeFiles/cmsys.dir/Glob.o
-: [  3%] Building CXX object Source/kwsys/CMakeFiles/cmsys.dir/RegularExpression.o
-: [  4%] Building CXX object Source/kwsys/CMakeFiles/cmsys.dir/SystemTools.o
-: [  4%] Building CXX object Source/kwsys/CMakeFiles/cmsys.dir/CommandLineArguments.o
-: [  5%] Building CXX object Source/kwsys/CMakeFiles/cmsys.dir/Registry.o
-: [  5%] Building CXX object Source/kwsys/CMakeFiles/cmsys.dir/IOStream.o
-: [  5%] Building CXX object Source/kwsys/CMakeFiles/cmsys.dir/SystemInformation.o
-: Linking CXX static library libcmsys.a
-: [  5%] Built target cmsys
-: Scanning dependencies of target cmsysTestDynload
-: [  6%] Building C object Source/kwsys/CMakeFiles/cmsysTestDynload.dir/testDynload.o
-: Linking C shared module libcmsysTestDynload.so
-: /usr/bin/ld: /usr/lib/gcc/x86_64-linux-gnu/4.3.2/crtbeginT.o: relocation R_X86_64_32 against `__DTOR_END__' can not be used when making a shared object; recompile with -fPIC
-: /usr/lib/gcc/x86_64-linux-gnu/4.3.2/crtbeginT.o: could not read symbols: Bad value
-: collect2: ld returned 1 exit status
-: make[2]: *** [Source/kwsys/libcmsysTestDynload.so] Error 1
-: make[1]: *** [Source/kwsys/CMakeFiles/cmsysTestDynload.dir/all] Error 2
-: make: *** [all] Error 2
-: [PARSEC] Error: 'env CXXFLAGS=-O3 -funroll-loops -fprefetch-loop-arrays -fpermissive -static-libgcc -Wl,--hash-style=both,--as-needed -DPARSEC_VERSION=2.1 -fexceptions /usr/bin/make' failed.
-
-** fault tolerance stochastic algorithms -- new target applications PARSEC
-http://pages.saclay.inria.fr/olivier.temam/
-#+begin_quote
-At the same time, the emergence of a new kind of high-performance
-applications (illustrated by the PARSEC benchmarks), based on
-stochastic algorithms inherently tolerant to a certain degree of
-inaccuracy
-#+end_quote
-
-** TODO what does "not completely converted" this mean
-: 2012.06.13.11.27.46: (length results) ;; => 112
-: 2012.06.13.11.27.46: saving population 43
-: 2012.06.13.11.27.46: generating population 44
-: 2012.06.13.11.27.46: generating 46
-: 2012.06.13.11.37.58: keeping the fit
-: 2012.06.13.11.37.58: (length results) ;; => 28
-: 2012.06.13.11.37.58: generating 46
-: 2012.06.13.11.48.09: keeping the fit
-: 2012.06.13.11.48.09: (length results) ;; => 53
-: 2012.06.13.11.48.09: generating 46
-: 2012.06.13.11.58.12: keeping the fit
-: 2012.06.13.11.58.12: (length results) ;; => 85
-: 2012.06.13.11.58.12: generating 45
-: printf: 34: 12.41,: not completely converted
-: 2012.06.13.12.08.22: keeping the fit
-: 2012.06.13.12.08.22: (length results) ;; => 115
-: 2012.06.13.12.08.22: saving population 44
-: 2012.06.13.12.08.22: generating population 45
-: 2012.06.13.12.08.22: generating 46
-: printf: 34: 19.47,: not completely converted
-: printf: 34: 12.01,: not completely converted
-
-** fields which show any variance
-#+begin_src lisp :results raw
-(format nil "~{|~{~a~^ ~^|~^ ~}~^|~^~%~}~%"
-        (mapcar
-         (lambda (field)
-           (let* ((values (mapcar (lambda (v) (slot-value v field)) *pop*))
-                  (same   (every  (lambda (it) (equal-it (car values) it))
-                                  (cdr values))))
-             (list field same)))
-         '(FITNESS HISTORY NEUTRAL-P START INIT-FINISH FINISH
-           TRANS-FRACTION TIME-WO-INIT TIME-W-INIT TRANS-TIME TOTAL-PACKETS-SENT
-           TOTAL-FLITS-SENT TOTAL-BYTES-SENT TOTAL-PACKETS-BROADCASTED
-           TOTAL-FLITS-BROADCASTED TOTAL-BYTES-BROADCASTED
-           TOTAL-PACKETS-RECEIVED TOTAL-FLITS-RECEIVED TOTAL-BYTES-RECEIVED
-           AVERAGE-PACKET-LATENCY-IN-CLOCK-CYCLES AVERAGE-PACKET-LATENCY-IN-NS
-           AVERAGE-CONTENTION-DELAY-IN-CLOCK-CYCLES
-           AVERAGE-CONTENTION-DELAY-IN-NS SWITCH-ALLOCATOR-TRAVERSALS
-           CROSSBAR-TRAVERSALS LINK-TRAVERSALS STATIC-POWER)))
-#+end_src
-
-Some difference
-| HISTORY                                  | NIL |
-| START                                    | NIL |
-| INIT-FINISH                              | NIL |
-| FINISH                                   | NIL |
-| TRANS-FRACTION                           | NIL |
-| TIME-WO-INIT                             | NIL |
-| TIME-W-INIT                              | NIL |
-| TRANS-TIME                               | NIL |
-| TOTAL-PACKETS-SENT                       | NIL |
-| TOTAL-FLITS-SENT                         | NIL |
-| TOTAL-BYTES-SENT                         | NIL |
-| TOTAL-PACKETS-RECEIVED                   | NIL |
-| TOTAL-FLITS-RECEIVED                     | NIL |
-| TOTAL-BYTES-RECEIVED                     | NIL |
-| AVERAGE-PACKET-LATENCY-IN-CLOCK-CYCLES   | NIL |
-| AVERAGE-PACKET-LATENCY-IN-NS             | NIL |
-| SWITCH-ALLOCATOR-TRAVERSALS              | NIL |
-| CROSSBAR-TRAVERSALS                      | NIL |
-| LINK-TRAVERSALS                          | NIL |
-
-All the same
-| FITNESS                                  | T   |
-| NEUTRAL-P                                | T   |
-| TOTAL-PACKETS-BROADCASTED                | T   |
-| TOTAL-FLITS-BROADCASTED                  | T   |
-| TOTAL-BYTES-BROADCASTED                  | T   |
-| AVERAGE-CONTENTION-DELAY-IN-CLOCK-CYCLES | T   |
-| AVERAGE-CONTENTION-DELAY-IN-NS           | T   |
-| STATIC-POWER                             | T   |
-
-** STARTED debug the lack of any change in power consumption
-Are the generated =.s= files identical?
-Is there a bug in file:src/optimize.lisp?
-
-Weird, so even though the other fields may vary, the power consumption
-is staying constant.  I wonder if this could be a bug in Graphite.
-#+begin_src lisp
-(let ((*dir* "results/energy-1/")
-      (stats (list 'static-power 'total-packets-sent 'time-wo-init)))
-  (cons
-   (cons "" (mapcar #'symbol-name stats))
-   (mapcar
-    (lambda (gen)
-      (cons gen
-            (mapcar
-             (lambda (stat)
-               (apply #'+ (mapcar (lambda (el)
-                                    (let ((val (funcall stat el)))
-                                      (if (listp val) (apply #'+ val) val)))
-                                  (restore (file-for-run gen)))))
-             stats)))
-    '(2 40 80))))
-#+end_src
-
-#+RESULTS:
-|    | STATIC-POWER | TOTAL-PACKETS-SENT | TIME-WO-INIT |
-|  2 |    158.30093 |           66962923 |  11786724573 |
-| 40 |    158.30093 |           66835709 |  11787330638 |
-| 80 |    158.30093 |           66918247 |  11811495198 |
-
-** DONE C code manipulation
-This is more of a task for the top-level software-evolution framework.
-
-Looks like I should be able to use [[https://github.com/eschulte/clang-mutate][clang-mutate]] for this.
-
-** TODO look at the best performers
-Use something like the following.
-#+begin_src lisp
-  (mapcar (lambda (gen) (car (sort gen #'< :key #'runtime))) runs)
-#+end_src
-
-Then.
-1. confirm that they *do* have better run times
-2. dig into their ASM and make sure that it seems reasonable
-
-** DONE need to cleanup assembly files from /tmp in guest VMs
-** exactly /what/ can we measure
-- communication by packet
-- runtime
-- power consumption (assuming we get the power piece working)
-- number of floating point operations?
-
-** SBCL is going sleeping on the job
-Maybe has something to do with script processes dying and never
-returning to SBCL, which then hangs the thread and then hangs sbcl
-itself.  Could also be a race condition between the threads.
-
-Killing the VM which was hanging ssh connections seems to have started
-the SBCL process right back up.  So that is one way forward.  Should
-probably start using the limit.c script for these executions.
-
-*** ps auxwwwf from a stalled run
-: $ ps auxwwwf
-: [...]
-: eschulte  3692  0.0  0.0  33940 10124 ?        Ss   Apr11   4:35 SCREEN
-: eschulte  4282  0.0  0.0  39700  3772 pts/3    Ss   Apr11   0:00  \_ /usr/bin/zsh
-: eschulte  8665  2.6  0.1 8744068 149116 pts/3  Sl+  16:04   8:15  |   \_ sbcl
-: eschulte 17732  0.0  0.0      0     0 pts/3    Z    19:01   0:00  |       \_ [host-test.sh] <defunct>
-: eschulte 17739  0.0  0.0      0     0 pts/3    Z    19:01   0:00  |       \_ [host-test.sh] <defunct>
-: eschulte  9033  0.0  0.0  45688  9700 pts/1    Ss+  Apr11   0:01  \_ /usr/bin/zsh
-: eschulte 23988  0.0  0.0  39816  3892 pts/2    Ss+  Apr12   0:01  \_ /usr/bin/zsh
-: eschulte  2472  0.0  0.0  39684  3684 pts/33   Ss   12:35   0:00  \_ /usr/bin/zsh
-: [...]
-
-*** logging output from a stalled run
-: SOFTWARE-EVOLUTION(12): (biased-walk *orig*)
-:
-: 2012.04.15.23.22.40: saving population 0
-: 2012.04.15.23.22.40: generating population 1
-: 2012.04.15.23.22.40: generating 46
-: 2012.04.15.23.32.46: keeping the fit
-: 2012.04.15.23.32.46: (length results) ;; => 47
-: 2012.04.15.23.32.46: generating 46
-: 2012.04.15.23.42.57: keeping the fit
-: 2012.04.15.23.42.57: (length results) ;; => 94
-: 2012.04.15.23.42.57: generating 18
-: 2012.04.15.23.48.04: keeping the fit
-: 2012.04.15.23.48.04: (length results) ;; => 113
-: 2012.04.15.23.48.04: saving population 1
-: 2012.04.15.23.48.05: generating population 2
-: 2012.04.15.23.48.05: generating 46
-: 2012.04.15.23.58.14: keeping the fit
-: 2012.04.15.23.58.14: (length results) ;; => 47
-: 2012.04.15.23.58.14: generating 46
-: 2012.04.16.00.08.23: keeping the fit
-: 2012.04.16.00.08.23: (length results) ;; => 94
-: 2012.04.16.00.08.23: generating 18
-: 2012.04.16.00.13.32: keeping the fit
-: 2012.04.16.00.13.32: (length results) ;; => 113
-: 2012.04.16.00.13.32: saving population 2
-: 2012.04.16.00.13.32: generating population 3
-: 2012.04.16.00.13.32: generating 46
-: 2012.04.16.00.23.49: keeping the fit
-: 2012.04.16.00.23.49: (length results) ;; => 47
-: 2012.04.16.00.23.49: generating 46
-: 2012.04.16.00.34.09: keeping the fit
-: 2012.04.16.00.34.09: (length results) ;; => 94
-: 2012.04.16.00.34.09: generating 18
-: 2012.04.16.00.39.17: keeping the fit
-: 2012.04.16.00.39.17: (length results) ;; => 113
-: 2012.04.16.00.39.17: saving population 3
-: 2012.04.16.00.39.17: generating population 4
-: 2012.04.16.00.39.17: generating 46
-: 2012.04.16.00.49.24: keeping the fit
-: 2012.04.16.00.49.24: (length results) ;; => 47
-: 2012.04.16.00.49.24: generating 46
-: 2012.04.16.00.59.41: keeping the fit
-: 2012.04.16.00.59.41: (length results) ;; => 94
-: 2012.04.16.00.59.41: generating 18
-: 2012.04.16.01.04.51: keeping the fit
-: 2012.04.16.01.04.51: (length results) ;; => 113
-: 2012.04.16.01.04.51: saving population 4
-: 2012.04.16.01.04.52: generating population 5
-: 2012.04.16.01.04.52: generating 46
-: 2012.04.16.01.15.09: keeping the fit
-: 2012.04.16.01.15.09: (length results) ;; => 47
-: 2012.04.16.01.15.09: generating 46
-: 2012.04.16.01.25.18: keeping the fit
-: 2012.04.16.01.25.18: (length results) ;; => 94
-: 2012.04.16.01.25.18: generating 18
-: 2012.04.16.01.30.28: keeping the fit
-: 2012.04.16.01.30.28: (length results) ;; => 113
-: 2012.04.16.01.30.28: saving population 5
-: 2012.04.16.01.30.28: generating population 6
-: 2012.04.16.01.30.28: generating 46
-: 2012.04.16.01.40.43: keeping the fit
-: 2012.04.16.01.40.43: (length results) ;; => 47
-: 2012.04.16.01.40.43: generating 46
-:
-
-*** tried wrapping in trivial timeout
-In case the shell scripts were hanging, but to no effect.
-
-** configuration and output
-Configuration is controlled in =carbon_sim.cfg= in the base of the
-graphite directory.
-
-Detailed simulator output information is written to =sim.out= in the
-=output_files= directory under graphite.
-
-Configurations notes
-- more complex core model would have variable instruction costs
-- more complex network (hop by hop)
-- power_modeling to true
-- enable_models_at_startup set to false
-- maybe try different synchronization schemes
-
-Date file notes
-- "Tile" is a Core
-- network model 2 is the actual communication of the process
-  (this is what matters)
-
-** running times by VM memory
-Running =time ./bin/guest-test.s=.
-
-- with =-m 1024=.
-  : real    4m20.468s
-  : user    2m27.185s
-  : sys     1m52.055s
-
-- with =-m 2048=
-  : real    4m19.885s
-  : user    2m25.457s
-  : sys     1m53.167s
-
-** successfully running evolutionary steps
-#+begin_src slime-repl
-  SOFTWARE-EVOLUTION> (setf results '(#<PLL-ASM {1008347463}> #<PLL-ASM {1007F17463}>))
-
-  ; in: SETF RESULTS
-  ;     (SETF SOFTWARE-EVOLUTION::RESULTS
-  ;             '(#<SOFTWARE-EVOLUTION::PLL-ASM {1008347463}>
-  ;               #<SOFTWARE-EVOLUTION::PLL-ASM {1007F17463}>))
-  ; ==>
-  ;   (SETQ SOFTWARE-EVOLUTION::RESULTS
-  ;           '(#<SOFTWARE-EVOLUTION::PLL-ASM {1008347463}>
-  ;             #<SOFTWARE-EVOLUTION::PLL-ASM {1007F17463}>))
-  ;
-  ; caught WARNING:
-  ;   undefined variable: RESULTS
-  ;
-  ; compilation unit finished
-  ;   Undefined variable:
-  ;     RESULTS
-  ;   caught 1 WARNING condition
-  (#<PLL-ASM {1008347463}> #<PLL-ASM {1007F17463}>)
-  SOFTWARE-EVOLUTION> (equal-it (genome (first results)) (genome (second results)))
-  STYLE-WARNING: redefining SOFTWARE-EVOLUTION::STATS in DEFUN
-  NIL
-  SOFTWARE-EVOLUTION> (mapcar #'stats results)
-  (((TIME-WO-INIT . 103187924) (HISTORY (:SWAP 3561 2147)))
-   ((TIME-WO-INIT . 101699638) (HISTORY (:INSERT 1600 2344))))
-#+end_src
-
-** Publishing
-This code is used to publish this page to the =cs.unm.edu= webserver.
-#+begin_src emacs-lisp :results silent
-  (setq opt-dir (file-name-directory (or load-file-name buffer-file-name)))
-  (setq opt-server "moons.cs.unm.edu")
-  (unless (boundp 'org-publish-project-alist)
-    (setq org-publish-project-alist nil))
-  ;; the main html page
-  (add-to-list 'org-publish-project-alist
-               `("opt-html"
-                 :base-directory ,opt-dir
-                 :publishing-directory ,(format "/ssh:eschulte@%s:~/public_html/code/opt/"
-                                                opt-server)
-                 :publishing-function org-publish-org-to-html
-                 :style "<style type=\"text/css\">\n <!--/*--><![CDATA[/*><!--*/
-    /* pre{display:table-cell;background:#232323; color:#e6e1dc;} */
-    #content{max-width:1000px;margin:auto;} body{ font-size:small; } table{ font-size:small; }
-    .outline-text-2{margin-left:2em;}.outline-text-3{margin-left:3em;}
-    .title  { text-align: center; }
-    p.verse { margin-left: 3% }
-    p { text-align: justify }
-    table { border-collapse: collapse; }
-    td, th { vertical-align: top; }
-    dt { font-weight: bold; }
-    div.figure { padding: 0.5em; }
-    div.figure p { text-align: center; }
-    .linenr { font-size:smaller }
-    #postamble { color: gray; padding-top: 2em; font-size: 0.75em; }
-    /*]]>*/-->
-  </style>"))
-  (add-to-list 'org-publish-project-alist
-               `("opt-src"
-                 :base-directory ,(expand-file-name "src" opt-dir)
-                 :base-extension "txt\\|sh\\|lisp\\|html"
-                 :publishing-directory ,(format "/ssh:eschulte@%s:~/public_html/code/opt/src/"
-                                                opt-server)
-                 :publishing-function org-publish-attachment))
-  (add-to-list 'org-publish-project-alist
-               `("opt-data"
-                 :base-directory ,(expand-file-name "data" opt-dir)
-                 :base-extension "txt\\|sh\\|lisp\\|html\\|s\\|svg"
-                 :publishing-directory ,(format "/ssh:eschulte@%s:~/public_html/code/opt/data/"
-                                                opt-server)
-                 :publishing-function org-publish-attachment))
-  ;; a single combined project to publish both html and supporting materials
-  (add-to-list 'org-publish-project-alist
-               '("opt" :components ("opt-html" "opt-src" "opt-data")))
-#+end_src
-
-* Reading/References
-- [[file:~/reading/reading.org::#sitthi2011genetic][Genetic programming for shader simplification]]
-- [[http://web.mit.edu/newsoffice/2012/faster-fourier-transform-named-one-of-worlds-most-important-emerging-technologies.html][Sparse Fourier Transform]]
-- [[file:~/reading/reading.org::#bruening2003infrastructure][An infrastructure for adaptive dynamic optimization]]
-- [[file:~/reading/reading.org::#frigo1998fftw][FFTW: An adaptive software architecture for the FFT]]
