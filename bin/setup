@@ -1,0 +1,55 @@
+#!/bin/bash
+#
+# Setup the benchmarks
+#
+. $(dirname $0)/common
+
+BASE="$(dirname $0)"
+
+## PARSEC applications
+PARSEC_DIR="${BASE}/../benchmarks/parsec-3.0"
+if [ ! -d "$PARSEC_DIR" ];then
+    msg "downloading PARSEC"
+    cd data
+    wget http://parsec.cs.princeton.edu/download/3.0/parsec-3.0.tar.gz
+    msg "unpacking PARSEC"
+    cd ../benchmarks/
+    tar xzf ../data/parsec-3.0.tar.gz
+    cd ../
+fi
+
+declare -a PARSEC_APPS
+PARSEC_APPS+=(blackscholes)
+PARSEC_APPS+=(bodytrack)
+PARSEC_APPS+=(facesim)
+PARSEC_APPS+=(ferret)
+PARSEC_APPS+=(fluidanimate)
+PARSEC_APPS+=(freqmine)
+PARSEC_APPS+=(raytrace)
+PARSEC_APPS+=(swaptions)
+PARSEC_APPS+=(vips)
+PARSEC_APPS+=(x264)
+
+cd "$PARSEC_DIR"
+source env.sh
+for pkg in ${PARSEC_APPS[@]};do
+    PKG_DIR="pkgs/apps/$pkg"
+    if [ -d "../$pkg" ];then
+        warning "$pkg already exists"
+    else
+        mkdir -p ../$pkg
+
+        msg "building $pkg"
+        cp -R "$PKG_DIR/src" ../$pkg/src
+
+        if [ -f "$PKG_DIR/inputs/input_simlarge.tar" ];then
+            msg "generating test input for $pkg"
+            mkdir -p ../$pkg/inputs
+            cd "../$pkg/inputs"
+            tar xf "../../parsec-3.0/$PKG_DIR/inputs/input_simlarge.tar"
+            cd "../../parsec-3.0"
+        else
+            warning "no input for $pkg"
+        fi
+    fi
+done
