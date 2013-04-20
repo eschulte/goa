@@ -58,9 +58,13 @@ case $OS in
             QEMU_CMD="kvm"
         else
             QEMU_CMD="qemu"
-        fi ;;
-    Arch)   QEMU_CMD="qemu-kvm" ;;
-    *)      QEMU_CMD="qemu"     ;;
+        fi
+        QEMU_FLAGS="-daemonize -nographic";;
+    Arch)
+        QEMU_CMD="qemu-system-i386"
+        QEMU_FLAGS="-daemonize -serial null -parallel null -display none -vga none";;
+    *)  QEMU_CMD="qemu"
+        QEMU_FLAGS="-daemonize -nographic";;
 esac
 
 DEFAULT_DISK="tune.qcow"

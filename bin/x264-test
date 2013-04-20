@@ -1,0 +1,108 @@
+#!/bin/bash
+#
+# Usage: x264-test EXECUTABLE [OPTIONS...]
+#
+# Run the given executable comparing its output against known good
+# output.  Return the total difference between the outputs.
+#
+# EXECUTABLE -- executable of x264 to test
+#
+# OPTIONS:
+# -i,--input -- input file (default data/eledream_640x360_8.y4m)
+# -d,--decode - run the decode test as well
+# -p,--perf --- return profiling information gathered with linux perf
+#
+BASE="$(dirname $0)"
+DECODE=""
+PERF=""
+RETURN=0
+if [ -z "$LIMIT" ];then LIMIT="${BASE}/limit"; fi
+HELP_TEXT=$(cat "$0" \
+        |sed '/^[^#]/q' \
+        |head -n -1 \
+        |tail -n +3 \
+        |sed -e :a -e '/^\n*$/{$d;N;ba' -e '}' \
+        |cut -c3-)
+if [ $(grep "\-h" <(echo "$1")) ];then echo "$HELP_TEXT"; exit 0; fi
+PROG="$(dirname $1)/$(basename $1)"; shift;
+INPUT="$BASE/../data/eledream_640x360_8.y4m"
+
+eval set -- $(getopt -o hi:dp -l help,input:,decode,perf -- "$@" \
+              || echo "$HELP_TEXT" && exit 1;)
+
+while [ $# -gt 0 ];do
+    case $1 in
+        -h|--help)   echo "$HELP_TEXT" && exit 0;;
+        -i|--input)  INPUT="$2"; shift;;
+        -d|--decode) DECODE="yes";;
+        -p|--perf)   PERF="yes";;
+        (--) shift; break;;
+        (-*) error "unrecognized option $1";;
+        (*)  break;;
+    esac
+    shift
+done
+
+FLAGS=''
+FLAGS+=' --quiet --qp 20 --partitions b8x8,i4x4 --ref 5 --direct auto'
+FLAGS+=' --b-pyramid --weightb --mixed-refs --no-fast-pskip --me umh'
+FLAGS+=' --subme 7 --analyse b8x8,i4x4 --threads 1'
+
+OUTPUT=""
+OUTPUT+="Stream #0:0: Video: h264 (Main), yuv420p, 640x360, "
+OUTPUT+="25 fps, 25 tbr, 1200k tbn, 50 tbc"
+
+CMD='OFS="," {print $2,$1}'
+
+interpret_return(){ if [ -z "$1" ];then echo 0;else echo 1; fi; }
+
+run(){
+    if [ ! -z "$PERF" ];then
+        local perf=$(mktemp)
+        $LIMIT perf stat -x, -o $perf -- $PROG $FLAGS $@ 1>/dev/null
+        RETURN=$?
+        if [ "$PERF" = "yes" ];then
+            PERF=$(cat $perf|tail -n +3)
+        else
+            PERF=$(join -t , \
+                <(echo "$PERF"|awk -F , $CMD) <(cat $perf|awk -F , $CMD) \
+                |awk -F , 'OFS="," {print ($2 + $3), $1}')
+        fi
+    else
+        $LIMIT $PROG $FLAGS $@ >/dev/null 2>/dev/null
+        RETURN=$?
+    fi;
+    return $RETURN; }
+
+encode(){
+    local file=$(mktemp)
+    if run -o $file $INPUT >/dev/null 2>/dev/null;then
+        INFO=$(ffprobe $file 2>&1|grep Stream)
+        rm -f $file
+        diff -w <(echo "$INFO") <(echo "$OUTPUT") >/dev/null 2>/dev/null;
+    else
+        echo "returned failure" >&2
+    fi; }
+
+decode(){
+    diff \
+        <($LIMIT $PROG $FLAGS -o /dev/null $INPUT 2>&1|grep -v PARSEC|head -1) \
+        <(echo "yuv4mpeg: 640x360@25/1fps, 0:0") \
+        >/dev/null 2>/dev/null; }
+
+# Actually run
+if encode;then
+    if [ -z "$DECODE" ];then
+        if [ ! -z "$PERF" ];then echo "$PERF";fi
+        exit 0
+    else
+        if decode;then
+            if [ ! -z "$PERF" ];then echo "$PERF";fi
+            exit 0
+        else
+            exit 1
+        fi
+    fi
+else
+    exit 1
+fi

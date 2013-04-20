@@ -1,0 +1,202 @@
+#!/bin/bash
+#
+# Usage: blackscholes-test EXECUTABLE [OPTIONS...]
+#
+# Run the given executable comparing its output against known good
+# output.  Return the total difference between the outputs.
+#
+# EXECUTABLE -- executable of blackscholes to test
+#
+# OPTIONS:
+# -n,--num ---- number of blackscholes threads (default: 2)
+# -t,--test --- the specific test to run (otherwise print # passed)
+# -r,--raw ---- show the raw error
+# -p,--perf --- return profiling information gathered with linux perf
+# -o,--oracle - print full output to generate new oracle output
+#
+BASE="$(dirname $0)"
+NUM="2"
+TEST=""
+RAW=""
+PERF=""
+ORACLE=""
+if [ -z "$LIMIT" ];then LIMIT="${BASE}/limit"; fi
+declare -a INPUTS
+declare -a OUTPUTS
+HELP_TEXT=$(cat "$0" \
+        |sed '/^[^#]/q' \
+        |head -n -1 \
+        |tail -n +3 \
+        |sed -e :a -e '/^\n*$/{$d;N;ba' -e '}' \
+        |cut -c3-)
+if [ $(grep "\-h" <(echo "$1")) ];then echo "$HELP_TEXT"; exit 0; fi
+PROG="$(dirname $1)/$(basename $1)"; shift;
+
+eval set -- \
+    $(getopt -o n:ht:rpo -l num:,help,test:,raw,perf,oracle -- "$@" \
+    || echo "$HELP_TEXT" && exit 1;)
+
+while [ $# -gt 0 ];do
+    case $1 in
+        -h|--help)   echo "$HELP_TEXT" && exit 0;;
+        -n|--num)    NUM="$2"; shift;;
+        -t|--test)   TEST="$2"; shift;;
+        -r|--raw)    RAW="yes";;
+        -p|--perf)   PERF="yes"; RAW="yes";;
+        -o|--oracle) ORACLE="yes"; RAW="yes";;
+        (--) shift; break;;
+        (-*) error "unrecognized option $1";;
+        (*)  break;;
+    esac
+    shift
+done
+
+AWK_CMD=''
+AWK_CMD+='function abs(x){return ((x < 0.0) ? -x : x)}'
+AWK_CMD+='BEGIN{ diff=0; }'
+AWK_CMD+='{ diff+=abs($1-$2); }'
+AWK_CMD+='END { print diff }'
+num_diff(){ # diff of numerical closeness
+    paste <(awk '{print $1}' $1) <(awk '{print $1}' $2)|awk "$AWK_CMD"; }
+
+input(){
+    if [ $1 -gt 4 ];then
+        cat "$BASE/$1.in";
+    else
+        echo "${INPUTS[$1]}"
+    fi; }
+
+output(){
+    if [ $1 -gt 4 ];then
+        cat "$BASE/$1.out";
+    else
+        echo "${OUTPUTS[$1]}"
+    fi; }
+
+interpret_return(){ if [ -z "$1" ];then echo 0;else echo 1; fi; }
+
+run(){ # return the difference between oracle and program output
+    if [ -z "$ORACLE" ];then
+        local out=$(mktemp);
+        if [ ! -z "$PERF" ];then
+            local perf=$(mktemp);
+            RETURN=$($LIMIT perf stat -x, -o $perf $PROG $NUM <(input $1) $out \
+                3>&1 1>/dev/null 2>&3)
+            if [ -f "$out" ];then
+                echo "$(num_diff <(cat $out) <(output $1)),error"
+            else
+                echo "$(num_diff /dev/null <(output $1)),error"
+            fi
+            RETURN=$(interpret_return $RETURN)
+            cat $perf|tail -n +3
+            rm -r $perf
+        else
+            $LIMIT $PROG $NUM <(input $1) $out >/dev/null
+            RETURN=$?
+            num_diff $out <(output $1)
+        fi
+        rm -f $out
+    else
+        cat <<EOF
+OUTPUTS[$i]="$($LIMIT $PROG $NUM <(echo "${INPUTS[$1]}") >(cat) >/dev/null)"
+EOF
+    fi; }
+
+INPUTS[0]="1
+42.00 40.00 0.1000 0.00 0.20 0.50 C 0.00 4.759423036851750055"
+INPUTS[1]="2
+42.00 40.00 0.1000 0.00 0.20 0.50 C 0.00 4.759423036851750055
+42.00 40.00 0.1000 0.00 0.20 0.50 P 0.00 0.808600016880314021"
+INPUTS[2]="4
+42.00 40.00 0.1000 0.00 0.20 0.50 C 0.00 4.759423036851750055
+42.00 40.00 0.1000 0.00 0.20 0.50 P 0.00 0.808600016880314021
+100.00 100.00 0.0500 0.00 0.15 1.00 P 0.00 3.714602051381290071
+100.00 100.00 0.0500 0.00 0.15 1.00 C 0.00 8.591659601309890704"
+INPUTS[3]="8
+42.00 40.00 0.1000 0.00 0.20 0.50 C 0.00 4.759423036851750055
+42.00 40.00 0.1000 0.00 0.20 0.50 P 0.00 0.808600016880314021
+100.00 100.00 0.0500 0.00 0.15 1.00 P 0.00 3.714602051381290071
+100.00 100.00 0.0500 0.00 0.15 1.00 C 0.00 8.591659601309890704
+60.00 65.00 0.0800 0.00 0.30 0.25 C 0.00 2.133371966735750025
+100.00 90.00 0.1000 0.00 0.10 0.10 C 0.00 10.895610714793999563
+100.00 90.00 0.1000 0.00 0.10 0.50 C 0.00 14.421570828843300660
+100.00 90.00 0.1000 0.00 0.10 1.00 C 0.00 18.630859120667498274"
+INPUTS[4]="16
+42.00 40.00 0.1000 0.00 0.20 0.50 C 0.00 4.759423036851750055
+42.00 40.00 0.1000 0.00 0.20 0.50 P 0.00 0.808600016880314021
+100.00 100.00 0.0500 0.00 0.15 1.00 P 0.00 3.714602051381290071
+100.00 100.00 0.0500 0.00 0.15 1.00 C 0.00 8.591659601309890704
+60.00 65.00 0.0800 0.00 0.30 0.25 C 0.00 2.133371966735750025
+100.00 90.00 0.1000 0.00 0.10 0.10 C 0.00 10.895610714793999563
+100.00 90.00 0.1000 0.00 0.10 0.50 C 0.00 14.421570828843300660
+100.00 90.00 0.1000 0.00 0.10 1.00 C 0.00 18.630859120667498274
+100.00 100.00 0.1000 0.00 0.10 0.10 C 0.00 1.814984118378420108
+100.00 100.00 0.1000 0.00 0.10 0.50 C 0.00 5.850273604284979889
+100.00 100.00 0.1000 0.00 0.10 1.00 C 0.00 10.308147243666800463
+100.00 110.00 0.1000 0.00 0.10 0.10 C 0.00 0.003523074865584340
+100.00 110.00 0.1000 0.00 0.10 0.50 C 0.00 1.140722843827409960
+100.00 110.00 0.1000 0.00 0.10 1.00 C 0.00 4.216747020308850402
+100.00 90.00 0.1000 0.00 0.25 0.10 C 0.00 11.135244618346700207
+100.00 90.00 0.1000 0.00 0.25 0.50 C 0.00 16.092638844092299166"
+
+OUTPUTS[0]="1
+4.759420394897460938"
+OUTPUTS[1]="2
+4.759420394897460938
+0.808597564697265625"
+OUTPUTS[2]="4
+4.759420394897460938
+0.808597564697265625
+3.714603424072265625
+8.591663360595703125"
+OUTPUTS[3]="8
+4.759420394897460938
+0.808597564697265625
+3.714603424072265625
+8.591663360595703125
+2.133378982543945312
+10.895606994628906250
+14.421577453613281250
+18.630859375000000000"
+OUTPUTS[4]="16
+4.759420394897460938
+0.808597564697265625
+3.714603424072265625
+8.591663360595703125
+2.133378982543945312
+10.895606994628906250
+14.421577453613281250
+18.630859375000000000
+1.814987182617187500
+5.850273132324218750
+10.308151245117187500
+0.003523707389831543
+1.140726089477539062
+4.216762542724609375
+11.135246276855468750
+16.092636108398437500"
+
+# Actually run
+AWK_NEAR='{print ($1 < 0.00001) ? 0 : 1}'
+if [ -z "$TEST" ];then
+    count=0
+    for i in $(seq 0 $((${#INPUTS[@]} - 1)));do
+        if [ -z "$RAW" ];then
+            if [ $(run $i|awk "$AWK_NEAR") -eq 0 ];then
+                count=$(($count + 1));
+            fi
+        else
+            run $i;
+        fi
+    done
+    if [ -z "$RAW" ];then echo "$count";fi
+    exit $RETURN
+else
+    if [ -z "$RAW" ];then
+        if [ $(run $TEST|awk "$AWK_NEAR") -eq 0 ];then exit $RETURN;fi
+    else
+        run $TEST
+        exit $RETURN
+    fi
+fi
+exit 1

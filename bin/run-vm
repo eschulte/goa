@@ -25,6 +25,6 @@ ps auxwww|grep "\-hda $DISK"|grep -v "grep" >/dev/null && \
     echo "overlay is already running" && exit 1
 
 # run
-qemu-kvm -hda $HDA -m 2G \
+$QEMU_CMD -hda $HDA -m 8G -smp 2 \
     -net nic -net user,hostfwd=tcp:127.0.0.1:$PORT-:22 \
-    -nographic -daemonize
+    $QEMU_FLAGS
