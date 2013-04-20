@@ -37,7 +37,18 @@ Optional Additional Topics
 - Application of the Breeders Equation to Software
 - Evolve a Pareto frontier of solutions instead of single program
 
-* Tasks [0/8]
+* Tasks [1/19]
+** TODO Build all benchmarks to ASM [1/10]
+*** DONE Blackscholes
+*** TODO bodytrack
+*** TODO facesim
+*** TODO ferret
+*** TODO fluidanimate
+*** TODO freqmine
+*** TODO raytrace
+*** TODO swaptions
+*** TODO vips
+*** TODO x264
 ** TODO Train Energy Models
 Both at UVA on Intel and at UNM on AMD.
 
