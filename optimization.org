@@ -45,7 +45,7 @@ these results.
 
 1. We will create a Qemu virtual machine and install the Debian 5.0.9
    specifically =debian-5010-i386-netinst.iso= from
-   http://cdimage.debian.org/debian-cd/6.0.6/i386/iso-cd/debian-6.0.6-i386-businesscard.iso
+   http://cdimage.debian.org/debian-cd/6.0.6/amd64/iso-cd/debian-6.0.6-amd64-netinst.iso
    #+begin_src sh
      # create the disk
      qemu-img create -f qcow2 tune.qcow 4G
@@ -67,6 +67,8 @@ these results.
      # Graphite dependencies
      apt-get install build-essential libtool automake autoconf autotools-dev
      apt-get install libboost1.42-dev libboost-filesystem1.42-dev libboost-system1.42-dev
+     # because graphite expects this older version
+     apt-get install libstdc++6-4.3-dev
      apt-get install git-core
      # Parsec dependencies
      apt-get install gettext yasm
@@ -108,18 +110,12 @@ these results.
    and update the =TARGET_ARCH= and =PIN_HOME= variables in =~/graphite/Makefile.config=.
    #+begin_src sh
      cat <<EOF > ~/graphite/Makefile.config
-     # Use ia32 for 32-bit, x86_64 for 64-bit
-     TARGET_ARCH = x86_64 # <-(may be different depending on your host?)
-
-     # change only if a different (more up-to-date) version of Boost is installed
-     BOOST_VERSION = 1_35
-
      # where Pin is uzipped to
      PIN_HOME = /home/bacon/pin
      EOF
    #+end_src
-   and change the =KERNEL= line in =common/Makefile.common= to =LENNY=.
-   run =make= to build Graphite.
+   run =make CXX=g++-4.3= (if you get a =libtool= error, then run
+   =make= a second time w/o the =CXX= part) to build Graphite.
 
 2. Confirm that the build was successful by running the following
    which should exit successfully.
