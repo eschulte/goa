@@ -47,31 +47,28 @@ Measuring the values of HW counters against the bubble could give us
 coefficients for a memory linear model.
 
 ** TODO Find Warehouse Compute Benchmark Applications
-** TODO Evolutionary Runs
-| benchmark     | Energy UVA | Energy UNM | Memory UVA | Memory UNM |
-|---------------+------------+------------+------------+------------|
-| PARSEC        |            |            |            |            |
-|---------------+------------+------------+------------+------------|
-| blackscholes  |            |            |            |            |
-| bodytrack     |            |            |            |            |
-| facesim       |            |            |            |            |
-| ferret        |            |            |            |            |
-| fluidanimate  |            |            |            |            |
-| freqmine      |            |            |            |            |
-| raytrace      |            |            |            |            |
-| swaptions     |            |            |            |            |
-| vips          |            |            |            |            |
-| x264          |            |            |            |            |
-| canneal       |            |            |            |            |
-| dedup         |            |            |            |            |
-| streamcluster |            |            |            |            |
-|---------------+------------+------------+------------+------------|
-| SPEC          |            |            |            |            |
-|---------------+------------+------------+------------+------------|
-|               |            |            |            |            |
-|---------------+------------+------------+------------+------------|
-| Warehouse     |            |            |            |            |
-|---------------+------------+------------+------------+------------|
+** TODO Run Experiments
+| benchmark    | Energy UVA | Energy UNM | Memory UVA | Memory UNM |
+|--------------+------------+------------+------------+------------|
+| PARSEC       |            |            |            |            |
+|--------------+------------+------------+------------+------------|
+| blackscholes |            |            |            |            |
+| bodytrack    |            |            |            |            |
+| facesim      |            |            |            |            |
+| ferret       |            |            |            |            |
+| fluidanimate |            |            |            |            |
+| freqmine     |            |            |            |            |
+| raytrace     |            |            |            |            |
+| swaptions    |            |            |            |            |
+| vips         |            |            |            |            |
+| x264         |            |            |            |            |
+|--------------+------------+------------+------------+------------|
+| SPEC         |            |            |            |            |
+|--------------+------------+------------+------------+------------|
+|              |            |            |            |            |
+|--------------+------------+------------+------------+------------|
+| Warehouse    |            |            |            |            |
+|--------------+------------+------------+------------+------------|
 
 ** TODO Baseline Runs
 ** TODO Build table results table
