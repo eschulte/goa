@@ -1,0 +1,94 @@
+#!/bin/bash
+#
+# build facesim to ASM
+#
+CC=/usr/bin/g++ 
+
+FLAGS="-O3 -g -funroll-loops -fprefetch-loop-arrays "
+FLAGS+="-fpermissive -fno-exceptions -static-libgcc "
+FLAGS+="-Wl,--hash-style=both,--as-needed "
+FLAGS+="-DPARSEC_VERSION=3.0-beta-20120904 -fexceptions "
+FLAGS+="-DENABLE_PTHREADS "
+FLAGS+="-I$(pwd)/../benchmarks/parsec-3.0/pkgs/apps/facesim/obj/amd64-linux.gcc/TaskQ/include "
+FLAGS+="-DUSE_ALAMERE_TASKQ -w -DNDEBUG"
+
+declare -a SRCS
+SRCS+=(Arrays/ARRAY_PARALLEL_OPERATIONS.cpp)
+SRCS+=(Collisions_And_Interactions/BOX_HIERARCHY.cpp)
+SRCS+=(Collisions_And_Interactions/COLLISION_BODY_LIST_3D.cpp)
+SRCS+=(Collisions_And_Interactions/TETRAHEDRON_COLLISION_BODY.cpp)
+SRCS+=(Collisions_And_Interactions/TETRAHEDRON_HIERARCHY.cpp)
+SRCS+=(Constitutive_Models/STRAIN_MEASURE_3D.cpp)
+SRCS+=(Data_Structures/SPLAY_TREE.cpp)
+SRCS+=(Deformable_Objects/DEFORMABLE_OBJECT.cpp)
+SRCS+=(Deformable_Objects/DEFORMABLE_OBJECT_3D.cpp)
+SRCS+=(Deformable_Objects/DEFORMABLE_OBJECT_COLLISIONS_3D.cpp)
+SRCS+=(Fracture/EMBEDDED_TETRAHEDRALIZED_VOLUME_BOUNDARY_SURFACE.cpp)
+SRCS+=(Forces_And_Torques/BODY_FORCES_3D.cpp)
+SRCS+=(Forces_And_Torques/DIAGONALIZED_FINITE_VOLUME_3D.cpp)
+SRCS+=(Geometry/BOX_2D.cpp)
+SRCS+=(Geometry/BOX_3D.cpp)
+SRCS+=(Geometry/EMBEDDED_OBJECT.cpp)
+SRCS+=(Geometry/EMBEDDED_TETRAHEDRALIZED_VOLUME.cpp)
+SRCS+=(Geometry/IMPLICIT_SURFACE.cpp)
+SRCS+=(Geometry/IMPLICIT_SURFACE_LIST.cpp)
+SRCS+=(Geometry/PLANE.cpp)
+SRCS+=(Geometry/SEGMENT_2D.cpp)
+SRCS+=(Geometry/SEGMENT_3D.cpp)
+SRCS+=(Geometry/SEGMENTED_CURVE_3D.cpp)
+SRCS+=(Geometry/TETRAHEDRALIZED_VOLUME.cpp)
+SRCS+=(Geometry/TETRAHEDRALIZED_VOLUME_LIST.cpp)
+SRCS+=(Geometry/TETRAHEDRON.cpp)
+SRCS+=(Geometry/TRIANGLE_3D.cpp)
+SRCS+=(Geometry/TRIANGULATED_OBJECT.cpp)
+SRCS+=(Geometry/TRIANGULATED_SURFACE.cpp)
+SRCS+=(Geometry/TRIANGULATED_SURFACE_LIST.cpp)
+SRCS+=(Grids/SEGMENT_MESH.cpp)
+SRCS+=(Grids/TETRAHEDRON_MESH.cpp)
+SRCS+=(Grids/TRIANGLE_MESH.cpp)
+SRCS+=(Level_Sets/LEVELSET.cpp)
+SRCS+=(Level_Sets/LEVELSET_3D.cpp)
+SRCS+=(Matrices_And_Vectors/MATRIX_3X3.cpp)
+SRCS+=(Matrices_And_Vectors/SYMMETRIC_MATRIX_3X3.cpp)
+SRCS+=(Matrices_And_Vectors/VECTOR_ND_PARALLEL.cpp)
+SRCS+=(Particles/PARTICLE.cpp)
+SRCS+=(Particles/SOLIDS_PARTICLE.cpp)
+SRCS+=(Read_Write/FILE_UTILITIES.cpp)
+SRCS+=(Rigid_Bodies/MASS_PROPERTIES_3D.cpp)
+SRCS+=(Rigid_Bodies/RIGID_BODY_3D.cpp)
+SRCS+=(Rigid_Bodies/RIGID_BODY_COLLISIONS_3D.cpp)
+SRCS+=(Rigid_Bodies/RIGID_BODY_EVOLUTION_3D.cpp)
+SRCS+=(Rigid_Bodies/RIGID_BODY_INTERSECTIONS_3D.cpp)
+SRCS+=(Rigid_Bodies/RIGID_BODY_LIST_3D.cpp)
+SRCS+=(Solids_And_Fluids/SOLIDS_EVOLUTION_3D.cpp)
+SRCS+=(Solids_And_Fluids/SOLIDS_FLUIDS_DRIVER.cpp)
+SRCS+=(Solids_And_Fluids/SOLIDS_FLUIDS_DRIVER_3D.cpp)
+SRCS+=(Solids_And_Fluids/SOLIDS_FLUIDS_EXAMPLE_3D.cpp)
+SRCS+=(Solids_And_Fluids/SOLIDS_PARAMETERS_3D.cpp)
+SRCS+=(Thread_Utilities/THREAD_DIVISION_PARAMETERS.cpp)
+SRCS+=(Thread_Utilities/THREAD_POOL_ALAMERE.cpp)
+SRCS+=(Thread_Utilities/THREAD_POOL.cpp)
+SRCS+=(Thread_Utilities/THREAD_POOL_SINGLE.cpp)
+SRCS+=(Thread_Utilities/THREAD_ARRAY_LOCK.cpp)
+SRCS+=(Utilities/DEBUG_UTILITIES.cpp)
+SRCS+=(Utilities/LOG.cpp)
+SRCS+=(Utilities/LOG_ENTRY.cpp)
+SRCS+=(Utilities/PARSE_ARGS.cpp)
+SRCS+=(Utilities/STRING_UTILITIES.cpp)
+SRCS+=(Utilities/TIMER.cpp)
+SRCS+=(main.cpp)
+SRCS+=(FACE_DRIVER.cpp)
+SRCS+=(FACE_LANDMARK_OPTIMIZATION_GOAL.cpp)
+SRCS+=(FACE_OPTIMIZATION.cpp)
+SRCS+=(LANDMARK_PROXIMITY_OPTIMIZATION.cpp)
+
+# first one
+$CC $FLAGS -DTASKQ_DIST_FIXED -c taskQDistCommon.c
+
+# compile many
+for src in ${SRCS[@]};do
+    $CC -c $FLAGS ${src%.cpp}.o $src
+done
+
+# last one
+$CC -Wl,-o,facesim obj/main.o obj/FACE_DRIVER.o obj/FACE_LANDMARK_OPTIMIZATION_GOAL.o obj/FACE_OPTIMIZATION.o obj/LANDMARK_PROXIMITY_OPTIMIZATION.o -lPhysBAM  /mnt/home/data/optimization/benchmarks/parsec-3.0/pkgs/apps/facesim/obj/amd64-linux.gcc/TaskQ/lib/taskQ.o  -pthread -xW -lm -L/mnt/home/data/optimization/benchmarks/parsec-3.0/pkgs/apps/facesim/obj/amd64-linux.gcc/lib -L/usr/lib64 -L/usr/lib

@@ -1,0 +1,7 @@
+#!/bin/bash
+#
+# log all calls to CC_LOG_FILE (default /tmp/cc.log)
+#
+if [ -z "$CC_LOG_FILE" ];then CC_LOG_FILE="/tmp/cc.log";fi
+echo "$@">> $CC_LOG_FILE
+g++ $@
