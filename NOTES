@@ -33,11 +33,19 @@ Optimization Notes                                         -*- org -*-
 :                                                                finished
 :                                                                 paper
 
-Optional Additional Topics
-- Application of the Breeders Equation to Software
-- Evolve a Pareto frontier of solutions instead of single program
+** Optional Additional Topics
+- Breeders :: apply the Breeders Equation to analyze the relations
+              between software traits and predict directions of
+              software evolution
 
-* Tasks [1/19]
+- Pareto :: return a Pareto frontier of solutions as a result of
+            optimization rather than a single individual
+
+- MCMC :: our mutation operations are nearly MCMC compliant already,
+          with some small changes we should be able to implement MCMC
+          as a search strategy
+
+* Tasks [1/20]
 ** TODO Build all benchmarks to ASM [1/10]
 *** DONE Blackscholes
 *** TODO bodytrack
@@ -51,6 +59,12 @@ Optional Additional Topics
 *** TODO x264
 ** TODO Train Energy Models
 Both at UVA on Intel and at UNM on AMD.
+
+** TODO Complete test suites for some benchmarks
+Ideally at least one or two from each group of benchmark programs.
+Spec has some open-source programs (e.g., perl, gcc, bzip) which could
+be good candidates.  Eric will look into some better tests for PARSEC
+programs.
 
 ** TODO Build a Memory Fitness Function
 We could use the "bubble" and the "reporter" from [[#mars2011bubble]].
