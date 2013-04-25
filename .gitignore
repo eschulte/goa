@@ -13,3 +13,6 @@ sh-runner
 # Ignore serialized lisp objects
 *.store
 results
+
+# Ignore log files
+logs
