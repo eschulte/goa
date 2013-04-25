@@ -66,6 +66,15 @@ parsec_unpack(){
     fi
 }
 
+FLUID_FLAGS_ALL="-g -O3 -funroll-loops -fprefetch-loop-arrays "
+FLUID_FLAGS_ALL+="-fpermissive -fno-exceptions -static-libgcc "
+FLUID_FLAGS_ALL+="-Wl,--hash-style=both,--as-needed "
+FLUID_FLAGS_ALL+="-DPARSEC_VERSION=3.0-beta-20120904 "
+FLUID_FLAGS_ALL+="-Wno-invalid-offsetof "
+FLUID_FLAGS_ALL+="-pthread -D_GNU_SOURCE -D__XOPEN_SOURCE=600"
+
+FLUID_FLAGS_MIN="-Wno-invalid-offsetof"
+
 parsec_compile(){
     local pkg=$1;
     SRC_DIR="../$pkg/src"
@@ -83,7 +92,13 @@ parsec_compile(){
                 bodytrack)
                     warning "bodytrack compilation not configured";;
                 facesim)
-                    
+                    warning "facesim compilation not configured";;
+                fluidanimate)
+                    cat pthreads.cpp >  all.cpp
+                    cat cellpool.cpp >> all.cpp
+                    cat parsec_barrier.cpp >> all.cpp
+                    # g++-4.4 $FLUID_FLAGS_ALL -combine -S all.cpp -o fluidanimate.s
+                    g++-4.4 $FLUID_FLAGS_MIN -combine -S all.cpp -o fluidanimate.s;;
             esac
         fi
     fi
