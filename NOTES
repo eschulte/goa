@@ -45,13 +45,13 @@ Optimization Notes                                         -*- org -*-
           with some small changes we should be able to implement MCMC
           as a search strategy
 
-* Tasks [1/20]
-** TODO Build all benchmarks to ASM [1/10]
+* Tasks [2/20]
+** TODO Build all benchmarks to ASM [2/10]
 *** DONE Blackscholes
 *** TODO bodytrack
 *** TODO facesim
 *** TODO ferret
-*** TODO fluidanimate
+*** DONE fluidanimate
 *** TODO freqmine
 *** TODO raytrace
 *** TODO swaptions
