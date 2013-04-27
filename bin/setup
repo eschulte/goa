@@ -117,11 +117,11 @@ case $SUITE in
         PARSEC_DIR="${BASE}/../benchmarks/parsec-3.0"
         if [ ! -d "$PARSEC_DIR" ];then
             msg "downloading PARSEC"
-            cd data
+            cd etc/data
             wget http://parsec.cs.princeton.edu/download/3.0/parsec-3.0.tar.gz
             msg "unpacking PARSEC"
             cd ../benchmarks/
-            tar xzf ../data/parsec-3.0.tar.gz
+            tar xzf ../etc/data/parsec-3.0.tar.gz
             cd ../
         fi
         cd "$PARSEC_DIR"

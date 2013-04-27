@@ -70,7 +70,7 @@ esac
 DEFAULT_DISK="tune.qcow"
 
 ## VM Functions
-SSH_ID=$(dirname $0)/../data/id_rsa
+SSH_ID=$(dirname $0)/../etc/data/id_rsa
 
 vm_ssh(){
     local PORT=$1; shift

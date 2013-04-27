@@ -18,5 +18,5 @@ ps auxwww|grep "\-hda $DISK"|grep -v "grep" >/dev/null && \
     echo "overlay is already running.  Shut it down first." && exit 1
 
 $QEMU_CMD -curses -hda $DISK \
-    -cdrom data/gparted-live-0.13.1-2.iso \
+    -cdrom etc/data/gparted-live-0.13.1-2.iso \
     -boot d

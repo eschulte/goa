@@ -8,7 +8,7 @@
 # EXECUTABLE -- executable of x264 to test
 #
 # OPTIONS:
-# -i,--input -- input file (default data/eledream_640x360_8.y4m)
+# -i,--input -- input file (default etc/data/eledream_640x360_8.y4m)
 # -d,--decode - run the decode test as well
 # -p,--perf --- return profiling information gathered with linux perf
 #
@@ -25,7 +25,7 @@ HELP_TEXT=$(cat "$0" \
         |cut -c3-)
 if [ $(grep "\-h" <(echo "$1")) ];then echo "$HELP_TEXT"; exit 0; fi
 PROG="$(dirname $1)/$(basename $1)"; shift;
-INPUT="$BASE/../data/eledream_640x360_8.y4m"
+INPUT="$BASE/../etc/data/eledream_640x360_8.y4m"
 
 eval set -- $(getopt -o hi:dp -l help,input:,decode,perf -- "$@" \
               || echo "$HELP_TEXT" && exit 1;)

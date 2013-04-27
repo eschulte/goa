@@ -14,5 +14,5 @@ REMOTE_CMD+="|| [ -f /tmp/lockfile ] && ls /tmp|xargs -I{} rm -f /tmp/{}"
 for pid in $@;do
   PORT=$(ps auxwww|grep $pid|grep qemu-kvm|sed 's/^.*127.0.0.1://;s/-:.*$//g')
   echo $PORT
-  ssh -i data/id_rsa -p $PORT bacon@localhost $REMOTE_CMD
+  ssh -i etc/data/id_rsa -p $PORT bacon@localhost $REMOTE_CMD
 done
