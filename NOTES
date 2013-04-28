@@ -45,7 +45,7 @@ Optimization Notes                                         -*- org -*-
           with some small changes we should be able to implement MCMC
           as a search strategy
 
-* Tasks [3/23]
+* Tasks [5/23]
 ** TODO Build all benchmarks to ASM [2/10]
 *** DONE Blackscholes
 *** TODO bodytrack
@@ -57,10 +57,20 @@ Optimization Notes                                         -*- org -*-
 *** TODO swaptions
 *** TODO vips
 *** TODO x264
-** TODO Select Energy Models [1/2]
+** DONE Select Energy Models [2/2]
 \begin{equation*}
   kwh = c_{1} + c_{2} \times cyc + c_{3} \times ins + c_{4} \times ops + c_{5} \times tca + c_{6} \times (ld + sr)
 \end{equation*}
+
+| metric                 | perf              |
+|------------------------+-------------------|
+| cyc                    | cycles            |
+| ins                    | instructions      |
+| ops(AMD Opteron)       | r533f00           |
+| ops(Intel Sandybridge) | r532010 + r538010 |
+| tca                    | cache-references  |
+| ld                     | LLC-loads         |
+| sr                     | LLC-stores        |
 
 *** Measuring required counters with =perf=
 Not all counters are provided by default, so we need to use HW
@@ -81,18 +91,9 @@ with an "r".
 *** DONE AMD energy model
 : perf stat -e cycles,instructions,r533f00,cache-references,LLC-loads,LLC-stores -- command
 
-where
+*** DONE Intel energy model
+: perf stat -e cycles,instructions,r532010,r538010,cache-references,LLC-loads,LLC-stores
 
-| metric | perf             |
-|--------+------------------|
-| cyc    | cycles           |
-| ins    | instructions     |
-| ops    | r533f00          |
-| tca    | cache-references |
-| ld     | LLC-loads        |
-| sr     | LLC-stores       |
-
-*** TODO Intel energy model
 ** TODO Train Energy Models
 Both at UVA on Intel and at UNM on AMD.
 
