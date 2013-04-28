@@ -39,7 +39,7 @@ Repository Layout
     COPYING | standard GPLV3 License applying to the whole repository
  benchmarks | holds the benchmark programs
         bin | shell scripts to run experiments and collect results
-       data | misc. support files
+        etc | misc. support files
    overlays | VM overlays used to run Graphite
     results | experimental results
         src | programs used to run optimization
