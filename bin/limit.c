@@ -20,9 +20,9 @@ int main(int argc, char *argv[]) {
   alarm(12);                           // wall clock seconds
                                        // scaled back w/o graphite
 
-  // run
-  execvp(argv[1], &argv[1]);
+  int ret = execvp(argv[1], &argv[1]);
+  printf("return %d\n", ret);  
 
-  // if this runs, then it is only because the call to execvp failed
-  return 1;
+  // run
+  // return execvp(argv[1], &argv[1]);
 }
