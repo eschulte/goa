@@ -45,7 +45,7 @@ Optimization Notes                                         -*- org -*-
           with some small changes we should be able to implement MCMC
           as a search strategy
 
-* Tasks [2/20]
+* Tasks [3/23]
 ** TODO Build all benchmarks to ASM [2/10]
 *** DONE Blackscholes
 *** TODO bodytrack
@@ -57,6 +57,42 @@ Optimization Notes                                         -*- org -*-
 *** TODO swaptions
 *** TODO vips
 *** TODO x264
+** TODO Select Energy Models [1/2]
+\begin{equation*}
+  kwh = c_{1} + c_{2} \times cyc + c_{3} \times ins + c_{4} \times ops + c_{5} \times tca + c_{6} \times (ld + sr)
+\end{equation*}
+
+*** Measuring required counters with =perf=
+Not all counters are provided by default, so we need to use HW
+specific raw event.  According to [[http://web.eece.maine.edu/~vweaver/projects/perf_events/faq.html#q2e][this faq]] to find the appropriate
+code for the raw events grab [[http://perfmon2.sourceforge.net/][libpfm4]] from [[http://sourceforge.net/projects/perfmon2/files/][here]].  Then unpack the
+files, build, and browse the available raw events with the following.
+
+#+begin_src sh
+  cd libpfm-4.3.0
+  make
+  cd example
+  ./showevtinfo -E|less
+#+end_src
+
+The resulting hex value can then be passed to perf by prefixing it
+with an "r".
+
+*** DONE AMD energy model
+: perf stat -e cycles,instructions,r533f00,cache-references,LLC-loads,LLC-stores -- command
+
+where
+
+| metric | perf             |
+|--------+------------------|
+| cyc    | cycles           |
+| ins    | instructions     |
+| ops    | r533f00          |
+| tca    | cache-references |
+| ld     | LLC-loads        |
+| sr     | LLC-stores       |
+
+*** TODO Intel energy model
 ** TODO Train Energy Models
 Both at UVA on Intel and at UNM on AMD.
 
