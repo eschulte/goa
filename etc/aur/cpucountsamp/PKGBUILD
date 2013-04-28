@@ -8,7 +8,7 @@ pkgdesc="Use Pin and Papi for process monitoring"
 arch=('i686' 'x86_64')
 url=""
 license=('unknown')
-depends=('pin=2.11_49306' 'papi')
+depends=('pin=2.11_49306' 'papi-dev')
 provides=(cpucountsamp)
 source=(http://cs.unm.edu/~eschulte/data/cpucountsamp.tar.gz)
 md5sums=('ec9ac2a1f6a1598d76b699ec09d58ea6')
@@ -16,12 +16,20 @@ md5sums=('ec9ac2a1f6a1598d76b699ec09d58ea6')
 build() {
   cd "${srcdir}/${pkgname}"
   if [ -z "$PIN_HOME" ];then
-      error "set PIN_HOME to point to your pin source directory";
-      exit 1
+      if [ -f /etc/profile.d/pin.sh ];then
+          source /etc/profile.d/pin.sh
+      else
+          error "set PIN_HOME to point to your pin source directory";
+          exit 1
+      fi
   fi
   if [ -z "$PAPI_HOME" ];then
-      error "set PAPI_HOME to point to your pin source directory";
-      exit 1
+      if [ -f /etc/profile.d/papi.sh ];then
+          source /etc/profile.d/papi.sh
+      else
+          error "set PAPI_HOME to point to your papi source directory";
+          exit 1
+      fi
   fi
   make
 }
@@ -30,4 +38,5 @@ package() {
   cd "${srcdir}/${pkgname}"
   install -Dm644 PapiMonitor.so ${pkgdir}/usr/bin/PapiMonitor.so
   install -Dm755 monitor.sh     ${pkgdir}/usr/bin/monitor
+  install -Dm755 readTrace     ${pkgdir}/usr/bin/readTrace
 }
