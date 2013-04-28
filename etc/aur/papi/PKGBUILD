@@ -1,0 +1,36 @@
+# -*- shell-script -*-
+# Contributor: Jed Brown <jed@59A2.org>
+#
+# Modified by: Eric Schulte <schulte.eric@gmail.com>
+#
+pkgname=papi-dev
+pkgver=5.1.0.2
+_pkgver=5.1.0
+pkgrel=1
+pkgdesc="Performance Application Programming Interface"
+arch=(x86_64 i686)
+url="http://icl.cs.utk.edu/papi/"
+license=('BSD')
+depends=(glibc linux-api-headers)
+makedepends=()
+provides=(papi-dev)
+conflicts=()
+replaces=(papi)
+source=("http://icl.cs.utk.edu/projects/papi/downloads/papi-${pkgver}.tar.gz"
+    "papi.sh")
+md5sums=('e1f2d412e7cc249ba487ed50cfcd1f4a'
+         '4bc1ea1a4d3ef1aec2a06450ad48a12a')
+build() {
+  cd ${srcdir}/${pkgname}-${_pkgver}/src
+
+  unset MAKEFLAGS # Makefiles are broken for parallel make
+  ./configure --prefix=/usr --mandir=/usr/share/man --with-perf-events \
+    LDFLAGS="${LDFLAGS} -Wl,--no-as-needed" # Configure has a problem detecting dlopen()
+  make
+}
+package() {
+  cd ${srcdir}/${pkgname}-${_pkgver}/src
+  make DESTDIR=$pkgdir install
+  chmod 644 $pkgdir/usr/share/papi/papi_events.csv
+  install -D $srcdir/$pkgname-${_pkgver}/LICENSE.txt $pkgdir/usr/share/licenses/$pkgname/LICENSE
+}
