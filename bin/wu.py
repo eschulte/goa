@@ -9,10 +9,7 @@ from subprocess import call, Popen
 import sys
 import time
 
-parser = OptionParser( usage = """%prog [options] device -- command [args...]
-
-Collects usage data from an attached WattsUp?PRO meter."""
-)
+parser = OptionParser( usage = "%prog [options] device -- command [args...]" )
 parser.add_option(
     "-b", "--bracket", metavar = "sec", type = int, default = 0,
     help = "number of seconds to wait before and after command"
@@ -64,10 +61,13 @@ class WattsUp:
     def __exit__( self, typ, val, trace ):
         self.__del__()
 
+    def sendMessage( self, msg ):
+        self.fh.write( msg )
+        self.fh.flush()
+
     def readReply( self, msg = None ):
         if msg:
-            self.fh.write( msg )
-            self.fh.flush()
+            self.sendMessage( msg )
 
         while True:
             pivot = self.buf.find( ";" )
@@ -236,9 +236,15 @@ try:
 
             reply = wu.readReply()
     else:
-        wu.readReply( "#R,W,0;" )
-        wu.readReply( "#O,W,1,2;" )
+        # The #R and #O commands do not return a result, but #L does.
+
+        wu.sendMessage( "#R,W,0;" )
+        wu.sendMessage( "#O,W,1,2;" )
         wu.readReply( "#L,W,3,I,1,1;" )
+
+        # Use Popen() instead of call() so that we have the process object
+        # available in case of a Ctrl-C.
+
         time.sleep( options.bracket )
         p = Popen( cmd )
         status = p.wait()
@@ -248,7 +254,6 @@ except KeyboardInterrupt:
         p.send_signal( signal.SIGINT )
 
 if options.log_style == "internal":
-    print "reading data..."
     reply = wu.readReply( "#D,R,0;" )
     interval, count = map( int, reply[ 2 ][ 1:3 ] )
     for i in range( count ):
@@ -262,7 +267,7 @@ if options.log_style == "internal":
 
 if options.o:
     if not options.i:
-        print >>log, ",".join( map( str, [ delta ] + totals ) )
+        print >>log, ",".join( map( str, totals ) )
 else:
     w = max( map( len, header ) )
     fmt = "%%%ds: %%g" % w
