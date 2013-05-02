@@ -45,16 +45,54 @@ Optimization Notes                                         -*- org -*-
           with some small changes we should be able to implement MCMC
           as a search strategy
 
-* Tasks [5/23]
-** TODO Build all benchmarks to ASM [2/10]
+* Tasks [7/23]
+** TODO Build all benchmarks to ASM [4/10]
 *** DONE Blackscholes
 *** TODO bodytrack
+From the make log.
+
+: -DHAVE_CONFIG_H -I. -I/mnt/home/data/optimization/benchmarks/parsec-3.0/pkgs/apps/bodytrack/src/FlexImageLib -I.. -O3 -g -funroll-loops -fprefetch-loop-arrays -fpermissive -fno-exceptions -static-libgcc -Wl,--hash-style=both,--as-needed -DPARSEC_VERSION=3.0-beta-20120904 -fexceptions -Wall -Wno-unknown-pragmas -MT
+: 
+: FlexImageLib/FlexImage.cpp
+: FlexImageLib/FlexIO.cpp
+: 
+: -DHAVE_CONFIG_H -I. -I/mnt/home/data/optimization/benchmarks/parsec-3.0/pkgs/apps/bodytrack/src/TrackingBenchmark/threads -I../.. -pthread -O3 -g -funroll-loops -fprefetch-loop-arrays -fpermissive -fno-exceptions -static-libgcc -Wl,--hash-style=both,--as-needed -DPARSEC_VERSION=3.0-beta-20120904 -fexceptions -Wall -Wno-unknown-pragmas -MT
+: 
+: TrackingBenchmark/threads/Thread.cpp
+: TrackingBenchmark/threads/ThreadGroup.cpp
+: TrackingBenchmark/threads/WorkerGroup.cpp
+: TrackingBenchmark/threads/Mutex.cpp
+: TrackingBenchmark/threads/Condition.cpp
+: TrackingBenchmark/threads/Barrier.cpp
+: TrackingBenchmark/threads/RWLock.cpp
+: 
+: -O3 -g -funroll-loops -fprefetch-loop-arrays -fpermissive -fno-exceptions -static-libgcc -Wl,--hash-style=both -Wl,--as-needed -DPARSEC_VERSION=3.0-beta-20120904 -fexceptions -Wall -Wno-unknown-pragmas -o bodytrack
+: 
+: AnnealingFactor.o BodyGeometry.o BodyPose.o CameraModel.o CovarianceMatrix.o ImageMeasurements.o ImageProjection.o RandomGenerator.o TrackingModel.o main.o TrackingModelPthread.o AsyncIO.o
+: 
+: # linking arguments
+: -L/usr/lib64 -L/usr/lib ../FlexImageLib/.libs/libflex.a -lm threads/.libs/libthreads.a -lpthread  
+
 *** TODO facesim
+before running make, you have to do
+: export PHYSBAM=$(pwd)
+
 *** TODO ferret
 *** DONE fluidanimate
-*** TODO freqmine
+*** DONE freqmine
+1. cat all .cpp files together
+2. remove duplicates of
+   : include "common.h"
+3. remove the second duplicate of the =omp_get_max_threads()=
+
 *** TODO raytrace
-*** TODO swaptions
+*** DONE swaptions
+#+begin_src sh
+  cat *.c* > swaptions.cpp
+  g++ -S swaptions.cpp
+  g++ swaptions.s -o swaptions2
+#+end_src
+
 *** TODO vips
 *** TODO x264
 ** DONE Select Energy Models [2/2]
