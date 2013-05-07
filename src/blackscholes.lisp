@@ -7,7 +7,7 @@ Take the path to a blackscholes executable, and returns the difference
 between it's output and the oracle output.")
 
 (defvar *orig* (from-file (make-instance 'asm-perf :linker "g++")
-                          "data/blackscholes/asms/bs-g++-O0.s"))
+                          "benchmarks/blackscholes/src/blackscholes.s"))
 
 (defvar *output-size* 83096.7
   "Sum of all output from a correct run of the original.")
