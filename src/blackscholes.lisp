@@ -35,8 +35,6 @@ between it's output and the oracle output.")
 
 
 ;;; Optimization
-#+run
-(progn
 (setf *work-dir* "sh-runner/work/")
 
 (setf
@@ -49,7 +47,7 @@ between it's output and the oracle output.")
 (defvar *inc-counter* 0
   "To only save the population a fraction of the time stats are saved.")
 
-(loop :for i :from 1 :to 7 :do
+(loop :for i :from 0 :to 7 :do
    (sb-thread:make-thread
     (lambda ()
       (evolve
@@ -82,4 +80,3 @@ between it's output and the oracle output.")
                   (format nil "~a/~d-pop.store" *base* *fitness-evals*)))
          (incf *inc-counter*))))
     :name (format nil "opt-~d" i)))
-)
