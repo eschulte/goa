@@ -4,7 +4,7 @@
 #  setup the benchmarks
 #
 # Options:
-#  -a,--action ----- unpack or compile, default is both
+#  -a,--action ----- unpack, compile or link; default is all three
 #  -s,--suite ------ specific benchmark suite
 #  -b,--benchmark -- specific benchmark program
 #
