@@ -34,70 +34,9 @@ between it's output and the oracle output.")
       infinity))
 
 
-#+run-neut
-(progn
-(defvar *neutral* nil)
-(loop :for step :upto 10 :do
-   (let ((prev (copy-tree *neutral*)))
-     (setf *neutral* nil)
-     (loop :until (>= (length *neutral*) 100) :as i :from 0 :do
-        (let ((new (copy (random-elt prev))))
-          (mutate new)
-          (setf (fitness new) (test new))
-          (format t "~S/~S edits:~S error:~S~%"
-                  i (length *neutral*) (edits new) (aget 'error (fitness new)))
-          (when (neutralp new) (push new *neutral*))))
-     (store *neutral* (format nil "results/bs-neut/~d.store" step))))
-)
-
-
-#+analysis
-(progn
-(setf *neutral* (loop :for step :from 1 :to 10 :collect
-                   (restore (format nil "results/bs-neut/~d.store" step))))
-
-;; write out to a txt file
-(with-open-file (out "results/bs-neut.data" :direction :output)
-  (loop :for step :from 1 :upto 10 :collect
-     (mapcar [{format out "~a ~{~a~^ ~}~%" step} {mapcar #'cdr} #'fitness]
-             (restore (format nil "results/bs-neut/~d.store" step)))))
-
-(mapcar [{aget 'stalled-cycles-frontend} #'fitness] (car *neutral*))
-
-(defun range (sample) (abs (- (apply #'max sample) (apply #'min sample))))
-
-(defvar *metrics*
-  (loop :for metric :in (mapcar #'car (fitness *orig*)) :collect
-     (let ((vals (remove nil
-                   (mapcan {mapcar [{aget metric} #'fitness]} *neutral*))))
-       (cons metric
-             (mapcar #'float (list (aget metric (fitness *orig*))
-                                   (mean vals)
-                                   (standard-deviation vals)
-                                   (range vals)))))))
-
-(defvar *dev-by-step*
-  (loop :for step :below 10 :collect
-     (let ((fits (mapcar #'fitness (nth step *neutral*))))
-       (list (+ 1 step)
-             (reduce #'+ (mapcar (lambda (metric)
-                                   (let ((vals (mapcar {aget metric} fits)))
-                                     (if (zerop (reduce #'+ vals))
-                                         0
-                                         (let ((std  (standard-deviation vals))
-                                               (mean (mean vals)))
-                                           (/ std mean)))))
-                                 (mapcar #'car (fitness *orig*)))))))
-  "Total Deviation by step away from the original.")
-)
-
-
-;;; Artificial Selection
-;; see blackscholes-w-graphite.lisp for eviction and other pop tricks
+;;; Optimization
 #+run
 (progn
-(defvar *base* "results/bs-evo" "Where to store incremental results.")
-
 (setf *work-dir* "sh-runner/work/")
 
 (setf
