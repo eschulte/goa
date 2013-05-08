@@ -5,7 +5,6 @@
 ;;  Optimize a benchmark program against a test script
 ;;
 ;; Options:
-;;  -f,--function FUNC ---- fitness function
 ;;  -l,--linker LINKER ---- linker to use
 ;;  -t,--threads NUM ------ number of threads
 ;;  -e,--max-evals NUM ---- max number of fitness evals
@@ -20,8 +19,6 @@
 ;;    ./make.sh --dynamic-space-size=SIZE
 ;;
 ;; TODO:
-;; - hide warnings
-;; - find a nice argument handling package
 ;; - switch this from a shell script to a compiled
 ;;   application (buildapp) for faster startup
 ;;
@@ -54,7 +51,6 @@
 (setf *orig*   (from-file (make-instance 'asm-perf) *path*))
 
 (getopts
- ("-f" "--function"  (setf *function* (arg-pop)))
  ("-l" "--linker"    (setf (linker *orig*) (arg-pop)))
  ("-t" "--threads"   (setf *threads* (parse-integer (arg-pop))))
  ("-e" "--max-evals" (setf *evals* (parse-integer (arg-pop))))
@@ -68,7 +64,7 @@
 
 ;; sanity check
 (unless (< (fitness *orig*) infinity)
-  (throw-error "Original program has no fitness!"))
+  (throw-error "Original program has no fitness!~%"))
 
 ;; populate population
 (setf *population*

@@ -69,8 +69,8 @@
             (ignore-errors (parse-stdout stdout))))))
 
 (defun test (asm)
-  (unless (stats asm) (setf (stats asm) (run asm)))
   (or (ignore-errors
+        (unless (stats asm) (setf (stats asm) (run asm)))
         (when (<= (aget :error (stats asm)) *max-err*)
           (let ((stats (stats asm)))
             (reduce (lambda-bind ((acc (hw . cf))) (+ acc (* cf (aget hw stats))))
