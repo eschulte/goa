@@ -4,8 +4,10 @@
 (defun arg-pop () (pop sb-ext:*posix-argv*))
 (arg-pop) ;; pop SBCL off the argument list
 
+(setf *note-level* 1)
+
 (defun throw-error (&rest args)
-  (apply #'format t args)
+  (apply #'note 0 args)
   (sb-ext:exit :code 1))
 
 (defmacro getopts (&rest forms)
