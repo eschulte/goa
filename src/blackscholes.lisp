@@ -1,7 +1,7 @@
 (load "src/perf-opt.lisp")
 (in-package :perf-opt)
 
-(defvar *test-fmt* "../../bin/bs-test ~a -n 1 -t 12000 -r -p"
+(defvar *test-fmt* "../../bin/bs-test ~a"
   "Script used to evaluate variants.
 Take the path to a blackscholes executable, and returns the difference
 between it's output and the oracle output.")
