@@ -8,18 +8,19 @@
 # EXECUTABLE -- executable of blackscholes to test
 #
 # OPTIONS:
-# -n,--num ---- number of blackscholes threads (default: 2)
+# -n,--num ---- number of blackscholes threads (default: 1)
 # -t,--test --- the specific test to run (otherwise print # passed)
 # -r,--raw ---- show the raw error
 # -p,--perf --- return profiling information gathered with linux perf
 # -o,--oracle - print full output to generate new oracle output
 #
 BASE="$(dirname $0)"
-NUM="2"
-TEST=""
-RAW=""
-PERF=""
+NUM="1"
+TEST="1"
+RAW="YES"
+PERF="YES"
 ORACLE=""
+COUNTERS="instructions,r533f00,cache-references,cache-misses"
 if [ -z "$LIMIT" ];then LIMIT="${BASE}/limit"; fi
 declare -a INPUTS
 declare -a OUTPUTS
@@ -80,7 +81,7 @@ run(){ # return the difference between oracle and program output
         local out=$(mktemp);
         if [ ! -z "$PERF" ];then
             local perf=$(mktemp);
-            RETURN=$($LIMIT perf stat -x, -o $perf $PROG $NUM <(input $1) $out \
+            RETURN=$($LIMIT perf stat -x, -e $COUNTERS -o $perf $PROG $NUM <(input $1) $out \
                 3>&1 1>/dev/null 2>&3)
             if [ -f "$out" ];then
                 echo "$(num_diff <(cat $out) <(output $1)),error"
