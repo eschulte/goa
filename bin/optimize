@@ -40,9 +40,10 @@
                               (>= (length line) 2)
                               (string= (subseq line 0 2) ";;"))
                   :collect line) (format nil "~%"))))
+(when (< (length sb-ext:*posix-argv*) 2)
+  (throw-error "insufficient number of arguments~%~%~a~%" *help*))
 
-(when (or (< (length sb-ext:*posix-argv*) 2)
-          (string= (subseq (car sb-ext:*posix-argv*) 0 2) "-h")
+(when (or (string= (subseq (car sb-ext:*posix-argv*) 0 2) "-h")
           (string= (subseq (car sb-ext:*posix-argv*) 0 3) "--h"))
   (throw-error "~a~%" *help*))
 
@@ -64,7 +65,8 @@
 
 ;; sanity check
 (unless (< (fitness *orig*) infinity)
-  (throw-error "Original program has no fitness!~%"))
+  (throw-error
+   "Original program has no fitness!~%(change bin/bs-test default args)~%"))
 
 ;; populate population
 (setf *population*
