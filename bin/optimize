@@ -1,0 +1,76 @@
+#!/usr/bin/sbcl --script
+;; -*- mode: lisp -*-
+;;
+;; Usage: optimize program test [OPTIONS...]
+;;  Optimize a benchmark program against a test script
+;;
+;; Options:
+;; -f,--function FUNC ---- fitness function
+;; -l,--linker LINKER ---- linker to use
+;; -t,--threads NUM ------ number of threads
+;; -e,--max-evals EVALS -- max number of fitness evals
+;;
+;; Note:
+;;  If you require more working memory on your system,
+;;  build sbcl with the following.
+;;
+;;    ./make.sh --dynamic-space-size=SIZE
+;;
+;; TODO:
+;; - hide warnings
+;; - find a nice argument handling package
+;;
+(pop sb-ext:*posix-argv*) ;; pop SBCL off the argument list
+(defun rel-path (&key directory name type)
+  (make-pathname :name name :type type
+                 :directory (append (butlast (pathname-directory
+                                              (pathname *load-truename*)))
+                                    directory)))
+(load (merge-pathnames ".sbclrc" (user-homedir-pathname)))
+(load (rel-path :directory '("src") :name "perf-opt" :type "lisp"))
+(in-package :perf-opt)
+
+;;; Utility functions
+(defun throw-error (&rest args)
+  (apply #'format t args)
+  (sb-ext:exit :code 0))
+
+
+;;; Optionally print help and die
+(defvar *help*
+  (with-open-file (in (cl-user::rel-path :name "optimize" :directory '("bin")))
+    (read-line in) (read-line in) (read-line in) ;; discard first few lines
+    (mapconcat (lambda (it) (subseq it (min (length it) 3)))
+               (loop :for line = (read-line in nil)
+                  :while (and line (string= (subseq line 0 2) ";;"))
+                  :collect line) (format nil "~%"))))
+
+(when (or (< (length sb-ext:*posix-argv*) 2)
+          (string= (subseq (car sb-ext:*posix-argv*) 0 2) "-h")
+          (string= (subseq (car sb-ext:*posix-argv*) 0 3) "--h"))
+  (throw-error "~a~%" *help*))
+
+;; Otherwise parse the options
+(defvar *path*   (pop sb-ext:*posix-argv*))
+(defvar *script* (pop sb-ext:*posix-argv*))
+
+
+;;; Argument Handling and variable initialization
+(setf *work-dir* (cl-user::rel-path :directory (list "sh-runner" "work")))
+
+(defvar *orig* (from-file (make-instance 'asm-perf :linker *linker*) *path*))
+
+
+;;; Perform repair
+
+;; evaluate the original and sanity check
+(setf (fitness *orig*) (funcall *func* *orig*))
+(unless (< (fitness *orig*) infinity)
+  (throw-error "Original program has not fitness!"))
+
+;; populate the `*population*'
+(setf *population*
+      (loop :for n :below *max-population-size* :collect (copy *orig*)))
+
+(loop :for n :below *threads* :do
+   (sb-thread:make-thread (lambda () (evolve *func* :max-evals *max-evals*))))
