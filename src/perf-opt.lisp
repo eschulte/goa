@@ -20,6 +20,9 @@
   #-(or sbcl)
   (error "must specify a positive infinity value"))
 
+(defvar *test-fmt* nil
+  "Set to the string used to run the test shell script.")
+
 (defun parse-stdout (stdout)
   (mapcar (lambda-bind ((val key))
             (cons (make-keyword (string-upcase key))
