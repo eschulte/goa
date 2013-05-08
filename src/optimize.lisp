@@ -48,7 +48,6 @@
 (defvar *evals* (expt 2 20) "Maximum number of test evaluations.")
 (defvar *max-err* 0 "Maximum allowed error.")
 (defvar *model* nil "HW counter model to optimized.")
-(setf   *work-dir* "sh-runner/work/")
 
 (defun parse-stdout (stdout)
   (mapcar (lambda-bind ((val key))
