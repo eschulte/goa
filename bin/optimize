@@ -8,7 +8,10 @@
 ;;  -f,--function FUNC ---- fitness function
 ;;  -l,--linker LINKER ---- linker to use
 ;;  -t,--threads NUM ------ number of threads
-;;  -e,--max-evals EVALS -- max number of fitness evals
+;;  -e,--max-evals NUM ---- max number of fitness evals
+;;  -w,--work-dir DIR ----- alternate work directory
+;;  -E,--max-error NUM ---- maximum allowed error
+;;  -m,--model NAME ------- model name
 ;;
 ;; Notes:
 ;;  If you require more working memory on your system,
@@ -22,30 +25,70 @@
 ;; - switch this from a shell script to a compiled
 ;;   application (buildapp) for faster startup
 ;;
-(pop sb-ext:*posix-argv*) ;; pop SBCL off the argument list
+
+;;; Code:
+(let ((*error-output* (make-broadcast-stream)))
+  (load (merge-pathnames ".sbclrc" (user-homedir-pathname))))
+(mapcar #'require '(:software-evolution :cl-store :split-sequence :cl-ppcre))
+(defpackage :optimize
+  (:use :common-lisp :software-evolution :software-evolution-utility
+        :alexandria :metabang-bind :curry-compose-reader-macros)
+  (:shadow :type :magic-number))
+(in-package :optimize)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (enable-curry-compose-reader-macros))
+
+(defclass asm-perf (asm)
+  ((stats :initarg :stats :accessor stats :initform nil)))
+
+;;; Models -- for now just in this file, could easily be read from the
+;;;           command line
+(defvar intel-energy-model
+  ;; TODO: update with actual coefficients
+  '((:instructions     . 1.0)
+    (:r533f00          . 1.0)
+    (:cache-references . 1.0)
+    (:cache-misses     . 1.0))
+  "HW counters and coefficients in the intel energy model.")
+
+;;; Utility functions
+(defvar infinity
+  #+sbcl
+  SB-EXT:DOUBLE-FLOAT-POSITIVE-INFINITY
+  #-(or sbcl)
+  (error "must specify a positive infinity value"))
+
 (defun rel-path (&key directory name type)
   (make-pathname :name name :type type
                  :directory (append (butlast (pathname-directory
                                               (pathname *load-truename*)))
                                     directory)))
-(let ((*error-output* (make-broadcast-stream)))
-  (load (merge-pathnames ".sbclrc" (user-homedir-pathname))))
-(load (rel-path :directory '("src") :name "perf-opt" :type "lisp"))
-(in-package :perf-opt)
 
-;;; Utility functions
+(defun arg-pop () (pop sb-ext:*posix-argv*))
+(arg-pop) ;; pop SBCL off the argument list
+
 (defun throw-error (&rest args)
   (apply #'format t args)
-  (sb-ext:exit :code 0))
+  (sb-ext:exit :code 1))
+
+(defmacro getopts (&rest forms)
+  (let ((arg (gensym)))
+    `(loop :for ,arg = (pop sb-ext:*posix-argv*) :while ,arg :do
+        (cond
+          ,@(mapcar (lambda-bind ((short long . body))
+                      `((or (string= ,arg ,short) (string= ,arg ,long)) ,@body))
+                    forms)))))
 
 
-;;; Optionally print help and die
+;;; Help info, argument processing and variables initialization
 (defvar *help*
-  (with-open-file (in (cl-user::rel-path :name "optimize" :directory '("bin")))
+  (with-open-file (in (rel-path :name "optimize" :directory '("bin")))
     (read-line in) (read-line in) (read-line in) ;; discard first few lines
     (mapconcat (lambda (it) (subseq it (min (length it) 3)))
                (loop :for line = (read-line in nil)
-                  :while (and line (string= (subseq line 0 2) ";;"))
+                  :while (and line
+                              (>= (length line) 2)
+                              (string= (subseq line 0 2) ";;"))
                   :collect line) (format nil "~%"))))
 
 (when (or (< (length sb-ext:*posix-argv*) 2)
@@ -53,27 +96,62 @@
           (string= (subseq (car sb-ext:*posix-argv*) 0 3) "--h"))
   (throw-error "~a~%" *help*))
 
-;; Otherwise parse the options
-(defvar *path*   (pop sb-ext:*posix-argv*))
-(defvar *script* (pop sb-ext:*posix-argv*))
-
-
-;;; Argument Handling and variable initialization
+(defvar *path*   (arg-pop) "Path to Assembly file.")
+(defvar *script* (arg-pop) "Path to test script.")
+(defvar *orig*   (from-file (make-instance 'asm-perf) *path*))
+(defvar *test-fmt* nil "Set to the string used to run the test shell script.")
+(defvar *function* nil "Fitness function.")
+(defvar *threads*  4   "Number of cores to use.")
+(defvar *evals* (expt 2 20) "Maximum number of test evaluations.")
+(defvar *max-err* 0 "Maximum allowed error.")
 (setf *work-dir* (cl-user::rel-path :directory (list "sh-runner" "work")))
 
-(defvar *orig* (from-file (make-instance 'asm-perf :linker *linker*) *path*))
+(getopts
+ ("-f" "--function"  (setf *function* (arg-pop)))
+ ("-l" "--linker"    (setf (linker *orig*) (arg-pop)))
+ ("-t" "--threads"   (setf *threads* (parse-integer (arg-pop))))
+ ("-e" "--max-evals" (setf *evals* (parse-integer (arg-pop))))
+ ("-w" "--work-dir"  (setf *work-dir* (arg-pop)))
+ ("-E" "--max-err"   (setf *max-err* (read-from-string (arg-pop))))
+ ("-m" "--model"     (setf *model* (intern (string-upcase (arg-pop))))))
 
 
-;;; Perform repair
+;;; Run optimization
+(defun parse-stdout (stdout)
+  (mapcar (lambda-bind ((val key))
+            (cons (make-keyword (string-upcase key))
+                  (or (ignore-errors (parse-number val))
+                      infinity)))
+          (mapcar {split-sequence #\,}
+                  (split-sequence #\Newline
+                                  (regex-replace-all ":HG" stdout "")
+                                  :remove-empty-subseqs t))))
+
+(defun run (asm)
+  (with-temp-file (bin)
+    (phenome asm :bin bin)
+    (multiple-value-bind (stdout stderr errno) (shell *test-fmt* bin)
+      (declare (ignorable stderr))
+      (cons `(:exit . ,errno)
+            (ignore-errors (parse-stdout stdout))))))
+
+(defun test (asm)
+  (unless (stats asm) (setf (stats asm) (run asm)))
+  (or (ignore-errors
+        (when (<= (aget :error (stats asm)) *max-err*)
+          (let ((stats (stats asm)))
+            (reduce (lambda-bind ((acc (hw . cf))) (+ acc (* cf (aget hw stats))))
+                    *model* :initial-value 0))))
+      infinity))
 
 ;; evaluate the original and sanity check
 (setf (fitness *orig*) (funcall *func* *orig*))
 (unless (< (fitness *orig*) infinity)
-  (throw-error "Original program has not fitness!"))
+  (throw-error "Original program has no fitness!"))
 
 ;; populate the `*population*'
 (setf *population*
       (loop :for n :below *max-population-size* :collect (copy *orig*)))
 
 (loop :for n :below *threads* :do
-   (sb-thread:make-thread (lambda () (evolve *func* :max-evals *max-evals*))))
+   (sb-thread:make-thread (lambda () (evolve #'test :max-evals *max-evals*))))
