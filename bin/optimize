@@ -11,6 +11,7 @@
 ;;  -w,--work-dir DIR ----- alternate work directory
 ;;  -E,--max-error NUM ---- maximum allowed error
 ;;  -m,--model NAME ------- model name
+;;  -v,--verbose NUM ------ verbosity level 0-4 (default 1)
 ;;
 ;; Notes:
 ;;  If you require more working memory on your system,
@@ -57,18 +58,20 @@
  ("-e" "--max-evals" (setf *evals* (parse-integer (arg-pop))))
  ("-w" "--work-dir"  (setf *work-dir* (arg-pop)))
  ("-E" "--max-err"   (setf *max-err* (read-from-string (arg-pop))))
- ("-m" "--model"     (setf *model* (intern (string-upcase (arg-pop))))))
+ ("-m" "--model"     (setf *model* (intern (string-upcase (arg-pop)))))
+ ("-v" "--verb"      (setf *note-level* (parse-integer (arg-pop)))))
 
 
 ;;; Run optimization
+(note 1 "Evaluating the original.")
 (setf (fitness *orig*) (test *orig*))
 
 ;; sanity check
 (unless (< (fitness *orig*) infinity)
-  (throw-error
-   "Original program has no fitness!~%(change bin/bs-test default args)~%"))
+  (throw-error "Original program has no fitness!~%"))
 
 ;; populate population
+(note 1 "Building the Population.")
 (setf *population*
       (loop :for n :below *max-population-size* :collect (copy *orig*)))
 
