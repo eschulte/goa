@@ -5,12 +5,12 @@
 ;;  Optimize a benchmark program against a test script
 ;;
 ;; Options:
-;; -f,--function FUNC ---- fitness function
-;; -l,--linker LINKER ---- linker to use
-;; -t,--threads NUM ------ number of threads
-;; -e,--max-evals EVALS -- max number of fitness evals
+;;  -f,--function FUNC ---- fitness function
+;;  -l,--linker LINKER ---- linker to use
+;;  -t,--threads NUM ------ number of threads
+;;  -e,--max-evals EVALS -- max number of fitness evals
 ;;
-;; Note:
+;; Notes:
 ;;  If you require more working memory on your system,
 ;;  build sbcl with the following.
 ;;
@@ -19,6 +19,8 @@
 ;; TODO:
 ;; - hide warnings
 ;; - find a nice argument handling package
+;; - switch this from a shell script to a compiled
+;;   application (buildapp) for faster startup
 ;;
 (pop sb-ext:*posix-argv*) ;; pop SBCL off the argument list
 (defun rel-path (&key directory name type)
@@ -26,7 +28,8 @@
                  :directory (append (butlast (pathname-directory
                                               (pathname *load-truename*)))
                                     directory)))
-(load (merge-pathnames ".sbclrc" (user-homedir-pathname)))
+(let ((*error-output* (make-broadcast-stream)))
+  (load (merge-pathnames ".sbclrc" (user-homedir-pathname))))
 (load (rel-path :directory '("src") :name "perf-opt" :type "lisp"))
 (in-package :perf-opt)
 
