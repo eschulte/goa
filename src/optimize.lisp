@@ -10,143 +10,69 @@
 ;; consumption etc...
 
 ;;; Code:
-(require :software-evolution)
-(in-package :software-evolution)
+(mapcar #'require '(:software-evolution :cl-store :split-sequence :cl-ppcre))
+(defpackage :optimize
+  (:use :common-lisp :software-evolution :software-evolution-utility
+        :alexandria :metabang-bind :curry-compose-reader-macros)
+  (:shadow :type :magic-number))
+(in-package :optimize)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (enable-curry-compose-reader-macros))
 
-#+lab-machine
-(advise-thread-pool-size 46)
-;; (thread-pool-size)
+(defclass asm-perf (asm)
+  ((stats :initarg :stats :accessor stats :initform nil)))
 
-(defvar *pop*   nil "Population of variants.")
-(defvar *dir*   nil "Optional sub-directory in which to store results.")
-(defvar *file-format* "biased-pop-~S.store" "File name format.")
-(defvar *psize* 100 "Population size.")
-(defvar *tsize* 2   "Tournament size.")
+;;; Models -- for now just in this file, could easily be read from the
+;;;           command line
+(defvar intel-energy-model
+  ;; TODO: update with actual coefficients
+  '((:instructions     . 1.0)
+    (:r533f00          . 1.0)
+    (:cache-references . 1.0)
+    (:cache-misses     . 1.0))
+  "HW counters and coefficients in the intel energy model.")
 
-(defvar *script* "./host-test.sh"
-  "Script used to evaluate variants.
-Note: This does not follow the normal test script format but rather it;
-1. takes the path to a .s asm file
-2. copies that file to a VM
-3. runs the resulting program in Graphite in the VM
-4. returns the full set of Graphite debug information")
+;;; Utility functions
+(defvar infinity
+  #+sbcl
+  SB-EXT:DOUBLE-FLOAT-POSITIVE-INFINITY
+  #-(or sbcl)
+  (error "must specify a positive infinity value"))
 
-(defclass pll-asm (asm)
-  ((neutral-p      :accessor neutral-p      :initform nil)
-   ;; execution stats
-   (start          :accessor start          :initform nil)
-   (init-finish    :accessor init-finish    :initform nil)
-   (finish         :accessor finish         :initform nil)
-   (trans-fraction :accessor trans-fraction :initform nil)
-   (time-wo-init   :accessor time-wo-init   :initform nil)
-   (time-w-init    :accessor time-w-init    :initform nil)
-   (raw-output     :accessor raw-output     :initform nil)
-   (trans-time     :accessor trans-time     :initform nil)
-   ;; network stats
-   (total-packets-sent :accessor total-packets-sent :initform nil)
-   (total-flits-sent :accessor total-flits-sent :initform nil)
-   (total-bytes-sent :accessor total-bytes-sent :initform nil)
-   (total-packets-broadcasted :accessor total-packets-broadcasted :initform nil)
-   (total-flits-broadcasted :accessor total-flits-broadcasted :initform nil)
-   (total-bytes-broadcasted :accessor total-bytes-broadcasted :initform nil)
-   (total-packets-received :accessor total-packets-received :initform nil)
-   (total-flits-received :accessor total-flits-received :initform nil)
-   (total-bytes-received :accessor total-bytes-received :initform nil)
-   (average-packet-latency-in-clock-cycles
-    :accessor average-packet-latency-in-clock-cycles :initform nil)
-   (average-packet-latency-in-ns
-    :accessor average-packet-latency-in-ns :initform nil)
-   (average-contention-delay-in-clock-cycles
-    :accessor average-contention-delay-in-clock-cycles :initform nil)
-   (average-contention-delay-in-ns
-    :accessor average-contention-delay-in-ns :initform nil)
-   (switch-allocator-traversals
-    :accessor switch-allocator-traversals :initform nil)
-   (crossbar-traversals :accessor crossbar-traversals :initform nil)
-   (link-traversals :accessor link-traversals :initform nil)
-   (static-power :accessor static-power :initform nil))
-  (:documentation
-   "Extending the ASM class with a number of parallel run statistics."))
+(defvar *path*   nil "Path to Assembly file.")
+(defvar *script* nil "Path to test script.")
+(defvar *orig*   nil "Original version of the program to be run.")
+(defvar *test-fmt* nil "Set to the string used to run the test shell script.")
+(defvar *function* nil "Fitness function.")
+(defvar *threads*  4   "Number of cores to use.")
+(defvar *evals* (expt 2 20) "Maximum number of test evaluations.")
+(defvar *max-err* 0 "Maximum allowed error.")
+(defvar *model* nil "HW counter model to optimized.")
+(setf   *work-dir* "sh-runner/work/")
 
-(defun pll-to-s (var)
-  "Write VAR to a temporary .s file."
-  (let ((tmp (temp-file-name "s"))) (asm-to-file var tmp) tmp))
+(defun parse-stdout (stdout)
+  (mapcar (lambda-bind ((val key))
+            (cons (make-keyword (string-upcase key))
+                  (or (ignore-errors (parse-number val))
+                      infinity)))
+          (mapcar {split-sequence #\,}
+                  (split-sequence #\Newline
+                                  (regex-replace-all ":HG" stdout "")
+                                  :remove-empty-subseqs t))))
 
-(defun pll-from-asm (asm)
-  (make-instance 'pll-asm :genome  (copy (genome asm))))
+(defun run (asm)
+  (with-temp-file (bin)
+    (phenome asm :bin bin)
+    (multiple-value-bind (stdout stderr errno) (shell *test-fmt* bin)
+      (declare (ignorable stderr))
+      (cons `(:exit . ,errno)
+            (ignore-errors (parse-stdout stdout))))))
 
-(defvar *orig* (pll-from-asm (asm-from-file "../data/fft.s"))
-  "Original seed program.")
-
-(defmethod evaluate ((var pll-asm))
-  "Run parallel program VAR collecting and saving neutrality and all metrics."
-  (let ((s-file (pll-to-s var)))
-    (handler-case
-        (with-timeout (600)
-          (multiple-value-bind (output err exit) (shell "~a ~a" *script* s-file)
-            (declare (ignorable err))
-            (delete-file s-file)
-            (note 2 "$ ~a ~a; $? => ~d" *script* s-file exit)
-            (setf (raw-output var) output)
-            (apply-output var (raw-output var))
-            (setf (neutral-p var) (zerop exit))
-            var))
-      (timeout-error (c)
-        (declare (ignore c))
-        var))))
-
-(defun output-to-stats (output)
-  (delete nil
-          (mapcar
-           (lambda (line)
-             (when (> (length line) 0)
-               (let* ((pair (split-sequence #\Space line :remove-empty-subseqs t))
-                      (key  (read-from-string (car pair)))
-                      (val  (mapcar #'read-from-string (cdr pair))))
-                 (cons key val))))
-           (split-sequence #\Newline output :remove-empty-subseqs t))))
-
-(defun apply-output (var output)
-  (mapcar (lambda (pair)
-            (let ((key (car pair)) (val (cdr pair)))
-              (when (and key (slot-exists-p var key))
-                (setf (slot-value var key)
-                      (if (= (length val) 1) (first val) val)))))
-          (output-to-stats output)))
-
-(defun file-for-run (n &optional (dir *dir*))
-  (let ((file (format nil *file-format* n)))
-    (if dir (merge-pathnames file dir) file)))
-
-(defun biased-step (pop &key (test #'<) (key #'time-wo-init) &aux result)
-  "Take a whole-population biased step through neutral space."
-  (flet ((new-var ()
-           ;; (let ((t-pop (repeatedly *tsize* (random-elt pop))))
-           ;;   (evaluate (mutate (copy (first (sort t-pop test :key key))))))
-           (evaluate (mutate (copy (first (sort pop test :key key)))))))
-    (loop :until (>= (length result) *psize*) :do
-       (let* ((to-run (min (thread-pool-size)
-                           (floor (* (- *psize* (length result)) 3))))
-              (pool (progn
-                      (note 1 "~&generating ~a" to-run)
-                      (mapcar (lambda (var) (apply-output var (raw-output var)) var)
-                              (prepeatedly to-run (new-var))))))
-         (note 1 "~&keeping the fit")
-         (dolist (var pool) (when (and (neutral-p var) (funcall key var))
-                              (push var result)))
-         (note 1 "~&(length results) ;; => ~a" (length result))))
-    (subseq result 0 *psize*)))
-
-(defun biased-walk (seed &key (steps 100) (test #'<) (key #'time-wo-init))
-  "Evolve a population in the neutral space biased by metric and KEY."
-  (setf *pop* (list seed))
-  (dotimes (n steps)
-    (note 1 "saving population ~d" n)
-    (store *pop* (file-for-run n))
-    (note 1 "generating population ~d" (1+ n))
-    (setf *pop* (biased-step *pop* :test test :key key))
-    (unless (funcall key (random-elt *pop*))
-      (error "Someone snuck into the population w/o ~S" key))))
-
-#+run
-(biased-walk *orig*)
+(defun test (asm)
+  (unless (stats asm) (setf (stats asm) (run asm)))
+  (or (ignore-errors
+        (when (<= (aget :error (stats asm)) *max-err*)
+          (let ((stats (stats asm)))
+            (reduce (lambda-bind ((acc (hw . cf))) (+ acc (* cf (aget hw stats))))
+                    *model* :initial-value 0))))
+      infinity))
