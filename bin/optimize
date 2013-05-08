@@ -42,7 +42,7 @@
                               (string= (subseq line 0 2) ";;"))
                   :collect line) (format nil "~%"))))
 (when (< (length sb-ext:*posix-argv*) 2)
-  (throw-error "insufficient number of arguments~%~%~a~%" *help*))
+  (throw-error "insufficient number of arguments~%~%~a" *help*))
 
 (when (or (string= (subseq (car sb-ext:*posix-argv*) 0 2) "-h")
           (string= (subseq (car sb-ext:*posix-argv*) 0 3) "--h"))
@@ -58,8 +58,11 @@
  ("-e" "--max-evals" (setf *evals* (parse-integer (arg-pop))))
  ("-w" "--work-dir"  (setf *work-dir* (arg-pop)))
  ("-E" "--max-err"   (setf *max-err* (read-from-string (arg-pop))))
+ ("-p" "--pop-size"  (setf *max-population-size* (parse-integer (arg-pop))))
  ("-m" "--model"     (setf *model* (intern (string-upcase (arg-pop)))))
- ("-v" "--verb"      (setf *note-level* (parse-integer (arg-pop)))))
+ ("-v" "--verb"      (let ((lvl (parse-integer (arg-pop))))
+                       (when (= lvl 4) (setf *shell-debug* t))
+                       (setf *note-level* lvl))))
 
 
 ;;; Run optimization
@@ -67,13 +70,22 @@
 (setf (fitness *orig*) (test *orig*))
 
 ;; sanity check
-(unless (< (fitness *orig*) infinity)
-  (throw-error "Original program has no fitness!~%"))
+(if (< (fitness *orig*) infinity)
+    (note 2 "Original program has fitness ~a" (fitness *orig*))
+    (throw-error "Original program has no fitness!"))
 
 ;; populate population
-(note 1 "Building the Population.")
+(note 1 "Building the Population")
 (setf *population*
       (loop :for n :below *max-population-size* :collect (copy *orig*)))
 
-(loop :for n :below *threads* :do
-   (sb-thread:make-thread (lambda () (evolve #'test :max-evals *max-evals*))))
+(note 1 "Kicking off ~a optimization threads" *threads*)
+(if (> *threads* 1)
+    (let (threads)
+      (loop :for n :below *threads* :do
+         (push (sb-thread:make-thread (lambda () (evolve #'test :max-evals *evals*)))
+               threads))
+      (mapc #'sb-thread:join-thread threads))
+    (evolve #'test :max-evals *evals*))
+
+(note 1 "done after ~a fitness evaluations" *fitness-evals*)
