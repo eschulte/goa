@@ -23,15 +23,20 @@
 (defclass asm-perf (asm)
   ((stats :initarg :stats :accessor stats :initform nil)))
 
-;;; Models -- for now just in this file, could easily be read from the
-;;;           command line
-(defvar intel-energy-model
-  ;; TODO: update with actual coefficients
-  '((:instructions     . 1.0)
-    (:r533f00          . 1.0)
-    (:cache-references . 1.0)
-    (:cache-misses     . 1.0))
-  "HW counters and coefficients in the intel energy model.")
+;;; Models
+(defvar intel-sandybridge-energy-model
+  '((1.0 :instructions)
+    (1.0 :r532010 :r538010)
+    (1.0 :cache-references)
+    (1.0 :cache-misses))
+  "HW counters and coefficients for the Intel Sandybridge energy model.")
+
+(defvar amd-opteron-energy-model
+  '((1.0 :instructions)
+    (1.0 :r533f00)
+    (1.0 :cache-references)
+    (1.0 :cache-misses))
+  "HW counters and coefficients in the AMD Opteron energy model.")
 
 ;;; Utility functions
 (defvar infinity
@@ -66,7 +71,7 @@
 (defun run (asm)
   (with-temp-file (bin)
     (phenome asm :bin bin)
-    (note 4 "running ~a~%" asm)
+    (note 4 "running ~S~%" (edits asm))
     (multiple-value-bind (stdout stderr errno) (shell "~a ~a" *script* bin)
       (declare (ignorable stderr))
       (cons `(:exit . ,errno) (ignore-errors (parse-stdout stdout))))))
@@ -74,11 +79,11 @@
 (defun test (asm)
   (or (ignore-errors
         (unless (stats asm)
-          (note 4 "gathering stats for ~S~%" asm)
           (setf (stats asm) (run asm)))
         (note 4 "stats: ~S~%" (stats asm))
         (when (<= (aget :error (stats asm)) *max-err*)
           (let ((stats (stats asm)))
-            (reduce (lambda-bind (acc (hw . cf)) (+ acc (* cf (aget hw stats))))
+            (reduce (lambda-bind (acc (cf . cntrs))
+                      (+ acc (* cf (reduce #'+ (mapcar {aget _ stats} cntrs)))))
                     *model* :initial-value 0))))
       infinity))

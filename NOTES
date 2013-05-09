@@ -97,7 +97,7 @@ before running make, you have to do
 *** TODO x264
 ** DONE Select Energy Models [2/2]
 \begin{equation*}
-  kwh = c_{1} + c_{2} \times cyc + c_{3} \times ins + c_{4} \times ops + c_{5} \times tca + c_{6} \times (ld + sr)
+  kwh = c_{1} + c_{2} \times cyc + c_{3} \times ins + c_{4} \times ops + c_{5} \times tca + c_{6} \times mem
 \end{equation*}
 
 | metric                 | perf              |
@@ -107,8 +107,7 @@ before running make, you have to do
 | ops(AMD Opteron)       | r533f00           |
 | ops(Intel Sandybridge) | r532010 + r538010 |
 | tca                    | cache-references  |
-| ld                     | LLC-loads         |
-| sr                     | LLC-stores        |
+| mem                    | cache-misses      |
 
 *** Measuring required counters with =perf=
 Not all counters are provided by default, so we need to use HW
