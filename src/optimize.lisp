@@ -47,9 +47,10 @@
 
 (defvar *path*   nil "Path to Assembly file.")
 (defvar *script* nil "Path to test script.")
+(defvar *res-dir* nil "Directory in which to save results.")
 (defvar *orig*   nil "Original version of the program to be run.")
 (defvar *test-fmt* nil "Set to the string used to run the test shell script.")
-(defvar *function* nil "Fitness function.")
+(defvar *period* nil "Period at which to run `checkpoint'.")
 (defvar *threads*  1   "Number of cores to use.")
 (defvar *evals* (expt 2 20) "Maximum number of test evaluations.")
 (defvar *max-err* 0 "Maximum allowed error.")
@@ -87,3 +88,26 @@
                       (+ acc (* cf (reduce #'+ (mapcar {aget _ stats} cntrs)))))
                     *model* :initial-value 0))))
       infinity))
+
+(defun checkpoint ()
+  (sb-ext:gc :force t)
+  ;; save the best of the entire population
+  (store (extremum *population* *fitness-predicate* :key #'fitness)
+         (make-pathname :directory *res-dir*
+                        :name (format nil "best-~a" *fitness-evals*)
+                        :type "store"))
+  ;; write out population stats
+  (let ((fits  (mapcar #'fitness *population*))
+        (sizes (mapcar [#'length #'genome] *population*))
+        (stats (make-pathname :directory *res-dir* :name "stats" :type "txt")))
+    (flet ((stats (s) (list (apply #'min s) (median s) (apply #'max s))))
+      (with-open-file (out stats
+                           :direction :output
+                           :if-exists :append
+                           :if-does-not-exist :create)
+        (format out "~&~{~a~^ ~}~%"
+                (mapcar (lambda (num) (if (= num infinity) "inf" num))
+                        (mapcar #'float
+                                `(,*fitness-evals*
+                                  ,@(stats fits)
+                                  ,@(stats sizes)))))))))
