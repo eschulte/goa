@@ -84,6 +84,14 @@
 (unless (ensure-directories-exist *res-dir*)
   (throw-error "Unable to make result directory `~a'.~%" *res-dir*))
 
+(unless *model*
+  (setf *model* (case (arch)
+                  (:intel 'intel-sandybridge-energy-model)
+                  (:amd   'amd-opteron-energy-model))))
+(note 1 "Optimizing against `~a'.~%" *model*)
+(setf *model* (eval *model*))
+(note 4 "~S~%" *model*)
+
 
 ;;; Run optimization
 (note 1 "Evaluating the original.")

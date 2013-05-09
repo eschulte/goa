@@ -54,10 +54,20 @@
 (defvar *threads*  1   "Number of cores to use.")
 (defvar *evals* (expt 2 18) "Maximum number of test evaluations.")
 (defvar *max-err* 0 "Maximum allowed error.")
-(defvar *model* intel-energy-model "HW counter model to optimized.")
+(defvar *model* nil "HW counter model to optimized.")
 (setf *max-population-size* (expt 2 9)) ;; Default max pop size
 (setf *fitness-predicate* #'<)
 (setf *tournament-size* 4)
+
+(defun arch ()
+  (let ((cpuinfo "/proc/cpuinfo"))
+    (if (probe-file cpuinfo)
+        (block nil
+          (with-open-file (in cpuinfo)
+            (loop :for line = (read-line in nil) :while line :do
+               (cond ((scan "Intel" line) (return :intel))
+                     ((scan "AMD" line) (return :amd))))))
+        :darwin)))
 
 (defun parse-stdout (stdout)
   (mapcar (lambda-bind ((val key))
