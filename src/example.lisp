@@ -6,7 +6,7 @@
 
 ;; Starting with an initial software object (saved to `*orig*'),
 ;; generate a population of variant implementations and then evolve to
-;; optimize some fitness function (defined in `multi-obj').
+;; optimize some fitness function (defined in `test').
 
 ;; 1. Write a test script.  The script should print output the
 ;;    following format, where each line contains both a value before
@@ -35,25 +35,22 @@
 ;;    may be run in many separate threads concurrently.
 
 ;;; Code:
-(load "src/perf-opt.lisp")
-(in-package :perf-opt)
+(load "src/optimize.lisp")
+(in-package :optimize)
 
 ;; (2)
-(defvar *test-fmt* "./bin/example-test ~a -p"
-  "Script used to evaluate example variants.
-The ~a will be replaced with the path to the variant executable.")
+(setf *script* "./bin/example-test ~a")
 
 ;; (3)
-(defvar *orig*
-  (from-file (make-instance 'asm-perf) "data/path/to/variant.s"))
+(setf *orig* (from-file (make-instance 'asm-perf) "path/to/variant.s"))
 
 ;; (4)
-(defun multi-obj (asm)
+(defun test (asm)
   ;; if the variant has not yet been run, then run and save the
   ;; metrics to `stats'
   (unless (stats asm) (setf (stats asm) (test asm)))
   ;; fitness function combining HW counters
-  )
+  (assert nil nil "Implement a fitness function HERE."))
 
 ;; (5)
 (setf
@@ -67,4 +64,4 @@ The ~a will be replaced with the path to the variant executable.")
  *population* (loop :for n :below *max-population-size* :collect (copy *orig*)))
 
 ;; (6)
-(evolve #'multi-obj)
+(evolve #'test)

@@ -44,8 +44,8 @@ Repository Layout
     results | experimental results
         src | programs used to run optimization
 
-Instillation
-============
+Instillation and Usage
+======================
 
 The evolution toolkit which we'll use to evolve programs is written in
 Common Lisp.  The tests for program execution will be bash shell
@@ -67,8 +67,10 @@ installed.
      git clone git://github.com/eschulte/curry-compose-reader-macros.git
      git clone git://github.com/eschulte/software-evolution.git
 
-   Then use Quicklisp to register these new local projects
+   Ensure Quicklisp has been added to your SBCL init file, and then
+   use Quicklisp to register these newly cloned local projects
 
+     (ql:add-to-init-file)
      (ql:register-local-projects)
 
 4. Once Quicklisp and these dependencies have all been installed, run
@@ -86,34 +88,37 @@ installed.
 
      git clone git://github.com/eschulte/sh-runner.git
 
-At this point everything needed has been installed.  See the template
-in src/example.lisp, which may be fleshed out to use these tools to
-optimize a particular program.
+Batch Optimization at the Command Line
+--------------------------------------
 
-See the src/blackscholes.lisp file for a working example to optimize
-the PARSEC blackscholes benchmark.  To run this optimization you will
-need to do the following.
+At this point everything needed has been installed.  The following
+steps walk through optimizing blackscholes from the command line to
+reduce energy consumption.  Note that this requires both the assembly
+file of the original program ("blackscholes.s" compiled in step 2), as
+well as a test script capable of running blackscholes with perf to
+return the requisite error and performance counters ("bs-test").
 
-1. Compile blackscholes to assembly.
+1. Run the optimize script once to ensure your lisp install is working
+   and to view all of the optional arguments.
 
-     ./bin/setup -a compile -b blackscholes
+     ./bin/optimize -h
 
-2. Start the sh-runner script handler
+2. Compile blackscholes to assembly.
 
-     cd sh-runner/
-     ./foreman 30
+     ./bin/mgmt -a compile -b blackscholes
 
-3. Read through src/blackscholes.lisp and potentially update the
-   hard-coded paths and number of threads to match your system.  The
-   defaults should work if you are running SBCL from the base of this
-   directory on a machine with 8 cores.
+3. Optimize blackscholes to reduce runtime energy consumption.
 
-4. Evaluate the blackscholes.lisp file to perform evolution.  If you
-   run out of memory you may want to start SBCL with larger amounts of
-   memory, this may be done with the following (where "X" is the
-   number of Gigs you want the evolutionary process to use).
+     ./bin/optimize benchmarks/blackscholes/src/blackscholes.s \
+                    ./bin/bs-test
 
-     sbcl  --dynamic-space-size $((X * 1024))
+Interactive Optimization at the REPL
+------------------------------------
+
+See src/example.lisp, which demonstrates how these tools may be run
+interactively from the common lisp REPL.  The evolving population, and
+many important evolutionary parameters are exposed as global variables
+for live analysis and modification during interactive runs.
 
 Footnotes
 =========
