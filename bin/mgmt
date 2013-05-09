@@ -1,7 +1,7 @@
 #!/bin/bash
 #
-# Usage: setup [OPTIONS...]
-#  setup the benchmarks
+# Usage: mgmt [OPTIONS...]
+#  manage the benchmarks
 #
 # Options:
 #  -a,--action ----- unpack, compile or link; default is all three
