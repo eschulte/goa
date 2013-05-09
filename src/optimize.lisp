@@ -52,7 +52,7 @@
 (defvar *test-fmt* nil "Set to the string used to run the test shell script.")
 (defvar *period* nil "Period at which to run `checkpoint'.")
 (defvar *threads*  1   "Number of cores to use.")
-(defvar *evals* (expt 2 20) "Maximum number of test evaluations.")
+(defvar *evals* (expt 2 18) "Maximum number of test evaluations.")
 (defvar *max-err* 0 "Maximum allowed error.")
 (defvar *model* intel-energy-model "HW counter model to optimized.")
 (setf *max-population-size* (expt 2 9)) ;; Default max pop size
