@@ -25,14 +25,16 @@
 
 ;;; Models
 (defvar intel-sandybridge-energy-model
-  '((1.0 :instructions)
+  '((1.0 :cycles)
+    (1.0 :instructions)
     (1.0 :r532010 :r538010)
     (1.0 :cache-references)
     (1.0 :cache-misses))
   "HW counters and coefficients for the Intel Sandybridge energy model.")
 
 (defvar amd-opteron-energy-model
-  '((1.0 :instructions)
+  '((1.0 :cycles)
+    (1.0 :instructions)
     (1.0 :r533f00)
     (1.0 :cache-references)
     (1.0 :cache-misses))
@@ -72,8 +74,7 @@
 (defun parse-stdout (stdout)
   (mapcar (lambda-bind ((val key))
             (cons (make-keyword (string-upcase key))
-                  (or (ignore-errors (parse-number val))
-                      infinity)))
+                  (or (ignore-errors (parse-number val)) infinity)))
           (mapcar {split-sequence #\,}
                   (split-sequence #\Newline
                                   (regex-replace-all ":HG" stdout "")
@@ -88,10 +89,10 @@
       (cons `(:exit . ,errno) (ignore-errors (parse-stdout stdout))))))
 
 (defun test (asm)
+  (note 4 "testing ~S~%" (edits asm))
   (or (ignore-errors
-        (unless (stats asm)
-          (setf (stats asm) (run asm)))
-        (note 4 "stats: ~S~%" (stats asm))
+        (unless (stats asm) (setf (stats asm) (run asm)))
+        (note 4 "stats:~%~S~%" (stats asm))
         (when (<= (aget :error (stats asm)) *max-err*)
           (let ((stats (stats asm)))
             (reduce (lambda-bind (acc (cf . cntrs))
@@ -100,6 +101,7 @@
       infinity))
 
 (defun checkpoint ()
+  (note 1 "checkpoint after ~a fitness evaluations~%" *fitness-evals*)
   (sb-ext:gc :force t)
   ;; save the best of the entire population
   (store (extremum *population* *fitness-predicate* :key #'fitness)

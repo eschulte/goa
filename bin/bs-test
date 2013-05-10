@@ -16,11 +16,16 @@
 #
 BASE="$(dirname $0)"
 NUM="1"
-TEST="1"
+TEST="12000"
 RAW="YES"
 PERF="YES"
 ORACLE=""
-COUNTERS="instructions,r533f00,cache-references,cache-misses"
+if grep -q Intel /proc/cpuinfo; then
+    COUNTERS="cycles,instructions,r532010,r538010,cache-references,cache-misses"
+elif grep -q AMD /proc/cpuinfo; then
+    COUNTERS="cycles,instructions,r533f00,cache-references,cache-misses"
+fi
+
 if [ -z "$LIMIT" ];then LIMIT="${BASE}/limit"; fi
 declare -a INPUTS
 declare -a OUTPUTS
