@@ -12,7 +12,7 @@ contains(){
 
 SCRIPT="$0"
 help(){
-    HELP_TEXT=$(cat "$SCRIPT" \
+    local HELP_TEXT=$(cat "$SCRIPT" \
         |sed '/^[^#]/q' \
         |head -n -1 \
         |tail -n +3 \
@@ -23,12 +23,9 @@ help(){
 }
 if $(contains "$1" "^\-\?\-h\(elp\|$\)");then help; fi
 
-REMOTES=("2222")
-if [ -f "$(dirname $0)/REMOTES" ];then
-    . $(dirname $0)/REMOTES # allow host-specific remote files
-fi
+BASE=$(cd "$(dirname "$SCRIPT")/.."; pwd)
 
-LIMIT="$(dirname $0)/limit"
+LIMIT="$BASE/limit"
 
 rand_remote(){ echo ${REMOTES[$RANDOM % ${#REMOTES[@]}]}; }
 
@@ -70,7 +67,7 @@ esac
 DEFAULT_DISK="tune.qcow"
 
 ## VM Functions
-SSH_ID=$(dirname $0)/../etc/data/id_rsa
+SSH_ID=$BASE/../etc/data/id_rsa
 
 vm_ssh(){
     local PORT=$1; shift
