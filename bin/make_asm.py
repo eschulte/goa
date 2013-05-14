@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 
 import sys, os, io, subprocess
+from functools import reduce
 
 outfileName = "asmout.s"
+
+included = set()
 
 try:
   allsrc = io.open( "allsrc.cpp", "w")
@@ -23,18 +26,34 @@ def usage():
   sys.exit( 1 )
 
 def processSrc( fileName ):
-  global outfileName
+  global outfileName, included
+  if fileName in included: return
+  included.add( fileName )
+  # print( "trying to process " + fileName )
+  if not os.path.isfile( fileName ): 
+    # print( "could not open " + fileName )
+    return
   try:
     workingFile = io.open( fileName )
     lines = workingFile.readlines()
     for line in lines:
-      if line.split('"')[0] == "#include ":
-        processSrc( line.split('"')[1])
+      if line.split('"')[0].strip() == "#include":
+        include = line.split('"')[1]
+        if include not in included:
+          allsrc.write( "/* trying to include " + include + " */\n")
+          processSrc( include )
       else:
         allsrc.write( line )
+    if fileName.split('.')[-1][0] == 'h':
+      # get the filename minus the .h__ extention. Multiple '.'s are OK
+      cname = reduce( lambda a, b : a + '.' + b, fileName.split('.')[:-1] )
+      processSrc( cname + '.c' )
+      processSrc( cname + '.cpp' )
+      processSrc( cname + '.cxx' )
+      processSrc( cname + '.c++' )
 
   except Exception as e:
-    raise e
+    print( "The file " + fileName + " does not exist." )
   finally:
     pass
 
@@ -48,12 +67,9 @@ def main():
   
   processSrc( mainfile )
 
+  # print( str(included) )
   allsrc.close()
 
-  # for root, dirs, files in os.walk(path):
-  #   for f in files:
-  #     genstats(root, f)
-  # stats.close()
 
 
 if __name__ == '__main__':
