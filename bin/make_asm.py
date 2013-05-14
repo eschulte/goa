@@ -24,7 +24,7 @@ def usage():
     "\tmainfile : the source file with the main funtion\n"
     "\tasmfile  : the desired output assembly file\n"
     "\t           (if not given, the file will be " + outfileName + ")\n"
-    "\tcompiler : the desired compiler (default g++)"
+    "\tcompiler : the desired compiler (default g++) The compiler must support the -S and -o flags"
   )
   sys.exit( 1 )
 
@@ -32,10 +32,7 @@ def processSrc( fileName ):
   global outfileName, included
   if fileName in included: return
   included.add( fileName )
-  # print( "trying to process " + fileName )
-  if not os.path.isfile( fileName ): 
-    # print( "could not open " + fileName )
-    return
+  if not os.path.isfile( fileName ): return
   try:
     workingFile = io.open( fileName )
     lines = workingFile.readlines()
@@ -55,7 +52,7 @@ def processSrc( fileName ):
       processSrc( cname + '.cpp' )
       processSrc( cname + '.cxx' )
       processSrc( cname + '.c++' )
-
+    workingFile.close()
   except Exception as e:
     print( "The file " + fileName + " does not exist." )
   finally:
@@ -71,17 +68,14 @@ def main():
   if len( args ) > 3: comp        = args[3]
 
   processSrc( mainfile )
-
-  # print( str(included) )
+  allsrc.close()
+  
   if comp == "gcc":
     print( "using gcc: " )
     subprocess.call( [comp, "-S", "-x", "c", allname, "-o", outfileName] )
   else:
     subprocess.call( [comp, "-S", allname, "-o", outfileName] )
   subprocess.call( ["rm", allname] )
-  allsrc.close()
-
-
 
 if __name__ == '__main__':
 	main()
