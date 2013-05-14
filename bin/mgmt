@@ -1,28 +1,31 @@
 #!/bin/bash
 #
-# Usage: mgmt [OPTIONS...]
-#  manage the benchmarks
+# Usage: mgmt ACTION BENCHMARK [OPTIONS...]
+#  manage benchmark programs
+#
+# Actions:
+#  clean ----------- remove the specified benchmark
+#  unpack ---------- download or copy the benchmark source
+#  compile --------- compile the benchmark to assembly
+#  link ------------ link the assembly benchmark to an executable
 #
 # Options:
-#  -a,--action ----- unpack, compile or link; default is all three
-#  -s,--suite ------ specific benchmark suite
-#  -b,--benchmark -- specific benchmark program
+#  -f,--flags ------ either `all' or `min'
+#  -l,--llvm ------- compile to and link from LLVM IR (not ASM)
 #
 . $(dirname $0)/common
-BASE="$(dirname $0)"
 
 ## Parse Options
-ACTION=""
-SUITE="parsec"
-BENCHMARK=""
-eval set \
-    -- $(getopt -o a:s:b:c:f: -l action:,suite:,benchmark:,compiler:,flag: \
-    -- "$@" || echo "$HELP_TEXT" && exit 1;)
+if [ $# -lt 2 ];then help; fi
+ACTION="$1"
+BENCHMARK="$2"
+FLAGS="min"
+LLVM=""
+eval set -- $(getopt -o f:l -l flags:,llvm -- "$@" || help;)
 while [ $# -gt 0 ];do
     case $1 in
-        -a|--action) ACTION="$2"; shift;;
-        -s|--suite) SUITE="$2"; shift;;
-        -b|--benchmark) BENCHMARK="$2"; shift;;
+        -f|--flags) FLAGS="$2"; shift;;
+        -l|--llvm)  error "the 'llvm' option is not implemented.";;
         (--) shift; break;;
         (-*) error "unrecognized option $1";;
         (*)  break;;
@@ -43,94 +46,142 @@ PARSEC_APPS+=(swaptions)
 PARSEC_APPS+=(vips)
 PARSEC_APPS+=(x264)
 
-parsec_unpack(){
-    local pkg=$1;
-    PKG_DIR="pkgs/apps/$pkg"
-    if [ -d "../$pkg" ];then
-        msg "$pkg already exists"
-    else
-        mkdir -p ../$pkg
+## Compilation Flags
+PARSEC_BASE_FLAGS_ALL="-O3 -g -funroll-loops -fprefetch-loop-arrays "
+PARSEC_BASE_FLAGS_ALL+="-fpermissive -fno-exceptions -static-libgcc "
+PARSEC_BASE_FLAGS_ALL+="-Wl,--hash-style=both,--as-needed "
 
-        msg "building $pkg"
-        cp -R "$PKG_DIR/src" ../$pkg/src
+BLACKSCHOLES_FLAGS_ALL="$PARSEC_BASE_FLAGS_ALL"
+BLACKSCHOLES_FLAGS_ALL+="-pthread -DENABLE_THREADS "
+BLACKSCHOLES_FLAGS_ALL+="-DNCO=4"
 
-        if [ -f "$PKG_DIR/inputs/input_simlarge.tar" ];then
-            msg "generating test input for $pkg"
-            mkdir -p ../$pkg/inputs
-            cd "../$pkg/inputs"
-            tar xf "../../parsec-3.0/$PKG_DIR/inputs/input_simlarge.tar"
-            cd "../../parsec-3.0"
-        else
-            warning "no input for $pkg"
-        fi
-    fi
-}
+BLACKSCHOLES_FLAGS_MIN="-DNCO=4"
 
-FLUID_FLAGS_ALL="-g -O3 -funroll-loops -fprefetch-loop-arrays "
-FLUID_FLAGS_ALL+="-fpermissive -fno-exceptions -static-libgcc "
-FLUID_FLAGS_ALL+="-Wl,--hash-style=both,--as-needed "
-FLUID_FLAGS_ALL+="-DPARSEC_VERSION=3.0-beta-20120904 "
+FLUID_FLAGS_ALL="$PARSEC_BASE_FLAGS_ALL"
 FLUID_FLAGS_ALL+="-Wno-invalid-offsetof "
 FLUID_FLAGS_ALL+="-pthread -D_GNU_SOURCE -D__XOPEN_SOURCE=600"
 
 FLUID_FLAGS_MIN="-Wno-invalid-offsetof"
 
-parsec_compile(){
-    local pkg=$1;
-    SRC_DIR="../$pkg/src"
-    if [ ! -d "$SRC_DIR" ];then
-        error "$SRC_DIR doesn't exist"
+## Functions
+unpack(){ # dispatch depending on benchmark suite
+    if echo "${PARSEC_APPS[@]}"|grep -q $1;then
+        parsec_unpack $1;
+    elif echo "${SPEC_APPS[@]}"|grep -q $1;then
+        spec_unpack $1;
     else
-        cd "$SRC_DIR"
-        if [ -f "$pkg.s" ];then
-            msg "$pkg.s already exists"
-        else
-            msg "compiling $pkg"
-            case $pkg in
-                blackscholes)
-                    g++ -DNCO=4 blackscholes.c -S -o blackscholes.s ;;
-                bodytrack)
-                    warning "bodytrack compilation not configured";;
-                facesim)
-                    warning "facesim compilation not configured";;
-                fluidanimate)
-                    cat pthreads.cpp >  all.cpp
-                    cat cellpool.cpp >> all.cpp
-                    cat parsec_barrier.cpp >> all.cpp
-                    # g++-4.4 $FLUID_FLAGS_ALL -combine -S all.cpp -o fluidanimate.s
-                    g++-4.4 $FLUID_FLAGS_MIN -combine -S all.cpp -o fluidanimate.s;;
-            esac
-        fi
-    fi
-}
+        error "benchmark '$1' is not known"
+    fi; }
 
-parsec_apps(){
-    if [ -z "$BENCHMARK" ];then
-        for pkg in ${PARSEC_APPS[@]};do echo "$pkg";done
+parsec_unpack(){
+    local bench=$1;
+    local bench_dir="$BASE/benchmarks/$bench";
+    if [ -d "$bench_dir" ];then
+        msg "$bench/ exists"
     else
-        echo "$BENCHMARK"
-    fi
-}
+        mkdir -p "$bench_dir"
+        cp -R "$BASE"/benchmarks/parsec-3.0/pkgs/apps/$bench/src/* "$bench_dir"
+        msg "$bench/ created"
+    fi; }
 
-case $SUITE in
-    parsec)
-        PARSEC_DIR="${BASE}/../benchmarks/parsec-3.0"
-        if [ ! -d "$PARSEC_DIR" ];then
-            msg "downloading PARSEC"
-            cd etc/data
-            wget http://parsec.cs.princeton.edu/download/3.0/parsec-3.0.tar.gz
-            msg "unpacking PARSEC"
-            cd ../benchmarks/
-            tar xzf ../etc/data/parsec-3.0.tar.gz
-            cd ../
-        fi
-        cd "$PARSEC_DIR"
-        source env.sh
-        if [ -z "$ACTION" ] || [ "$ACTION" == "unpack" ];then
-            for pkg in $(parsec_apps);do parsec_unpack $pkg; done
-        fi
-        if [ -z "$ACTION" ] || [ "$ACTION" == "compile" ];then
-            for pkg in $(parsec_apps);do parsec_compile $pkg; done
-        fi
+spec_unpack(){
+    error "'spec_unpack' is not yet implemented"; }
+
+not_implemented(){
+    error "$1 compilation not yet implemented"; }
+
+compile(){
+    local bench=$1;
+    local bench_dir="$BASE/benchmarks/$bench";
+
+    if [ -f "$bench_dir/$bench.s" ];then
+        msg "$bench/$bench.s exists"
+    else
+        pushd "$bench_dir">/dev/null
+        case $bench in
+            blackscholes)
+                case $FLAGS in
+                    min) FLAGS="$BLACKSCHOLES_FLAGS_ALL";;
+                    all) FLAGS="$BLACKSCHOLES_FLAGS_MIN";;
+                esac
+                m4 ./c.m4.pthreads blackscholes.c > blackscholes.m4.cpp
+                g++ $FLAGS blackscholes.m4.cpp -S -o blackscholes.s
+                ;;
+            bodytrack) not_implemented $bench ;;
+            facesim) not_implemented $bench ;;
+            ferret) not_implemented $bench ;;
+            fluidanimate)
+                cat pthreads.cpp >  all.cpp
+                cat cellpool.cpp >> all.cpp
+                cat parsec_barrier.cpp >> all.cpp
+                case $FLAGS in
+                    min) FLAGS="$FLUID_FLAGS_ALL";;
+                    all) FLAGS="$FLUID_FLAGS_MIN";;
+                esac
+                g++ $FLAGS -S all.cpp -o ${bench}.s||err "compilation failed"
+                ;;
+            freqmine)
+                case $FLAGS in
+                    min) FLAGS="-Wno-deprecated";;
+                    all) FLAGS="$PARSEC_BASE_FLAGS_ALL -Wno-deprecated";;
+                esac
+                cat <<EOF > all.cpp
+#include "common.h"
+static int omp_get_max_threads() {return 1;}
+EOF
+                cat *.cpp \
+                    |grep -v "common.h" \
+                    |grep -v "static int omp_get_max_threads" >> all.cpp
+                g++ $FLAGS -S all.cpp -o ${bench}.s||err "compilation failed"
+                ;;
+            raytrace) not_implemented $bench ;;
+            swaptions)
+                SWAP_FLAGS="-pthread  -DENABLE_THREADS"
+                case $FLAGS in
+                    min) FLAGS="$SWAP_FLAGS";;
+                    all) FLAGS="$PARSEC_BASE_FLAGS_ALL $SWAP_FLAGS";;
+                esac
+                cat *.c* > all.cpp
+                g++ $FLAGS -S all.cpp -o ${bench}.s||err "compilation failed"
+                ;;
+            vips) not_implemented $bench ;;
+            x264) not_implemented $bench ;;
+        esac
+        popd>/dev/null
+        msg "$bench/$bench.s created"
+    fi; }
+
+## Ensure the requisite benchmark suite is installed
+if echo "${PARSEC_APPS[@]}"|grep -q $1;then
+    parsec_dir="$BASE/benchmarks/parsec-3.0"
+    if [ ! -d "$parsec_dir" ];then
+        msg "downloading PARSEC"
+        wget http://parsec.cs.princeton.edu/download/3.0/parsec-3.0.tar.gz \
+            -O "$BASE/etc/data/parsec-3.0.tar.gz"
+        msg "unpacking PARSEC"
+        tar xzf "$BASE/etc/data/parsec-3.0.tar.gz" -C "$BASE/benchmarks"
+    fi
+elif echo "${SPEC_APPS[@]}"|grep -q $1;then
+    error "spec must be installed in $BASE/benchmarks/spec/"
+fi
+
+## Run the actions
+case $ACTION in
+    clean) rm -rf "$BASE/benchmarks/$BENCHMARK"
+        msg "$BENCHMARK/ removed"
+        exit 0;;
+
+    unpack|compile|link)
+        
+        unpack $BENCHMARK
+        [[ $ACTION == "unpack" ]] && exit 0;
+
+        compile $BENCHMARK
+        [[ $ACTION == "compile" ]] && exit 0;
+
+        link $BENCHMARK
+        [[ $ACTION == "link" ]] && exit 0;
         ;;
+
+    *) echo -e "'$ACTION' is not a valid action\n">&2; help;;
 esac
