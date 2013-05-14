@@ -27,6 +27,11 @@ def processSrc( fileName ):
   try:
     workingFile = io.open( fileName )
     lines = workingFile.readlines()
+    for line in lines:
+      if line.split('"')[0] == "#include ":
+        processSrc( line.split('"')[1])
+      else:
+        allsrc.write( line )
 
   except Exception as e:
     raise e
