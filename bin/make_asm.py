@@ -40,8 +40,9 @@ def processSrc( fileName ):
       if line.split('"')[0].strip() == "#include":
         include = line.split('"')[1]
         if include not in included:
-          allsrc.write( "/* trying to include " + include + " */\n")
+          allsrc.write( "/* Begin: trying to include " + include + " */\n")
           processSrc( include )
+          allsrc.write( "/* End: trying to include " + include + " */\n")
       else:
         allsrc.write( line )
     if fileName.split('.')[-1][0] == 'h':
