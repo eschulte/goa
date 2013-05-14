@@ -7,8 +7,10 @@ outfileName = "asmout.s"
 comp = "g++"
 included = set()
 
+allname = "allsrc.cpp"
+
 try:
-  allsrc = io.open( "allsrc.cpp", "w")
+  allsrc = io.open( allname, "w")
 except Exception as e:
   print( "Cant create a file in the current directory. Aborting." )
   sys.exit( 2 )
@@ -67,11 +69,16 @@ def main():
 
   if len( args ) > 2: outfileName = args[2]
   if len( args ) > 3: comp        = args[3]
-  
+
   processSrc( mainfile )
 
   # print( str(included) )
-  subprocess.call( [comp, "-S", allsrc, "-o", outfileName] )
+  if comp == "gcc":
+    print( "using gcc: " )
+    subprocess.call( [comp, "-S", "-x", "c", allname, "-o", outfileName] )
+  else:
+    subprocess.call( [comp, "-S", allname, "-o", outfileName] )
+  subprocess.call( ["rm", allname] )
   allsrc.close()
 
 
