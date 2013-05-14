@@ -4,7 +4,7 @@ import sys, os, io, subprocess
 from functools import reduce
 
 outfileName = "asmout.s"
-
+comp = "g++"
 included = set()
 
 try:
@@ -18,10 +18,11 @@ def usage():
   global outfileName
   print(
     "USAGE:\n" +
-    sys.argv[0] + " mainfile [asmfile]\n"
-    "  Where mainfile is the source file with the main function and asmfile is the\n" +
-    "  desired output assembly file. (If no argument is given a file named " + outfileName + "\n" +
-    "  will be written to the current directory)"
+    sys.argv[0] + " mainfile [asmfile] [compiler]\n"
+    "\tmainfile : the source file with the main funtion\n"
+    "\tasmfile  : the desired output assembly file\n"
+    "\t           (if not given, the file will be " + outfileName + ")\n"
+    "\tcompiler : the desired compiler (default g++)"
   )
   sys.exit( 1 )
 
@@ -59,16 +60,18 @@ def processSrc( fileName ):
     pass
 
 def main():
-  global outfileName
+  global outfileName, comp, allsrc
   args = sys.argv
-  if len( args ) < 2 or len(args) > 3: usage()
+  if len( args ) < 2 or len(args) > 4: usage()
   mainfile = args[1]
 
-  if len( args ) > 1: outfileName = args[1]
+  if len( args ) > 2: outfileName = args[2]
+  if len( args ) > 3: comp        = args[3]
   
   processSrc( mainfile )
 
   # print( str(included) )
+  subprocess.call( [comp, "-S", allsrc, "-o", outfileName] )
   allsrc.close()
 
 
