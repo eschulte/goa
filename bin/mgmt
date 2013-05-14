@@ -87,6 +87,9 @@ parsec_unpack(){
 spec_unpack(){
     error "'spec_unpack' is not yet implemented"; }
 
+not_implemented(){
+    error "$1 compilation not yet implemented"; }
+
 compile(){
     local bench=$1;
     local bench_dir="$BASE/benchmarks/$bench";
@@ -102,11 +105,11 @@ compile(){
                     all) FLAGS="$BLACKSCHOLES_FLAGS_MIN";;
                 esac
                 m4 ./c.m4.pthreads blackscholes.c > blackscholes.m4.cpp
-                g++ $FLAGS blackscholes.m4.cpp -S -o blackscholes.s;;
-            bodytrack)
-                error "bodytrack compilation not configured";;
-            facesim)
-                error "facesim compilation not configured";;
+                g++ $FLAGS blackscholes.m4.cpp -S -o blackscholes.s
+                ;;
+            bodytrack) not_implemented $bench ;;
+            facesim) not_implemented $bench ;;
+            ferret) not_implemented $bench ;;
             fluidanimate)
                 cat pthreads.cpp >  all.cpp
                 cat cellpool.cpp >> all.cpp
@@ -115,7 +118,34 @@ compile(){
                     min) FLAGS="$FLUID_FLAGS_ALL";;
                     all) FLAGS="$FLUID_FLAGS_MIN";;
                 esac
-                g++-4.4 $FLAGS -S all.cpp -o fluidanimate.s;;
+                g++ $FLAGS -S all.cpp -o ${bench}.s||err "compilation failed"
+                ;;
+            freqmine)
+                case $FLAGS in
+                    min) FLAGS="-Wno-deprecated";;
+                    all) FLAGS="$PARSEC_BASE_FLAGS_ALL -Wno-deprecated";;
+                esac
+                cat <<EOF > all.cpp
+#include "common.h"
+static int omp_get_max_threads() {return 1;}
+EOF
+                cat *.cpp \
+                    |grep -v "common.h" \
+                    |grep -v "static int omp_get_max_threads" >> all.cpp
+                g++ $FLAGS -S all.cpp -o ${bench}.s||err "compilation failed"
+                ;;
+            raytrace) not_implemented $bench ;;
+            swaptions)
+                SWAP_FLAGS="-pthread  -DENABLE_THREADS"
+                case $FLAGS in
+                    min) FLAGS="$SWAP_FLAGS";;
+                    all) FLAGS="$PARSEC_BASE_FLAGS_ALL $SWAP_FLAGS";;
+                esac
+                cat *.c* > all.cpp
+                g++ $FLAGS -S all.cpp -o ${bench}.s||err "compilation failed"
+                ;;
+            vips) not_implemented $bench ;;
+            x264) not_implemented $bench ;;
         esac
         popd>/dev/null
         msg "$bench/$bench.s created"
