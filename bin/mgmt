@@ -8,7 +8,8 @@
 #  unpack ---------- download or copy the benchmark source
 #  compile --------- compile the benchmark to assembly
 #  link ------------ link the assembly benchmark to an executable
-#  input ----------- generate test inputs for benchmark
+#  input ----------- generate test input for benchmark
+#  output ---------- generate correct test output for benchmark
 #
 # Options:
 #  -f,--flags ------ either `all' or `min'
@@ -204,7 +205,26 @@ input(){
             swaptions)
                 msg "no input needed for $bench"
                 return 0;;
-            *) error "input no implemented for $bench";;
+            *) error "input not implemented for $bench";;
+        esac;
+        popd>/dev/null
+        msg "$bench/$target created";
+    fi; }
+
+output(){
+    local bench=$1;
+    local target=$bench.output;
+    local bench_dir="$BASE/benchmarks/$bench";
+    pushd "$bench_dir">/dev/null
+
+    if [ -f "$bench_dir/$target" ];then
+        msg "$bench/$target exists"
+    else
+        input $bench;
+        case $BENCHMARK in
+            blackscholes)
+                ./$bench 1 $bench.input $target;;
+            *) error "output not implemented for $bench";;
         esac;
         popd>/dev/null
         msg "$bench/$target created";
@@ -235,7 +255,7 @@ case $ACTION in
 
     input) unpack $BENCHMARK && input $BENCHMARK;;
 
-    unpack|compile|link)
+    unpack|compile|link|output)
         
         unpack $BENCHMARK
         [[ $ACTION == "unpack" ]] && exit 0;
@@ -245,7 +265,10 @@ case $ACTION in
 
         link $BENCHMARK
         [[ $ACTION == "link" ]] && exit 0;
+
+        output $BENCHMARK
+        [[ $ACTION == "output" ]] && exit 0;
         ;;
 
-    *) echo -e "'$ACTION' is not a valid action\n">&2; help;;
+    *) error "'$ACTION' is not a valid action\n";;
 esac
