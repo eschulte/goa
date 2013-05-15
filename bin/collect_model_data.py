@@ -71,13 +71,16 @@ if options.parsec:
     benchmarks += [
         ( "blackscholes", parsec ),
         ( "bodytrack", parsec ),
-        ( "canneal", parsec ),
+        ( "facesim", parsec ),
+        # ( "canneal", parsec ),
         ( "ferret", parsec ),
         ( "fluidanimate", parsec ),
         ( "freqmine", parsec ),
-        ( "netstreamcluster", parsec ),
-        ( "streamcluster", parsec ),
+        # ( "netstreamcluster", parsec ),
+        # ( "streamcluster", parsec ),
+        ( "raytrace", parsec ),
         ( "swaptions", parsec ),
+        ( "vips", parsec ),
         ( "x264", parsec ),
     ]
 if options.spec_config:
