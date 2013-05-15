@@ -37,6 +37,7 @@ def processSrc( fileName ):
     workingFile = io.open( fileName )
     lines = workingFile.readlines()
     os.chdir(os.path.split(os.path.abspath(workingFile.name))[0])
+    print( "Changing directory to: " + os.path.abspath( '.' ) )
     for line in lines:
       if line.split('"')[0].strip() == "#include":
         include = line.split('"')[1]
@@ -44,7 +45,9 @@ def processSrc( fileName ):
           allsrc.write( "/* Begin: trying to include " + include + " */\n")
           currentlyWritten = bytesWritten
           processSrc( include )
-          if currentlyWritten == bytesWritten: print( "Failed to include " + include )
+          if currentlyWritten == bytesWritten: print( "Failed to include " + include ".\n"
+                                                      "Current directory: " + 
+                                                      os.path.abspath('.') )
           allsrc.write( "/* End: trying to include " + include + " */\n")
           
       else:
@@ -77,8 +80,8 @@ def main():
 
   # cd back to the starting directory
   os.chdir(os.path.split(os.path.abspath(allsrc.name))[0])
-  
-  if comp == "gcc":
+  print( "Changing directory to original: " + os.path.abspath( '.' ) )
+  if comp == "gcc": 
     print( "using gcc: " )
     subprocess.call( [comp, "-S", "-x", "c", allname, "-o", outfileName] )
   else:
