@@ -152,12 +152,15 @@ EOF
     fi; }
 
 ## Ensure the requisite benchmark suite is installed
-if echo "${PARSEC_APPS[@]}"|grep -q $1;then
+if echo "${PARSEC_APPS[@]}"|grep -q $BENCHMARK;then
     parsec_dir="$BASE/benchmarks/parsec-3.0"
+    parsec_tar="$BASE/etc/data/parsec-3.0.tar.gz"
     if [ ! -d "$parsec_dir" ];then
-        msg "downloading PARSEC"
-        wget http://parsec.cs.princeton.edu/download/3.0/parsec-3.0.tar.gz \
-            -O "$BASE/etc/data/parsec-3.0.tar.gz"
+        if [! -f "$parsec_tar" ];then
+            msg "downloading PARSEC"
+            wget http://parsec.cs.princeton.edu/download/3.0/parsec-3.0.tar.gz \
+                -O "$BASE/etc/data/parsec-3.0.tar.gz"
+        fi
         msg "unpacking PARSEC"
         tar xzf "$BASE/etc/data/parsec-3.0.tar.gz" -C "$BASE/benchmarks"
     fi
