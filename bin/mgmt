@@ -8,6 +8,7 @@
 #  unpack ---------- download or copy the benchmark source
 #  compile --------- compile the benchmark to assembly
 #  link ------------ link the assembly benchmark to an executable
+#  input ----------- generate test inputs for benchmark
 #
 # Options:
 #  -f,--flags ------ either `all' or `min'
@@ -180,6 +181,35 @@ link(){
         msg "$bench/$bench created"
     fi; }
 
+input(){
+    local bench=$1;
+    local target=$bench.input;
+    local bench_dir="$BASE/benchmarks/$bench";
+    local parsec_dir="$BASE/benchmarks/parsec-3.0/pkgs/apps/$bench";
+    pushd "$bench_dir">/dev/null
+
+    if [ -f "$bench_dir/$target" ];then
+        msg "$bench/$target exists"
+    else
+        case $BENCHMARK in
+            blackscholes)
+                tar xf ${parsec_dir}/inputs/input_simlarge.tar
+                mv in_64K.txt $target;;
+            fluidanimate)
+                tar xf ${parsec_dir}/inputs/input_simlarge.tar
+                mv in_300K.fluid $target;;
+            freqmine)
+                tar xf ${parsec_dir}/inputs/input_simmedium.tar
+                mv kosarak_500k.dat $target;;
+            swaptions)
+                msg "no input needed for $bench"
+                return 0;;
+            *) error "input no implemented for $bench";;
+        esac;
+        popd>/dev/null
+        msg "$bench/$target created";
+    fi; }
+
 ## Ensure the requisite benchmark suite is installed
 if echo "${PARSEC_APPS[@]}"|grep -q $BENCHMARK;then
     parsec_dir="$BASE/benchmarks/parsec-3.0"
@@ -202,6 +232,8 @@ case $ACTION in
     clean) rm -rf "$BASE/benchmarks/$BENCHMARK"
         msg "$BENCHMARK/ removed"
         exit 0;;
+
+    input) unpack $BENCHMARK && input $BENCHMARK;;
 
     unpack|compile|link)
         
