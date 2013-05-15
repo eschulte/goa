@@ -1,0 +1,90 @@
+#!/bin/bash
+#
+# Usage: run BENCHMARK EXECUTABLE [OPTIONS...]
+#  run a version of a benchmark program
+#
+# Options:
+#  -l,--limit ----- limit script for sandboxing
+#  -p,--perf ------ collect performance counters
+#  -c,--counters -- comma separated list of perf counters
+#  -w,--wattsup --- collect watts-up data during execution
+#
+# Benchmark should be one of
+#  blackscholes
+#  bodytrack
+#  facesim
+#  ferret
+#  fluidanimate
+#  freqmine
+#  raytrace
+#  swaptions
+#  vips
+#  x264
+#
+. $(dirname $0)/common
+
+## Parse Options
+if [ $# -lt 2 ];then help; fi
+BENCHMARK="$1"
+EXECUTABLE="$2"
+LIMIT="$BASE/bin/limit"
+PERF=""
+COUNTERS=""
+WATTSUP=""
+eval set -- \
+    $(getopt -o l:pc:w -l limit:,perf,counters:,wattsup -- "$@" || help;)
+while [ $# -gt 0 ];do
+    case $1 in
+        -l|--limit) LIMIT="$2"; shift;;
+        -p|--perf)  PERF="yes";;
+        -c|--counters) PERF="yes"; COUNTERS="$2"; shift;;
+        -w|--wattsup) WATTSUP="yes";;
+        (--) shift; break;;
+        (-*) error "unrecognized option $1";;
+        (*)  break;;
+    esac
+    shift
+done
+
+if [ -z "$COUNTER" ];then
+  if grep -q Intel /proc/cpuinfo; then
+    COUNTERS="cycles,instructions,r532010,r538010,cache-references,cache-misses"
+  elif grep -q AMD /proc/cpuinfo; then
+    COUNTERS="cycles,instructions,r533f00,cache-references,cache-misses"
+  fi
+fi
+
+PREFIX="$LIMIT"
+if [ ! -z "$WATTSUP" ];then
+    error "haven't implemented watts-up support."
+fi
+if [ ! -z "$PERF" ];then
+    ## perf prefix to the command
+    PERF_OUT=$(mktemp)
+    PREFIX+=" perf stat -x, -e $COUNTERS -o $PERF_OUT"
+    ## handle perf output on exit
+    function perf_exit_hook (){ cat $PERF_OUT|tail -n +3; rm -f $PERF_OUT; }
+    trap perf_exit_hook EXIT
+fi
+
+INPUT="$BASE/benchmarks/$BENCHMARK/$BENCHMARK.input"
+OUTPUT="$BASE/benchmarks/$BENCHMARK/$BENCHMARK.output"
+
+AWK_CMD=''
+AWK_CMD+='function abs(x){return ((x < 0.0) ? -x : x)}'
+AWK_CMD+='BEGIN{ diff=0; }'
+AWK_CMD+='{ diff+=abs($1-$2); }'
+AWK_CMD+='END { print diff }'
+num_diff(){ # diff of aggregate numerical closeness
+    paste <(awk '{print $1}' $1) <(awk '{print $1}' $2)|awk "$AWK_CMD"; }
+
+case $BENCHMARK in
+    blackscholes)
+        OUT=$(mktemp)
+        $PREFIX $EXECUTABLE 1 "$INPUT" $OUT 1>/dev/null 2>/dev/null
+        echo "exit,$?"
+        echo "error,$(num_diff $OUT $OUTPUT)"
+        rm -f $OUT
+        ;;
+    *) error "no test implemented for '$BENCHMARK'";;
+esac
