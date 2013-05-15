@@ -3,11 +3,11 @@
 import sys, os, io, subprocess
 from functools import reduce
 
-outfileName = "asmout.s"
-comp = "g++"
-included = set()
-
-allname = "allsrc.cpp"
+outfileName  = "asmout.s"
+comp         = "g++"
+included     = set()
+bytesWritten = 0
+allname      = "allsrc.cpp"
 
 try:
   allsrc = io.open( allname, "w")
@@ -29,7 +29,7 @@ def usage():
   sys.exit( 1 )
 
 def processSrc( fileName ):
-  global outfileName, included
+  global outfileName, included, bytesWritten
   if fileName in included: return
   included.add( fileName )
   if not os.path.isfile( fileName ): return
@@ -42,10 +42,14 @@ def processSrc( fileName ):
         include = line.split('"')[1]
         if include not in included:
           allsrc.write( "/* Begin: trying to include " + include + " */\n")
+          currentlyWritten = bytesWritten
           processSrc( include )
+          if currentlyWritten == bytesWritten: print( "Failed to include " + include )
           allsrc.write( "/* End: trying to include " + include + " */\n")
+          
       else:
         allsrc.write( line )
+        bytesWritten += len( line )
     if fileName.split('.')[-1][0] == 'h':
       # get the filename minus the .h__ extention. Multiple '.'s are OK
       cname = reduce( lambda a, b : a + '.' + b, fileName.split('.')[:-1] )
@@ -60,7 +64,7 @@ def processSrc( fileName ):
     pass
 
 def main():
-  global outfileName, comp, allsrc
+  global outfileName, comp, allsrc, allname
   args = sys.argv
   if len( args ) < 2 or len(args) > 4: usage()
   mainfile = args[1]
