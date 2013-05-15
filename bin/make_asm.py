@@ -36,6 +36,7 @@ def processSrc( fileName ):
   try:
     workingFile = io.open( fileName )
     lines = workingFile.readlines()
+    os.chdir(os.path.split(os.path.abspath(workingFile.name))[0])
     for line in lines:
       if line.split('"')[0].strip() == "#include":
         include = line.split('"')[1]
