@@ -70,6 +70,9 @@ def main():
 
   processSrc( mainfile )
   allsrc.close()
+
+  # cd back to the starting directory
+  os.chdir(os.path.split(os.path.abspath(allsrc.name))[0])
   
   if comp == "gcc":
     print( "using gcc: " )
