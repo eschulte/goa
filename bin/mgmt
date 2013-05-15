@@ -151,6 +151,9 @@ EOF
         msg "$bench/$bench.s created"
     fi; }
 
+link(){
+    error "linking not implemented"; }
+
 ## Ensure the requisite benchmark suite is installed
 if echo "${PARSEC_APPS[@]}"|grep -q $BENCHMARK;then
     parsec_dir="$BASE/benchmarks/parsec-3.0"
