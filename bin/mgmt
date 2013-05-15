@@ -152,7 +152,26 @@ EOF
     fi; }
 
 link(){
-    error "linking not implemented"; }
+    local bench=$1;
+    local bench_dir="$BASE/benchmarks/$bench";
+
+    if [ -f "$bench_dir/$bench" ];then
+        msg "$bench/$bench exists"
+    else
+        pushd "$bench_dir">/dev/null
+        case $bench in
+            blackscholes)
+                case $FLAGS in
+                    min) FLAGS="$BLACKSCHOLES_FLAGS_ALL";;
+                    all) FLAGS="$BLACKSCHOLES_FLAGS_MIN";;
+                esac
+                g++ $FLAGS blackscholes.s -o blackscholes
+                ;;
+            *) error "linking not implemented for $bench"
+        esac
+        popd>/dev/null
+        msg "$bench/$bench created"
+    fi; }
 
 ## Ensure the requisite benchmark suite is installed
 if echo "${PARSEC_APPS[@]}"|grep -q $BENCHMARK;then
