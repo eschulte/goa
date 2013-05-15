@@ -109,7 +109,11 @@ compile(){
                 ;;
             bodytrack) not_implemented $bench ;;
             facesim) not_implemented $bench ;;
-            ferret) not_implemented $bench ;;
+            ferret)
+                # This depends on the gsl library, to build gsl from
+                # parsec, the last 9 lines of gsl/doc/bspline.texi
+                # must be removed.
+                not_implemented $bench ;;
             fluidanimate)
                 cat pthreads.cpp >  all.cpp
                 cat cellpool.cpp >> all.cpp
@@ -134,7 +138,10 @@ EOF
                     |grep -v "static int omp_get_max_threads" >> all.cpp
                 g++ $FLAGS -S all.cpp -o ${bench}.s||err "compilation failed"
                 ;;
-            raytrace) not_implemented $bench ;;
+            raytrace)
+                # To build this add '#include <unistd.h>' to the top
+                # of raytrace/src/RTTL/common/MapOptions.hxx.
+                not_implemented $bench ;;
             swaptions)
                 SWAP_FLAGS="-pthread  -DENABLE_THREADS"
                 case $FLAGS in
@@ -151,13 +158,38 @@ EOF
         msg "$bench/$bench.s created"
     fi; }
 
+link(){
+    local bench=$1;
+    local bench_dir="$BASE/benchmarks/$bench";
+
+    if [ -f "$bench_dir/$bench" ];then
+        msg "$bench/$bench exists"
+    else
+        pushd "$bench_dir">/dev/null
+        case $bench in
+            blackscholes)
+                case $FLAGS in
+                    min) FLAGS="$BLACKSCHOLES_FLAGS_ALL";;
+                    all) FLAGS="$BLACKSCHOLES_FLAGS_MIN";;
+                esac
+                g++ $FLAGS blackscholes.s -o blackscholes
+                ;;
+            *) error "linking not implemented for $bench"
+        esac
+        popd>/dev/null
+        msg "$bench/$bench created"
+    fi; }
+
 ## Ensure the requisite benchmark suite is installed
-if echo "${PARSEC_APPS[@]}"|grep -q $1;then
+if echo "${PARSEC_APPS[@]}"|grep -q $BENCHMARK;then
     parsec_dir="$BASE/benchmarks/parsec-3.0"
+    parsec_tar="$BASE/etc/data/parsec-3.0.tar.gz"
     if [ ! -d "$parsec_dir" ];then
-        msg "downloading PARSEC"
-        wget http://parsec.cs.princeton.edu/download/3.0/parsec-3.0.tar.gz \
-            -O "$BASE/etc/data/parsec-3.0.tar.gz"
+        if [! -f "$parsec_tar" ];then
+            msg "downloading PARSEC"
+            wget http://parsec.cs.princeton.edu/download/3.0/parsec-3.0.tar.gz \
+                -O "$BASE/etc/data/parsec-3.0.tar.gz"
+        fi
         msg "unpacking PARSEC"
         tar xzf "$BASE/etc/data/parsec-3.0.tar.gz" -C "$BASE/benchmarks"
     fi

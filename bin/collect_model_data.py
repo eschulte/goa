@@ -31,7 +31,7 @@ root = os.path.abspath( os.path.dirname( sys.argv[ 0 ] ) )
 def sleep( bmark, dotest ):
     duration = bmark[ 5: ]
     return lambda submit: [
-        '/bin/sh', '-xc', submit + " /bin/sleep " + duration
+        '/bin/sh', '-xc', submit + " sleep " + duration
     ]
 
 def spec( bmark, dotest ):
@@ -71,13 +71,16 @@ if options.parsec:
     benchmarks += [
         ( "blackscholes", parsec ),
         ( "bodytrack", parsec ),
-        ( "canneal", parsec ),
+        ( "facesim", parsec ),
+        # ( "canneal", parsec ),
         ( "ferret", parsec ),
         ( "fluidanimate", parsec ),
         ( "freqmine", parsec ),
-        ( "netstreamcluster", parsec ),
-        ( "streamcluster", parsec ),
+        # ( "netstreamcluster", parsec ),
+        # ( "streamcluster", parsec ),
+        ( "raytrace", parsec ),
         ( "swaptions", parsec ),
+        ( "vips", parsec ),
         ( "x264", parsec ),
     ]
 if options.spec_config:
@@ -196,7 +199,7 @@ if cpuinfo.cpuinfo().is_AMD():
 else:
     flop_regs = [ "r532010", "r538010" ]
 
-wattsup = os.path.join( root, "wattsup", "wu.py" )
+wattsup = os.path.join( root, "wu.py" )
 with open( "benchmarks.csv", 'w' ) as fh:
     writer = None
     for i in range( n ):
