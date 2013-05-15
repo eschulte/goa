@@ -45,7 +45,7 @@ def processSrc( fileName ):
           allsrc.write( "/* Begin: trying to include " + include + " */\n")
           currentlyWritten = bytesWritten
           processSrc( include )
-          if currentlyWritten == bytesWritten: print( "Failed to include " + include ".\n"
+          if currentlyWritten == bytesWritten: print( "Failed to include " + include + ".\n"
                                                       "Current directory: " + 
                                                       os.path.abspath('.') )
           allsrc.write( "/* End: trying to include " + include + " */\n")
