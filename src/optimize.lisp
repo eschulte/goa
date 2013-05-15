@@ -10,7 +10,14 @@
 ;; consumption etc...
 
 ;;; Code:
-(mapcar #'require '(:software-evolution :cl-store :split-sequence :cl-ppcre))
+(mapcar (lambda (pkg)
+          (handler-case (require pkg)
+            (error (e)
+              (declare (ignorable e))
+              (format t "missing dependency on ~S~%" pkg)
+              (format t "install with (ql:quickload ~S)~%" pkg)
+              (sb-ext:exit :code 1))))
+        '(:software-evolution :cl-store :split-sequence :cl-ppcre))
 (defpackage :optimize
   (:use :common-lisp :software-evolution :software-evolution-utility
         :alexandria :metabang-bind :curry-compose-reader-macros
