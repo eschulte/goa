@@ -174,7 +174,29 @@ link(){
                     min) FLAGS="$BLACKSCHOLES_FLAGS_ALL";;
                     all) FLAGS="$BLACKSCHOLES_FLAGS_MIN";;
                 esac
-                g++ $FLAGS blackscholes.s -o blackscholes
+                g++ $FLAGS ${bench}.s -o $bench||err "linking failed"
+                ;;
+            fluidanimate)
+                case $FLAGS in
+                    min) FLAGS="$FLUID_FLAGS_ALL";;
+                    all) FLAGS="$FLUID_FLAGS_MIN";;
+                esac
+                g++ $FLAGS ${bench}.s -o $bench||err "linking failed"
+                ;;
+            freqmine)
+                case $FLAGS in
+                    min) FLAGS="-Wno-deprecated";;
+                    all) FLAGS="$PARSEC_BASE_FLAGS_ALL -Wno-deprecated";;
+                esac
+                g++ $FLAGS ${bench}.s -o $bench||err "compilation failed"
+                ;;
+            swaptions)
+                SWAP_FLAGS="-pthread  -DENABLE_THREADS"
+                case $FLAGS in
+                    min) FLAGS="$SWAP_FLAGS";;
+                    all) FLAGS="$PARSEC_BASE_FLAGS_ALL $SWAP_FLAGS";;
+                esac
+                g++ $FLAGS ${bench}.s -o $bench||err "compilation failed"
                 ;;
             *) error "linking not implemented for $bench"
         esac
@@ -224,6 +246,12 @@ output(){
         case $BENCHMARK in
             blackscholes)
                 ./$bench 1 $bench.input $target;;
+            fluidanimate)
+                ./$bench 1 5 $bench.input $target;;
+            freqmine)
+                ./$bench $bench.input 790 $target;;
+            swaptions)
+                ./$bench -ns 64 -sm 40000 -nt 1 2> $target;;
             *) error "output not implemented for $bench";;
         esac;
         popd>/dev/null
