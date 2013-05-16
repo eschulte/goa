@@ -8,6 +8,7 @@
 #  -p,--perf ------ collect performance counters
 #  -c,--counters -- comma separated list of perf counters
 #  -w,--wattsup --- collect watts-up data during execution
+#  -r,--raw ------- print raw output
 #
 # Benchmark should be one of
 #  blackscholes
@@ -27,24 +28,30 @@
 if [ $# -lt 2 ];then help; fi
 BENCHMARK="$1"
 EXECUTABLE="$2"
-LIMIT="$BASE/bin/limit"
+LIMIT="./bin/limit"
 PERF=""
 COUNTERS=""
 WATTSUP=""
+RAW=""
 eval set -- \
-    $(getopt -o l:pc:w -l limit:,perf,counters:,wattsup -- "$@" || help;)
+    $(getopt -o l:pc:wr -l limit:,perf,counters:,wattsup,raw -- "$@" || help;)
 while [ $# -gt 0 ];do
     case $1 in
         -l|--limit) LIMIT="$2"; shift;;
         -p|--perf)  PERF="yes";;
         -c|--counters) PERF="yes"; COUNTERS="$2"; shift;;
         -w|--wattsup) WATTSUP="yes";;
+        -r|--raw) RAW="yes";;
         (--) shift; break;;
         (-*) error "unrecognized option $1";;
         (*)  break;;
     esac
     shift
 done
+if [ ! -z "$RAW" ] && [ ! -z "$PERF" ];then
+    error "can't print RAW and PERF results simultaneously"
+fi
+
 
 if [ -z "$COUNTER" ];then
   if grep -q Intel /proc/cpuinfo; then
@@ -81,9 +88,14 @@ num_diff(){ # diff of aggregate numerical closeness
 case $BENCHMARK in
     blackscholes)
         OUT=$(mktemp)
+        echo "$PREFIX $EXECUTABLE 1 "$INPUT" $OUT 1>/dev/null 2>/dev/null"
         $PREFIX $EXECUTABLE 1 "$INPUT" $OUT 1>/dev/null 2>/dev/null
-        echo "exit,$?"
-        echo "error,$(num_diff $OUT $OUTPUT)"
+        if [ -z "$RAW" ];then
+            echo "exit,$?"
+            echo "error,$(num_diff $OUT $OUTPUT)"
+        else
+            cat $OUT
+        fi
         rm -f $OUT
         ;;
     *) error "no test implemented for '$BENCHMARK'";;

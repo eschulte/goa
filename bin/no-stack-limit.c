@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
   limit.rlim_cur = 17179607040; limit.rlim_max = 17179607040;
   setrlimit(RLIMIT_FSIZE, &limit);     // max file size (bytes)
   setrlimit(RLIMIT_MEMLOCK, &limit);   // max memory locked into RAM (bytes)
-  setrlimit(RLIMIT_STACK, &limit);     // max stack size (bytes)
+
   alarm(12);                           // wall clock seconds
                                        // scaled back w/o graphite
 
