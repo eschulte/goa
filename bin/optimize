@@ -156,5 +156,6 @@
                                    :name "final-pop"
                                    :type "store"))
 
-(note 1 "done after ~a fitness evaluations" *fitness-evals*)
+(note 1 "done after ~a fitness evaluations~%" *fitness-evals*)
+(note 1 "results saved in ~a~%" *res-dir*)
 (close (pop *note-out*))
