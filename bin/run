@@ -35,6 +35,9 @@ COUNTERS=""
 WATTSUP=""
 RAW=""
 DEBUG=""
+EXIT=""
+ERROR=""
+OUT=$(mktemp)
 eval set -- \
     $(getopt -o l:pc:wrd -l limit:,perf,counters:,wattsup,raw,debug \
     -- "$@" || help;)
@@ -69,14 +72,29 @@ PREFIX="$LIMIT"
 if [ ! -z $WATTSUP ];then
     error "haven't implemented watts-up support."
 fi
-if [ ! -z $PERF ];then
-    ## perf prefix to the command
+if [ -z $PERF ];then
+    # maybe print out RAW and clean up OUT
+    function exit_hook (){
+        if [ -z $RAW ];then
+            echo "$?,exit"
+            echo "$ERROR,error"
+        else
+            cat $OUT
+        fi
+        rm -f $OUT; }
+else
+    # perf prefix to the command
     PERF_OUT=$(mktemp)
     PREFIX+=" perf stat -x, -e $COUNTERS -o $PERF_OUT"
-    ## handle perf output on exit
-    function perf_exit_hook (){ cat $PERF_OUT|tail -n +3; rm -f $PERF_OUT; }
-    trap perf_exit_hook EXIT
+    # handle perf output on exit
+    function exit_hook (){
+        echo "$?,exit"
+        echo "$ERROR,error"
+        cat $PERF_OUT|tail -n +3;
+        rm -f $PERF_OUT;
+        rm -f $OUT; }
 fi
+trap exit_hook EXIT
 
 INPUT="$BASE/benchmarks/$BENCHMARK/$BENCHMARK.input"
 OUTPUT="$BASE/benchmarks/$BENCHMARK/$BENCHMARK.output"
@@ -102,28 +120,25 @@ run(){ # run, first argument picks an output stream to return
 
 case $BENCHMARK in
     blackscholes)
-        OUT=$(mktemp)
         run 0 $EXECUTABLE 1 "$INPUT" $OUT
+        EXIT=$?
         if [ -z $RAW ];then
-            echo "exit,$?"
-            echo "error,$(num_diff $OUT $OUTPUT)"
-        else
-            cat $OUT
+            ERROR=$(num_diff $OUT $OUTPUT);
         fi
-        rm -f $OUT
+        ;;
+    freqmine)
+        run 0 $EXECUTABLE 790 "$INPUT" $OUT
+        EXIT=$?
+        if [ -z $RAW ];then ERROR=$(num_diff $OUT $OUTPUT); fi
         ;;
     swaptions)
-        OUT=$(mktemp)
-        run 2 $EXECUTABLE -ns 64 -sm 40000 -nt 1 >$OUT
+        run 2 $EXECUTABLE -ns 32 -sm 20000 -nt 1 >$OUT
+        EXIT=$?
+        left=$(awk '{print $4}' $OUT)
+        right=$(awk '{print $4}' $OUTPUT)
         if [ -z $RAW ];then
-            echo "exit,$?"
-            error=$(num_diff <(awk '{print $4}' $OUT) \
-                             <(awk '{print $4}' $OUTPUT))
-            echo "error,$error"
-        else
-            cat $OUT
+            ERROR=$(paste <(echo "$left") <(echo "$right")|awk "$AWK_CMD")
         fi
-        rm -f $OUT
         ;;
     *) error "no test implemented for '$BENCHMARK'";;
 esac
