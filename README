@@ -79,8 +79,8 @@ installed.
 
      (ql:quickload :software-evolution)
 
-5. Finally checkout the following tool for the protected execution of
-   shell commands through the file system.  This serves to isolate the
+5. Checkout the following tool for the protected execution of shell
+   commands through the file system.  This serves to isolate the
    evolutionary process from the many errors thrown during extremely
    long-running optimization runs, the accumulation of which can
    occasionally stall the lisp process.  From the base of this
@@ -88,27 +88,24 @@ installed.
 
      git clone git://github.com/eschulte/sh-runner.git
 
+6. At this point it is possible to run program optimization from the
+   lisp REPL as described below.  To build a command line program
+   optimization executable, install buildapp [8] and then run make.
+
 Batch Optimization at the Command Line
 --------------------------------------
 
 At this point everything needed has been installed.  The following
 steps walk through optimizing blackscholes from the command line to
-reduce energy consumption.  Note that this requires both the assembly
-file of the original program ("blackscholes.s" compiled in step 2), as
-well as a test script capable of running blackscholes with perf to
-return the requisite error and performance counters ("bs-test").
+reduce energy consumption.
 
-1. Run the optimize script once to ensure your lisp install is working
-   and to view all of the optional arguments.
+1. Run the optimize executable once to view all of the optional
+   arguments.
 
      ./bin/optimize -h
 
-2. Compile blackscholes to assembly.
-
-     ./bin/mgmt compile blackscholes
-
-3. Build the test files for the large blackscholes test which is
-   currently hard-coded into ./bin/bs-test
+2. Compile blackscholes to assembly and generate the test input and
+   output files for blackscholes.
 
      ./bin/mgmt output blackscholes
 
@@ -147,3 +144,5 @@ Footnotes
 [6]  http://www.sbcl.org/
 
 [7]  http://www.quicklisp.org/beta/
+
+[8]  http://www.xach.com/lisp/buildapp/

@@ -7,7 +7,7 @@ LISP_STACK:=2048
 all: bin/no-limit bin/no-stack-limit bin/limit bin/optimize
 
 bin/optimize: src/run-optimize.lisp
-	$(BA) --output $@ --entry main --load $< --dynamic-space-size $(LISP_STACK)
+	$(BA) --output $@ --entry optimize:main --load $< --dynamic-space-size $(LISP_STACK)
 
 clean:
 	rm -f bin/no-limit bin/no-stack-limit bin/limit bin/optimize
