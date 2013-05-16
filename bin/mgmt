@@ -251,7 +251,7 @@ output(){
             freqmine)
                 ./$bench $bench.input 790 $target;;
             swaptions)
-                ./$bench -ns 64 -sm 40000 -nt 1 2> $target;;
+                ./$bench -ns 32 -sm 20000 -nt 1 2> $target;;
             *) error "output not implemented for $bench";;
         esac;
         popd>/dev/null
