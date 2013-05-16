@@ -55,10 +55,10 @@
   (error "must specify a positive infinity value"))
 
 (defvar *path*   nil "Path to Assembly file.")
-(defvar *script* nil "Path to test script.")
+(defvar *script* "./bin/run" "Script used to test benchmark application.")
 (defvar *res-dir* nil "Directory in which to save results.")
 (defvar *orig*   nil "Original version of the program to be run.")
-(defvar *test-fmt* nil "Set to the string used to run the test shell script.")
+(defvar *benchmark* nil "Name of the benchmark.")
 (defvar *period* nil "Period at which to run `checkpoint'.")
 (defvar *threads*  1   "Number of cores to use.")
 (defvar *evals* (expt 2 18) "Maximum number of test evaluations.")
@@ -91,7 +91,8 @@
   (with-temp-file (bin)
     (phenome asm :bin bin)
     (note 4 "running ~S~%" (edits asm))
-    (multiple-value-bind (stdout stderr errno) (shell "~a ~a" *script* bin)
+    (multiple-value-bind (stdout stderr errno)
+        (shell "~a ~a ~a -p" *script* *benchmark* bin)
       (declare (ignorable stderr))
       (cons `(:exit . ,errno) (ignore-errors (parse-stdout stdout))))))
 

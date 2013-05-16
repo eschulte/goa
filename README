@@ -105,23 +105,23 @@ return the requisite error and performance counters ("bs-test").
 
 2. Compile blackscholes to assembly.
 
-     ./bin/mgmt -a compile -b blackscholes
+     ./bin/mgmt compile blackscholes
 
 3. Build the test files for the large blackscholes test which is
    currently hard-coded into ./bin/bs-test
 
-     ./etc/data/blackscholes/inputgen 120000 bin/120000.in
-     ./etc/data/blackscholes/blackscholes 1 bin/12000.in bin/12000.out
+     ./bin/mgmt output blackscholes
 
 3. Optimize blackscholes to reduce runtime energy consumption.
 
      ./bin/optimize benchmarks/blackscholes/src/blackscholes.s \
-                    ./bin/bs-test -l g++ -e 1024 -p 128 -P 64 -t 2
+                    blackscholes -l g++ -f -lpthread -e 256 -p 128 -P 64 -t 2
 
-   The options specify that g++ should be used as the linker, 1024
-   total fitness evaluations should be run, a population of size 128
-   should be used, periodic checkpoints should be written every 64
-   fitness evaluations, and 2 threads should be used.
+   The options specify that g++ should be used as the linker, that the
+   -lpthread should be passed to g++ during linking, 256 total fitness
+   evaluations should be run, a population of size 128 should be used,
+   periodic checkpoints should be written every 64 fitness
+   evaluations, and 2 threads should be used.
 
 Interactive Optimization at the REPL
 ------------------------------------

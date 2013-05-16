@@ -1,11 +1,12 @@
 #!/usr/bin/sbcl --script
 ;; -*- mode: lisp -*-
 ;;
-;; Usage: optimize program test [OPTIONS...]
-;;  Optimize a benchmark program against a test script
+;; Usage: optimize program benchmark [OPTIONS...]
+;;  Optimize a benchmark program
 ;;
 ;; Options:
 ;;  -l,--linker LINKER ---- linker to use
+;;  -f,--flags FLAGS ------ flags to use when linking
 ;;  -t,--threads NUM ------ number of threads
 ;;  -w,--work-dir DIR ----- use an sh-runner/work directory
 ;;  -r,--res-dir DIR ------ save results to dir
@@ -59,7 +60,7 @@
   (throw-error "~a~%" *help*))
 
 (setf *path* (arg-pop))
-(setf *script* (arg-pop))
+(setf *benchmark* (arg-pop))
 (setf *orig* (from-file (make-instance 'asm-perf) *path*))
 (setf *res-dir* (append (pathname-directory *path*)
                         (list (concatenate 'string
@@ -67,6 +68,7 @@
 
 (getopts
  ("-l" "--linker"    (setf (linker *orig*) (arg-pop)))
+ ("-f" "--flags"     (setf (flags *orig*) (list (arg-pop))))
  ("-t" "--threads"   (setf *threads* (parse-integer (arg-pop))))
  ("-T" "--tourny-size" (setf *tournament-size* (parse-integer (arg-pop))))
  ("-e" "--max-evals" (setf *evals* (parse-integer (arg-pop))))
@@ -107,8 +109,9 @@
       (mapcar (lambda (param)
                 (cons param (eval param)))
               '(*path*
-                *script*
+                *benchmark*
                 (linker *orig*)
+                (flags *orig*)
                 *threads*
                 *tournament-size*
                 *evals*

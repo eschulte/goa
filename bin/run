@@ -29,7 +29,7 @@
 if [ $# -lt 2 ];then help; fi
 BENCHMARK="$1"
 EXECUTABLE="$2"
-LIMIT="./bin/limit"
+LIMIT="./bin/no-stack-limit"
 PERF=""
 COUNTERS=""
 WATTSUP=""
