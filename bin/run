@@ -118,6 +118,9 @@ run(){ # run, first argument picks an output stream to return
         $PREFIX $@ 1>/dev/null 2>/dev/null
     fi; }
 
+freqclean(){
+    sed 's/[()]//g'|awk '{all=0; for(i=1; i<=NF; i++){all+=$i}; print all}'; }
+
 case $BENCHMARK in
     blackscholes)
         run 0 $EXECUTABLE 1 "$INPUT" $OUT
@@ -127,9 +130,11 @@ case $BENCHMARK in
         fi
         ;;
     freqmine)
-        run 0 $EXECUTABLE 790 "$INPUT" $OUT
+        run 0 $EXECUTABLE "$INPUT" 790 $OUT
         EXIT=$?
-        if [ -z $RAW ];then ERROR=$(num_diff $OUT $OUTPUT); fi
+        if [ -z $RAW ];then
+            ERROR=$(num_diff <(cat $OUT|freqclean) <(cat $OUTPUT|freqclean));
+        fi
         ;;
     swaptions)
         run 2 $EXECUTABLE -ns 32 -sm 20000 -nt 1 >$OUT
