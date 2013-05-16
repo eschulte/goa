@@ -1,5 +1,4 @@
 REMOTES
-limit
-no-stack-limit
+*limit
 *.in
 *.out

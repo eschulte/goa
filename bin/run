@@ -9,6 +9,7 @@
 #  -c,--counters -- comma separated list of perf counters
 #  -w,--wattsup --- collect watts-up data during execution
 #  -r,--raw ------- print raw output
+#  -d,--debug ----- print commands before running them
 #
 # Benchmark should be one of
 #  blackscholes
@@ -33,8 +34,10 @@ PERF=""
 COUNTERS=""
 WATTSUP=""
 RAW=""
+DEBUG=""
 eval set -- \
-    $(getopt -o l:pc:wr -l limit:,perf,counters:,wattsup,raw -- "$@" || help;)
+    $(getopt -o l:pc:wrd -l limit:,perf,counters:,wattsup,raw,debug \
+    -- "$@" || help;)
 while [ $# -gt 0 ];do
     case $1 in
         -l|--limit) LIMIT="$2"; shift;;
@@ -42,18 +45,19 @@ while [ $# -gt 0 ];do
         -c|--counters) PERF="yes"; COUNTERS="$2"; shift;;
         -w|--wattsup) WATTSUP="yes";;
         -r|--raw) RAW="yes";;
+        -d|--debug) DEBUG="yes";;
         (--) shift; break;;
         (-*) error "unrecognized option $1";;
         (*)  break;;
     esac
     shift
 done
-if [ ! -z "$RAW" ] && [ ! -z "$PERF" ];then
+if [ ! -z $RAW ] && [ ! -z $PERF ];then
     error "can't print RAW and PERF results simultaneously"
 fi
 
 
-if [ -z "$COUNTER" ];then
+if [ -z $COUNTER ];then
   if grep -q Intel /proc/cpuinfo; then
     COUNTERS="cycles,instructions,r532010,r538010,cache-references,cache-misses"
   elif grep -q AMD /proc/cpuinfo; then
@@ -62,10 +66,10 @@ if [ -z "$COUNTER" ];then
 fi
 
 PREFIX="$LIMIT"
-if [ ! -z "$WATTSUP" ];then
+if [ ! -z $WATTSUP ];then
     error "haven't implemented watts-up support."
 fi
-if [ ! -z "$PERF" ];then
+if [ ! -z $PERF ];then
     ## perf prefix to the command
     PERF_OUT=$(mktemp)
     PREFIX+=" perf stat -x, -e $COUNTERS -o $PERF_OUT"
@@ -85,14 +89,37 @@ AWK_CMD+='END { print diff }'
 num_diff(){ # diff of aggregate numerical closeness
     paste <(awk '{print $1}' $1) <(awk '{print $1}' $2)|awk "$AWK_CMD"; }
 
+run(){ # run, first argument picks an output stream to return
+    local out=$1; shift;
+    if [ ! -z $DEBUG ];then echo "$PREFIX $@" >&2; fi
+    if [ $out -eq 1 ];then
+        $PREFIX $@ 2>/dev/null
+    elif [ $out -eq 2 ];then
+        $PREFIX $@ 3>&1 1>/dev/null 2>&3
+    else
+        $PREFIX $@ 1>/dev/null 2>/dev/null
+    fi; }
+
 case $BENCHMARK in
     blackscholes)
         OUT=$(mktemp)
-        echo "$PREFIX $EXECUTABLE 1 "$INPUT" $OUT 1>/dev/null 2>/dev/null"
-        $PREFIX $EXECUTABLE 1 "$INPUT" $OUT 1>/dev/null 2>/dev/null
-        if [ -z "$RAW" ];then
+        run 0 $EXECUTABLE 1 "$INPUT" $OUT
+        if [ -z $RAW ];then
             echo "exit,$?"
             echo "error,$(num_diff $OUT $OUTPUT)"
+        else
+            cat $OUT
+        fi
+        rm -f $OUT
+        ;;
+    swaptions)
+        OUT=$(mktemp)
+        run 2 $EXECUTABLE -ns 64 -sm 40000 -nt 1 >$OUT
+        if [ -z $RAW ];then
+            echo "exit,$?"
+            error=$(num_diff <(awk '{print $4}' $OUT) \
+                             <(awk '{print $4}' $OUTPUT))
+            echo "error,$error"
         else
             cat $OUT
         fi
