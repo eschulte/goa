@@ -1,0 +1,149 @@
+#!/bin/bash
+#
+# Usage: run BENCHMARK EXECUTABLE [OPTIONS...]
+#  run a version of a benchmark program
+#
+# Options:
+#  -l,--limit ----- limit script for sandboxing
+#  -p,--perf ------ collect performance counters
+#  -c,--counters -- comma separated list of perf counters
+#  -w,--wattsup --- collect watts-up data during execution
+#  -r,--raw ------- print raw output
+#  -d,--debug ----- print commands before running them
+#
+# Benchmark should be one of
+#  blackscholes
+#  bodytrack
+#  facesim
+#  ferret
+#  fluidanimate
+#  freqmine
+#  raytrace
+#  swaptions
+#  vips
+#  x264
+#
+. $(dirname $0)/common
+
+## Parse Options
+if [ $# -lt 2 ];then help; fi
+BENCHMARK="$1"
+EXECUTABLE="$2"
+LIMIT="./bin/limit"
+PERF=""
+COUNTERS=""
+WATTSUP=""
+RAW=""
+DEBUG=""
+EXIT=""
+ERROR=""
+OUT=$(mktemp)
+eval set -- \
+    $(getopt -o l:pc:wrd -l limit:,perf,counters:,wattsup,raw,debug \
+    -- "$@" || help;)
+while [ $# -gt 0 ];do
+    case $1 in
+        -l|--limit) LIMIT="$2"; shift;;
+        -p|--perf)  PERF="yes";;
+        -c|--counters) PERF="yes"; COUNTERS="$2"; shift;;
+        -w|--wattsup) WATTSUP="yes";;
+        -r|--raw) RAW="yes";;
+        -d|--debug) DEBUG="yes";;
+        (--) shift; break;;
+        (-*) error "unrecognized option $1";;
+        (*)  break;;
+    esac
+    shift
+done
+if [ ! -z $RAW ] && [ ! -z $PERF ];then
+    error "can't print RAW and PERF results simultaneously"
+fi
+
+
+if [ -z $COUNTER ];then
+  if grep -q Intel /proc/cpuinfo; then
+    COUNTERS="cycles,instructions,r532010,r538010,cache-references,cache-misses"
+  elif grep -q AMD /proc/cpuinfo; then
+    COUNTERS="cycles,instructions,r533f00,cache-references,cache-misses"
+  fi
+fi
+
+PREFIX="$LIMIT"
+if [ ! -z $WATTSUP ];then
+    error "haven't implemented watts-up support."
+fi
+if [ -z $PERF ];then
+    # maybe print out RAW and clean up OUT
+    function exit_hook (){
+        if [ -z $RAW ];then
+            echo "$?,exit"
+            echo "$ERROR,error"
+        else
+            cat $OUT
+        fi
+        rm -f $OUT; }
+else
+    # perf prefix to the command
+    PERF_OUT=$(mktemp)
+    PREFIX+=" perf stat -x, -e $COUNTERS -o $PERF_OUT"
+    # handle perf output on exit
+    function exit_hook (){
+        echo "$?,exit"
+        echo "$ERROR,error"
+        cat $PERF_OUT|tail -n +3;
+        rm -f $PERF_OUT;
+        rm -f $OUT; }
+fi
+trap exit_hook EXIT
+
+INPUT="$BASE/benchmarks/$BENCHMARK/$BENCHMARK.input"
+OUTPUT="$BASE/benchmarks/$BENCHMARK/$BENCHMARK.output"
+
+AWK_CMD=''
+AWK_CMD+='function abs(x){return ((x < 0.0) ? -x : x)}'
+AWK_CMD+='BEGIN{ diff=0; }'
+AWK_CMD+='{ diff+=abs($1-$2); }'
+AWK_CMD+='END { print diff }'
+num_diff(){ # diff of aggregate numerical closeness
+    paste <(awk '{print $1}' $1) <(awk '{print $1}' $2)|awk "$AWK_CMD"; }
+
+run(){ # run, first argument picks an output stream to return
+    local out=$1; shift;
+    if [ ! -z $DEBUG ];then echo "$PREFIX $@" >&2; fi
+    if [ $out -eq 1 ];then
+        $PREFIX $@ 2>/dev/null
+    elif [ $out -eq 2 ];then
+        $PREFIX $@ 3>&1 1>/dev/null 2>&3
+    else
+        $PREFIX $@ 1>/dev/null 2>/dev/null
+    fi; }
+
+freqclean(){
+    sed 's/[()]//g'|awk '{all=0; for(i=1; i<=NF; i++){all+=$i}; print all}'; }
+
+case $BENCHMARK in
+    blackscholes)
+        run 0 $EXECUTABLE 1 "$INPUT" $OUT
+        EXIT=$?
+        if [ -z $RAW ];then
+            ERROR=$(num_diff $OUT $OUTPUT);
+        fi
+        ;;
+    freqmine)
+        run 0 $EXECUTABLE "$INPUT" 790 $OUT
+        EXIT=$?
+        if [ -z $RAW ];then
+            ERROR=$(num_diff <(cat $OUT|freqclean) <(cat $OUTPUT|freqclean));
+        fi
+        ;;
+    swaptions)
+        run 2 $EXECUTABLE -ns 32 -sm 20000 -nt 1 >$OUT
+        EXIT=$?
+        left=$(awk '{print $4}' $OUT)
+        right=$(awk '{print $4}' $OUTPUT)
+        if [ -z $RAW ];then
+            ERROR=$(paste <(echo "$left") <(echo "$right")|awk "$AWK_CMD")
+        fi
+        ;;
+    *) error "no test implemented for '$BENCHMARK'";;
+esac

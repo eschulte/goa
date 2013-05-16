@@ -5,7 +5,7 @@
 #
 #  model used is
 #
-#   watts = C_cycles × M_cycles +
+#     kwh = C_cycles × M_cycles +
 #           C_instructions × M_instructions +
 #           C_fops × M_fops +
 #           C_mem × M_mem
@@ -26,4 +26,4 @@ if('r533f00' %in% colnames(metrics))
 
 mem <- rowSums(data.frame(metrics$cache.references, metrics$cache.misses));
 
-summary(lm(metrics$watts ~ metrics$cycles + metrics$instructions + fops + mem))
+summary(lm(metrics$kwh ~ metrics$cycles + metrics$instructions + fops + mem))

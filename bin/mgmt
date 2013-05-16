@@ -8,6 +8,8 @@
 #  unpack ---------- download or copy the benchmark source
 #  compile --------- compile the benchmark to assembly
 #  link ------------ link the assembly benchmark to an executable
+#  input ----------- generate test input for benchmark
+#  output ---------- generate correct test output for benchmark
 #
 # Options:
 #  -f,--flags ------ either `all' or `min'
@@ -172,12 +174,88 @@ link(){
                     min) FLAGS="$BLACKSCHOLES_FLAGS_ALL";;
                     all) FLAGS="$BLACKSCHOLES_FLAGS_MIN";;
                 esac
-                g++ $FLAGS blackscholes.s -o blackscholes
+                g++ $FLAGS ${bench}.s -o $bench||err "linking failed"
+                ;;
+            fluidanimate)
+                case $FLAGS in
+                    min) FLAGS="$FLUID_FLAGS_ALL";;
+                    all) FLAGS="$FLUID_FLAGS_MIN";;
+                esac
+                g++ $FLAGS ${bench}.s -o $bench||err "linking failed"
+                ;;
+            freqmine)
+                case $FLAGS in
+                    min) FLAGS="-Wno-deprecated";;
+                    all) FLAGS="$PARSEC_BASE_FLAGS_ALL -Wno-deprecated";;
+                esac
+                g++ $FLAGS ${bench}.s -o $bench||err "compilation failed"
+                ;;
+            swaptions)
+                SWAP_FLAGS="-pthread  -DENABLE_THREADS"
+                case $FLAGS in
+                    min) FLAGS="$SWAP_FLAGS";;
+                    all) FLAGS="$PARSEC_BASE_FLAGS_ALL $SWAP_FLAGS";;
+                esac
+                g++ $FLAGS ${bench}.s -o $bench||err "compilation failed"
                 ;;
             *) error "linking not implemented for $bench"
         esac
         popd>/dev/null
         msg "$bench/$bench created"
+    fi; }
+
+input(){
+    local bench=$1;
+    local target=$bench.input;
+    local bench_dir="$BASE/benchmarks/$bench";
+    local parsec_dir="$BASE/benchmarks/parsec-3.0/pkgs/apps/$bench";
+    pushd "$bench_dir">/dev/null
+
+    if [ -f "$bench_dir/$target" ];then
+        msg "$bench/$target exists"
+    else
+        case $BENCHMARK in
+            blackscholes)
+                tar xf ${parsec_dir}/inputs/input_simlarge.tar
+                mv in_64K.txt $target;;
+            fluidanimate)
+                tar xf ${parsec_dir}/inputs/input_simlarge.tar
+                mv in_300K.fluid $target;;
+            freqmine)
+                tar xf ${parsec_dir}/inputs/input_simmedium.tar
+                mv kosarak_500k.dat $target;;
+            swaptions)
+                msg "no input needed for $bench"
+                return 0;;
+            *) error "input not implemented for $bench";;
+        esac;
+        popd>/dev/null
+        msg "$bench/$target created";
+    fi; }
+
+output(){
+    local bench=$1;
+    local target=$bench.output;
+    local bench_dir="$BASE/benchmarks/$bench";
+    pushd "$bench_dir">/dev/null
+
+    if [ -f "$bench_dir/$target" ];then
+        msg "$bench/$target exists"
+    else
+        input $bench;
+        case $BENCHMARK in
+            blackscholes)
+                ./$bench 1 $bench.input $target;;
+            fluidanimate)
+                ./$bench 1 5 $bench.input $target;;
+            freqmine)
+                ./$bench $bench.input 790 $target;;
+            swaptions)
+                ./$bench -ns 32 -sm 20000 -nt 1 2> $target;;
+            *) error "output not implemented for $bench";;
+        esac;
+        popd>/dev/null
+        msg "$bench/$target created";
     fi; }
 
 ## Ensure the requisite benchmark suite is installed
@@ -203,7 +281,9 @@ case $ACTION in
         msg "$BENCHMARK/ removed"
         exit 0;;
 
-    unpack|compile|link)
+    input) unpack $BENCHMARK && input $BENCHMARK;;
+
+    unpack|compile|link|output)
         
         unpack $BENCHMARK
         [[ $ACTION == "unpack" ]] && exit 0;
@@ -213,7 +293,10 @@ case $ACTION in
 
         link $BENCHMARK
         [[ $ACTION == "link" ]] && exit 0;
+
+        output $BENCHMARK
+        [[ $ACTION == "output" ]] && exit 0;
         ;;
 
-    *) echo -e "'$ACTION' is not a valid action\n">&2; help;;
+    *) error "'$ACTION' is not a valid action\n";;
 esac

@@ -34,9 +34,10 @@
 ;;
 
 ;;; Code:
-(let ((*error-output* (make-broadcast-stream)))
-  (load (merge-pathnames ".sbclrc" (user-homedir-pathname))))
-(load "bin/common.lisp")
+(let ((*error-output* (make-broadcast-stream))
+      (*compile-print* nil) (*compile-verbose* nil))
+  (load (merge-pathnames ".sbclrc" (user-homedir-pathname)))
+  (load "bin/common.lisp"))
 (in-package :optimize)
 
 
