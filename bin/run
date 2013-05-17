@@ -145,5 +145,13 @@ case $BENCHMARK in
             ERROR=$(paste <(echo "$left") <(echo "$right")|awk "$AWK_CMD")
         fi
         ;;
+
+    # Instruction for running SPEC programs
+    #
+    # 13 (run it), it tells you to use "specinvoke" but the fine print
+    # about a cross-compiled environment mentions how to find the
+    # actual commands.
+    #
+    # http://www.spec.org/cpu2006/Docs/runspec-avoidance.html
     *) error "no test implemented for '$BENCHMARK'";;
 esac
