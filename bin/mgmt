@@ -105,12 +105,13 @@ unpack(){ # dispatch depending on benchmark suite
     if [ -d "$bench_dir" ];then
         msg "$bench/ exists"
     else
-        if echo "${PARSEC_APPS[@]}"|grep -q $1;then
+        if echo "${PARSEC_APPS[@]}"|grep -q $bench;then
             mkdir -p "$bench_dir"
             cp -R "$BASE"/benchmarks/parsec-3.0/pkgs/apps/$bench/src/* "$bench_dir"
-        elif echo "${SPEC_APPS[@]}"|grep -q $1;then
+        elif echo "${SPEC_APPS[@]}"|grep -q $bench;then
+            SPEC_BENCH=$(echo "${SPEC_APPS[@]}"|tr ' ' '\n'|grep $bench)
             mkdir -p "$bench_dir"
-            cp -R "$BASE"/benchmarks/SPEC_CPU2006v1.0/benchspec/CPU2006/$bench/src/* "$bench_dir"
+            cp -R "$BASE"/benchmarks/SPEC_CPU2006v1.0/benchspec/CPU2006/$SPEC_BENCH/src/* "$bench_dir"
             chmod -R u+w "$bench_dir"
         else
             error "benchmark '$1' is not known"
@@ -130,6 +131,8 @@ compile(){
     else
         pushd "$bench_dir">/dev/null
         case $bench in
+
+            ## PARSEC
             blackscholes)
                 case $FLAGS in
                     min) FLAGS="$BLACKSCHOLES_FLAGS_ALL";;
@@ -184,6 +187,17 @@ EOF
                 ;;
             vips) not_implemented $bench ;;
             x264) not_implemented $bench ;;
+            
+            ## SPEC
+            bzip2)
+                case $FLAGS in
+                    *) FLAGS="-DSPEC_CPU -DNDEBUG -O2 -DSPEC_CPU_LP64";;
+                esac
+                gcc-4.4 -combine -S spec.c blocksort.c bzip2.c compress.c \
+                    crctable.c decompress.c huffman.c randtable.c \
+                    -o $bench.s
+                ;;
+            *) not_implemented $bench ;;
         esac
         popd>/dev/null
         msg "$bench/$bench.s created"
