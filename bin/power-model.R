@@ -26,4 +26,5 @@ if('r533f00' %in% colnames(metrics))
 
 mem <- rowSums(data.frame(metrics$cache.references, metrics$cache.misses));
 
-summary(lm(metrics$kwh ~ metrics$cycles + metrics$instructions + fops + mem))
+## summary(lm(metrics$kwh ~ metrics$cycles + metrics$instructions + fops + mem))
+summary(lm(metrics$kwh ~ metrics$cycles + metrics$instructions + fops + metrics$cache.references + metrics$cache.misses))
