@@ -45,6 +45,22 @@ Optimization Notes                                         -*- org -*-
           with some small changes we should be able to implement MCMC
           as a search strategy
 
+* Notes
+** Benchmarks
+*** PARSEC applications
+| Program      | Language   | parallel      | test difficulty | working set | communication |
+|--------------+------------+---------------+-----------------+-------------+---------------|
+| blackscholes | C/CPP      | data parallel | easy            | small       | negligible    |
+| bodytrack    | CPP        | pipeline      | hard            |             |               |
+| facesim      | C/CPP      | data parallel | hard            |             |               |
+| ferret       | C          | pipeline      | hard            | huge        | very much     |
+| fluidanimate | CPP        | data parallel | easy            | large       | some          |
+| freqmine     | CPP/OpenMP | data parallel | medium          | huge        | some          |
+| raytrace     | C/OpenGL   | data parallel |                 | large       | little        |
+| swaptions    | CPP        | data parallel |                 | medium      | little        |
+| vips         | C          | data parallel | medium (image)  | medium      | some          |
+| x264         | C          | pipeline      | medium (video)  | medium      | very          |
+
 * Tasks [7/23]
 ** TODO Build all benchmarks to ASM [4/10]
 *** DONE Blackscholes
