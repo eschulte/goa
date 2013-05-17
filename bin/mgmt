@@ -183,7 +183,7 @@ EOF
                     all) FLAGS="$PARSEC_BASE_FLAGS_ALL $SWAP_FLAGS";;
                 esac
                 cat *.c* > all.cpp
-                g++ $FLAGS -S all.cpp -o ${bench}.s||err "compilation failed"
+                g++ $FLAGS -S all.cpp -o ${bench}.s||error "compilation failed"
                 ;;
             vips) not_implemented $bench ;;
             x264) not_implemented $bench ;;
@@ -191,10 +191,11 @@ EOF
             ## SPEC
             bzip2)
                 case $FLAGS in
+                    # TODO: multiple compiler flags options
                     *) FLAGS="-DSPEC_CPU -DNDEBUG -O2 -DSPEC_CPU_LP64";;
                 esac
                 gcc-4.4 -combine -S spec.c blocksort.c bzip2.c compress.c \
-                    crctable.c decompress.c huffman.c randtable.c \
+                    crctable.c decompress.c huffman.c randtable.c bzlib.c \
                     -o $bench.s
                 ;;
             *) not_implemented $bench ;;
@@ -212,26 +213,28 @@ link(){
     else
         pushd "$bench_dir">/dev/null
         case $bench in
+
+            ## PARSEC
             blackscholes)
                 case $FLAGS in
                     min) FLAGS="$BLACKSCHOLES_FLAGS_ALL";;
                     all) FLAGS="$BLACKSCHOLES_FLAGS_MIN";;
                 esac
-                g++ $FLAGS ${bench}.s -o $bench||err "linking failed"
+                g++ $FLAGS ${bench}.s -o $bench||error "linking failed"
                 ;;
             fluidanimate)
                 case $FLAGS in
                     min) FLAGS="$FLUID_FLAGS_ALL";;
                     all) FLAGS="$FLUID_FLAGS_MIN";;
                 esac
-                g++ $FLAGS ${bench}.s -o $bench||err "linking failed"
+                g++ $FLAGS ${bench}.s -o $bench||error "linking failed"
                 ;;
             freqmine)
                 case $FLAGS in
                     min) FLAGS="-Wno-deprecated";;
                     all) FLAGS="$PARSEC_BASE_FLAGS_ALL -Wno-deprecated";;
                 esac
-                g++ $FLAGS ${bench}.s -o $bench||err "compilation failed"
+                g++ $FLAGS ${bench}.s -o $bench||error "compilation failed"
                 ;;
             swaptions)
                 SWAP_FLAGS="-pthread  -DENABLE_THREADS"
@@ -239,8 +242,17 @@ link(){
                     min) FLAGS="$SWAP_FLAGS";;
                     all) FLAGS="$PARSEC_BASE_FLAGS_ALL $SWAP_FLAGS";;
                 esac
-                g++ $FLAGS ${bench}.s -o $bench||err "compilation failed"
+                g++ $FLAGS ${bench}.s -o $bench||error "compilation failed"
                 ;;
+
+            ## SPEC
+            bzip2)
+                case $FLAGS in
+                    # TODO: multiple compiler flags options
+                    *) FLAGS="-O2  -DSPEC_CPU_LP64";;
+                esac
+                gcc $FLAGS ${bench}.s -o $bench||error "compilation failed";;
+
             *) error "linking not implemented for $bench"
         esac
         popd>/dev/null
@@ -258,6 +270,8 @@ input(){
         msg "$bench/$target exists"
     else
         case $BENCHMARK in
+
+            ## PARSEC
             blackscholes)
                 tar xf ${parsec_dir}/inputs/input_simlarge.tar
                 mv in_64K.txt $target;;
@@ -270,6 +284,13 @@ input(){
             swaptions)
                 msg "no input needed for $bench"
                 return 0;;
+
+            ## SPEC
+            bzip2)
+                SPEC_BENCH=$(echo "${SPEC_APPS[@]}"|tr ' ' '\n'|grep $bench)
+                mkdir -p "$bench_dir"
+                cp "$BASE"/benchmarks/SPEC_CPU2006v1.0/benchspec/CPU2006/$SPEC_BENCH/data/train/input/byoudoin.jpg $target;;
+
             *) error "input not implemented for $bench";;
         esac;
         popd>/dev/null
@@ -287,6 +308,8 @@ output(){
     else
         input $bench;
         case $BENCHMARK in
+            
+            ## PARSEC
             blackscholes)
                 ./$bench 1 $bench.input $target;;
             fluidanimate)
@@ -295,6 +318,12 @@ output(){
                 ./$bench $bench.input 790 $target;;
             swaptions)
                 ./$bench -ns 32 -sm 20000 -nt 1 2> $target;;
+
+            ## SPEC
+            bzip2)
+                SPEC_BENCH=$(echo "${SPEC_APPS[@]}"|tr ' ' '\n'|grep $bench)
+                cp "$BASE"/benchmarks/SPEC_CPU2006v1.0/benchspec/CPU2006/$SPEC_BENCH/data/train/output/byoudoin.jpg.out $target;;
+
             *) error "output not implemented for $bench";;
         esac;
         popd>/dev/null
