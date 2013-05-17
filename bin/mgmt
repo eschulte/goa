@@ -35,7 +35,7 @@ while [ $# -gt 0 ];do
     shift
 done
 
-## PARSEC applications
+## Benchmark applications
 declare -a PARSEC_APPS
 PARSEC_APPS+=(blackscholes)
 PARSEC_APPS+=(bodytrack)
@@ -47,6 +47,39 @@ PARSEC_APPS+=(raytrace)
 PARSEC_APPS+=(swaptions)
 PARSEC_APPS+=(vips)
 PARSEC_APPS+=(x264)
+
+declare -a SPEC_APPS
+SPEC_APPS+=(400.perlbench)
+SPEC_APPS+=(401.bzip2)
+SPEC_APPS+=(403.gcc)
+SPEC_APPS+=(410.bwaves)
+SPEC_APPS+=(416.gamess)
+SPEC_APPS+=(429.mcf)
+SPEC_APPS+=(433.milc)
+SPEC_APPS+=(434.zeusmp)
+SPEC_APPS+=(435.gromacs)
+SPEC_APPS+=(436.cactusADM)
+SPEC_APPS+=(437.leslie3d)
+SPEC_APPS+=(444.namd)
+SPEC_APPS+=(445.gobmk)
+SPEC_APPS+=(447.dealII)
+SPEC_APPS+=(450.soplex)
+SPEC_APPS+=(453.povray)
+SPEC_APPS+=(454.calculix)
+SPEC_APPS+=(456.hmmer)
+SPEC_APPS+=(458.sjeng)
+SPEC_APPS+=(459.GemsFDTD)
+SPEC_APPS+=(462.libquantum)
+SPEC_APPS+=(464.h264ref)
+SPEC_APPS+=(465.tonto)
+SPEC_APPS+=(470.lbm)
+SPEC_APPS+=(471.omnetpp)
+SPEC_APPS+=(473.astar)
+SPEC_APPS+=(481.wrf)
+SPEC_APPS+=(482.sphinx3)
+SPEC_APPS+=(483.xalancbmk)
+SPEC_APPS+=(998.specrand)
+SPEC_APPS+=(999.specrand)
 
 ## Compilation Flags
 PARSEC_BASE_FLAGS_ALL="-O3 -g -funroll-loops -fprefetch-loop-arrays "
@@ -67,27 +100,23 @@ FLUID_FLAGS_MIN="-Wno-invalid-offsetof"
 
 ## Functions
 unpack(){ # dispatch depending on benchmark suite
-    if echo "${PARSEC_APPS[@]}"|grep -q $1;then
-        parsec_unpack $1;
-    elif echo "${SPEC_APPS[@]}"|grep -q $1;then
-        spec_unpack $1;
-    else
-        error "benchmark '$1' is not known"
-    fi; }
-
-parsec_unpack(){
     local bench=$1;
     local bench_dir="$BASE/benchmarks/$bench";
     if [ -d "$bench_dir" ];then
         msg "$bench/ exists"
     else
-        mkdir -p "$bench_dir"
-        cp -R "$BASE"/benchmarks/parsec-3.0/pkgs/apps/$bench/src/* "$bench_dir"
+        if echo "${PARSEC_APPS[@]}"|grep -q $1;then
+            mkdir -p "$bench_dir"
+            cp -R "$BASE"/benchmarks/parsec-3.0/pkgs/apps/$bench/src/* "$bench_dir"
+        elif echo "${SPEC_APPS[@]}"|grep -q $1;then
+            mkdir -p "$bench_dir"
+            cp -R "$BASE"/benchmarks/SPEC_CPU2006v1.0/benchspec/CPU2006/$bench/src/* "$bench_dir"
+            chmod -R u+w "$bench_dir"
+        else
+            error "benchmark '$1' is not known"
+        fi
         msg "$bench/ created"
     fi; }
-
-spec_unpack(){
-    error "'spec_unpack' is not yet implemented"; }
 
 not_implemented(){
     error "$1 compilation not yet implemented"; }
