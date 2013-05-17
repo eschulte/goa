@@ -40,11 +40,11 @@
   "HW counters and coefficients for the Intel Sandybridge energy model.")
 
 (defvar amd-opteron-energy-model
-  '((1.0 :cycles)
-    (1.0 :instructions)
-    (1.0 :r533f00)
-    (1.0 :cache-references)
-    (1.0 :cache-misses))
+  '(( 4.411e-14 :cycles)
+    ( 2.235e-15 :instructions)
+    (-8.531e-16 :r533f00)
+    (-1.256e-14 :cache-references)
+    ( 3.679e-13 :cache-misses))
   "HW counters and coefficients in the AMD Opteron energy model.")
 
 ;;; Utility functions
