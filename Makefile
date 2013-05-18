@@ -2,10 +2,14 @@
 BA:=buildapp
 
 # Size of the lisp memory in Mb, defaults to 2G
-LISP_STACK:=2048
+LISP_STACK?=2048
 
 # Pointer to local Quicklisp directory
 QUICK_LISP?=$(HOME)/quick-lisp
+
+ifeq ($(shell [ -d $(QUICK_LISP) ] && echo exists),)
+$(error The QUICK_LISP environment variable must point to your quicklisp install)
+endif
 
 all: bin/no-limit bin/no-stack-limit bin/limit bin/optimize
 
