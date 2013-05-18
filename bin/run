@@ -129,6 +129,15 @@ case $BENCHMARK in
             ERROR=$(num_diff $OUT $OUTPUT);
         fi
         ;;
+    fluidanimate)
+        run 0 $EXECUTABLE 1 5 "$INPUT" $OUT
+        EXIT=$?
+        if diff $OUT $OUTPUT;then
+            ERROR=0;
+        else
+            ERROR=1;
+        fi
+        ;;
     freqmine)
         run 0 $EXECUTABLE "$INPUT" 790 $OUT
         EXIT=$?
