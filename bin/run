@@ -162,5 +162,18 @@ case $BENCHMARK in
     # actual commands.
     #
     # http://www.spec.org/cpu2006/Docs/runspec-avoidance.html
+    #
+    # Unfortunately, spec actually uses C programs which are linked
+    # with their benchmarks as their test drivers, so we might not be
+    # able to simply re-use their stuff.
+    # 
+    bzip2)
+        run 0 $EXECUTABLE -c "$INPUT" > $OUT
+        EXIT=$?
+        # maybe compare compressed size to original compressed file
+        #     [ $(wc -c "$OUT") -gt $(wc -c "$OUTPUT") ]
+        #
+        # then un-compress and compare to the original
+        ;;
     *) error "no test implemented for '$BENCHMARK'";;
 esac

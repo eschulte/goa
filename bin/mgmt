@@ -191,12 +191,12 @@ EOF
             ## SPEC
             bzip2)
                 case $FLAGS in
-                    # TODO: multiple compiler flags options
-                    *) FLAGS="-DSPEC_CPU -DNDEBUG -O2 -DSPEC_CPU_LP64";;
+                    min) FLAGS="";;
+                    all) FLAGS="-O3";;
                 esac
-                gcc-4.4 -combine -S spec.c blocksort.c bzip2.c compress.c \
-                    crctable.c decompress.c huffman.c randtable.c bzlib.c \
-                    -o $bench.s
+                gcc-4.4 -combine -S blocksort.c bzip2.c compress.c \
+                    crctable.c decompress.c huffman.c randtable.c \
+                    bzlib.c -o $bench.s
                 ;;
             *) not_implemented $bench ;;
         esac
@@ -321,9 +321,7 @@ output(){
 
             ## SPEC
             bzip2)
-                SPEC_BENCH=$(echo "${SPEC_APPS[@]}"|tr ' ' '\n'|grep $bench)
-                cp "$BASE"/benchmarks/SPEC_CPU2006v1.0/benchspec/CPU2006/$SPEC_BENCH/data/train/output/byoudoin.jpg.out $target;;
-
+                ./$bench -c $bench.input > $target;;
             *) error "output not implemented for $bench";;
         esac;
         popd>/dev/null
