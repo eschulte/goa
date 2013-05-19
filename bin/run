@@ -168,12 +168,17 @@ case $BENCHMARK in
     # able to simply re-use their stuff.
     # 
     bzip2)
-        run 0 $EXECUTABLE -c "$INPUT" > $OUT
+        run 1 $EXECUTABLE -c "$INPUT" > $OUT
         EXIT=$?
-        # maybe compare compressed size to original compressed file
-        #     [ $(wc -c "$OUT") -gt $(wc -c "$OUTPUT") ]
-        #
+        ERROR=0
+        # compare compressed size to original compressed file
+        if [ $(cat $OUT|wc -c) -gt $(cat $OUTPUT|wc -c) ];then
+            ERROR=$(($ERROR + 1))
+        fi
         # then un-compress and compare to the original
+        if ! diff -q "$INPUT" <(bunzip2 -c $OUT);then
+            ERROR=$(($ERROR + 10))
+        fi
         ;;
     *) error "no test implemented for '$BENCHMARK'";;
 esac
