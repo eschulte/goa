@@ -76,7 +76,7 @@ def processSrc( fileName, oldpath ):
     workingFile.close()
     os.chdir( oldpath )
   except Exception as e:
-    print( "The file " + fileName + " does not exist." )
+    print( "Got an error while manipulating " + fileName + ". Error: " + str(e) )
   finally:
     pass
 

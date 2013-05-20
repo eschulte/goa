@@ -90,9 +90,6 @@ def main():
   if len( args ) > 3: comp        = args[3]
   
   processSrc( mainfile )
-
-  # cd back to the starting directory
-  #os.chdir(os.path.split(os.path.abspath(allsrc.name))[0])
   allsrc.close()
 
   print( "Changing directory to original: " + os.path.abspath( '.' ) )
@@ -101,7 +98,7 @@ def main():
     subprocess.call( [comp, "-S", "-x", "c", allname, "-o", outfileName] )
   else:
     subprocess.call( [comp, "-S", allname, "-o", outfileName] )
-  #subprocess.call( ["rm", allname] )
+    #subprocess.call( ["rm", allname] )
 
 if __name__ == '__main__':
 	main()

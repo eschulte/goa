@@ -1,0 +1,13 @@
+#!/bin/bash
+
+mkdir $2
+
+for i in `find $1 -name "*.c*"`
+do 
+    cp $i $2; 
+done
+
+for i in `find $1 -name "*.h*"`
+do
+    cp $i $2
+done
