@@ -1,5 +1,4 @@
 ;;; Code:
-(load (merge-pathnames ".sbclrc" (user-homedir-pathname)))
 (load "src/optimize.lisp")
 (in-package :optimize)
 

@@ -129,6 +129,15 @@ case $BENCHMARK in
             ERROR=$(num_diff $OUT $OUTPUT);
         fi
         ;;
+    fluidanimate)
+        run 0 $EXECUTABLE 1 5 "$INPUT" $OUT
+        EXIT=$?
+        if diff $OUT $OUTPUT;then
+            ERROR=0;
+        else
+            ERROR=1;
+        fi
+        ;;
     freqmine)
         run 0 $EXECUTABLE "$INPUT" 790 $OUT
         EXIT=$?
@@ -143,6 +152,32 @@ case $BENCHMARK in
         right=$(awk '{print $4}' $OUTPUT)
         if [ -z $RAW ];then
             ERROR=$(paste <(echo "$left") <(echo "$right")|awk "$AWK_CMD")
+        fi
+        ;;
+
+    # Instruction for running SPEC programs
+    #
+    # 13 (run it), it tells you to use "specinvoke" but the fine print
+    # about a cross-compiled environment mentions how to find the
+    # actual commands.
+    #
+    # http://www.spec.org/cpu2006/Docs/runspec-avoidance.html
+    #
+    # Unfortunately, spec actually uses C programs which are linked
+    # with their benchmarks as their test drivers, so we might not be
+    # able to simply re-use their stuff.
+    # 
+    bzip2)
+        run 1 $EXECUTABLE -c "$INPUT" > $OUT
+        EXIT=$?
+        ERROR=0
+        # compare compressed size to original compressed file
+        if [ $(cat $OUT|wc -c) -gt $(cat $OUTPUT|wc -c) ];then
+            ERROR=$(($ERROR + 1))
+        fi
+        # then un-compress and compare to the original
+        if ! diff -q "$INPUT" <(bunzip2 -c $OUT);then
+            ERROR=$(($ERROR + 10))
         fi
         ;;
     *) error "no test implemented for '$BENCHMARK'";;
