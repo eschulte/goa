@@ -21,7 +21,7 @@ def usage():
   print(
     "USAGE:\n" +
     sys.argv[0] + " mainfile [asmfile] [compiler]\n"
-    "\tmainfile : the source file with the main funtion\n"
+    "\tmainfile : the source file with the main function\n"
     "\tasmfile  : the desired output assembly file\n"
     "\t           (if not given, the file will be " + outfileName + ")\n"
     "\tcompiler : the desired compiler (default g++) The compiler must support the -S and -o flags"
@@ -35,13 +35,8 @@ def processSrc( fileName ):
   if not os.path.isfile( fileName ): return
 
   try:
-    workingFile = open( fileName, encoding='latin-1' )
+    workingFile = open( fileName )
     lines = workingFile.readlines()
-    # need to change to the directory that the file is in so that we can process #includes that
-    # are specifiec using relative addressing. i.e. #include "../../../some/other/dir/lib.h"
-    os.chdir(os.path.split(os.path.abspath(workingFile.name))[0])
-    print( "Changing directory to: " + os.path.abspath( '.' ) + " to process " + fileName )
-    #currentPath = os.path.abspath( '.' )
     for line in lines:
       quote = False
       angle = False
@@ -63,11 +58,13 @@ def processSrc( fileName ):
           allsrc.write( "/* End: trying to include " + include + " */\n")
           
       else:
+        # uncomment the following line to print the original filename as a comment
+        # every other line. (this can help in the debugging porcess.)
         # allsrc.write( "// " + fileName.split( '/' )[-1] + " //\n " + line )
         allsrc.write( line )
         bytesWritten += len( line )
     if fileName.split('.')[-1][0] == 'h':
-      # get the filename minus the .h__ extention. Multiple '.'s are OK
+      # get the filename minus the .h__ extension. Multiple '.'s are OK
       cname = reduce( lambda a, b : a + '.' + b, fileName.split('.')[:-1] )
       processSrc( cname + '.c'   )
       processSrc( cname + '.cpp' )
@@ -92,12 +89,14 @@ def main():
   processSrc( mainfile )
   allsrc.close()
 
-  print( "Changing directory to original: " + os.path.abspath( '.' ) )
+  # try to compile the monolithic .cpp file ... this may fail if macros are redefined 
+  # or other collisions occur.
   if comp == "gcc": 
     print( "using gcc: " )
     subprocess.call( [comp, "-S", "-x", "c", allname, "-o", outfileName] )
   else:
     subprocess.call( [comp, "-S", allname, "-o", outfileName] )
+    # uncomment the following line to remove allsource.cpp automatically
     #subprocess.call( ["rm", allname] )
 
 if __name__ == '__main__':

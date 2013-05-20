@@ -1,0 +1,15 @@
+#!/bin/bash
+
+if (( $# == 0 ))
+then
+  printf "usage: $0 <string to search for>";
+  exit 0;
+fi
+
+for i in `\ls -1`;
+do cat $i | grep $1;
+  if (( $? == 0 ))
+  then 
+      printf " --------------- $i --------------- \n\n";
+  fi
+done

@@ -63,6 +63,8 @@ def processSrc( fileName, oldpath ):
           allsrc.write( "/* End: trying to include " + include + " */\n")
           
       else:
+        # uncomment the following line to print the original filename as a comment
+        # every other line. (this can help in the debugging porcess.)
         # allsrc.write( "// " + fileName.split( '/' )[-1] + " //\n " + line )
         allsrc.write( line )
         bytesWritten += len( line )
@@ -96,6 +98,8 @@ def main():
   allsrc.close()
 
   print( "Changing directory to original: " + os.path.abspath( '.' ) )
+  # try to compile the monolithic .cpp file ... this may fail if macros are redefined 
+  # or other collisions occur.
   if comp == "gcc": 
     print( "using gcc: " )
     subprocess.call( [comp, "-S", "-x", "c", allname, "-o", outfileName] )

@@ -1,5 +1,11 @@
 #!/bin/bash
 
+if (( $# < 2 || $# > 2 ))
+then
+    printf "usage: $0 <root directory> <destination dir (this script will try to make the dir if it does not exist)>"
+    exit 0
+fi
+
 mkdir $2
 
 for i in `find $1 -name "*.c*"`
