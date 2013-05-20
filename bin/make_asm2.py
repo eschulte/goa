@@ -35,7 +35,7 @@ def processSrc( fileName ):
   if not os.path.isfile( fileName ): return
 
   try:
-    workingFile = open( fileName )
+    workingFile = open( fileName, encoding='ISO-8859-2' )
     lines = workingFile.readlines()
     for line in lines:
       quote = False
@@ -60,7 +60,7 @@ def processSrc( fileName ):
       else:
         # uncomment the following line to print the original filename as a comment
         # every other line. (this can help in the debugging porcess.)
-        # allsrc.write( "// " + fileName.split( '/' )[-1] + " //\n " + line )
+        allsrc.write( "// " + fileName.split( '/' )[-1] + " //\n " )
         allsrc.write( line )
         bytesWritten += len( line )
     if fileName.split('.')[-1][0] == 'h':
