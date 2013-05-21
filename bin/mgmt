@@ -201,8 +201,8 @@ EOF
                 ;;
             h264ref)
                 case $FLAGS in
-                    min) FLAGS="";;
-                    all) FLAGS="-O3";;
+                    min) HREF_CMP_FLAGS="";;
+                    all) HREF_CMP_FLAGS="-O3";;
                 esac
                 ## cleaning
                 # delete lines 48-50 of macroblock.h
@@ -213,7 +213,7 @@ EOF
                 # q_matrix.c and in q_offsets.c
                 sed -i '16s/,.*$/);/;376s/, 0//' q_matrix.c
                 sed -i '16s/,.*$/);/;301s/, 0//' q_offsets.c
-                gcc-4.4 -combine -S $FLAGS \
+                gcc-4.4 -combine -S $HREF_CMP_FLAGS \
                     annexb.c biariencode.c block.c cabac.c \
                     configfile.c context_ini.c decoder.c explicit_gop.c \
                     fast_me.c filehandle.c fmo.c header.c image.c \
@@ -281,7 +281,7 @@ link(){
                 gcc $FLAGS ${bench}.s -o $bench||error "linking failed";;
             h264ref)
                 case $FLAGS in
-                    min) FLAGS="-lm ";;
+                    min) FLAGS="-lm";;
                     all) FLAGS="-lm -O3";;
                 esac
                 gcc $FLAGS ${bench}.s -o $bench||error "linking failed";;
@@ -323,6 +323,13 @@ input(){
                 mkdir -p "$bench_dir"
                 cp "$BASE"/benchmarks/SPEC_CPU2006v1.0/benchspec/CPU2006/$SPEC_BENCH/data/train/input/byoudoin.jpg $target;;
 
+            h264ref)
+                SPEC_BENCH=$(echo "${SPEC_APPS[@]}"|tr ' ' '\n'|grep $bench)
+                H_DATA="$BASE"/benchmarks/SPEC_CPU2006v1.0/benchspec/CPU2006/$SPEC_BENCH/data
+                mkdir -p "$bench_dir"
+                cp ${H_DATA}/all/input/foreman_qcif.yuv $target
+                cp ${H_DATA}/train/input/foreman_train_encoder_baseline.cfg ${bench}.cfg;;
+
             *) error "input not implemented for $bench";;
         esac;
         popd>/dev/null
@@ -354,6 +361,14 @@ output(){
             ## SPEC
             bzip2)
                 ./$bench -c $bench.input > $target;;
+            h264ref)
+                echo "./$bench -d $bench.cfg \
+                    -p InputFile=\"$bench.input\" \
+                    -p OutputFile=\"$target\""
+                ./$bench -d $bench.cfg \
+                    -p FramesToBeEncoded=8 \
+                    -p InputFile="$bench.input" \
+                    -p OutputFile="$target"||error "output failed";;
             *) error "output not implemented for $bench";;
         esac;
         popd>/dev/null
