@@ -180,5 +180,18 @@ case $BENCHMARK in
             ERROR=$(($ERROR + 10))
         fi
         ;;
+    h264ref)
+        run 0 $EXECUTABLE -d "${INPUT%.input}.cfg" \
+            -p FramesToBeEncoded=8 \
+            -p InputFile="$INPUT" \
+            -p OutputFile="$OUT"
+        EXIT=$?
+        echo "EXIT is $EXIT"
+        if ! diff -q $OUTPUT $OUT;then
+            ERROR=10
+        else
+            ERROR=0
+        fi
+        ;;
     *) error "no test implemented for '$BENCHMARK'";;
 esac
