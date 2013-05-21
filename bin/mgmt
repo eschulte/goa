@@ -194,9 +194,36 @@ EOF
                     min) FLAGS="";;
                     all) FLAGS="-O3";;
                 esac
-                gcc-4.4 -combine -S blocksort.c bzip2.c compress.c \
+                gcc-4.4 -combine -S $FLAGS \
+                    blocksort.c bzip2.c compress.c \
                     crctable.c decompress.c huffman.c randtable.c \
                     bzlib.c -o $bench.s
+                ;;
+            h264ref)
+                case $FLAGS in
+                    min) FLAGS="";;
+                    all) FLAGS="-O3";;
+                esac
+                ## cleaning
+                # delete lines 48-50 of macroblock.h
+                sed -i '48,50d' macroblock.h
+                # extern->const in line 50 of rdopt.c
+                sed -i '50s/extern/const/' rdopt.c
+                # remove second arg to getconfigfilecontent in
+                # q_matrix.c and in q_offsets.c
+                sed -i '16s/,.*$/);/;376s/, 0//' q_matrix.c
+                sed -i '16s/,.*$/);/;301s/, 0//' q_offsets.c
+                gcc-4.4 -combine -S $FLAGS \
+                    annexb.c biariencode.c block.c cabac.c \
+                    configfile.c context_ini.c decoder.c explicit_gop.c \
+                    fast_me.c filehandle.c fmo.c header.c image.c \
+                    intrarefresh.c leaky_bucket.c lencod.c loopFilter.c \
+                    macroblock.c mb_access.c mbuffer.c memalloc.c mv-search.c \
+                    nal.c nalu.c nalucommon.c output.c parset.c parsetcommon.c \
+                    q_matrix.c q_offsets.c ratectl.c rdopt.c \
+                    rdopt_coding_state.c rdpicdecision.c refbuf.c rtp.c sei.c \
+                    slice.c transform8x8.c vlc.c weighted_prediction.c \
+                    specrand.c -o $bench.s ||error "compilation failed"
                 ;;
             *) not_implemented $bench ;;
         esac
@@ -248,11 +275,16 @@ link(){
             ## SPEC
             bzip2)
                 case $FLAGS in
-                    # TODO: multiple compiler flags options
-                    *) FLAGS="-O2  -DSPEC_CPU_LP64";;
+                    min) FLAGS="";;
+                    all) FLAGS="-O3";;
                 esac
                 gcc $FLAGS ${bench}.s -o $bench||error "compilation failed";;
-
+            h264ref)
+                case $FLAGS in
+                    min) FLAGS="-lm ";;
+                    all) FLAGS="-lm -O3";;
+                esac
+                gcc $FLAGS ${bench}.s -o $bench||error "compilation failed";;
             *) error "linking not implemented for $bench"
         esac
         popd>/dev/null
