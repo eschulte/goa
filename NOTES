@@ -99,6 +99,18 @@ Tried: ./parsecmgmt -a build -p ferret
 got:
   make: *** [all] Error 2
   [PARSEC] Error: 'env LIBS= -lm /usr/bin/make' failed.
+
+Using the makefile in the ferret src directory also fails:
+  /nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/ferret/src/src/hash_table.c:24:25: fatal error: gsl/gsl_rng.h: No such file or directory
+   #include <gsl/gsl_rng.h>
+                         ^
+  compilation terminated.
+  make: *** [/nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/ferret/src/parsec/obj/hash_table.o] Error 1
+
+Indeed, hash_table.c does try to include gsl/gsl_rng.h wich does not exist on the system.
+Looks like we may need to install GSL. See:
+http://seal.web.cern.ch/seal/workbook/gsl-howto.html
+
 *** DONE fluidanimate
 *** DONE freqmine
 1. cat all .cpp files together
