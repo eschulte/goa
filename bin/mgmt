@@ -362,9 +362,6 @@ output(){
             bzip2)
                 ./$bench -c $bench.input > $target;;
             h264ref)
-                echo "./$bench -d $bench.cfg \
-                    -p InputFile=\"$bench.input\" \
-                    -p OutputFile=\"$target\""
                 ./$bench -d $bench.cfg \
                     -p FramesToBeEncoded=8 \
                     -p InputFile="$bench.input" \
