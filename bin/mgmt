@@ -251,8 +251,8 @@ link(){
                 ;;
             fluidanimate)
                 case $FLAGS in
-                    min) FLAGS="$FLUID_FLAGS_ALL";;
-                    all) FLAGS="$FLUID_FLAGS_MIN";;
+                    min) FLAGS="$FLUID_FLAGS_ALL -lpthread";;
+                    all) FLAGS="$FLUID_FLAGS_MIN -lpthread";;
                 esac
                 g++ $FLAGS ${bench}.s -o $bench||error "linking failed"
                 ;;
