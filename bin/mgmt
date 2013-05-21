@@ -153,10 +153,10 @@ compile(){
                 cat cellpool.cpp >> all.cpp
                 cat parsec_barrier.cpp >> all.cpp
                 case $FLAGS in
-                    min) FLAGS="$FLUID_FLAGS_ALL";;
-                    all) FLAGS="$FLUID_FLAGS_MIN";;
+                    min) FLUID_FLAGS="$FLUID_FLAGS_ALL";;
+                    all) FLUID_FLAGS="$FLUID_FLAGS_MIN";;
                 esac
-                g++ $FLAGS -S all.cpp -o ${bench}.s||err "compilation failed"
+                g++ $FLUID_FLAGS -S all.cpp -o ${bench}.s||err "compilation failed"
                 ;;
             freqmine)
                 case $FLAGS in
