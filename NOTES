@@ -94,6 +94,11 @@ before running make, you have to do
 : export PHYSBAM=$(pwd)
 
 *** TODO ferret
+Can't seem to build this one with the parsec tools.
+Tried: ./parsecmgmt -a build -p ferret
+got:
+  make: *** [all] Error 2
+  [PARSEC] Error: 'env LIBS= -lm /usr/bin/make' failed.
 *** DONE fluidanimate
 *** DONE freqmine
 1. cat all .cpp files together
