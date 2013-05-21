@@ -186,7 +186,6 @@ case $BENCHMARK in
             -p InputFile="$INPUT" \
             -p OutputFile="$OUT"
         EXIT=$?
-        echo "EXIT is $EXIT"
         if ! diff -q $OUTPUT $OUT;then
             ERROR=10
         else
