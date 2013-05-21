@@ -76,7 +76,7 @@ if [ -z $PERF ];then
     # maybe print out RAW and clean up OUT
     function exit_hook (){
         if [ -z $RAW ];then
-            echo "$?,exit"
+            echo "$EXIT,exit"
             echo "$ERROR,error"
         else
             cat $OUT
@@ -88,7 +88,7 @@ else
     PREFIX+=" perf stat -x, -e $COUNTERS -o $PERF_OUT"
     # handle perf output on exit
     function exit_hook (){
-        echo "$?,exit"
+        echo "$EXIT,exit"
         echo "$ERROR,error"
         cat $PERF_OUT|tail -n +3;
         rm -f $PERF_OUT;
