@@ -127,9 +127,10 @@ Options:
       (unless (fitness *orig*)
         (note 1 "Evaluating the original.")
         (setf (fitness *orig*) (test *orig*)))
+      (note 1 "~S~%" `((:orig-stats   . ,(stats *orig*))
+                       (:orig-fitness . ,(fitness *orig*))))
 
       ;; sanity check
-      (note 2 "Original program has fitness ~a" (fitness *orig*))
       (when (= (fitness *orig*) infinity)
         (throw-error "Original program has no fitness!"))
 
