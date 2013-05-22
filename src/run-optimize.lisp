@@ -37,8 +37,11 @@ Options:
                       `((or (string= ,arg ,short) (string= ,arg ,long)) ,@body))
                     forms)))))
 
+(defvar *checkpoint-func* #'checkpoint "Function to record checkpoints.")
+
 (defun do-optimize ()
-  (evolve #'test :max-evals *evals* :period *period* :period-func #'checkpoint))
+  (evolve #'test :max-evals *evals*
+          :period *period* :period-func *checkpoint-func*))
 
 (setf *note-level* 1)
 
