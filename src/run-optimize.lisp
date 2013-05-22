@@ -7,23 +7,24 @@
 
 Options:
  -c,--config FILE ------ read configuration from FILE
- -l,--linker LINKER ---- linker to use
- -f,--flags FLAGS ------ flags to use when linking
- -t,--threads NUM ------ number of threads
- -w,--work-dir DIR ----- use an sh-runner/work directory
- -r,--res-dir DIR ------ save results to dir
-                         default: program.opt/
  -E,--max-error NUM ---- maximum allowed error
- -m,--model NAME ------- model name
- -T,--tourny-size NUM -- tournament size
-                         default: 4
- -e,--max-evals NUM ---- max number of fitness evals
+ -F,--fit-evals NUM ---- max number of fitness evals
                          default: 2^18
- -p,--pop-size NUM ----- population size
-                         default: 2^9
+ -f,--flags FLAGS ------ flags to use when linking
+ -l,--linker LINKER ---- linker to use
+ -L,--listen ADDRESS --- listen for shared individuals
+ -m,--model NAME ------- model name
  -P,--period NUM ------- period (in evals) of checkpoints
                          default: max-evals/(2^10)
- -v,--verbose NUM ------ verbosity level 0-4~%")
+ -p,--pop-size NUM ----- population size
+                         default: 2^9
+ -r,--res-dir DIR ------ save results to dir
+                         default: program.opt/
+ -t,--threads NUM ------ number of threads
+ -T,--tourny-size NUM -- tournament size
+                         default: 4
+ -v,--verbose NUM ------ verbosity level 0-4
+ -w,--work-dir DIR ----- use an sh-runner/work directory~%")
 
 (defun throw-error (&rest args)
   (apply #'note 0 args)
@@ -50,7 +51,8 @@ Options:
     (let ((bin-path (arg-pop)))
 
       ;; check command line arguments
-      (when (or (< (length args) 2)
+      (when (or (when (<= (length args) 2)
+                  (format t "Insufficient command line arguments~%~%") t)
                 (string= (subseq (car args) 0 2) "-h")
                 (string= (subseq (car args) 0 3) "--h"))
         (format t *help* bin-path)
