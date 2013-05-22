@@ -62,45 +62,24 @@ Optimization Notes                                         -*- org -*-
 | vips         | C          | data parallel | medium (image)  | medium      | some          |
 | x264         | C          | pipeline      | medium (video)  | medium      | very          |
 
-* Tasks [8/25]
-** TODO Build all benchmarks to ASM [5/10]
-*** DONE Blackscholes
-*** DONE bodytrack
+* Tasks [8/56]
+** TODO Build all benchmarks to ASM [4/41]
+*** parsec
+**** DONE Blackscholes
+**** DONE bodytrack
 Here is the command I used to make an executable from the assembly file.:
-g++ -DHAVE_CONFIG_H -I. -I/nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/bodytrack/src/FlexImageLib -I.. -O3 -g -funroll-loops -fprefetch-loop-arrays -fpermissive -fno-exceptions  -static-libgcc -Wl,--hash-style=both,--as-needed -DPARSEC_VERSION=3.0-beta-20120904 -fexceptions  -MT FlexImage.lo -MD -MP -MF /nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/bodytrack/obj/amd64-linux.gcc/FlexImageLib/.deps/FlexImage.Plo -I /nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/bodytrack/obj/amd64-linux.gcc/ -L /nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/bodytrack/obj/amd64-linux.gcc/FlexImageLib/.libs/ -I /nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/libs/tbblib/src/include/ -L /nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/bodytrack/obj/amd64-linux.gcc/TrackingBenchmark/threads/.libs/ bodytrack.s -o bodytrack -lflex -lpthread -lthreads
+: g++ -DHAVE_CONFIG_H -I. -I/nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/bodytrack/src/FlexImageLib -I.. -O3 -g -funroll-loops -fprefetch-loop-arrays -fpermissive -fno-exceptions  -static-libgcc -Wl,--hash-style=both,--as-needed -DPARSEC_VERSION=3.0-beta-20120904 -fexceptions  -MT FlexImage.lo -MD -MP -MF /nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/bodytrack/obj/amd64-linux.gcc/FlexImageLib/.deps/FlexImage.Plo -I /nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/bodytrack/obj/amd64-linux.gcc/ -L /nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/bodytrack/obj/amd64-linux.gcc/FlexImageLib/.libs/ -I /nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/libs/tbblib/src/include/ -L /nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/bodytrack/obj/amd64-linux.gcc/TrackingBenchmark/threads/.libs/ bodytrack.s -o bodytrack -lflex -lpthread -lthreads
 
-And here is the command I used to make the asm file (note the relative paths. Might be a good idea to change to absolute paths) see the management script to make the cpp file:
-g++ -DHAVE_CONFIG_H -I. -I/nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/bodytrack/src/FlexImageLib -I.. -O3 -g -funroll-loops -fprefetch-loop-arrays -fpermissive -fno-exceptions  -static-libgcc -Wl,--hash-style=both,--as-needed -DPARSEC_VERSION=3.0-beta-20120904 -fexceptions  -MT FlexImage.lo -MD -MP -MF ../../obj/amd64-linux.gcc/FlexImageLib/.deps/FlexImage.Plo -I ../../obj/amd64-linux.gcc/ -L ../../obj/amd64-linux.gcc/FlexImageLib/.libs/ -I ../../../../libs/tbblib/src/include/ -L../../../../libs/tbblib/src/include/ -L ../../obj/amd64-linux.gcc/TrackingBenchmark/threads/.libs/ -S tst.cpp -o bodytrack.s -lflex -lpthread -lthreads
+And here is the command I used to make the asm file (note the relative
+paths. Might be a good idea to change to absolute paths) see the
+management script to make the cpp file:
+: g++ -DHAVE_CONFIG_H -I. -I/nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/bodytrack/src/FlexImageLib -I.. -O3 -g -funroll-loops -fprefetch-loop-arrays -fpermissive -fno-exceptions  -static-libgcc -Wl,--hash-style=both,--as-needed -DPARSEC_VERSION=3.0-beta-20120904 -fexceptions  -MT FlexImage.lo -MD -MP -MF ../../obj/amd64-linux.gcc/FlexImageLib/.deps/FlexImage.Plo -I ../../obj/amd64-linux.gcc/ -L ../../obj/amd64-linux.gcc/FlexImageLib/.libs/ -I ../../../../libs/tbblib/src/include/ -L../../../../libs/tbblib/src/include/ -L ../../obj/amd64-linux.gcc/TrackingBenchmark/threads/.libs/ -S tst.cpp -o bodytrack.s -lflex -lpthread -lthreads
 
-From the make log.
-
-: -DHAVE_CONFIG_H -I. -I/mnt/home/data/optimization/benchmarks/parsec-3.0/pkgs/apps/bodytrack/src/FlexImageLib -I.. -O3 -g -funroll-loops -fprefetch-loop-arrays -fpermissive -fno-exceptions -static-libgcc -Wl,--hash-style=both,--as-needed -DPARSEC_VERSION=3.0-beta-20120904 -fexceptions -Wall -Wno-unknown-pragmas -MT
-: 
-: FlexImageLib/FlexImage.cpp
-: FlexImageLib/FlexIO.cpp
-: 
-: -DHAVE_CONFIG_H -I. -I/mnt/home/data/optimization/benchmarks/parsec-3.0/pkgs/apps/bodytrack/src/TrackingBenchmark/threads -I../.. -pthread -O3 -g -funroll-loops -fprefetch-loop-arrays -fpermissive -fno-exceptions -static-libgcc -Wl,--hash-style=both,--as-needed -DPARSEC_VERSION=3.0-beta-20120904 -fexceptions -Wall -Wno-unknown-pragmas -MT
-: 
-: TrackingBenchmark/threads/Thread.cpp
-: TrackingBenchmark/threads/ThreadGroup.cpp
-: TrackingBenchmark/threads/WorkerGroup.cpp
-: TrackingBenchmark/threads/Mutex.cpp
-: TrackingBenchmark/threads/Condition.cpp
-: TrackingBenchmark/threads/Barrier.cpp
-: TrackingBenchmark/threads/RWLock.cpp
-: 
-: -O3 -g -funroll-loops -fprefetch-loop-arrays -fpermissive -fno-exceptions -static-libgcc -Wl,--hash-style=both -Wl,--as-needed -DPARSEC_VERSION=3.0-beta-20120904 -fexceptions -Wall -Wno-unknown-pragmas -o bodytrack
-: 
-: AnnealingFactor.o BodyGeometry.o BodyPose.o CameraModel.o CovarianceMatrix.o ImageMeasurements.o ImageProjection.o RandomGenerator.o TrackingModel.o main.o TrackingModelPthread.o AsyncIO.o
-: 
-: # linking arguments
-: -L/usr/lib64 -L/usr/lib ../FlexImageLib/.libs/libflex.a -lm threads/.libs/libthreads.a -lpthread  
-
-*** TODO facesim
+**** TODO facesim
 before running make, you have to do
 : export PHYSBAM=$(pwd)
 
-*** TODO ferret
+**** TODO ferret
 Can't seem to build this one with the parsec tools.
 Tried: ./parsecmgmt -a build -p ferret
 got:
@@ -118,23 +97,55 @@ Indeed, hash_table.c does try to include gsl/gsl_rng.h wich does not exist on th
 Looks like we may need to install GSL. See:
 http://seal.web.cern.ch/seal/workbook/gsl-howto.html
 
-*** DONE fluidanimate
-*** DONE freqmine
+**** DONE fluidanimate
+**** DONE freqmine
 1. cat all .cpp files together
 2. remove duplicates of
    : include "common.h"
 3. remove the second duplicate of the =omp_get_max_threads()=
 
-*** TODO raytrace
-*** DONE swaptions
+**** TODO raytrace
+**** DONE swaptions
 #+begin_src sh
   cat *.c* > swaptions.cpp
   g++ -S swaptions.cpp
   g++ swaptions.s -o swaptions2
 #+end_src
 
-*** TODO vips
-*** TODO x264
+**** TODO vips
+**** TODO x264
+*** SPEC
+**** TODO 400.perlbench
+**** TODO 401.bzip2
+**** TODO 403.gcc
+**** TODO 410.bwaves
+**** TODO 416.gamess
+**** TODO 429.mcf
+**** TODO 433.milc
+**** TODO 434.zeusmp
+**** TODO 435.gromacs
+**** TODO 436.cactusADM
+**** TODO 437.leslie3d
+**** TODO 444.namd
+**** TODO 445.gobmk
+**** TODO 447.dealII
+**** TODO 450.soplex
+**** TODO 453.povray
+**** TODO 454.calculix
+**** TODO 456.hmmer
+**** TODO 458.sjeng
+**** TODO 459.GemsFDTD
+**** TODO 462.libquantum
+**** TODO 464.h264ref
+**** TODO 465.tonto
+**** TODO 470.lbm
+**** TODO 471.omnetpp
+**** TODO 473.astar
+**** TODO 481.wrf
+**** TODO 482.sphinx3
+**** TODO 483.xalancbmk
+**** TODO 998.specrand
+**** TODO 999.specrand
 ** DONE Select Energy Models [2/2]
 \begin{equation*}
   kwh = c_{1} + c_{2} \times cyc + c_{3} \times ins + c_{4} \times ops + c_{5} \times tca + c_{6} \times mem
