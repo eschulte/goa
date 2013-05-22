@@ -62,7 +62,7 @@ Optimization Notes                                         -*- org -*-
 | vips         | C          | data parallel | medium (image)  | medium      | some          |
 | x264         | C          | pipeline      | medium (video)  | medium      | very          |
 
-* Tasks [8/57]
+* Tasks [8/58]
 ** TODO Build all benchmarks to ASM [4/41]
 *** parsec
 **** DONE Blackscholes
@@ -182,12 +182,15 @@ with an "r".
 *** DONE Intel energy model
 : perf stat -e cycles,instructions,r532010,r538010,cache-references,LLC-loads,LLC-stores
 
-** TODO Train Energy Models [1/3]
+** TODO Train Energy Models [1/4]
 Both at UVA on Intel and at UNM on AMD.
 
+*** TODO constrain the model to pass through the origin
+Cycles is a proxy for time, so 0 counters should imply 0 kwh.
+
 *** TODO include last two benchmark programs [0/2]
-- [ ] x264 from parsec
-- [ ] SPEC
+- [ ] x264 from parsec (compiled)
+- [ ] dealII from SPEC
 
 *** DONE AMD Energy Model
 | metric           | perf             | coefficient |
