@@ -2,8 +2,8 @@
 (load "src/optimize.lisp")
 (in-package :optimize)
 
-(defvar *help* "Usage: ~a program benchmark [OPTIONS...]
- Optimize a benchmark program
+(defvar *help* "Usage: ~a program.s benchmark-name [OPTIONS...]
+ Optimize the assembly code of a benchmark program
 
 Options:
  -c,--config FILE ------ read configuration from FILE
