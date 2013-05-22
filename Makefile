@@ -7,7 +7,7 @@ LISP_STACK?=2048
 # Pointer to local Quicklisp directory
 QUICK_LISP?=$(HOME)/quick-lisp
 
-ifeq ($(shell [ -d $(QUICK_LISP) ] && echo exists),)
+ifeq ($(shell [ -f $(QUICK_LISP)/setup.lisp ] && echo exists),)
 $(error The QUICK_LISP environment variable must point to your quicklisp install)
 endif
 
