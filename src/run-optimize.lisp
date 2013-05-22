@@ -8,6 +8,7 @@
 Options:
  -c,--config FILE ------ read configuration from FILE
  -E,--max-error NUM ---- maximum allowed error
+ -e,--eval SEXP -------- evaluate S-expression SEXP
  -F,--fit-evals NUM ---- max number of fitness evals
                          default: 2^18
  -f,--flags FLAGS ------ flags to use when linking
@@ -69,6 +70,7 @@ Options:
 
       ;; process command line options
       (getopts
+       ("-e" "--eval"      (eval (read-from-string (arg-pop))))
        ("-c" "--config"    (load (arg-pop)))
        ("-l" "--linker"    (setf (linker *orig*) (arg-pop)))
        ("-f" "--flags"     (setf (flags *orig*) (list (arg-pop))))
