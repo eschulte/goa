@@ -7,6 +7,18 @@ LISP_STACK?=2048
 # Pointer to local Quicklisp directory
 QUICK_LISP?=$(HOME)/quick-lisp
 
+# Lisp Libraries to include in optimize
+#
+#  to include another library, e.g., 
+#
+LISP_LIBRARIES+=$(LL)
+LISP_LIBRARIES+=software-evolution
+LISP_LIBRARIES+=cl-store
+LISP_LIBRARIES+=split-sequence
+LISP_LIBRARIES+=cl-ppcre
+
+LISP_LIBRARIES:=$(addprefix --load-system , $(LISP_LIBRARIES))
+
 ifeq ($(shell [ -f $(QUICK_LISP)/setup.lisp ] && echo exists),)
 $(error The QUICK_LISP environment variable must point to your quicklisp install)
 endif
@@ -20,10 +32,7 @@ bin/optimize: src/run-optimize.lisp etc/data/ql-manifest.txt
 	$(BA) \
 	--manifest-file $(QUICK_LISP)/local-projects/system-index.txt \
 	--manifest-file etc/data/ql-manifest.txt \
-	--load-system software-evolution \
-	--load-system cl-store \
-	--load-system split-sequence \
-	--load-system cl-ppcre \
+	$(LISP_LIBRARIES) \
 	--dynamic-space-size $(LISP_STACK) \
 	--load $< --entry optimize:main --output $@
 
