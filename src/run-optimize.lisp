@@ -101,8 +101,7 @@ Options:
         (setf *model* (case (arch)
                         (:intel 'intel-sandybridge-energy-model)
                         (:amd   'amd-opteron-energy-model))))
-      (note 1 "Optimizing against `~a'.~%" *model*)
-      (setf *model* (eval *model*))
+      (when (symbolp *model*) (setf *model* (eval *model*)))
 
       ;; write out configuration parameters
       (note 1 "Parameters:~%~S~%"
