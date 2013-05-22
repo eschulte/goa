@@ -7,9 +7,10 @@ LISP_STACK?=2048
 # Pointer to local Quicklisp directory
 QUICK_LISP?=$(HOME)/quick-lisp
 
-# Lisp Libraries to include in optimize
+# Lisp Libraries to compile into optimize
 #
-#  to include another library, e.g., 
+#  Set the LL env variable to load another lisp system for use in a
+#  config file.
 #
 LISP_LIBRARIES+=$(LL)
 LISP_LIBRARIES+=software-evolution
