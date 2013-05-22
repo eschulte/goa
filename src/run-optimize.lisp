@@ -6,6 +6,7 @@
  Optimize a benchmark program
 
 Options:
+ -c,--config FILE ------ read configuration from FILE
  -l,--linker LINKER ---- linker to use
  -f,--flags FLAGS ------ flags to use when linking
  -t,--threads NUM ------ number of threads
@@ -63,6 +64,7 @@ Options:
 
       ;; process command line options
       (getopts
+       ("-c" "--config"    (load (arg-pop)))
        ("-l" "--linker"    (setf (linker *orig*) (arg-pop)))
        ("-f" "--flags"     (setf (flags *orig*) (list (arg-pop))))
        ("-t" "--threads"   (setf *threads* (parse-integer (arg-pop))))
@@ -122,8 +124,9 @@ Options:
                       *res-dir*)))
 
       ;; Run optimization
-      (note 1 "Evaluating the original.")
-      (setf (fitness *orig*) (test *orig*))
+      (unless (fitness *orig*)
+        (note 1 "Evaluating the original.")
+        (setf (fitness *orig*) (test *orig*)))
 
       ;; sanity check
       (note 2 "Original program has fitness ~a" (fitness *orig*))
@@ -131,9 +134,10 @@ Options:
         (throw-error "Original program has no fitness!"))
 
       ;; populate population
-      (note 1 "Building the Population")
-      (setf *population*
-            (loop :for n :below *max-population-size* :collect (copy *orig*)))
+      (unless *population* ;; only if it hasn't already been populated
+        (note 1 "Building the Population")
+        (setf *population* (loop :for n :below *max-population-size*
+                              :collect (copy *orig*))))
 
       ;; run optimization
       (note 1 "Kicking off ~a optimization threads" *threads*)
