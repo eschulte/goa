@@ -62,7 +62,7 @@ Optimization Notes                                         -*- org -*-
 | vips         | C          | data parallel | medium (image)  | medium      | some          |
 | x264         | C          | pipeline      | medium (video)  | medium      | very          |
 
-* Tasks [9/58]
+* Tasks [9/60]
 ** TODO Build all benchmarks to ASM [5/41]
 *** parsec
 **** DONE Blackscholes
@@ -182,7 +182,7 @@ with an "r".
 *** DONE Intel energy model
 : perf stat -e cycles,instructions,r532010,r538010,cache-references,LLC-loads,LLC-stores
 
-** TODO Train Energy Models [1/4]
+** TODO Train Energy Models [1/6]
 Both at UVA on Intel and at UNM on AMD.
 
 *** TODO constrain the model to pass through the origin
@@ -192,7 +192,14 @@ Cycles is a proxy for time, so 0 counters should imply 0 kwh.
 - [ ] x264 from parsec (compiled)
 - [ ] dealII from SPEC
 
-**** DealII
+*** TODO compile both of these last two benchmark programs [1/2]
+- [X] x264 from parsec (compiled)
+- [ ] dealII from SPEC
+
+**** TODO DealII
+This discussion looks to be relevant to our build problems.
+http://gcc.gnu.org/bugzilla/show_bug.cgi?id=44416
+
 See this discussion of how to use alternate sources.
 http://www.spec.org/cpu2006/Docs/config.html#sectionIX
 
@@ -201,23 +208,26 @@ http://www.spec.org/cpu2006/src.alt/
 
 See the particular alternate source which must be applied for dealII
 to compile.
+http://gcc.gnu.org/bugzilla/attachment.cgi?id=20848
 http://www.spec.org/cpu2006/src.alt/447.dealII.explicit_inclusion_of_cstring.cpu2006.v1.0.tar.bz2
 
 The command lines work out to be roughly
 #+begin_src sh
-  specbz2 -dc 403.gcc.no_line.cpu2006.v1.2.tar.xz | spectar -xf  -
+  wget http://gcc.gnu.org/bugzilla/attachment.cgi?id=20848
+  mv attachment.cgi\?id\=20848 447.dealII.cstddef.cpu2006.v1.1.tar.bz2
+  specbzip2 -dc 447.dealII.cstddef.cpu2006.v1.1.tar.bz2 | spectar -xf  -
   echo "ext = without" > configs/without.cfg
   runspec --action buildsetup -T base -c without -v 1 447.dealII
   cat <<EOF > configs/with.cfg
   ext = with
   447.dealII:
-  srcalt = explicit_inclusion_of_cstring
+  srcalt = cstddef
   EOF
-  runspec --action buildsetup -T base -c with -v 1 447.dealII
+  runspec --action buildsetup -T base -c with -v 1 447.dealII -I
   # now the changes have been applied, to then use the updated version
   # run the following where complex.cfg is replaced with the config file
   # for your system
-  runspec --action build -c complex.cfg -v 1 447.dealII
+  runspec --action build -c complex.cfg -v 1 447.dealII -I
 #+end_src
 
 *** DONE AMD Energy Model
