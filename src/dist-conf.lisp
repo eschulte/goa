@@ -22,7 +22,8 @@ ADDRESS should be of the form \"tcp://localhost:6666\"."
                 (let ((msg (make-instance 'zmq:msg)))
                   (zmq:recv reciever msg)
                   (let ((data (zmq:msg-data-as-array msg)))
-                    (format t "received a message[~d]~%" (length data))
+                    (format t "received individual ~d bytes long~%"
+                            (length data))
                     (incorporate (from-bytes data))))
               (error (e) "~&zmq error ~a~%" e))))))
 

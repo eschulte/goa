@@ -1,4 +1,4 @@
-;;; sender.lisp --- to test zeromq variant distribution
+;;; receiver.lisp --- to test zeromq variant distribution
 
 ;; Copyright (C) 2013  Eric Schulte
 
@@ -18,10 +18,11 @@
 (in-package :optimize)
 (load "src/dist-conf")
 
-(let ((address (format nil "tcp://*:~d" port)))
-  (format t "sharing an individual with ~S~%" address)
-  (share *orig* address))
+(let ((address (format nil "tcp://localhost:~d" port)))
+  (format t "listening for individuals on ~S~%" address)
+  (accept address))
 
-(format t "done~%")
+(format t "~d total individuals incorporated into population~%"
+        (length *population*))
 
 (sb-ext:exit)
