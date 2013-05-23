@@ -14,57 +14,26 @@
 
 (defun accept (address)
   "Accept and `incorporate' any incoming individuals on ADDRESS.
-The address should look like \"tcp://*:1234\"."
-  ;; http://zguide.zeromq.org/lisp:wuclient
+ADDRESS should be of the form \"tcp://localhost:6666\"."
   (zmq:with-context (context 1)
-    (zmq:with-socket (subscriber context zmq:sub)
-      (zmq:connect subscriber address)
-      (zmq:setsockopt subscriber zmq:subscribe "")
-      (loop
-         (let ((msg (make-instance 'zmq:msg)))
-           ;; Wait for next msg from client
-           (zmq:recv subscriber msg)
-           (let ((raw (zmq:msg-data-as-array msg)))
-             (format t "received message: ~S -> ~S~%" msg raw)
-             (when (> (length raw) 0)
-               (incorporate (from-bytes raw)))))))))
+    (zmq:with-socket (reciever context zmq:pull)
+      (zmq:connect reciever address)
+      (loop (handler-case
+                (let ((msg (make-instance 'zmq:msg)))
+                  (zmq:recv reciever msg)
+                  (let ((data (zmq:msg-data-as-array msg)))
+                    (format t "received a message[~d]~%" (length data))
+                    (incorporate (from-bytes data))))
+              (error (e) "~&zmq error ~a~%" e))))))
 
 (defun share (software address)
-  "Publish SOFTWARE with ADDRESS."
-  ;; http://zguide.zeromq.org/lisp:wuserver
-  (zmq:with-context (context 1)
-    (zmq:with-socket (publisher context zmq:pub)
-      (zmq:bind publisher address)
-      (zmq:bind publisher "ipc://variant.ipc")
-      (zmq:send publisher (make-instance 'zmq:msg :data (to-bytes software))))))
-
-
-;;; Share individuals every checkpoint
-;; (defvar *neighbors*
-;;   '("tcp://192.168.1.42:5000"
-;;     "tcp://192.168.1.42:5001"
-;;     "tcp://192.168.1.42:5002"
-;;     "tcp://192.168.1.42:5003"
-;;     "tcp://192.168.1.42:5004"))
-
-;; (let ((check *checkpoint-func*))
-;;   (defun sharing-checkpoint ()
-;;     (funcall check)
-;;     (mapc (lambda (neighbor) (share (tounament) neighbor)) *neighbors*)))
-
-;; (setf *checkpoint-func* #'sharing-checkpoint)
-
-(sb-thread:make-thread (lambda () (accept (format nil "tcp://*:~d" *port*))))
-
-(format t "started listening thread~%")
-
-(format t "now to connect~%")
-
-(share *orig* (format nil "tcp://localhost:~d" *port*))
-
-(format t "shared an individual~%")
-
-(format t "population is now of size ~d~%"
-        (length *population*))
-
-(sb-ext:exit)
+  "Push SOFTWARE to ADDRESS.
+ADDRESS should be of the form \"tcp://*:6666\"."
+  (let ((data (to-bytes software)))
+    (assert (<= (length data) 415968) (*orig*)
+            "program is too large to share ~d>~d"
+            (length data) 415968)
+    (zmq:with-context (context 1)
+      (zmq:with-socket (sender context zmq:push)
+        (zmq:bind sender address)
+        (zmq:send sender (make-instance 'zmq:msg :data data))))))
