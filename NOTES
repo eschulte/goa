@@ -63,9 +63,15 @@ Optimization Notes                                         -*- org -*-
 | x264         | C          | pipeline      | medium (video)  | medium      | very          |
 
 * Tasks [8/25]
-** TODO Build all benchmarks to ASM [4/10]
+** TODO Build all benchmarks to ASM [5/10]
 *** DONE Blackscholes
-*** TODO bodytrack
+*** DONE bodytrack
+Here is the command I used to make an executable from the assembly file.:
+g++ -DHAVE_CONFIG_H -I. -I/nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/bodytrack/src/FlexImageLib -I.. -O3 -g -funroll-loops -fprefetch-loop-arrays -fpermissive -fno-exceptions  -static-libgcc -Wl,--hash-style=both,--as-needed -DPARSEC_VERSION=3.0-beta-20120904 -fexceptions  -MT FlexImage.lo -MD -MP -MF /nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/bodytrack/obj/amd64-linux.gcc/FlexImageLib/.deps/FlexImage.Plo -I /nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/bodytrack/obj/amd64-linux.gcc/ -L /nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/bodytrack/obj/amd64-linux.gcc/FlexImageLib/.libs/ -I /nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/libs/tbblib/src/include/ -L /nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/bodytrack/obj/amd64-linux.gcc/TrackingBenchmark/threads/.libs/ bodytrack.s -o bodytrack -lflex -lpthread -lthreads
+
+And here is the command I used to make the asm file (note the relative paths. Might be a good idea to change to absolute paths) see the management script to make the cpp file:
+g++ -DHAVE_CONFIG_H -I. -I/nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/bodytrack/src/FlexImageLib -I.. -O3 -g -funroll-loops -fprefetch-loop-arrays -fpermissive -fno-exceptions  -static-libgcc -Wl,--hash-style=both,--as-needed -DPARSEC_VERSION=3.0-beta-20120904 -fexceptions  -MT FlexImage.lo -MD -MP -MF ../../obj/amd64-linux.gcc/FlexImageLib/.deps/FlexImage.Plo -I ../../obj/amd64-linux.gcc/ -L ../../obj/amd64-linux.gcc/FlexImageLib/.libs/ -I ../../../../libs/tbblib/src/include/ -L../../../../libs/tbblib/src/include/ -L ../../obj/amd64-linux.gcc/TrackingBenchmark/threads/.libs/ -S tst.cpp -o bodytrack.s -lflex -lpthread -lthreads
+
 From the make log.
 
 : -DHAVE_CONFIG_H -I. -I/mnt/home/data/optimization/benchmarks/parsec-3.0/pkgs/apps/bodytrack/src/FlexImageLib -I.. -O3 -g -funroll-loops -fprefetch-loop-arrays -fpermissive -fno-exceptions -static-libgcc -Wl,--hash-style=both,--as-needed -DPARSEC_VERSION=3.0-beta-20120904 -fexceptions -Wall -Wno-unknown-pragmas -MT

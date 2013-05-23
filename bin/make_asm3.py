@@ -35,7 +35,7 @@ def processSrc( fileName ):
   if not os.path.isfile( fileName ): return
 
   try:
-    workingFile = open( fileName, encoding='ISO-8859-2' )
+    workingFile = open( fileName, encoding="ISO-8859-2" )
     lines = workingFile.readlines()
     for line in lines:
       quote = False
@@ -45,18 +45,21 @@ def processSrc( fileName ):
       if angle or quote:
         if quote: include = line.split('"')[1]
         if angle: include = line.split('<')[1].strip()[:-1]
-        if include.split( '/' )[-1] not in included:
-          allsrc.write( "/* Begin: trying to include " + include + " */\n")
-          currentlyWritten = bytesWritten
-          processSrc( include.split( '/' )[-1] )
-          if currentlyWritten == bytesWritten: 
-            # no need to notify that #include <standard_includes.h> isn't in the currrent dir
-            if quote: print( "Failed to include " + include + 
-                             " in the file " + fileName + ".\n"
-                             "Current directory: " + 
-                             os.path.abspath('.') )
-            allsrc.write( line )
-          allsrc.write( "/* End: trying to include " + include + " */\n")
+        if True: #include.split( '/' )[-1] not in included:
+          #  allsrc.write( "/* Begin: trying to include " + include + " */\n")
+          # currentlyWritten = bytesWritten
+          if angle: allsrc.write( '#include <' + include + '>\n' )
+          if quote: 
+            allsrc.write( '#include "' + include.split( '/' )[-1] + '"\n' )
+            # print( 'adding ' + include + ' as ' + include.split( '/' )[-1] + '"\n')
+          # if currentlyWritten == bytesWritten: 
+          #   # no need to notify that #include <standard_includes.h> isn't in the currrent dir
+          #   if quote: print( "Failed to include " + include + 
+          #                    " in the file " + fileName + ".\n"
+          #                    "Current directory: " + 
+          #                    os.path.abspath('.') )
+          #   allsrc.write( line )
+          #allsrc.write( "/* End: trying to include " + include + " */\n")
           
       else:
         # uncomment the following line to print the original filename as a comment
@@ -64,13 +67,13 @@ def processSrc( fileName ):
         # allsrc.write( "// " + fileName.split( '/' )[-1] + " //\n " )
         allsrc.write( line )
         bytesWritten += len( line )
-    if fileName.split('.')[-1][0] == 'h':
+    # if fileName.split('.')[-1][0] == 'h':
       # get the filename minus the .h__ extension. Multiple '.'s are OK
-      cname = reduce( lambda a, b : a + '.' + b, fileName.split('.')[:-1] )
-      processSrc( cname + '.c'   )
-      processSrc( cname + '.cpp' )
-      processSrc( cname + '.cxx' )
-      processSrc( cname + '.c++' )
+      # cname = reduce( lambda a, b : a + '.' + b, fileName.split('.')[:-1] )
+      # processSrc( cname + '.c'   )
+      # processSrc( cname + '.cpp' )
+      # processSrc( cname + '.cxx' )
+      # processSrc( cname + '.c++' )
     workingFile.close()
     #os.chdir( oldpath )
   except Exception as e:

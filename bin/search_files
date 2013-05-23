@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if (( $# == 0 ))
+if (( $# != 1 ))
 then
   printf "usage: $0 <string to search for>";
   exit 0;
