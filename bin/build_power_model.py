@@ -31,7 +31,8 @@ parser.add_option(
 )
 parser.add_option(
     "--model", metavar = "features",
-    help = "comma-separated list of features to include in the model"
+    help = "comma-separated list of features to include in the model; " \
+         + "optional weights may be fixed using 'feature=weight'"
 )
 parser.add_option(
     "--no-table", action = "store_true", help = "do not print table"
@@ -107,10 +108,26 @@ fst = lambda t: t[ 0 ]
 
 class Model:
     def __init__( self, data, y, xs ):
-        self.data  = data
+        self.data  = dict( data )
         self.y     = y
-        self.xs    = xs
+        self.xs    = list()
+        self.fixed = dict()
         self.coeff = None
+
+        for x in xs:
+            pair = x.split( "=", 2 )
+            if len( pair ) == 1:
+                pair.append( None )
+            else:
+                pair[ 1 ] = float( pair[ 1 ] )
+            self.xs.append( pair[ 0 ] )
+            self.fixed[ pair[ 0 ] ] = pair[ 1 ]
+        if not 'intercept' in self.fixed:
+            self.xs.append( 'intercept' )
+            self.fixed[ 'intercept' ] = None
+        for bmark in self.data:
+            if not 'intercept' in self.data[ bmark ]:
+                self.data[ bmark ][ 'intercept' ] = 1
 
     def __str__( self ):
         if self.coeff is None:
@@ -119,26 +136,38 @@ class Model:
         table = list()
         for h, c in zip( self.xs, self.coeff ):
             table.append( ( h + ":", c ) )
-        table.append( ( "constant:", self.coeff[ -1 ] ) )
         table = format_table( table, [ str, "%g".__mod__ ] )
         return "Modeling " + self.y + "\n" + "\n".join( map( "   ".join, table ) )
 
     def train( self, bmarks ):
-        bmarks = filter( lambda b: self.data[ b ][ self.y ] != 0, bmarks )
-        A = numpy.empty( ( len( bmarks ), len( self.xs ) + 1 ) )
-        B = numpy.empty( ( len( bmarks ), ) )
-        for i, bmark in enumerate( bmarks ):
-            B[ i ] = self.data[ bmark ][ self.y ]
-            for j, x in enumerate( self.xs ):
-                A[ i, j ] = self.data[ bmark ][ x ]
-            A[ i, len( self.xs ) ] = 1
+        free  = list()
+        for x in self.xs:
+            if self.fixed[ x ] is None:
+                free.append( x )
+        cs = dict()
 
-        self.coeff = numpy.linalg.lstsq( A, B )[ 0 ]
+        if len( free ) > 0:
+            bmarks = filter( lambda b: self.data[ b ][ self.y ] != 0, bmarks )
+            A = numpy.empty( ( len( bmarks ), len( free ) ) )
+            B = numpy.empty( ( len( bmarks ), ) )
+            for i, bmark in enumerate( bmarks ):
+                B[ i ] = self.data[ bmark ][ self.y ]
+                for j, x in enumerate( free ):
+                    A[ i, j ] = self.data[ bmark ][ x ]
+
+            cs = dict( zip( free, numpy.linalg.lstsq( A, B )[ 0 ] ) )
+
+        for x, c in self.fixed.items():
+            if not c is None:
+                cs[ x ] = c
+        self.coeff = list()
+        for x in self.xs:
+            self.coeff.append( cs[ x ] )
 
     def test( self, bmarks ):
         table = [ ( "benchmark", "measured", "predicted", "error" ) ]
         for i, bmark in enumerate( bmarks ):
-            v = self.coeff[ -1 ]
+            v = 0
             for j, x in enumerate( self.xs ):
                 v += self.coeff[ j ] * self.data[ bmark ][ x ]
             target = self.data[ bmark ][ self.y ]
