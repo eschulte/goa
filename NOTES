@@ -62,8 +62,8 @@ Optimization Notes                                         -*- org -*-
 | vips         | C          | data parallel | medium (image)  | medium      | some          |
 | x264         | C          | pipeline      | medium (video)  | medium      | very          |
 
-* Tasks [8/58]
-** TODO Build all benchmarks to ASM [4/41]
+* Tasks [9/58]
+** TODO Build all benchmarks to ASM [5/41]
 *** parsec
 **** DONE Blackscholes
 **** DONE bodytrack
