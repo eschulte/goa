@@ -24,9 +24,8 @@
   "Accept and `incorporate' any incoming individuals on ADDRESS.
 ADDRESS should be of the form \"tcp://localhost:6666\"."
   (zmq:with-context (ctx)
-    (zmq:with-socket (s ctx :sub)
+    (zmq:with-socket (s ctx :pull)
       (zmq:connect s address)
-      (zmq:setsockopt s :subscribe "")
       ;; In the case of superfluous zmq system call errors
       ;; (handler-case (error (e) "~&zmq error ~a~%" e))
       (loop (let ((msg (make-instance 'zmq:msg)))
@@ -39,6 +38,6 @@ ADDRESS should be of the form \"tcp://localhost:6666\"."
   "Push SOFTWARE to ADDRESS.
 ADDRESS should be of the form \"tcp://*:6666\"."
   (zmq:with-context (ctx)
-    (zmq:with-socket (s ctx :pub)
+    (zmq:with-socket (s ctx :push)
       (zmq:bind s address)
       (zmq:msg-send s (make-instance 'zmq:msg :data (to-bytes software))))))
