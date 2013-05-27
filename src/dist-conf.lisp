@@ -20,18 +20,22 @@
 ;;; code for individual distribution
 (require :zeromq)
 
+(defvar *max-msg-size* (expt 2 20))
+
 (defun accept (address)
   "Accept and `incorporate' any incoming individuals on ADDRESS.
 ADDRESS should be of the form \"tcp://localhost:6666\"."
   (zmq:with-context (ctx)
     (zmq:with-socket (s ctx :pull)
       (zmq:connect s address)
+      (zmq:setsockopt s :maxmsgsize *max-msg-size*)
       ;; In the case of superfluous zmq system call errors
       ;; (handler-case (error (e) "~&zmq error ~a~%" e))
       (loop (let ((msg (make-instance 'zmq:msg)))
               (zmq:msg-recv s msg)
               (let* ((data (zmq:msg-data-as-array msg))
-                     (ind (ignore-errors (from-bytes data))))
+                     (ind (when (not (zerop (length data)))
+                            (ignore-errors (from-bytes data)))))
                 (if ind
                     (incorporate ind)
                     (format t "failed message ~d~%" (length data)))))))))
@@ -41,5 +45,6 @@ ADDRESS should be of the form \"tcp://localhost:6666\"."
 ADDRESS should be of the form \"tcp://*:6666\"."
   (zmq:with-context (ctx)
     (zmq:with-socket (s ctx :push)
+      (zmq:setsockopt s :maxmsgsize *max-msg-size*)
       (zmq:bind s address)
       (zmq:msg-send s (make-instance 'zmq:msg :data (to-bytes software))))))
