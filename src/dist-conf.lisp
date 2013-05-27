@@ -30,9 +30,11 @@ ADDRESS should be of the form \"tcp://localhost:6666\"."
       ;; (handler-case (error (e) "~&zmq error ~a~%" e))
       (loop (let ((msg (make-instance 'zmq:msg)))
               (zmq:msg-recv s msg)
-              (let ((data (zmq:msg-data-as-array msg)))
-                (format t "received message of length ~D~%" (length data))
-                (incorporate (from-bytes data))))))))
+              (let* ((data (zmq:msg-data-as-array msg))
+                     (ind (ignore-errors (from-bytes data))))
+                (if ind
+                    (incorporate ind)
+                    (format t "failed message ~d~%" (length data)))))))))
 
 (defun share (software address)
   "Push SOFTWARE to ADDRESS.
