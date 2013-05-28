@@ -4,6 +4,8 @@ ltxpng
 *.txt
 *.tex
 *.pdf
+*.cfg
+*.dat
 
 # The virtual machine itself
 *.qcow
