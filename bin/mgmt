@@ -135,8 +135,8 @@ compile(){
             ## PARSEC
             blackscholes)
                 case $FLAGS in
-                    min) FLAGS="$BLACKSCHOLES_FLAGS_ALL";;
-                    all) FLAGS="$BLACKSCHOLES_FLAGS_MIN";;
+                    all) FLAGS="$BLACKSCHOLES_FLAGS_ALL";;
+                    min) FLAGS="$BLACKSCHOLES_FLAGS_MIN";;
                 esac
                 m4 ./c.m4.pthreads blackscholes.c > blackscholes.m4.cpp
                 g++ $FLAGS blackscholes.m4.cpp -S -o blackscholes.s
@@ -153,8 +153,8 @@ compile(){
                 cat cellpool.cpp >> all.cpp
                 cat parsec_barrier.cpp >> all.cpp
                 case $FLAGS in
-                    min) FLUID_FLAGS="$FLUID_FLAGS_ALL";;
-                    all) FLUID_FLAGS="$FLUID_FLAGS_MIN";;
+                    all) FLUID_FLAGS="$FLUID_FLAGS_ALL";;
+                    min) FLUID_FLAGS="$FLUID_FLAGS_MIN";;
                 esac
                 g++ $FLUID_FLAGS -S all.cpp -o ${bench}.s||err "compilation failed"
                 ;;
