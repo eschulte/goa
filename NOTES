@@ -62,7 +62,11 @@ Optimization Notes                                         -*- org -*-
 | vips         | C          | data parallel | medium (image)  | medium      | some          |
 | x264         | C          | pipeline      | medium (video)  | medium      | very          |
 
-* Tasks [9/60]
+* Tasks [9/61]
+** TODO find minimal input sizes for each program
+For every benchmark program, test a range of input sizes until we find
+the smallest input which results in stable HW counters.
+
 ** TODO Build all benchmarks to ASM [5/41]
 *** parsec
 **** DONE Blackscholes
