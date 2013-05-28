@@ -13,6 +13,7 @@
 #
 # Options:
 #  -f,--flags ------ either `all' or `min'
+#  -s,--size SIZE -- run test,tiny,small,medium,large(default)
 #  -l,--llvm ------- compile to and link from LLVM IR (not ASM)
 #
 . $(dirname $0)/common
@@ -22,12 +23,14 @@ if [ $# -lt 2 ];then help; fi
 ACTION="$1"
 BENCHMARK="$2"
 FLAGS="min"
+SIZE="large"
 LLVM=""
-eval set -- $(getopt -o f:l -l flags:,llvm -- "$@" || help;)
+eval set -- $(getopt -o f:s:l -l flags:,size:,llvm -- "$@" || help;)
 while [ $# -gt 0 ];do
     case $1 in
         -f|--flags) FLAGS="$2"; shift;;
-        -l|--llvm)  error "the 'llvm' option is not implemented.";;
+        -s|--size) SIZE="$2"; shift;;
+        -l|--llvm) error "the 'llvm' option is not implemented.";;
         (--) shift; break;;
         (-*) error "unrecognized option $1";;
         (*)  break;;
@@ -301,18 +304,51 @@ input(){
     if [ -f "$bench_dir/$target" ];then
         msg "$bench/$target exists"
     else
+        ## parsec sizes
+        if echo "${PARSEC_APPS[@]}"|grep -q $bench;then
+            case $SIZE in
+                test) INPUT="input_test.tar";;
+                tiny) INPUT="input_simdev.tar";;
+                small) INPUT="input_simsmall.tar";;
+                medium) INPUT="input_simmedium.tar";;
+                large) INPUT="input_simlarge.tar";;
+                *) error "input SIZE '$SIZE' is not recognized";;
+            esac
+        fi
+
         case $BENCHMARK in
 
             ## PARSEC
             blackscholes)
-                tar xf ${parsec_dir}/inputs/input_simlarge.tar
-                mv in_64K.txt $target;;
+                tar xf ${parsec_dir}/inputs/$INPUT
+                case $SIZE  in
+                    test)   in=in_4.txt;;
+                    tiny)   in=in_16.txt;;
+                    small)  in=in_4K.txt;;
+                    medium) in=in_16K.txt;;
+                    large)  in=in_64K.txt;;
+                esac
+                mv $in $target;;
             fluidanimate)
-                tar xf ${parsec_dir}/inputs/input_simlarge.tar
-                mv in_300K.fluid $target;;
+                tar xf ${parsec_dir}/inputs/$INPUT
+                case $SIZE  in
+                    test)   in=in_5K.fluid;;
+                    tiny)   in=in_15K.fluid;;
+                    small)  in=in_35K.fluid;;
+                    medium) in=in_100K.fluid;;
+                    large)  in=in_300K.fluid;;
+                esac
+                mv $in $target;;
             freqmine)
-                tar xf ${parsec_dir}/inputs/input_simmedium.tar
-                mv kosarak_500k.dat $target;;
+                tar xf ${parsec_dir}/inputs/$INPUT
+                case $SIZE  in
+                    test)   in=T10I4D100K_3.dat;;
+                    tiny)   in=T10I4D100K_1k.dat;;
+                    small)  in=kosarak_250k.dat;;
+                    medium) in=kosarak_500k.dat;;
+                    large)  in=kosarak_990k.dat;;
+                esac
+                mv $in $target;;
             swaptions)
                 msg "no input needed for $bench"
                 return 0;;
@@ -352,11 +388,29 @@ output(){
             blackscholes)
                 ./$bench 1 $bench.input $target;;
             fluidanimate)
-                ./$bench 1 5 $bench.input $target;;
+                case $SIZE in
+                    test)  ./$bench 1 1 $bench.input $target;;
+                    tiny)  ./$bench 1 3 $bench.input $target;;
+                    small) ./$bench 1 5 $bench.input $target;;
+                    medium) ./$bench 1 5 $bench.input $target;;
+                    large) ./$bench 1 5 $bench.input $target;;
+                esac
             freqmine)
-                ./$bench $bench.input 790 $target;;
+                case $SIZE in
+                    test)  ./$bench $bench.input 1 $target;;
+                    tiny)  ./$bench $bench.input 3 $target;;
+                    small) ./$bench $bench.input 220 $target;;
+                    medium) ./$bench $bench.input 410 $target;;
+                    large) ./$bench $bench.input 790 $target;;
+                esac
             swaptions)
-                ./$bench -ns 32 -sm 20000 -nt 1 2> $target;;
+                case $SIZE in
+                    test)  ./$bench -ns 1  -sm 5     -nt 1 2> $target;;
+                    tiny)  ./$bench -ns 3  -sm 50    -nt 1 2> $target;;
+                    small) ./$bench -ns 16 -sm 10000 -nt 1 2> $target;;
+                    medium)./$bench -ns 32 -sm 20000 -nt 1 2> $target;;
+                    large) ./$bench -ns 64 -sm 40000 -nt 1 2> $target;;
+                esac
 
             ## SPEC
             bzip2)
