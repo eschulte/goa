@@ -8,7 +8,8 @@
 #  -p,--perf ------ collect performance counters
 #  -c,--counters -- comma separated list of perf counters
 #  -w,--wattsup --- collect watts-up data during execution
-#  -r,--raw ------- print raw output
+#  -r,--repeat N -- ask perf to repeat N times
+#  -R,--raw ------- print raw output
 #  -d,--debug ----- print commands before running them
 #
 # Benchmark should be one of
@@ -33,21 +34,23 @@ LIMIT="./bin/no-stack-limit"
 PERF=""
 COUNTERS=""
 WATTSUP=""
+REPEAT=""
 RAW=""
 DEBUG=""
 EXIT=""
 ERROR=""
 OUT=$(mktemp)
 eval set -- \
-    $(getopt -o l:pc:wrd -l limit:,perf,counters:,wattsup,raw,debug \
+    $(getopt -o l:pc:wr:rd -l limit:,perf,counters:,wattsup,repeat:,raw,debug \
     -- "$@" || help;)
 while [ $# -gt 0 ];do
     case $1 in
         -l|--limit) LIMIT="$2"; shift;;
         -p|--perf)  PERF="yes";;
+        -r|--repeat) REPEAT="$2"; shift;;
         -c|--counters) PERF="yes"; COUNTERS="$2"; shift;;
         -w|--wattsup) WATTSUP="yes";;
-        -r|--raw) RAW="yes";;
+        -R|--raw) RAW="yes";;
         -d|--debug) DEBUG="yes";;
         (--) shift; break;;
         (-*) error "unrecognized option $1";;
@@ -86,6 +89,7 @@ else
     # perf prefix to the command
     PERF_OUT=$(mktemp)
     PREFIX+=" perf stat -x, -e $COUNTERS -o $PERF_OUT"
+    if [ ! -z "$REPEAT" ];then PREFIX+=" -r $REPEAT"; fi
     # handle perf output on exit
     function exit_hook (){
         echo "$EXIT,exit"
