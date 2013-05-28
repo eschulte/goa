@@ -357,8 +357,16 @@ input(){
             bzip2)
                 SPEC_BENCH=$(echo "${SPEC_APPS[@]}"|tr ' ' '\n'|grep $bench)
                 mkdir -p "$bench_dir"
-                cp "$BASE"/benchmarks/SPEC_CPU2006v1.0/benchspec/CPU2006/$SPEC_BENCH/data/train/input/byoudoin.jpg $target;;
-
+                tmp=$(mktemp)
+                cp "$BASE"/benchmarks/SPEC_CPU2006v1.0/benchspec/CPU2006/$SPEC_BENCH/data/train/input/byoudoin.jpg $tmp
+                case $SIZE in
+                    test)   convert -resize 50x75    $tmp $target;;
+                    tiny)   convert -resize 200x300  $tmp $target;;
+                    small)  convert -resize 400x600  $tmp $target;;
+                    medium) convert -resize 800x1200 $tmp $target;;
+                    large)  cp $tmp $target;;
+                esac
+                rm $tmp;;
             h264ref)
                 SPEC_BENCH=$(echo "${SPEC_APPS[@]}"|tr ' ' '\n'|grep $bench)
                 H_DATA="$BASE"/benchmarks/SPEC_CPU2006v1.0/benchspec/CPU2006/$SPEC_BENCH/data
@@ -395,6 +403,7 @@ output(){
                     medium) ./$bench 1 5 $bench.input $target;;
                     large) ./$bench 1 5 $bench.input $target;;
                 esac
+                ;;
             freqmine)
                 case $SIZE in
                     test)  ./$bench $bench.input 1 $target;;
@@ -403,6 +412,7 @@ output(){
                     medium) ./$bench $bench.input 410 $target;;
                     large) ./$bench $bench.input 790 $target;;
                 esac
+                ;;
             swaptions)
                 case $SIZE in
                     test)  ./$bench -ns 1  -sm 5     -nt 1 2> $target;;
@@ -411,13 +421,21 @@ output(){
                     medium)./$bench -ns 32 -sm 20000 -nt 1 2> $target;;
                     large) ./$bench -ns 64 -sm 40000 -nt 1 2> $target;;
                 esac
+                ;;
 
             ## SPEC
             bzip2)
                 ./$bench -c $bench.input > $target;;
             h264ref)
+                case $SIZE in
+                    test)   FRAMES=1;;
+                    tiny)   FRAMES=2;;
+                    small)  FRAMES=4;;
+                    medium) FRAMES=6;;
+                    large)  FRAMES=8;;
+                esac
                 ./$bench -d $bench.cfg \
-                    -p FramesToBeEncoded=8 \
+                    -p FramesToBeEncoded=$FRAMES \
                     -p InputFile="$bench.input" \
                     -p OutputFile="$target"||error "output failed";;
             *) error "output not implemented for $bench";;
