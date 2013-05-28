@@ -67,12 +67,16 @@ Optimization Notes                                         -*- org -*-
 *** parsec
 **** DONE Blackscholes
 **** DONE bodytrack
-Here is the command I used to make an executable from the assembly file.:
-: g++ -DHAVE_CONFIG_H -I. -I/nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/bodytrack/src/FlexImageLib -I.. -O3 -g -funroll-loops -fprefetch-loop-arrays -fpermissive -fno-exceptions  -static-libgcc -Wl,--hash-style=both,--as-needed -DPARSEC_VERSION=3.0-beta-20120904 -fexceptions  -MT FlexImage.lo -MD -MP -MF /nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/bodytrack/obj/amd64-linux.gcc/FlexImageLib/.deps/FlexImage.Plo -I /nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/bodytrack/obj/amd64-linux.gcc/ -L /nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/bodytrack/obj/amd64-linux.gcc/FlexImageLib/.libs/ -I /nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/libs/tbblib/src/include/ -L /nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/bodytrack/obj/amd64-linux.gcc/TrackingBenchmark/threads/.libs/ bodytrack.s -o bodytrack -lflex -lpthread -lthreads
-
+Here is the command I used to make an executable from the assembly file.
+    (note :/nfs/adaptive/stharding/tmp/parsec-3.0 should be replaced with
+    the path to parsec)
+: g++ -L /nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/bodytrack/obj/amd64-linux.gcc/FlexImageLib/.libs/  -L /nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/bodytrack/obj/amd64-linux.gcc/TrackingBenchmark/threads/.libs/ bodytrack.s -o bodytrack -lflex -lpthread -lthreads
 And here is the command I used to make the asm file (note the relative
-paths. Might be a good idea to change to absolute paths) see the
-management script to make the cpp file:
+    paths. Might be a good idea to change to absolute paths) see the
+    management script to make the cpp file (also, I think it is necessary
+    to build with the parsec management script first so that the config.h
+    file will be generated.)
+:
 : g++ -DHAVE_CONFIG_H -I. -I/nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/bodytrack/src/FlexImageLib -I.. -O3 -g -funroll-loops -fprefetch-loop-arrays -fpermissive -fno-exceptions  -static-libgcc -Wl,--hash-style=both,--as-needed -DPARSEC_VERSION=3.0-beta-20120904 -fexceptions  -MT FlexImage.lo -MD -MP -MF ../../obj/amd64-linux.gcc/FlexImageLib/.deps/FlexImage.Plo -I ../../obj/amd64-linux.gcc/ -L ../../obj/amd64-linux.gcc/FlexImageLib/.libs/ -I ../../../../libs/tbblib/src/include/ -L../../../../libs/tbblib/src/include/ -L ../../obj/amd64-linux.gcc/TrackingBenchmark/threads/.libs/ -S tst.cpp -o bodytrack.s -lflex -lpthread -lthreads
 
 **** TODO facesim
