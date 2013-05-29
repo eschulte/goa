@@ -10,6 +10,7 @@
 #  -w,--wattsup --- collect watts-up data during execution
 #  -r,--repeat N -- ask perf to repeat N times
 #  -R,--raw ------- print raw output
+#  -s,--size ------ input size test,tiny,small,medium,large
 #  -d,--debug ----- print commands before running them
 #
 # Benchmark should be one of
@@ -29,6 +30,16 @@
 ## Parse Options
 if [ $# -lt 2 ];then help; fi
 BENCHMARK="$1"
+case $BENCHMARK in
+    blackscholes) SIZE=large;;
+    bodytrack)    SIZE=large;;
+    fluidanimate) SIZE=large;;
+    freqmine)     SIZE=medium;;
+    swaptions)    SIZE=medium;;
+    bzip2)        SIZE=large;;
+    h264ref)      SIZE=large;;
+    *) error "no test implemented for '$BENCHMARK'";;
+esac
 EXECUTABLE="$2"
 LIMIT="./bin/no-stack-limit"
 PERF=""
@@ -41,7 +52,8 @@ EXIT=""
 ERROR=""
 OUT=$(mktemp)
 eval set -- \
-    $(getopt -o l:pc:wr:rd -l limit:,perf,counters:,wattsup,repeat:,raw,debug \
+    $(getopt -o l:pc:wr:rs:d \
+    -l limit:,perf,counters:,wattsup,repeat:,raw,size:,debug \
     -- "$@" || help;)
 while [ $# -gt 0 ];do
     case $1 in
@@ -51,6 +63,7 @@ while [ $# -gt 0 ];do
         -c|--counters) PERF="yes"; COUNTERS="$2"; shift;;
         -w|--wattsup) WATTSUP="yes";;
         -R|--raw) RAW="yes";;
+        -s|--size) SIZE="$2"; shift;;
         -d|--debug) DEBUG="yes";;
         (--) shift; break;;
         (-*) error "unrecognized option $1";;
@@ -133,8 +146,28 @@ case $BENCHMARK in
             ERROR=$(num_diff $OUT $OUTPUT);
         fi
         ;;
+    bodytrack)
+        case $SIZE in
+            test)   run 0 $EXECUTABLE $INPUT 4 1 5    1 0 1;;
+            tiny)   run 0 $EXECUTABLE $INPUT 4 1 100  3 0 1;;
+            small)  run 0 $EXECUTABLE $INPUT 4 1 1000 5 0 1;;
+            medium) run 0 $EXECUTABLE $INPUT 4 2 2000 5 0 1;;
+            large)  run 0 $EXECUTABLE $INPUT 4 4 4000 5 0 1;;
+        esac
+        EXIT=$?
+        cat $INPUT/Result000*.bmp > $OUT
+        if diff $OUT $OUTPUT;then
+            ERROR=0;
+        else
+            ERROR=1;
+        fi
+        ;;
     fluidanimate)
-        run 0 $EXECUTABLE 1 5 "$INPUT" $OUT
+        case $SIZE in
+            test)   run 0 $EXECUTABLE 1 1 "$INPUT" $OUT;;
+            tiny)   run 0 $EXECUTABLE 1 3 "$INPUT" $OUT;;
+            small|medium|large) run 0 $EXECUTABLE 1 5 "$INPUT" $OUT;;
+        esac
         EXIT=$?
         if diff $OUT $OUTPUT;then
             ERROR=0;
@@ -143,14 +176,26 @@ case $BENCHMARK in
         fi
         ;;
     freqmine)
-        run 0 $EXECUTABLE "$INPUT" 790 $OUT
+        case $SIZE in
+            test)   run 0 $EXECUTABLE "$INPUT" 1   $OUT;;
+            tiny)   run 0 $EXECUTABLE "$INPUT" 3   $OUT;;
+            small)  run 0 $EXECUTABLE "$INPUT" 220 $OUT;;
+            medium) run 0 $EXECUTABLE "$INPUT" 410 $OUT;;
+            large)  run 0 $EXECUTABLE "$INPUT" 790 $OUT;;
+        esac
         EXIT=$?
         if [ -z $RAW ];then
             ERROR=$(num_diff <(cat $OUT|freqclean) <(cat $OUTPUT|freqclean));
         fi
         ;;
     swaptions)
-        run 2 $EXECUTABLE -ns 32 -sm 20000 -nt 1 >$OUT
+        case $SIZE in
+            test)  run 2 $EXECUTABLE -ns 1  -sm 5     -nt 1 2> $OUT;;
+            tiny)  run 2 $EXECUTABLE -ns 3  -sm 50    -nt 1 2> $OUT;;
+            small) run 2 $EXECUTABLE -ns 16 -sm 10000 -nt 1 2> $OUT;;
+            medium)run 2 $EXECUTABLE -ns 32 -sm 20000 -nt 1 2> $OUT;;
+            large) run 2 $EXECUTABLE -ns 64 -sm 40000 -nt 1 2> $OUT;;
+        esac
         EXIT=$?
         left=$(awk '{print $4}' $OUT)
         right=$(awk '{print $4}' $OUTPUT)
@@ -185,8 +230,15 @@ case $BENCHMARK in
         fi
         ;;
     h264ref)
+        case $SIZE in
+            test)   FRAMES=1;;
+            tiny)   FRAMES=2;;
+            small)  FRAMES=4;;
+            medium) FRAMES=6;;
+            large)  FRAMES=8;;
+        esac
         run 0 $EXECUTABLE -d "${INPUT%.input}.cfg" \
-            -p FramesToBeEncoded=8 \
+            -p FramesToBeEncoded=$FRAMES \
             -p InputFile="$INPUT" \
             -p OutputFile="$OUT"
         EXIT=$?
