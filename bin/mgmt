@@ -156,6 +156,7 @@ compile(){
                 # we rename this file so that it won't be included in
                 # the concatenated src.
                 mv TrackingModelTBB.cpp TrackingModelTBB.bkup
+                rm -f bodytrack.cpp
                 cat *.c* > bodytrack.cpp
                 mv TrackingModelTBB.bkup TrackingModelTBB.cpp
 
@@ -172,7 +173,8 @@ compile(){
                     ../../obj/amd64-linux.gcc/FlexImageLib/.deps/FlexImage.Plo \
                     -I ../../obj/amd64-linux.gcc/ \
                     -I ../../../../libs/tbblib/src/include/ \
-                    -S bodytrack.cpp -o $tmp || error "compilation failed"
+                    -S bodytrack.cpp -o $tmp \
+                    || error "compilation failed: build ${bench} with parsecmgt"
                 popd >/dev/null
                 mv $tmp ${bench}.s
                 ;;
@@ -283,6 +285,17 @@ link(){
                 esac
                 g++ $FLAGS ${bench}.s -o $bench||error "linking failed"
                 ;;
+            bodytrack)
+                FLAGS="-lflex -lpthread -lthreads"
+
+                ldir="$BASE"/benchmarks/parsec-3.0/pkgs/apps/$bench/obj/amd64-linux.gcc
+
+                link_dirs+="-L${ldir}/FlexImageLib/.libs "
+                link_dirs+="-L${ldir}/TrackingBenchmark/threads/.libs "
+
+                g++ $link_dirs ${bench}.s -o $bench $FLAGS \
+                    ||error "linking failed"
+                ;;
             fluidanimate)
                 case $FLAGS in
                     min) FLAGS="$FLUID_FLAGS_ALL -lpthread";;
@@ -360,6 +373,16 @@ input(){
                     large)  in=in_64K.txt;;
                 esac
                 mv $in $target;;
+            bodytrack)
+                tar xf ${parsec_dir}/inputs/$INPUT
+                case $SIZE  in
+                    test)   in=sequenceB_1;;
+                    tiny)   in=sequenceB_1;;
+                    small)  in=sequenceB_1;;
+                    medium) in=sequenceB_2;;
+                    large)  in=sequenceB_4;;
+                esac
+                mv $in $target;;
             fluidanimate)
                 tar xf ${parsec_dir}/inputs/$INPUT
                 case $SIZE  in
@@ -426,6 +449,18 @@ output(){
             ## PARSEC
             blackscholes)
                 ./$bench 1 $bench.input $target;;
+            bodytrack)
+                # run the program
+                case $SIZE in
+                    test)  ./$bench $bench.input 4 1 5 1 0 1;;
+                    tiny)  ./$bench $bench.input 4 1 100 3 0 1;;
+                    small) ./$bench $bench.input 4 1 1000 5 0 1;;
+                    medium)./$bench $bench.input 4 2 2000 5 0 1;;
+                    large) ./$bench $bench.input 4 4 4000 5 0 1;;
+                esac
+                # collect the output
+                cat $bench.input/Result000*.bmp > $target
+                ;;
             fluidanimate)
                 case $SIZE in
                     test)  ./$bench 1 1 $bench.input $target;;
