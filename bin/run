@@ -59,7 +59,7 @@ while [ $# -gt 0 ];do
     case $1 in
         -l|--limit) LIMIT="$2"; shift;;
         -p|--perf)  PERF="yes";;
-        -r|--repeat) REPEAT="$2"; shift;;
+        -r|--repeat) PERF="yes"; REPEAT="$2"; shift;;
         -c|--counters) PERF="yes"; COUNTERS="$2"; shift;;
         -w|--wattsup) WATTSUP="yes";;
         -R|--raw) RAW="yes";;

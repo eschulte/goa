@@ -102,8 +102,43 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 
 * Tasks [9/61]
 ** TODO find minimal input sizes for each program
+Need to estimate the variance in our energy predictions, which are
+linear combinations of HW counters, from variance in the HW counters.
+
+So that we can reduce test input sizes (which increases variance in
+the HW counters) until the variance in our predictions become too high
+to accurately guide our GP process.
+
+The goal is to balance faster running time with fitness function
+accuracy.
+
 For every benchmark program, test a range of input sizes until we find
 the smallest input which results in stable HW counters.
+
+The HW counters are definitely correlated, so we should use something
+like the following.
+http://en.wikipedia.org/wiki/Variance#Sum_of_correlated_variables
+
+*** blackscholes
+#+begin_src sh :results silent
+  for size in test tiny small medium large;do
+      mgmt clean blackscholes >&2
+      mgmt output blackscholes -s $size >&2
+      echo ""
+      echo $size
+      run blackscholes benchmarks/blackscholes/blackscholes -s $size -r 30
+  done > results/counter-by-size/blackscholes.txt
+#+end_src
+
+*** fluidanimate
+#+begin_src sh :results silent
+  for size in test tiny small medium large;do
+      mgmt clean fluidanimate >&2         
+      mgmt output fluidanimate -s $size >&2
+      echo "";echo $size
+      run fluidanimate benchmarks/fluidanimate/fluidanimate -s $size -r 30
+  done|tee results/counter-by-size/fluidanimate.txt
+#+end_src
 
 ** TODO Build all benchmarks to ASM [5/41]
 *** parsec

@@ -24,18 +24,21 @@ ifeq ($(shell [ -f $(QUICK_LISP)/setup.lisp ] && echo exists),)
 $(error The QUICK_LISP environment variable must point to your quicklisp install)
 endif
 
+BUILD_APP_FLAGS= --manifest-file $(QUICK_LISP)/local-projects/system-index.txt \
+	--manifest-file etc/data/ql-manifest.txt \
+	$(LISP_LIBRARIES) \
+	--dynamic-space-size $(LISP_STACK)
+
 all: bin/no-limit bin/no-stack-limit bin/limit bin/optimize
 
 etc/data/ql-manifest.txt:
 	sbcl --eval '(progn (ql:write-asdf-manifest-file "$@") (sb-ext:exit))'
 
 bin/optimize: src/run-optimize.lisp etc/data/ql-manifest.txt
-	$(BA) \
-	--manifest-file $(QUICK_LISP)/local-projects/system-index.txt \
-	--manifest-file etc/data/ql-manifest.txt \
-	$(LISP_LIBRARIES) \
-	--dynamic-space-size $(LISP_STACK) \
-	--load $< --entry optimize:main --output $@
+	$(BA) $(BUILD_APP_FLAGS) --load $< --output $@ --entry "optimize:main"
+
+bin/calc-energy: src/calc-energy.lisp etc/data/ql-manifest.txt
+	$(BA) $(BUILD_APP_FLAGS) --load $< --output $@ --entry "optimize:main"
 
 clean:
 	rm -f bin/no-limit bin/no-stack-limit bin/limit bin/optimize
