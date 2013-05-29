@@ -110,7 +110,9 @@ unpack(){ # dispatch depending on benchmark suite
     else
         if echo "${PARSEC_APPS[@]}"|grep -q $bench;then
             mkdir -p "$bench_dir"
-            cp -R "$BASE"/benchmarks/parsec-3.0/pkgs/apps/$bench/src/* "$bench_dir"
+            if [ ! "$bench" == "bodytrack" ];then
+                cp -R "$BASE"/benchmarks/parsec-3.0/pkgs/apps/$bench/src/* "$bench_dir"
+            fi
         elif echo "${SPEC_APPS[@]}"|grep -q $bench;then
             SPEC_BENCH=$(echo "${SPEC_APPS[@]}"|tr ' ' '\n'|grep $bench)
             mkdir -p "$bench_dir"
@@ -144,7 +146,31 @@ compile(){
                 m4 ./c.m4.pthreads blackscholes.c > blackscholes.m4.cpp
                 g++ $FLAGS blackscholes.m4.cpp -S -o blackscholes.s
                 ;;
-            bodytrack) not_implemented $bench ;;
+            bodytrack)
+                case $FLAGS in
+                    min) FLAGS="-fpermissive -fexceptions";;
+                    all) FLAGS="-fpermissive $PARSEC_BASE_FLAGS_ALL -fexceptions";;
+                esac
+                tmp=$(mktemp)
+                pushd "$BASE"/benchmarks/parsec-3.0/pkgs/apps/$bench/src/TrackingBenchmark >/dev/null
+                # we rename this file so that it won't be included in
+                # the concatenated src.
+                mv TrackingModelTBB.cpp TrackingModelTBB.bkup
+                cat *.c* > bodytrack.cpp
+                mv TrackingModelTBB.bkup TrackingModelTBB.cpp
+
+                # now we undef USE_TBB to controll the includes and
+                # comment out duplicate template defs.
+                sed -i '1i#undef USE_TBB' bodytrack.cpp
+                sed -i '1459i/*' bodytrack.cpp
+                sed -i '1466a*/' bodytrack.cpp
+                sed -i '1771i/*' bodytrack.cpp
+                sed -i '1778a*/' bodytrack.cpp
+
+                g++ -DHAVE_CONFIG_H -I. -I../FlexImageLib -I.. $FLAGS -MT FlexImage.lo -MD -MP -MF ../../obj/amd64-linux.gcc/FlexImageLib/.deps/FlexImage.Plo -I ../../obj/amd64-linux.gcc/ -L ../../obj/amd64-linux.gcc/FlexImageLib/.libs/ -I ../../../../libs/tbblib/src/include/ -L../../../../libs/tbblib/src/include/ -L ../../obj/amd64-linux.gcc/TrackingBenchmark/threads/.libs/ -S bodytrack.cpp -o $tmp -lflex -lpthread -lthreads || error "compilation failed"
+                popd >/dev/null
+                mv $tmp ${bench}.s
+                ;;
             facesim) not_implemented $bench ;;
             ferret)
                 # This depends on the gsl library, to build gsl from
@@ -159,7 +185,7 @@ compile(){
                     all) FLUID_FLAGS="$FLUID_FLAGS_ALL";;
                     min) FLUID_FLAGS="$FLUID_FLAGS_MIN";;
                 esac
-                g++ $FLUID_FLAGS -S all.cpp -o ${bench}.s||err "compilation failed"
+                g++ $FLUID_FLAGS -S all.cpp -o ${bench}.s||error "compilation failed"
                 ;;
             freqmine)
                 case $FLAGS in
@@ -173,7 +199,7 @@ EOF
                 cat *.cpp \
                     |grep -v "common.h" \
                     |grep -v "static int omp_get_max_threads" >> all.cpp
-                g++ $FLAGS -S all.cpp -o ${bench}.s||err "compilation failed"
+                g++ $FLAGS -S all.cpp -o ${bench}.s||error "compilation failed"
                 ;;
             raytrace)
                 # To build this add '#include <unistd.h>' to the top
