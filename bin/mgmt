@@ -167,7 +167,7 @@ compile(){
                 sed -i '1771i/*' bodytrack.cpp
                 sed -i '1778a*/' bodytrack.cpp
 
-                g++ -DHAVE_CONFIG_H -I. -I../FlexImageLib -I.. $FLAGS -MT FlexImage.lo -MD -MP -MF ../../obj/amd64-linux.gcc/FlexImageLib/.deps/FlexImage.Plo -I ../../obj/amd64-linux.gcc/ -L ../../obj/amd64-linux.gcc/FlexImageLib/.libs/ -I ../../../../libs/tbblib/src/include/ -L../../../../libs/tbblib/src/include/ -L ../../obj/amd64-linux.gcc/TrackingBenchmark/threads/.libs/ -S bodytrack.cpp -o $tmp -lflex -lpthread -lthreads || error "compilation failed"
+                g++ -DHAVE_CONFIG_H -I. -I../FlexImageLib -I.. $FLAGS -MT FlexImage.lo -MD -MP -MF ../../obj/amd64-linux.gcc/FlexImageLib/.deps/FlexImage.Plo -I ../../obj/amd64-linux.gcc/ -I ../../../../libs/tbblib/src/include/ -S bodytrack.cpp -o $tmp || error "compilation failed"
                 popd >/dev/null
                 mv $tmp ${bench}.s
                 ;;
