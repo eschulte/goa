@@ -34,7 +34,7 @@ all: bin/no-limit bin/no-stack-limit bin/limit bin/optimize
 etc/data/ql-manifest.txt:
 	sbcl --eval '(progn (ql:write-asdf-manifest-file "$@") (sb-ext:exit))'
 
-bin/optimize: src/run-optimize.lisp etc/data/ql-manifest.txt
+bin/optimize: src/run-optimize.lisp src/optimize.lisp etc/data/ql-manifest.txt
 	$(BA) $(BUILD_APP_FLAGS) --load $< --output $@ --entry "optimize:main"
 
 bin/calc-energy: src/calc-energy.lisp etc/data/ql-manifest.txt
