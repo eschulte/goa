@@ -14,6 +14,10 @@ import time
 parser = OptionParser( usage = "%prog [otions] number" )
 parser.add_option( "--spec-config", help = "SPEC config file" )
 parser.add_option( "--parsec", action = "store_true", help = "run parsec" )
+parser.add_option(
+    "--sleep-step", metavar = "sec", default = 10,
+    help = "step size (sec) for different sleep \"benchmarks\""
+)
 parser.add_option( "--test", action = "store_true", help = "run test inputs" )
 options, args = parser.parse_args()
 
@@ -57,16 +61,9 @@ def parsec( bmark, dotest ):
             '-s', submit
     ]
 
-benchmarks = [
-    ( "sleep2", sleep ),
-]
-if not options.test:
-    benchmarks += [
-        ( "sleep5", sleep ),
-        ( "sleep10", sleep ),
-        ( "sleep30", sleep ),
-        ( "sleep60", sleep ),
-    ]
+benchmarks = list()
+for i in range( 2, 3 if options.test else 61, int( options.sleep_step ) ):
+    benchmarks.append( ( "sleep" + str( i ), sleep ) )
 if options.parsec:
     benchmarks += [
         ( "blackscholes", parsec ),
