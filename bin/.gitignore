@@ -1,5 +1,6 @@
 REMOTES
 optimize
+optimize*
 calc-energy
 *limit
 *.in
