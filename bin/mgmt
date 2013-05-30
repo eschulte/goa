@@ -12,7 +12,7 @@
 #  output ---------- generate correct test output for benchmark
 #
 # Options:
-#  -f,--flags ------ either `all' or `min'
+#  -f,--flags ------ either `all' or `min' (default is `all')
 #  -s,--size SIZE -- run test,tiny,small,medium,large(default)
 #  -l,--llvm ------- compile to and link from LLVM IR (not ASM)
 #
@@ -26,7 +26,7 @@ fi
 if [ $# -lt 2 ];then help; fi
 ACTION="$1"
 BENCHMARK="$2"
-FLAGS="min"
+FLAGS="all"
 SIZE="large"
 LLVM=""
 eval set -- $(getopt -o f:s:l -l flags:,size:,llvm -- "$@" || help;)
