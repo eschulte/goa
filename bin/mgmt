@@ -18,6 +18,10 @@
 #
 . $(dirname $0)/common
 
+if [ "X${SPEC_ROOT:+set}" != "Xset" ] ; then
+    SPEC_ROOT="$BASE"/benchmarks/SPEC_CPU2006v1.0
+fi
+
 ## Parse Options
 if [ $# -lt 2 ];then help; fi
 ACTION="$1"
@@ -116,7 +120,7 @@ unpack(){ # dispatch depending on benchmark suite
         elif echo "${SPEC_APPS[@]}"|grep -q $bench;then
             SPEC_BENCH=$(echo "${SPEC_APPS[@]}"|tr ' ' '\n'|grep $bench)
             mkdir -p "$bench_dir"
-            cp -R "$BASE"/benchmarks/SPEC_CPU2006v1.0/benchspec/CPU2006/$SPEC_BENCH/src/* "$bench_dir"
+            cp -R $SPEC_ROOT/benchspec/CPU2006/$SPEC_BENCH/src/* "$bench_dir"
             chmod -R u+w "$bench_dir"
         else
             error "benchmark '$1' is not known"
@@ -233,7 +237,7 @@ EOF
                 gcc-4.4 -combine -S $FLAGS \
                     blocksort.c bzip2.c compress.c \
                     crctable.c decompress.c huffman.c randtable.c \
-                    bzlib.c -o $bench.s
+                    bzlib.c -o $bench.s||error "compilation failed"
                 ;;
             h264ref)
                 case $FLAGS in
@@ -301,7 +305,7 @@ link(){
                     min) FLAGS="$FLUID_FLAGS_ALL -lpthread";;
                     all) FLAGS="$FLUID_FLAGS_MIN -lpthread";;
                 esac
-                g++ $FLAGS ${bench}.s -o $bench||error "linking failed"
+                g++ ${bench}.s $FLAGS -o $bench||error "linking failed"
                 ;;
             freqmine)
                 case $FLAGS in
@@ -331,7 +335,8 @@ link(){
                     min) FLAGS="-lm";;
                     all) FLAGS="-lm -O3";;
                 esac
-                gcc $FLAGS ${bench}.s -o $bench||error "linking failed";;
+                echo gcc $FLAGS ${bench}.s -o $bench
+                gcc ${bench}.s $FLAGS -o $bench||error "linking failed";;
             *) error "linking not implemented for $bench"
         esac
         popd>/dev/null
@@ -412,7 +417,7 @@ input(){
                 SPEC_BENCH=$(echo "${SPEC_APPS[@]}"|tr ' ' '\n'|grep $bench)
                 mkdir -p "$bench_dir"
                 tmp=$(mktemp)
-                cp "$BASE"/benchmarks/SPEC_CPU2006v1.0/benchspec/CPU2006/$SPEC_BENCH/data/train/input/byoudoin.jpg $tmp
+                cp "$SPEC_ROOT"/benchspec/CPU2006/$SPEC_BENCH/data/train/input/byoudoin.jpg $tmp
                 case $SIZE in
                     test)   convert -resize 50x75    $tmp $target;;
                     tiny)   convert -resize 200x300  $tmp $target;;
@@ -421,9 +426,10 @@ input(){
                     large)  cp $tmp $target;;
                 esac
                 rm $tmp;;
+
             h264ref)
                 SPEC_BENCH=$(echo "${SPEC_APPS[@]}"|tr ' ' '\n'|grep $bench)
-                H_DATA="$BASE"/benchmarks/SPEC_CPU2006v1.0/benchspec/CPU2006/$SPEC_BENCH/data
+                H_DATA=$SPEC_ROOT/benchspec/CPU2006/$SPEC_BENCH/data
                 mkdir -p "$bench_dir"
                 cp ${H_DATA}/all/input/foreman_qcif.yuv $target
                 cp ${H_DATA}/train/input/foreman_train_encoder_baseline.cfg ${bench}.cfg;;
@@ -523,8 +529,13 @@ if echo "${PARSEC_APPS[@]}"|grep -q $BENCHMARK;then
         msg "unpacking PARSEC"
         tar xzf "$BASE/etc/data/parsec-3.0.tar.gz" -C "$BASE/benchmarks"
     fi
-elif echo "${SPEC_APPS[@]}"|grep -q $1;then
-    error "spec must be installed in $BASE/benchmarks/spec/"
+elif echo "${SPEC_APPS[@]}"|grep -q $BENCHMARK;then
+    if [ ! -d "$SPEC_ROOT" ] ; then
+        echo "could not find SPEC at $SPEC_ROOT"
+        error "install SPEC or set SPEC_ROOT to point to the right dir"
+    fi
+else
+    error "unknown benchmark $BENCHMARK"
 fi
 
 ## Run the actions
