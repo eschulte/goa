@@ -114,9 +114,10 @@ unpack(){ # dispatch depending on benchmark suite
     else
         if echo "${PARSEC_APPS[@]}"|grep -q $bench;then
             mkdir -p "$bench_dir"
-            if [ ! "$bench" == "bodytrack" ];then
-                cp -R "$BASE"/benchmarks/parsec-3.0/pkgs/apps/$bench/src/* "$bench_dir"
-            fi
+            case $bench in
+                bodytrack|vips) ;;
+                *) cp -R "$BASE"/benchmarks/parsec-3.0/pkgs/apps/$bench/src/* "$bench_dir" ;;
+            esac
         elif echo "${SPEC_APPS[@]}"|grep -q $bench;then
             SPEC_BENCH=$(echo "${SPEC_APPS[@]}"|tr ' ' '\n'|grep $bench)
             mkdir -p "$bench_dir"
@@ -225,7 +226,24 @@ EOF
                 cat *.c* > all.cpp
                 g++ $FLAGS -S all.cpp -o ${bench}.s||error "compilation failed"
                 ;;
-            vips) not_implemented $bench ;;
+            vips)
+                case $FLAGS in
+                    min) FLAGS="-DHAVE_CONFIG_H";;
+                    all) FLAGS="$PARSEC_BASE_FLAGS -DHAVE_CONFIG_H";;
+                esac
+                tmp=$(mktemp)
+                pushd "$BASE"/benchmarks/parsec-3.0/pkgs/apps/$bench/src/tools/iofuncs >/dev/null
+                gcc -I. \
+                    -I../.. \
+                    -I../../libvips/include \
+                    -I../../../../../libs/libxml2/inst/amd64-linux.gcc/include/libxml2 \
+                    -I../../../../../libs/glib/inst/amd64-linux.gcc/lib/glib-2.0/include \
+                    -I../../../../../libs/glib/inst/amd64-linux.gcc/include/glib-2.0 \
+                    -I../../../obj/amd64-linux.gcc \
+                    $FLAGS -S vips.c -o $tmp ||error "compilation failed"
+                popd >/dev/null
+                mv $tmp ${bench}.s
+                ;;
             x264) not_implemented $bench ;;
             
             ## SPEC
@@ -294,6 +312,7 @@ link(){
 
                 ldir="$BASE"/benchmarks/parsec-3.0/pkgs/apps/$bench/obj/amd64-linux.gcc
 
+                link_dirs=""
                 link_dirs+="-L${ldir}/FlexImageLib/.libs "
                 link_dirs+="-L${ldir}/TrackingBenchmark/threads/.libs "
 
@@ -321,6 +340,25 @@ link(){
                     all) FLAGS="$PARSEC_BASE_FLAGS_ALL $SWAP_FLAGS";;
                 esac
                 g++ $FLAGS ${bench}.s -o $bench||error "linking failed"
+                ;;
+            vips)
+                FLAGS="-DHAVE_CONFIG_H -DG_DISABLE_CAST_CHECKS "
+                FLAGS+="-lgobject-2.0 -lgthread-2.0 -pthread "
+                FLAGS+="-lvips -lm -lstdc++ -lxml2 "
+                FLAGS+="-lgmodule-2.0 -ldl -lglib-2.0"
+
+                lbase="$BASE"/benchmarks/parsec-3.0/pkgs/
+
+                ldirs="-L/usr/lib64 -L/usr/lib "
+                ldirs+="-L${lbase}/apps/vips/inst/amd64-linux.gcc/lib "
+                ldirs+="-L${lbase}/libs/glib/inst/amd64-linux.gcc/lib "
+                ldirs+="-L${lbase}/libs/zlib/inst/amd64-linux.gcc/lib "
+                ldirs+="-L${lbase}/libs/glib/inst/amd64-linux.gcc/lib "
+                ldirs+="-L${lbase}/libs/zlib/inst/amd64-linux.gcc/lib "
+                ldirs+="-L${lbase}/libs/glib/inst/amd64-linux.gcc/lib "
+                ldirs+="-L${lbase}/libs/libxml2/inst/amd64-linux.gcc/lib"
+
+                gcc $ldirs ${bench}.s -o $bench $FLAGS||error "linking failed"
                 ;;
 
             ## SPEC
