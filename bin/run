@@ -36,6 +36,7 @@ case $BENCHMARK in
     fluidanimate) SIZE=large;;
     freqmine)     SIZE=medium;;
     swaptions)    SIZE=medium;;
+    vips)         SIZE=medium;;
     bzip2)        SIZE=large;;
     h264ref)      SIZE=large;;
     *) error "no test implemented for '$BENCHMARK'";;
@@ -201,6 +202,17 @@ case $BENCHMARK in
         right=$(awk '{print $4}' $OUTPUT)
         if [ -z $RAW ];then
             ERROR=$(paste <(echo "$left") <(echo "$right")|awk "$AWK_CMD")
+        fi
+        ;;
+    vips)
+        tmp=$(mktemp /tmp/tmp.XXXXXXXX.v)
+        run 0 $EXECUTABLE im_benchmark "$INPUT" $tmp
+        EXIT=$?
+        mv $tmp $OUT
+        if diff $OUT $OUTPUT;then
+            ERROR=0;
+        else
+            ERROR=1;
         fi
         ;;
 
