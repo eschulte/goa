@@ -115,7 +115,7 @@ unpack(){ # dispatch depending on benchmark suite
         if echo "${PARSEC_APPS[@]}"|grep -q $bench;then
             mkdir -p "$bench_dir"
             case $bench in
-                bodytrack|vips|ferret) ;;
+                bodytrack|vips|ferret|raytrace) ;;
                 *) cp -R "$BASE"/benchmarks/parsec-3.0/pkgs/apps/$bench/src/* "$bench_dir" ;;
             esac
         elif echo "${SPEC_APPS[@]}"|grep -q $bench;then
@@ -225,9 +225,29 @@ EOF
                 g++ $FLAGS -S all.cpp -o ${bench}.s||error "compilation failed"
                 ;;
             raytrace)
-                # To build this add '#include <unistd.h>' to the top
-                # of raytrace/src/RTTL/common/MapOptions.hxx.
-                not_implemented $bench ;;
+                BASE_FLAGS="-DTHIS_IS_CMAKE -fpermissive -fno-exceptions "
+                BASE_FLAGS+="-fexceptions -fno-strict-aliasing "
+                BASE_FLAGS+="-fno-align-labels -DNDEBUG -D_MM_NO_ALIGN_CHECK"
+                case $FLAGS in
+                    min) FLAGS=$BASE_FLAGS;;
+                    all) FLAGS="$PARSEC_BASE_FLAGS_ALL $BASE_FLAGS";;
+                esac
+                tmp=$(mktemp)
+                pushd "$BASE"/benchmarks/parsec-3.0/pkgs >/dev/null
+                g++ $FLAGS \
+                    -Ilibs/mesa/inst/amd64-linux.gcc/include \
+                    -Iapps/raytrace/obj/amd64-linux.gcc \
+                    -Iapps/raytrace/obj/amd64-linux.gcc/RTTL \
+                    -Iapps/raytrace/obj/amd64-linux.gcc/RTTL/common \
+                    -Iapps/raytrace/obj/amd64-linux.gcc/RTTL/BVH \
+                    -Iapps/raytrace/obj/amd64-linux.gcc/SG \
+                    -Iapps/raytrace/obj/amd64-linux.gcc/LRT/include \
+                    -Iapps/raytrace/obj/amd64-linux.gcc/LRT \
+                    -S apps/raytrace/src/MiniView/rtview.cxx -o $tmp \
+                    || error "compilation failed: build ${bench} with parsecmgt"
+                popd >/dev/null
+                mv $tmp ${bench}.s
+                ;;
             swaptions)
                 SWAP_FLAGS="-pthread  -DENABLE_THREADS"
                 case $FLAGS in
@@ -358,6 +378,24 @@ link(){
                 esac
                 g++ $FLAGS ${bench}.s -o $bench||error "linking failed"
                 ;;
+            raytrace)
+                error "linking raytrace fails for me (ERIC)"
+                FLAGS="-lglut -lGL -lGL -lGLU -lXmu -lXext -lXau -lX11 "
+                FLAGS+="-ldl -lpthread -lstdc++ -lpthread -lrt -rdynamic "
+
+                lbase="$BASE"/benchmarks/parsec-3.0/pkgs
+                
+                ldirs="-L/usr/lib64 -L/usr/lib "
+                ldirs+="-L${lbase}/libs/mesa/inst/amd64-linux.gcc/lib "
+                ldirs+="-L${lbase}/libs/mesa/inst/amd64-linux.gcc/lib "
+                ldirs+="-L${lbase}/apps/raytrace/obj/amd64-linux.gcc/lib"
+
+                g++ $ldirs ${bench}.s -o $bench \
+                    ${lbase}/apps/raytrace/obj/amd64-linux.gcc/lib/libLRT.a \
+                    ${lbase}/apps/raytrace/obj/amd64-linux.gcc/lib/libRTTL.a \
+                    ${lbase}/libs/mesa/inst/amd64-linux.gcc/lib/libGLU.a \
+                    $FLAGS||error "linking failed"
+                ;;
             swaptions)
                 SWAP_FLAGS="-pthread  -DENABLE_THREADS"
                 case $FLAGS in
@@ -372,7 +410,7 @@ link(){
                 FLAGS+="-lvips -lm -lstdc++ -lxml2 "
                 FLAGS+="-lgmodule-2.0 -ldl -lglib-2.0"
                 
-                lbase="$BASE"/benchmarks/parsec-3.0/pkgs/
+                lbase="$BASE"/benchmarks/parsec-3.0/pkgs
 
                 ldirs="-L/usr/lib64 -L/usr/lib "
                 ldirs+="-L${lbase}/apps/vips/inst/amd64-linux.gcc/lib "
