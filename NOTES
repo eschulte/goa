@@ -160,24 +160,22 @@ And here is the command I used to make the asm file (note the relative
 before running make, you have to do
 : export PHYSBAM=$(pwd)
 
-**** TODO ferret
-Can't seem to build this one with the parsec tools.
-Tried: ./parsecmgmt -a build -p ferret
-got:
-  make: *** [all] Error 2
-  [PARSEC] Error: 'env LIBS= -lm /usr/bin/make' failed.
+**** DONE ferret
 
-Using the makefile in the ferret src directory also fails:
-  /nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/ferret/src/src/hash_table.c:24:25: fatal error: gsl/gsl_rng.h: No such file or directory
-   #include <gsl/gsl_rng.h>
-                         ^
-  compilation terminated.
-  make: *** [/nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/ferret/src/parsec/obj/hash_table.o] Error 1
+To make the .S file:
+First build with the parsec build tool
+   (NOTE: this will fail unless you edit the makefiles in the gsl lib src directory.
+   you must remove `doc' from SUBDIRS in both makefiles for gsl to build)
+   Then, in the directory: <path to parsec>/pkgs/apps/ferret/obj/amd64-linux.gcc/benchmark
+   (change /nfs/adaptive/stharding/tmp/parsec-3.0/ to your path to parsec):
 
-Indeed, hash_table.c does try to include gsl/gsl_rng.h wich does not exist on the system.
-Looks like we may need to install GSL. See:
-http://seal.web.cern.ch/seal/workbook/gsl-howto.html
+   gcc -w -I/nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/ferret/src/include/ -I/nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/libs/gsl/inst/amd64-linux.gcc/include -I/nfs/adaptive/stharding/tmp/parsec-3.0/bin/../pkgs/libs/libjpeg/inst/amd64-linux.gcc/include  -O3 -g -funroll-loops -fprefetch-loop-arrays -static-libgcc -Wl,--hash-style=both,--as-needed -DPARSEC_VERSION=3.0-beta-20120904 -L/nfs/adaptive/stharding/tmp/parsec-3.0/bin/../pkgs/libs/gsl/inst/amd64-linux.gcc/lib -L/nfs/adaptive/stharding/tmp/parsec-3.0/bin/../pkgs/libs/libjpeg/inst/amd64-linux.gcc/lib -L/usr/lib64 -L/usr/lib -L/nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/ferret/inst/amd64-linux.gcc/lib/ -S ferret-pthreads.c -lrt -lcass -lgsl -lcassimage -lgslcblas -ljpeg -lstdc++ -lpthread -lm
 
+To make the executable:
+   gcc -L/nfs/adaptive/stharding/tmp/parsec-3.0/bin/../pkgs/libs/gsl/inst/amd64-linux.gcc/lib -L/nfs/adaptive/stharding/tmp/parsec-3.0/bin/../pkgs/libs/libjpeg/inst/amd64-linux.gcc/lib -L/usr/lib64 -L/usr/lib -L/nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/ferret/inst/amd64-linux.gcc/lib/ ferret-pthreads.s -o ferret -lrt -lcass -lgsl -lcassimage -lgslcblas -ljpeg -lstdc++ -lpthread -lm
+
+NOTE: there are other versions of ferret that can be built. This is the one that is built
+      by default when you do ./parsecmgmt -a build -p ferret
 **** DONE fluidanimate
 **** DONE freqmine
 1. cat all .cpp files together
