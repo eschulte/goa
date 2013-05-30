@@ -100,7 +100,7 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 | 998.specrand   |
 | 999.specrand   |
 
-* Tasks [9/61]
+* Tasks [12/61]
 ** TODO find minimal input sizes for each program
 Need to estimate the variance in our energy predictions, which are
 linear combinations of HW counters, from variance in the HW counters.
@@ -140,7 +140,7 @@ http://en.wikipedia.org/wiki/Variance#Sum_of_correlated_variables
   done|tee results/counter-by-size/fluidanimate.txt
 #+end_src
 
-** TODO Build all benchmarks to ASM [5/41]
+** TODO Build all benchmarks to ASM [8/41]
 *** parsec
 **** DONE Blackscholes
 **** DONE bodytrack
@@ -169,10 +169,10 @@ First build with the parsec build tool
    Then, in the directory: <path to parsec>/pkgs/apps/ferret/obj/amd64-linux.gcc/benchmark
    (change /nfs/adaptive/stharding/tmp/parsec-3.0/ to your path to parsec):
 
-   gcc -w -I/nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/ferret/src/include/ -I/nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/libs/gsl/inst/amd64-linux.gcc/include -I/nfs/adaptive/stharding/tmp/parsec-3.0/bin/../pkgs/libs/libjpeg/inst/amd64-linux.gcc/include  -O3 -g -funroll-loops -fprefetch-loop-arrays -static-libgcc -Wl,--hash-style=both,--as-needed -DPARSEC_VERSION=3.0-beta-20120904 -L/nfs/adaptive/stharding/tmp/parsec-3.0/bin/../pkgs/libs/gsl/inst/amd64-linux.gcc/lib -L/nfs/adaptive/stharding/tmp/parsec-3.0/bin/../pkgs/libs/libjpeg/inst/amd64-linux.gcc/lib -L/usr/lib64 -L/usr/lib -L/nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/ferret/inst/amd64-linux.gcc/lib/ -S ferret-pthreads.c -lrt -lcass -lgsl -lcassimage -lgslcblas -ljpeg -lstdc++ -lpthread -lm
+   : gcc -w -I/nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/ferret/src/include/ -I/nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/libs/gsl/inst/amd64-linux.gcc/include -I/nfs/adaptive/stharding/tmp/parsec-3.0/bin/../pkgs/libs/libjpeg/inst/amd64-linux.gcc/include  -O3 -g -funroll-loops -fprefetch-loop-arrays -static-libgcc -Wl,--hash-style=both,--as-needed -DPARSEC_VERSION=3.0-beta-20120904 -L/nfs/adaptive/stharding/tmp/parsec-3.0/bin/../pkgs/libs/gsl/inst/amd64-linux.gcc/lib -L/nfs/adaptive/stharding/tmp/parsec-3.0/bin/../pkgs/libs/libjpeg/inst/amd64-linux.gcc/lib -L/usr/lib64 -L/usr/lib -L/nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/ferret/inst/amd64-linux.gcc/lib/ -S ferret-pthreads.c -lrt -lcass -lgsl -lcassimage -lgslcblas -ljpeg -lstdc++ -lpthread -lm
 
 To make the executable:
-   gcc -L/nfs/adaptive/stharding/tmp/parsec-3.0/bin/../pkgs/libs/gsl/inst/amd64-linux.gcc/lib -L/nfs/adaptive/stharding/tmp/parsec-3.0/bin/../pkgs/libs/libjpeg/inst/amd64-linux.gcc/lib -L/usr/lib64 -L/usr/lib -L/nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/ferret/inst/amd64-linux.gcc/lib/ ferret-pthreads.s -o ferret -lrt -lcass -lgsl -lcassimage -lgslcblas -ljpeg -lstdc++ -lpthread -lm
+   : gcc -L/nfs/adaptive/stharding/tmp/parsec-3.0/bin/../pkgs/libs/gsl/inst/amd64-linux.gcc/lib -L/nfs/adaptive/stharding/tmp/parsec-3.0/bin/../pkgs/libs/libjpeg/inst/amd64-linux.gcc/lib -L/usr/lib64 -L/usr/lib -L/nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/ferret/inst/amd64-linux.gcc/lib/ ferret-pthreads.s -o ferret -lrt -lcass -lgsl -lcassimage -lgslcblas -ljpeg -lstdc++ -lpthread -lm
 
 NOTE: there are other versions of ferret that can be built. This is the one that is built
       by default when you do ./parsecmgmt -a build -p ferret

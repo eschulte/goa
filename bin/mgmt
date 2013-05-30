@@ -115,7 +115,7 @@ unpack(){ # dispatch depending on benchmark suite
         if echo "${PARSEC_APPS[@]}"|grep -q $bench;then
             mkdir -p "$bench_dir"
             case $bench in
-                bodytrack|vips) ;;
+                bodytrack|vips|ferret) ;;
                 *) cp -R "$BASE"/benchmarks/parsec-3.0/pkgs/apps/$bench/src/* "$bench_dir" ;;
             esac
         elif echo "${SPEC_APPS[@]}"|grep -q $bench;then
@@ -185,10 +185,21 @@ compile(){
                 ;;
             facesim) not_implemented $bench ;;
             ferret)
-                # This depends on the gsl library, to build gsl from
-                # parsec, the last 9 lines of gsl/doc/bspline.texi
-                # must be removed.
-                not_implemented $bench ;;
+                case $FLAGS in
+                    min) FLAGS="";;
+                    all) FLAGS="$PARSEC_BASE_FLAGS_ALL";;
+                esac
+                tmp=$(mktemp)
+                pushd "$BASE"/benchmarks/parsec-3.0/pkgs >/dev/null
+                gcc -w \
+                    -Iapps/$bench/src/include \
+                    -Ilibs/gsl/inst/amd64-linux.gcc/include \
+                    -Ilibs/libjpeg/inst/amd64-linux.gcc/include \
+                    -S apps/$bench/src/benchmark/ferret-pthreads.c -o $tmp \
+                    || error "compilation failed: build ${bench} with parsecmgt"
+                popd >/dev/null
+                mv $tmp ${bench}.s
+                ;;
             fluidanimate)
                 cat pthreads.cpp >  all.cpp
                 cat cellpool.cpp >> all.cpp
@@ -319,6 +330,20 @@ link(){
                 g++ $link_dirs ${bench}.s -o $bench $FLAGS \
                     ||error "linking failed"
                 ;;
+            ferret)
+                FLAGS="-lrt -lcass -lgsl -lcassimage -lgslcblas "
+                FLAGS+="-ljpeg -lstdc++ -lpthread -lm"
+
+                lbase="$BASE"/benchmarks/parsec-3.0/pkgs
+
+                ldirs="-L/usr/lib64 -L/usr/lib "
+                ldirs+="-L${lbase}/libs/gsl/inst/amd64-linux.gcc/lib "
+                ldirs+="-L${lbase}/libs/libjpeg/inst/amd64-linux.gcc/lib "
+                ldirs+="-L${lbase}/apps/ferret/inst/amd64-linux.gcc/lib "
+                ldirs+="-L${lbase}/../lib "
+
+                g++ $ldirs ${bench}.s -o $bench $FLAGS||error "linking failed"
+                ;;
             fluidanimate)
                 case $FLAGS in
                     min) FLAGS="$FLUID_FLAGS_ALL -lpthread";;
@@ -346,7 +371,7 @@ link(){
                 FLAGS+="-lgobject-2.0 -lgthread-2.0 -pthread "
                 FLAGS+="-lvips -lm -lstdc++ -lxml2 "
                 FLAGS+="-lgmodule-2.0 -ldl -lglib-2.0"
-
+                
                 lbase="$BASE"/benchmarks/parsec-3.0/pkgs/
 
                 ldirs="-L/usr/lib64 -L/usr/lib "
