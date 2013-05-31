@@ -100,7 +100,7 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 | 998.specrand   |
 | 999.specrand   |
 
-* Tasks [12/61]
+* Tasks [13/61]
 ** TODO find minimal input sizes for each program
 Need to estimate the variance in our energy predictions, which are
 linear combinations of HW counters, from variance in the HW counters.
@@ -140,7 +140,7 @@ http://en.wikipedia.org/wiki/Variance#Sum_of_correlated_variables
   done|tee results/counter-by-size/fluidanimate.txt
 #+end_src
 
-** TODO Build all benchmarks to ASM [8/41]
+** TODO Build all benchmarks to ASM [9/41]
 *** parsec
 **** DONE Blackscholes
 **** DONE bodytrack

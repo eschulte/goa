@@ -183,7 +183,24 @@ compile(){
                 popd >/dev/null
                 mv $tmp ${bench}.s
                 ;;
-            facesim) not_implemented $bench ;;
+            facesim)
+                BASE_FACE_FLAGS="-DENABLE_PTHREADS -DUSE_ALAMERE_TASKQ -DNDEBUG"
+                case $FLAGS in
+                    all) FACE_FLAGS="$PARSEC_BASE_FLAGS_ALL $BASE_FACE_FLAGS";;
+                    min) FACE_FLAGS="$BASE_FACE_FLAGS";;
+                esac
+                FACE_SOURCE=""
+                FACE_SOURCE+="FACE_DRIVER.cpp "
+                FACE_SOURCE+="FACE_LANDMARK_OPTIMIZATION_GOAL.cpp "
+                FACE_SOURCE+="FACE_OPTIMIZATION.cpp "
+                FACE_SOURCE+="LANDMARK_PROXIMITY_OPTIMIZATION.cpp "
+                FACE_SOURCE+="main.cpp"
+                pushd Benchmarks/facesim >/dev/null
+                cat $FACE_SOURCE > all.cpp
+                g++ $FACE_FLAGS -S all.cpp -o ../../${bench}.s \
+                    ||error "compilation failed"
+                popd >/dev/null
+                ;;
             ferret)
                 case $FLAGS in
                     min) FLAGS="";;
