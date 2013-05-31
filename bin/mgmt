@@ -367,6 +367,18 @@ link(){
                 g++ $link_dirs ${bench}.s -o $bench $FLAGS \
                     ||error "linking failed"
                 ;;
+            facesim)
+                FLAGS="-pthread -lPhysBAM -xW -lm"
+
+                ldir="$BASE"/benchmarks/parsec-3.0/pkgs/apps/$bench/obj/amd64-linux.gcc
+
+                link_dirs="-L/usr/lib64 -L/usr/lib "
+                link_dirs+="-L${ldir}/lib "
+                link_dirs+="${ldir}/TaskQ/lib/taskQ.o"
+                
+                g++ $link_dirs ${bench}.s -o $bench $FLAGS \
+                    ||error "linking failed"
+                ;;
             ferret)
                 FLAGS="-lrt -lcass -lgsl -lcassimage -lgslcblas "
                 FLAGS+="-ljpeg -lstdc++ -lpthread -lm"
