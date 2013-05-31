@@ -156,10 +156,15 @@ And here is the command I used to make the asm file (note the relative
 :
 : g++ -DHAVE_CONFIG_H -I. -I/nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/bodytrack/src/FlexImageLib -I.. -O3 -g -funroll-loops -fprefetch-loop-arrays -fpermissive -fno-exceptions  -static-libgcc -Wl,--hash-style=both,--as-needed -DPARSEC_VERSION=3.0-beta-20120904 -fexceptions  -MT FlexImage.lo -MD -MP -MF ../../obj/amd64-linux.gcc/FlexImageLib/.deps/FlexImage.Plo -I ../../obj/amd64-linux.gcc/ -L ../../obj/amd64-linux.gcc/FlexImageLib/.libs/ -I ../../../../libs/tbblib/src/include/ -L../../../../libs/tbblib/src/include/ -L ../../obj/amd64-linux.gcc/TrackingBenchmark/threads/.libs/ -S tst.cpp -o bodytrack.s -lflex -lpthread -lthreads
 
-**** TODO facesim
-before running make, you have to do
-: export PHYSBAM=$(pwd)
+**** DONE facesim
+To make ASM file:
+first in the directory <path to parsec>/pkgs/apps/facesim/src/Benchmarks/facesim/:
+: cat FACE_DRIVER.cpp FACE_LANDMARK_OPTIMIZATION_GOAL.cpp FACE_OPTIMIZATION.cpp LANDMARK_PROXIMITY_OPTIMIZATION.cpp main.cpp >all.cpp
+then:
+: g++ -O3 -w -g -funroll-loops -fprefetch-loop-arrays -fpermissive -fno-exceptions -static-libgcc -pthread -Wl,--hash-style=both,--as-needed -DPARSEC_VERSION=3.0-beta-20120904 -fexceptions -DENABLE_PTHREADS -DUSE_ALAMERE_TASKQ -DNDEBUG -I../../../obj/amd64-linux.gcc/TaskQ/include -L../../../obj/amd64-linux.gcc/lib -L/usr/lib64 -L/usr/lib ../../../obj/amd64-linux.gcc/TaskQ/lib/taskQ.o -S all.cpp -lPhysBAM -xW -lm
 
+To build the executable:
+: g++ -L../../../obj/amd64-linux.gcc/lib -L/usr/lib64 -L/usr/lib ../../../obj/amd64-linux.gcc/TaskQ/lib/taskQ.o all.s -o facesim -pthread -lPhysBAM -xW -lm
 **** DONE ferret
 
 To make the .S file:
