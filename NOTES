@@ -165,6 +165,7 @@ then:
 
 To build the executable:
 : g++ -L../../../obj/amd64-linux.gcc/lib -L/usr/lib64 -L/usr/lib ../../../obj/amd64-linux.gcc/TaskQ/lib/taskQ.o all.s -o facesim -pthread -lPhysBAM -xW -lm
+
 **** DONE ferret
 
 To make the .S file:
@@ -197,7 +198,6 @@ First build raytrace by using the parsec mgmt tool. Then in pkgs/apps/raytrace/s
 
 To make the executable: (updated to remove excess flags)
 : g++  -L ../../../../libs/mesa/inst/amd64-linux.gcc/lib  rtview.s -o rtview    ../../obj/amd64-linux.gcc/lib/libLRT.a ../../obj/amd64-linux.gcc/lib/libRTTL.a  -lglut  -lGL -lGLU -lXmu -lXext -lXau -lX11 -ldl -lpthread -lstdc++ -lrt -rdynamic
-
 
 **** DONE swaptions
 #+begin_src sh
