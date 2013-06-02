@@ -518,6 +518,9 @@ input(){
                     large)  in=sequenceB_4;;
                 esac
                 mv $in $target;;
+            facesim)
+                error "missing input for $bench"
+                ;;
             fluidanimate)
                 tar xf ${parsec_dir}/inputs/$INPUT
                 case $SIZE  in
