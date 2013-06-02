@@ -48,3 +48,24 @@ ADDRESS should be of the form \"tcp://*:6666\"."
       (zmq:setsockopt s :maxmsgsize *max-msg-size*)
       (zmq:bind s address)
       (zmq:msg-send s (make-instance 'zmq:msg :data (to-bytes software))))))
+
+
+;;; Process specific sharing code
+;;
+;; Assumes that the `self' and `neighbors' variables have been set to
+;; addresses as used by the `accept' and `share' functions
+;; respectively.
+;;
+
+#-listening
+(progn
+  (push :listening *features*)
+  (sb-thread:make-thread (lambda () (accept self))))
+
+#-checkpoint
+(let ((original-checkpoint #'checkpoint))
+  (push :checkpoint *features*)
+  (defun checkpoint ()
+    (funcall original-checkpoint)
+    ;; share individuals with all neighbors
+    (mapc (lambda (n) (share (tournament) n)) neighbors)))
