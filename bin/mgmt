@@ -23,6 +23,12 @@ if [ -z "$SPEC_ROOT" ] ; then
     SPEC_ROOT="$BASE"/benchmarks/SPEC_CPU2006v1.0
 fi
 
+## We need a version of gcc which still supports the -combine flag
+## (modern versions have dropped support for this flag).
+if [ -z "$GCC_COMBINE" ];then
+    GCC_COMBINE="gcc-4.4"
+fi
+
 ## Parse Options
 if [ $# -lt 2 ];then help; fi
 ACTION="$1"
@@ -274,7 +280,7 @@ EOF
             ## SPEC
             bzip2)
                 set_flags "" "-O3"
-                gcc-4.4 -combine -S $FULL_FLAGS \
+                $GCC_COMBINE -combine -S $FULL_FLAGS \
                     blocksort.c bzip2.c compress.c \
                     crctable.c decompress.c huffman.c randtable.c \
                     bzlib.c -o $bench.s||error "compilation failed"
@@ -290,7 +296,7 @@ EOF
                 # q_matrix.c and in q_offsets.c
                 sed -i '16s/,.*$/);/;376s/, 0//' q_matrix.c
                 sed -i '16s/,.*$/);/;301s/, 0//' q_offsets.c
-                gcc-4.4 -combine -S $FULL_FLAGS \
+                $GCC_COMBINE -combine -S $FULL_FLAGS \
                     annexb.c biariencode.c block.c cabac.c \
                     configfile.c context_ini.c decoder.c explicit_gop.c \
                     fast_me.c filehandle.c fmo.c header.c image.c \
