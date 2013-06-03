@@ -35,16 +35,26 @@ ADDRESS should be of the form \"tcp://localhost:6666\"."
               (zmq:msg-recv s msg)
               (let* ((data (zmq:msg-data-as-array msg))
                      (ind (when (not (zerop (length data)))
-                            (ignore-errors (from-bytes data)))))
+                            (ignore-errors
+                              (from-bytes
+                               (gzip-stream:gunzip-sequence data))))))
                 (if ind
-                    (incorporate ind)
-                    (format t "failed message ~d~%" (length data)))))))))
+                    (progn (incorporate ind)
+                           (note 1 "~a: WORK message ~d~%"
+                                 address (length data)))
+                    (note 1 "~a: FAIL message ~d~%"
+                          address (length data)))))))))
 
 (defun share (software address)
   "Push SOFTWARE to ADDRESS.
 ADDRESS should be of the form \"tcp://*:6666\"."
-  (zmq:with-context (ctx)
-    (zmq:with-socket (s ctx :push)
-      (zmq:setsockopt s :maxmsgsize *max-msg-size*)
-      (zmq:bind s address)
-      (zmq:msg-send s (make-instance 'zmq:msg :data (to-bytes software))))))
+  (let ((data (gzip-stream:gzip-sequence (to-bytes software))))
+    (assert (< (length data) *max-msg-size*) (data *max-msg-size*)
+            "message data length (~d) exceeds max allowable size (~d)"
+            (length data) *max-msg-size*)
+    (note t "sharing ~d with ~a" (length data) address)
+    (zmq:with-context (ctx)
+      (zmq:with-socket (s ctx :push)
+        (zmq:setsockopt s :maxmsgsize *max-msg-size*)
+        (zmq:bind s address)
+        (zmq:msg-send s (make-instance 'zmq:msg :data data))))))

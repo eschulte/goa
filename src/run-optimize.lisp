@@ -48,6 +48,7 @@ Options:
 (setf *note-level* 1)
 
 (defun main (args)
+  (in-package :optimize)
   (flet ((arg-pop () (pop args)))
     (let ((bin-path (arg-pop)))
 

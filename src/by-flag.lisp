@@ -27,19 +27,19 @@
       (mapcar (lambda (l) (cons (list :flag flag) l)) (genome *orig*)))
 
 ;; Set the results directory.
-(setq *res-dir* (format nil "~a/~a" *res-dir* flag))
-
-;; Begin listening for shared individuals on flag-specified port.
-(let ((address (format nil "tcp://localhost:~d" (aget flag ports))))
-  (sb-thread:make-thread (lambda () (accept address)))
-  (note 1 "listening on ~a~%" address))
+(setq *res-dir* (append *res-dir* (list (symbol-name flag))))
 
 ;; Periodically share individuals with a neighbor.
 (let ((original-checkpoint #'checkpoint))
   (defun checkpoint ()
     (funcall original-checkpoint)
-    ;; share an individual with a neighbor
-    (share (tournament)
-           (format nil "tcp://*:~d"
-                   (random-elt
-                    (mapcar #'cdr (remove-if [{equal flag} #'car] ports)))))))
+    ;; Share an individual with a neighbor 1/4 checkpoints.
+    (when (zerop (random 4))
+      (let ((share-to (random-elt (remove-if [{equal flag} #'car] ports))))
+        (note 1 "sharing from ~S to ~S~%" (assoc flag ports) share-to)
+        (share (tournament) (format nil "tcp://*:~d" (cdr share-to)))))))
+
+;; Begin listening for shared individuals on flag-specified port.
+(let ((address (format nil "tcp://localhost:~d" (aget flag ports))))
+  (sb-thread:make-thread (lambda () (accept address)))
+  (note 1 "listening on ~a~%" address))
