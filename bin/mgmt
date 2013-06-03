@@ -12,7 +12,8 @@
 #  output ---------- generate correct test output for benchmark
 #
 # Options:
-#  -f,--flags ------ either `all' or `min' (default is `all')
+#  -f,--flags ------ preset flags, `all' or `min' (default `all')
+#  -F,--Flags FLAGS -- use literal string FLAGS for compilation
 #  -s,--size SIZE -- run test,tiny,small,medium,large(default)
 #  -l,--llvm ------- compile to and link from LLVM IR (not ASM)
 #
@@ -27,12 +28,14 @@ if [ $# -lt 2 ];then help; fi
 ACTION="$1"
 BENCHMARK="$2"
 FLAGS="all"
+FULL_FLAGS=""
 SIZE="large"
 LLVM=""
-eval set -- $(getopt -o f:s:l -l flags:,size:,llvm -- "$@" || help;)
+eval set -- $(getopt -o f:F:s:l -l flags:,Flags:,size:,llvm -- "$@" || help;)
 while [ $# -gt 0 ];do
     case $1 in
         -f|--flags) FLAGS="$2"; shift;;
+        -F|--Flags) FULL_FLAGS="$2"; shift;;
         -s|--size) SIZE="$2"; shift;;
         -l|--llvm) error "the 'llvm' option is not implemented.";;
         (--) shift; break;;
@@ -93,18 +96,6 @@ PARSEC_BASE_FLAGS_ALL="-O3 -g -funroll-loops -fprefetch-loop-arrays "
 PARSEC_BASE_FLAGS_ALL+="-fpermissive -fno-exceptions -static-libgcc "
 PARSEC_BASE_FLAGS_ALL+="-Wl,--hash-style=both,--as-needed "
 
-BLACKSCHOLES_FLAGS_ALL="$PARSEC_BASE_FLAGS_ALL"
-BLACKSCHOLES_FLAGS_ALL+="-pthread -DENABLE_THREADS "
-BLACKSCHOLES_FLAGS_ALL+="-DNCO=4"
-
-BLACKSCHOLES_FLAGS_MIN="-DNCO=4"
-
-FLUID_FLAGS_ALL="$PARSEC_BASE_FLAGS_ALL"
-FLUID_FLAGS_ALL+="-Wno-invalid-offsetof "
-FLUID_FLAGS_ALL+="-pthread -D_GNU_SOURCE -D__XOPEN_SOURCE=600"
-
-FLUID_FLAGS_MIN="-Wno-invalid-offsetof"
-
 ## Functions
 unpack(){ # dispatch depending on benchmark suite
     local bench=$1;
@@ -132,6 +123,20 @@ unpack(){ # dispatch depending on benchmark suite
 not_implemented(){
     error "$1 compilation not yet implemented"; }
 
+set_flags(){
+    local min="$1";
+    if [ -z "$2" ];then
+        local all="$PARSEC_BASE_FLAGS_ALL $1"
+    else
+        local all="$2";
+    fi
+    if [ -z "$FULL_FLAGS" ];then
+        case $FLAGS in
+            all) FULL_FLAGS="$all";;
+            min) FULL_FLAGS="$min";;
+        esac
+    fi; }
+
 compile(){
     local bench=$1;
     local bench_dir="$BASE/benchmarks/$bench";
@@ -144,18 +149,12 @@ compile(){
 
             ## PARSEC
             blackscholes)
-                case $FLAGS in
-                    all) FLAGS="$BLACKSCHOLES_FLAGS_ALL";;
-                    min) FLAGS="$BLACKSCHOLES_FLAGS_MIN";;
-                esac
+                set_flags "-DNCO=4"
                 m4 ./c.m4.pthreads blackscholes.c > blackscholes.m4.cpp
-                g++ $FLAGS blackscholes.m4.cpp -S -o blackscholes.s
+                g++ $FULL_FLAGS blackscholes.m4.cpp -S -o blackscholes.s
                 ;;
             bodytrack)
-                case $FLAGS in
-                    min) FLAGS="-fpermissive -fexceptions";;
-                    all) FLAGS="-fpermissive $PARSEC_BASE_FLAGS_ALL -fexceptions";;
-                esac
+                set_flags "-fpermissive -fexceptions"
                 tmp=$(mktemp)
                 pushd "$BASE"/benchmarks/parsec-3.0/pkgs/apps/$bench/src/TrackingBenchmark >/dev/null
                 # we rename this file so that it won't be included in
@@ -174,7 +173,7 @@ compile(){
                 sed -i '1778a*/' bodytrack.cpp
 
                 g++ -DHAVE_CONFIG_H -I. -I.. -I../FlexImageLib \
-                    $FLAGS -MT FlexImage.lo -MD -MP -MF \
+                    $FULL_FLAGS -MT FlexImage.lo -MD -MP -MF \
                     ../../obj/amd64-linux.gcc/FlexImageLib/.deps/FlexImage.Plo \
                     -I ../../obj/amd64-linux.gcc/ \
                     -I ../../../../libs/tbblib/src/include/ \
@@ -184,11 +183,7 @@ compile(){
                 mv $tmp ${bench}.s
                 ;;
             facesim)
-                BASE_FACE_FLAGS="-DENABLE_PTHREADS -DUSE_ALAMERE_TASKQ -DNDEBUG"
-                case $FLAGS in
-                    all) FACE_FLAGS="$PARSEC_BASE_FLAGS_ALL $BASE_FACE_FLAGS";;
-                    min) FACE_FLAGS="$BASE_FACE_FLAGS";;
-                esac
+                set_flags "-DENABLE_PTHREADS -DUSE_ALAMERE_TASKQ -DNDEBUG"
                 FACE_SOURCE=""
                 FACE_SOURCE+="FACE_DRIVER.cpp "
                 FACE_SOURCE+="FACE_LANDMARK_OPTIMIZATION_GOAL.cpp "
@@ -197,18 +192,16 @@ compile(){
                 FACE_SOURCE+="main.cpp"
                 pushd Benchmarks/facesim >/dev/null
                 cat $FACE_SOURCE > all.cpp
-                g++ $FACE_FLAGS -S all.cpp -o ../../${bench}.s \
+                g++ $FULL_FLAGS -S all.cpp -o ../../${bench}.s \
                     ||error "compilation failed"
                 popd >/dev/null
                 ;;
             ferret)
-                case $FLAGS in
-                    min) FLAGS="";;
-                    all) FLAGS="$PARSEC_BASE_FLAGS_ALL";;
-                esac
+                set_flags ""
                 tmp=$(mktemp)
                 pushd "$BASE"/benchmarks/parsec-3.0/pkgs >/dev/null
                 gcc -w \
+                    $FULL_FLAGS \
                     -Iapps/$bench/src/include \
                     -Ilibs/gsl/inst/amd64-linux.gcc/include \
                     -Ilibs/libjpeg/inst/amd64-linux.gcc/include \
@@ -221,17 +214,11 @@ compile(){
                 cat pthreads.cpp >  all.cpp
                 cat cellpool.cpp >> all.cpp
                 cat parsec_barrier.cpp >> all.cpp
-                case $FLAGS in
-                    all) FLUID_FLAGS="$FLUID_FLAGS_ALL";;
-                    min) FLUID_FLAGS="$FLUID_FLAGS_MIN";;
-                esac
-                g++ $FLUID_FLAGS -S all.cpp -o ${bench}.s||error "compilation failed"
+                set_flags "-Wno-invalid-offsetof"
+                g++ $FULL_FLAGS -S all.cpp -o ${bench}.s||error "compilation failed"
                 ;;
             freqmine)
-                case $FLAGS in
-                    min) FLAGS="-Wno-deprecated";;
-                    all) FLAGS="$PARSEC_BASE_FLAGS_ALL -Wno-deprecated";;
-                esac
+                set_flags "-Wno-deprecated"
                 cat <<EOF > all.cpp
 #include "common.h"
 static int omp_get_max_threads() {return 1;}
@@ -239,19 +226,16 @@ EOF
                 cat *.cpp \
                     |grep -v "common.h" \
                     |grep -v "static int omp_get_max_threads" >> all.cpp
-                g++ $FLAGS -S all.cpp -o ${bench}.s||error "compilation failed"
+                g++ $FULL_FLAGS -S all.cpp -o ${bench}.s||error "compilation failed"
                 ;;
             raytrace)
                 BASE_FLAGS="-DTHIS_IS_CMAKE -fpermissive -fno-exceptions "
                 BASE_FLAGS+="-fexceptions -fno-strict-aliasing "
                 BASE_FLAGS+="-fno-align-labels -DNDEBUG -D_MM_NO_ALIGN_CHECK"
-                case $FLAGS in
-                    min) FLAGS=$BASE_FLAGS;;
-                    all) FLAGS="$PARSEC_BASE_FLAGS_ALL $BASE_FLAGS";;
-                esac
+                set_flags "$BASE_FLAGS"
                 tmp=$(mktemp)
                 pushd "$BASE"/benchmarks/parsec-3.0/pkgs >/dev/null
-                g++ $FLAGS \
+                g++ $FULL_FLAGS \
                     -Ilibs/mesa/inst/amd64-linux.gcc/include \
                     -Iapps/raytrace/obj/amd64-linux.gcc \
                     -Iapps/raytrace/obj/amd64-linux.gcc/RTTL \
@@ -266,19 +250,12 @@ EOF
                 mv $tmp ${bench}.s
                 ;;
             swaptions)
-                SWAP_FLAGS="-pthread  -DENABLE_THREADS"
-                case $FLAGS in
-                    min) FLAGS="$SWAP_FLAGS";;
-                    all) FLAGS="$PARSEC_BASE_FLAGS_ALL $SWAP_FLAGS";;
-                esac
+                set_flags "-pthread -DENABLE_THREADS"
                 cat *.c* > all.cpp
-                g++ $FLAGS -S all.cpp -o ${bench}.s||error "compilation failed"
+                g++ $FULL_FLAGS -S all.cpp -o ${bench}.s||error "compilation failed"
                 ;;
             vips)
-                case $FLAGS in
-                    min) FLAGS="-DHAVE_CONFIG_H";;
-                    all) FLAGS="$PARSEC_BASE_FLAGS -DHAVE_CONFIG_H";;
-                esac
+                set_flags "-DHAVE_CONFIG_H"
                 tmp=$(mktemp)
                 pushd "$BASE"/benchmarks/parsec-3.0/pkgs/apps/$bench/src/tools/iofuncs >/dev/null
                 gcc -I. \
@@ -288,7 +265,7 @@ EOF
                     -I../../../../../libs/glib/inst/amd64-linux.gcc/lib/glib-2.0/include \
                     -I../../../../../libs/glib/inst/amd64-linux.gcc/include/glib-2.0 \
                     -I../../../obj/amd64-linux.gcc \
-                    $FLAGS -S vips.c -o $tmp ||error "compilation failed"
+                    $FULL_FLAGS -S vips.c -o $tmp ||error "compilation failed"
                 popd >/dev/null
                 mv $tmp ${bench}.s
                 ;;
@@ -296,20 +273,14 @@ EOF
             
             ## SPEC
             bzip2)
-                case $FLAGS in
-                    min) FLAGS="";;
-                    all) FLAGS="-O3";;
-                esac
-                gcc-4.4 -combine -S $FLAGS \
+                set_flags "" "-O3"
+                gcc-4.4 -combine -S $FULL_FLAGS \
                     blocksort.c bzip2.c compress.c \
                     crctable.c decompress.c huffman.c randtable.c \
                     bzlib.c -o $bench.s||error "compilation failed"
                 ;;
             h264ref)
-                case $FLAGS in
-                    min) HREF_CMP_FLAGS="";;
-                    all) HREF_CMP_FLAGS="-O3";;
-                esac
+                set_flags "" "-O3"
                 ## cleaning
                 # delete lines 48-50 of macroblock.h
                 sed -i '48,50d' macroblock.h
@@ -319,7 +290,7 @@ EOF
                 # q_matrix.c and in q_offsets.c
                 sed -i '16s/,.*$/);/;376s/, 0//' q_matrix.c
                 sed -i '16s/,.*$/);/;301s/, 0//' q_offsets.c
-                gcc-4.4 -combine -S $HREF_CMP_FLAGS \
+                gcc-4.4 -combine -S $FULL_FLAGS \
                     annexb.c biariencode.c block.c cabac.c \
                     configfile.c context_ini.c decoder.c explicit_gop.c \
                     fast_me.c filehandle.c fmo.c header.c image.c \
@@ -349,11 +320,7 @@ link(){
 
             ## PARSEC
             blackscholes)
-                case $FLAGS in
-                    min) FLAGS="$BLACKSCHOLES_FLAGS_ALL";;
-                    all) FLAGS="$BLACKSCHOLES_FLAGS_MIN";;
-                esac
-                g++ $FLAGS ${bench}.s -o $bench||error "linking failed"
+                g++ -lpthread ${bench}.s -o $bench||error "linking failed"
                 ;;
             bodytrack)
                 FLAGS="-lflex -lpthread -lthreads"
@@ -394,18 +361,10 @@ link(){
                 g++ $ldirs ${bench}.s -o $bench $FLAGS||error "linking failed"
                 ;;
             fluidanimate)
-                case $FLAGS in
-                    min) FLAGS="$FLUID_FLAGS_ALL -lpthread";;
-                    all) FLAGS="$FLUID_FLAGS_MIN -lpthread";;
-                esac
-                g++ ${bench}.s $FLAGS -o $bench||error "linking failed"
+                g++ ${bench}.s -lpthread -o $bench||error "linking failed"
                 ;;
             freqmine)
-                case $FLAGS in
-                    min) FLAGS="-Wno-deprecated";;
-                    all) FLAGS="$PARSEC_BASE_FLAGS_ALL -Wno-deprecated";;
-                esac
-                g++ $FLAGS ${bench}.s -o $bench||error "linking failed"
+                g++ -Wno-deprecated ${bench}.s -o $bench||error "linking failed"
                 ;;
             raytrace)
                 error "linking raytrace fails for me (ERIC)"
@@ -426,11 +385,7 @@ link(){
                     $FLAGS||error "linking failed"
                 ;;
             swaptions)
-                SWAP_FLAGS="-pthread  -DENABLE_THREADS"
-                case $FLAGS in
-                    min) FLAGS="$SWAP_FLAGS";;
-                    all) FLAGS="$PARSEC_BASE_FLAGS_ALL $SWAP_FLAGS";;
-                esac
+                FLAGS="-pthread -DENABLE_THREADS"
                 g++ $FLAGS ${bench}.s -o $bench||error "linking failed"
                 ;;
             vips)
@@ -455,18 +410,9 @@ link(){
 
             ## SPEC
             bzip2)
-                case $FLAGS in
-                    min) FLAGS="";;
-                    all) FLAGS="-O3";;
-                esac
-                gcc $FLAGS ${bench}.s -o $bench||error "linking failed";;
+                gcc ${bench}.s -o $bench||error "linking failed";;
             h264ref)
-                case $FLAGS in
-                    min) FLAGS="-lm";;
-                    all) FLAGS="-lm -O3";;
-                esac
-                echo gcc $FLAGS ${bench}.s -o $bench
-                gcc ${bench}.s $FLAGS -o $bench||error "linking failed";;
+                gcc ${bench}.s -lm -o $bench||error "linking failed";;
             *) error "linking not implemented for $bench"
         esac
         popd>/dev/null
