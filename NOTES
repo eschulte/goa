@@ -100,7 +100,7 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 | 998.specrand   |
 | 999.specrand   |
 
-* Tasks [13/61]
+* Tasks [14/61]
 ** TODO find minimal input sizes for each program
 Need to estimate the variance in our energy predictions, which are
 linear combinations of HW counters, from variance in the HW counters.
@@ -445,7 +445,47 @@ Spec has some open-source programs (e.g., perl, gcc, bzip) which could
 be good candidates.  Eric will look into some better tests for PARSEC
 programs.
 
-** TODO Build a Memory Fitness Function
+** distributed sub-pop by compiler flags
+Just an exploratory test to see how this performs.  Running with bzip2.
+
+1. Build five seeds with different optimization levels.
+   #+begin_src sh
+     mkdir -p bzip2-dist
+     for flag in O0 O1 O2 O3 Os;do
+         mgmt clean bzip2
+         mgmt compile bzip2 -F -$flag
+         mv benchmarks/bzip2/bzip2.s bzip2-dist/$flag.s
+     done
+   #+end_src
+
+2. Build the =optimize= executable s.t. five of them can fit into 120G
+   of memory, and with the zeromq library loaded.
+   #+begin_src sh
+     export LISP_STACK=$((24 * 1024))
+     make clean && make LL=zeromq
+   #+end_src
+
+3. We'll now run one optimization process for each flag.  See
+   [[file:src/dist-conf.lisp][dist-conf.lisp]] and [[file:src/by-flag.lisp][by-flag.lisp]] for specifics, basically the
+   actions for each process are as follows.
+   - load up an original individual with the given compiler flag
+   - mark the genome of the original
+   - we mark the genomes of the individuals in each population, so we
+     can later track code generated using different compiler flags
+     through sub-populations
+   - at every period, each subpopulation picks one individual with a
+     tournament, and sends that individual to another subpopulation at
+     random.
+
+   Kick off the five optimization threads.
+   #+begin_src sh
+     for flag in O0 O1 O2 O3 Os;do
+         optimize bzip2-dist/$flag.s bzip2 -t 12 -w sh-runner/work -r bzip2-dist \
+             -e "(defvar flag '$flag)" -c src/by-flag.lisp &
+     done   
+   #+end_src
+
+** CANCELED Build a Memory Fitness Function
 We could use the "bubble" and the "reporter" from [[#mars2011bubble]].
 Measuring the values of HW counters against the bubble could give us
 coefficients for a memory linear model.
