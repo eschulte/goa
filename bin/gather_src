@@ -6,7 +6,7 @@ then
     exit 0
 fi
 
-mkdir $2
+mkdir $2 2>/dev/null
 
 for i in `find $1 -name "*.c*"`
 do 
