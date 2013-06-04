@@ -41,4 +41,4 @@ bin/calc-energy: src/calc-energy.lisp etc/data/ql-manifest.txt
 	$(BA) $(BUILD_APP_FLAGS) --load $< --output $@ --entry "optimize:main"
 
 clean:
-	rm -f bin/no-limit bin/no-stack-limit bin/limit bin/optimize
+	rm -f bin/no-limit bin/no-stack-limit bin/limit bin/optimize etc/data/ql-manifest.txt
