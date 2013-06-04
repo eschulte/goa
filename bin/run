@@ -191,11 +191,11 @@ case $BENCHMARK in
         ;;
     swaptions)
         case $SIZE in
-            test)  run 2 $EXECUTABLE -ns 1  -sm 5     -nt 1 2> $OUT;;
-            tiny)  run 2 $EXECUTABLE -ns 3  -sm 50    -nt 1 2> $OUT;;
-            small) run 2 $EXECUTABLE -ns 16 -sm 10000 -nt 1 2> $OUT;;
-            medium)run 2 $EXECUTABLE -ns 32 -sm 20000 -nt 1 2> $OUT;;
-            large) run 2 $EXECUTABLE -ns 64 -sm 40000 -nt 1 2> $OUT;;
+            test)  run 2 $EXECUTABLE -ns 1  -sm 5     -nt 1 > $OUT;;
+            tiny)  run 2 $EXECUTABLE -ns 3  -sm 50    -nt 1 > $OUT;;
+            small) run 2 $EXECUTABLE -ns 16 -sm 10000 -nt 1 > $OUT;;
+            medium)run 2 $EXECUTABLE -ns 32 -sm 20000 -nt 1 > $OUT;;
+            large) run 2 $EXECUTABLE -ns 64 -sm 40000 -nt 1 > $OUT;;
         esac
         EXIT=$?
         left=$(awk '{print $4}' $OUT)
