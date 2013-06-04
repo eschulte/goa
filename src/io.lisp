@@ -13,44 +13,38 @@
 
 (defvar *port* 3000 "Default port.")
 
-(defun share (&key (host "localhost") (port *port*))
+(defun share (software &key (host "localhost") (port *port*))
+  "Push SOFTWARE to the server listening on PORT at HOST."
   (with-open-socket (socket :connect :active :type :stream)
     (connect socket (lookup-hostname host) :port port :wait t)
-    (handler-case (progn (format socket "poop poop poop~%")
-                         (finish-output socket))
-
+    (note 1 "sharing ~S with ~A:~A" software host port)
+    (handler-case (progn (store software socket) (finish-output socket))
       (socket-connection-reset-error ()
-        (format t "Got connection reset. Server went away!"))
-
+        (format t "server-error: connection reset~%"))
       (hangup ()
-        (format t "Got hangup. Server closed connection on write!~%"))
-
+        (format t "server-error: hangup~%"))
       (end-of-file ()
-        (format t "Got end-of-file. Server closed connection on read!~%")))))
+        (format t "server-error: end-of-file~%")))))
 
 (defun accept (&key (port *port*))
+  "Accept and `incorporate' any incoming individuals on PORT."
   (with-open-socket (server :connect :passive :type :stream)
     ;; Bind the socket to all interfaces with specified port.
     (bind-address server +ipv4-unspecified+ :port port :reuse-addr t)
 
     ;; Start listening on the server socket
     (listen-on server :backlog 5)
-    (format t "Listening on socket bound to: ~A:~A~%"
-            (local-host server)
-            (local-port server))
+    (note 1 "listening on ~a~%" port)
+
     ;; Keep accepting connections forever.
     (loop
-       (format t "Waiting to accept a connection...~%")
-
-       ;; Using with-accept-connection, when this form returns it will
-       ;; automatically close the client connection.
        (with-accept-connection (client server :wait t)
 
          ;; When we get a new connection, show who it is from.
          (multiple-value-bind (who rport) (remote-name client)
-           (format t "Got a connnection from ~A:~A!~%" who rport))
+           (note 1 "connection from ~A:~A" who rport))
 
          ;; Process data from the client.
-         (format t "reading from connection")
-         (let ((input (read-line client nil nil)))
-           (format t "read ~S~%" input))))))
+         (handler-case (progn (incorporate (restore client))
+                              (note 1 "incorporated~%"))
+           (error (e) (note 1 "accept failed: ~S" e)))))))
