@@ -22,7 +22,8 @@
 ;; 2. Parse the original individual from a text assembly file, and
 ;;    save to the `*orig*' variable.
 ;;
-;; 3. Define `*test-fmt*' to run the test script
+;; 3. Write a function to `run' the test script and parse the output
+;;    with the `parse-stdout' function.
 ;;
 ;; 4. Define a fitness function to calculate a scalar fitness based on
 ;;    the metrics returned from the test script.
@@ -39,25 +40,34 @@
 (in-package :optimize)
 
 ;; (2)
-(setf *script* "./bin/example-test ~a")
+(setf *orig* (from-file (make-instance 'asm-perf) "path/to/variant.s"))
 
 ;; (3)
-(setf *orig* (from-file (make-instance 'asm-perf) "path/to/variant.s"))
+(defun run (asm)
+  (let ((test-script (assert nil nil "Insert path to test script HERE.")))
+    (with-temp-file (bin)
+      ;; link an executable from the assembly software object
+      (phenome asm :bin bin)
+      ;; run the executable using the test script
+      (multiple-value-bind (stdout stderr errno)
+          (shell "~a ~a -p" test-script bin)
+        (declare (ignorable stderr))
+        (cons `(:exit . ,errno) (ignore-errors (parse-stdout stdout)))))))
 
 ;; (4)
 (defun test (asm)
   ;; if the variant has not yet been run, then run and save the
   ;; metrics to `stats'
-  (unless (stats asm) (setf (stats asm) (test asm)))
+  (unless (stats asm) (setf (stats asm) (run asm)))
   ;; fitness function combining HW counters
   (assert nil nil "Implement a fitness function HERE."))
 
 ;; (5)
 (setf
  ;; set the fitness of the original individual
- (fitness *orig*) (multi-obj *orig*)
+ (fitness *orig*) (test *orig*)
  ;; set the maximum population size
- *max-population-size* (expt 2 9)
+ *max-population-size* (expt 2 8)
  ;; specify that lower fitness values are better
  *fitness-predicate* #'<
  ;; fill the population with copies of the original
