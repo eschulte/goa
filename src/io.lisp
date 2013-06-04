@@ -46,5 +46,5 @@
 
          ;; Process data from the client.
          (handler-case (progn (incorporate (restore client))
-                              (note 1 "incorporated~%"))
+                              (note 1 "incorporated"))
            (error (e) (note 1 "accept failed: ~S" e)))))))
