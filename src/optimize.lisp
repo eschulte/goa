@@ -116,6 +116,14 @@
          (make-pathname :directory *res-dir*
                         :name (format nil "best-~a" *fitness-evals*)
                         :type "store"))
+  ;; write out and clean the list of saved edits
+  (with-open-file
+      (out (make-pathname :directory *res-dir* :name "edits" :type "lisp")
+           :direction :output
+           :if-exists :append
+           :if-does-not-exist :create)
+    (format out "~&~{~s~^~%~}~%" (prog1 *consolidated-edits*
+                                   (setf nil *consolidated-edits*))))
   ;; write out population stats
   (let ((fits  (mapcar #'fitness *population*))
         (sizes (mapcar [#'length #'genome] *population*))
