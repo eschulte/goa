@@ -15,12 +15,11 @@ fi
 
 VIPS_D=`pwd`
 
-cd src/libvips
-
-if (( $? != 0 ))
-then
-  echo "Something is wrong with the vips directory structure or $1 is not the path to vips! Aborting."
-  exit 2
+if [ -d src/libvips ];then
+    cd src/libvips
+else
+    echo "Something is wrong with the vips directory structure or $1 is not the path to vips! Aborting."
+    exit 2
 fi
 
 PARSEC_D=$VIPS_D/../../../
