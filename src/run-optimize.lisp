@@ -1,3 +1,7 @@
+;;; run-optimize.lisp --- command line optimization driver
+
+;; Copyright (C) 2013  Eric Schulte
+
 ;;; Code:
 (load "src/optimize.lisp")
 (in-package :optimize)
