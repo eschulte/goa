@@ -149,6 +149,10 @@ Options:
       (store *population* (make-pathname :directory *res-dir*
                                          :name "final-pop"
                                          :type "store"))
+      (store (extremum *population* *fitness-predicate* :key #'fitness)
+             (make-pathname :directory *res-dir*
+                            :name "final-best"
+                            :type "store"))
 
       (note 1 "done after ~a fitness evaluations~%" *fitness-evals*)
       (note 1 "results saved in ~a~%" *res-dir*)
