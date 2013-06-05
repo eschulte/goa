@@ -20,6 +20,10 @@ LISP_LIBRARIES+=cl-ppcre
 
 LISP_LIBRARIES:=$(addprefix --load-system , $(LISP_LIBRARIES))
 
+# Compiled lisp executables
+LISP_EXES=optimize objread calc-energy
+LISP_BINS=$(addprefix bin/, $(LISP_EXES))
+
 ifeq ($(shell [ -f $(QUICK_LISP)/setup.lisp ] && echo exists),)
 $(error The QUICK_LISP environment variable must point to your quicklisp install)
 endif
@@ -29,7 +33,7 @@ BUILD_APP_FLAGS= --manifest-file $(QUICK_LISP)/local-projects/system-index.txt \
 	$(LISP_LIBRARIES) \
 	--dynamic-space-size $(LISP_STACK)
 
-all: bin/no-limit bin/no-stack-limit bin/limit bin/optimize
+all: bin/no-limit bin/no-stack-limit bin/limit $(LISP_BINS)
 
 etc/data/ql-manifest.txt:
 	sbcl --eval '(progn (ql:write-asdf-manifest-file "$@") (sb-ext:exit))'
@@ -37,8 +41,13 @@ etc/data/ql-manifest.txt:
 bin/optimize: src/run-optimize.lisp src/optimize.lisp etc/data/ql-manifest.txt
 	$(BA) $(BUILD_APP_FLAGS) --load $< --output $@ --entry "optimize:main"
 
+bin/objread: src/objread.lisp src/objread.lisp etc/data/ql-manifest.txt
+	$(BA) $(BUILD_APP_FLAGS) --load $< --output $@ --entry "optimize:main"
+
 bin/calc-energy: src/calc-energy.lisp etc/data/ql-manifest.txt
 	$(BA) $(BUILD_APP_FLAGS) --load $< --output $@ --entry "optimize:main"
 
 clean:
-	rm -f bin/no-limit bin/no-stack-limit bin/limit bin/optimize etc/data/ql-manifest.txt
+	rm -f bin/no-limit bin/no-stack-limit bin/limit \
+	      etc/data/ql-manifest.txt \
+	      $(LISP_BINS)

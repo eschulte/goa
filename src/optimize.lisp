@@ -139,3 +139,17 @@
                                 `(,*fitness-evals*
                                   ,@(stats fits)
                                   ,@(stats sizes)))))))))
+
+
+;;; Simple command line helpers
+(defun throw-error (&rest args)
+  (apply #'note 0 args)
+  (sb-ext:exit :code 1))
+
+(defmacro getopts (&rest forms)
+  (let ((arg (gensym)))
+    `(loop :for ,arg = (pop args) :while ,arg :do
+        (cond
+          ,@(mapcar (lambda-bind ((short long . body))
+                      `((or (string= ,arg ,short) (string= ,arg ,long)) ,@body))
+                    forms)))))
