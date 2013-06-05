@@ -12,7 +12,7 @@
 
 ;;; Code:
 (in-package :optimize)
-(load "src/dist-conf.lisp")
+(load "src/io.lisp")
 
 (defvar ports
   '((O0 . 4000)
@@ -30,16 +30,15 @@
 (setq *res-dir* (append *res-dir* (list (symbol-name flag))))
 
 ;; Periodically share individuals with a neighbor.
-(let ((original-checkpoint #'checkpoint))
-  (defun checkpoint ()
-    (funcall original-checkpoint)
-    ;; Share an individual with a neighbor 1/4 checkpoints.
-    (when (zerop (random 4))
+(defun sharing-checkpoint ()
+  (checkpoint)
+  ;; Share an individual with a neighbor 1/4 checkpoints.
+  (let ((share-roll (random 4)))
+    (when (zerop share-roll)
       (let ((share-to (random-elt (remove-if [{equal flag} #'car] ports))))
-        (note 1 "sharing from ~S to ~S~%" (assoc flag ports) share-to)
-        (share (tournament) (format nil "tcp://*:~d" (cdr share-to)))))))
+        (share (tournament) :port (cdr share-to))))))
+
+(setf *checkpoint-func* #'sharing-checkpoint)
 
 ;; Begin listening for shared individuals on flag-specified port.
-(let ((address (format nil "tcp://localhost:~d" (aget flag ports))))
-  (sb-thread:make-thread (lambda () (accept address)))
-  (note 1 "listening on ~a~%" address))
+(sb-thread:make-thread (lambda () (accept :port (aget flag ports))))

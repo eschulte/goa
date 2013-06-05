@@ -6,15 +6,20 @@
 ;; debug information to the checkpoint function.
 
 ;;; Code:
-(require :optimize)
+(in-package :optimize)
 
-(let ((original-checkpoint #'checkpoint))
-  (defun checkpoint ()
-    (flet ((space ()
-             (let ((*standard-output* *note-out*))
-               (room)
-               (format *note-out* "~S~%"
-                       (list *fitness-evals*
-                             (length (to-bytes *consolidated-edits*))
-                             (length (to-bytes (car *population*))))))))
-      (space) (funcall original-checkpoint) (space))))
+(defun memory-checkpoint ()
+  (with-open-file
+      (out (make-pathname :directory *res-dir* :name "memory" :type "txt")
+           :direction :output
+           :if-exists :append
+           :if-does-not-exist :create)
+    (format out "~&~%;;----------------------------------------~%~S~%"
+            (list *fitness-evals*
+                  (length (to-bytes *consolidated-edits*))
+                  (length (to-bytes (car *population*)))))
+    (let ((*standard-output* out)) (room))
+    (flush ))
+  (checkpoint))
+
+(setf *checkpoint-func* #'memory-checkpoint)

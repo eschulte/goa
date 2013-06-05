@@ -462,12 +462,12 @@ Just an exploratory test to see how this performs.  Running with bzip2.
    of memory, and with the zeromq library loaded.
    #+begin_src sh
      export LISP_STACK=$((24 * 1024))
-     make clean && make LL=zeromq
+     make clean && make LL=iolib
    #+end_src
 
-3. We'll now run one optimization process for each flag.  See
-   [[file:src/dist-conf.lisp][dist-conf.lisp]] and [[file:src/by-flag.lisp][by-flag.lisp]] for specifics, basically the
-   actions for each process are as follows.
+3. We'll now run one optimization process for each flag.  See [[file:src/io.lisp][io.lisp]]
+   and [[file:src/by-flag.lisp][by-flag.lisp]] for specifics, basically the actions for each
+   process are as follows.
    - load up an original individual with the given compiler flag
    - mark the genome of the original
    - we mark the genomes of the individuals in each population, so we
