@@ -9,12 +9,17 @@
 (in-package :optimize)
 
 (defun memory-checkpoint ()
-  (flet ((space ()
-           (mapc {format _ "~S~%" (list *fitness-evals*
-                                        (length (to-bytes *consolidated-edits*))
-                                        (length (to-bytes (car *population*))))}
-                                        *note-out*)
-           (let ((*standard-output* (car (remove t *note-out*)))) (room))))
-    (space) (checkpoint) (space)))
+  (with-open-file
+      (out (make-pathname :directory *res-dir* :name "memory" :type "txt")
+           :direction :output
+           :if-exists :append
+           :if-does-not-exist :create)
+    (format out "~&~%;;----------------------------------------~%~S~%"
+            (list *fitness-evals*
+                  (length (to-bytes *consolidated-edits*))
+                  (length (to-bytes (car *population*)))))
+    (let ((*standard-output* out)) (room))
+    (flush ))
+  (checkpoint))
 
 (setf *checkpoint-func* #'memory-checkpoint)
