@@ -100,7 +100,7 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 | 998.specrand   |
 | 999.specrand   |
 
-* Tasks [15/61]
+* Tasks [15/30]
 ** TODO find minimal input sizes for each program
 Need to estimate the variance in our energy predictions, which are
 linear combinations of HW counters, from variance in the HW counters.
@@ -140,7 +140,7 @@ http://en.wikipedia.org/wiki/Variance#Sum_of_correlated_variables
   done|tee results/counter-by-size/fluidanimate.txt
 #+end_src
 
-** TODO Build all benchmarks to ASM [9/41]
+** TODO Build all benchmarks to ASM [9/10]
 *** parsec
 **** DONE Blackscholes
 **** DONE bodytrack
@@ -220,37 +220,37 @@ To make the executable: (updated to remove excess flags)
      gcc -L../../../inst/amd64-linux.gcc/lib/  -L../../../../../libs/glib/inst/amd64-linux.gcc/lib -L../../../../../libs/zlib/inst/amd64-linux.gcc/lib -L/usr/lib64 -L/usr/lib  -L../../../../../libs/glib/inst/amd64-linux.gcc/lib -L../../../../../libs/zlib/inst/amd64-linux.gcc/lib -DG_DISABLE_CAST_CHECKS -L../../../../../libs/glib/inst/amd64-linux.gcc/lib -L../../../../../libs/libxml2/inst/amd64-linux.gcc/lib vips.s  -lgobject-2.0 -lgthread-2.0 -pthread    -lvips   -lm  -lstdc++ -lxml2 -lgmodule-2.0 -ldl -lglib-2.0
 **** TODO x264
 *** SPEC
-**** TODO 400.perlbench
-**** TODO 401.bzip2
-**** TODO 403.gcc
-**** TODO 410.bwaves
-**** TODO 416.gamess
-**** TODO 429.mcf
-**** TODO 433.milc
-**** TODO 434.zeusmp
-**** TODO 435.gromacs
-**** TODO 436.cactusADM
-**** TODO 437.leslie3d
-**** TODO 444.namd
-**** TODO 445.gobmk
-**** TODO 447.dealII
-**** TODO 450.soplex
-**** TODO 453.povray
-**** TODO 454.calculix
-**** TODO 456.hmmer
-**** TODO 458.sjeng
-**** TODO 459.GemsFDTD
-**** TODO 462.libquantum
-**** TODO 464.h264ref
-**** TODO 465.tonto
-**** TODO 470.lbm
-**** TODO 471.omnetpp
-**** TODO 473.astar
-**** TODO 481.wrf
-**** TODO 482.sphinx3
-**** TODO 483.xalancbmk
-**** TODO 998.specrand
-**** TODO 999.specrand
+**** 400.perlbench
+**** 401.bzip2
+**** 403.gcc
+**** 410.bwaves
+**** 416.gamess
+**** 429.mcf
+**** 433.milc
+**** 434.zeusmp
+**** 435.gromacs
+**** 436.cactusADM
+**** 437.leslie3d
+**** 444.namd
+**** 445.gobmk
+**** 447.dealII
+**** 450.soplex
+**** 453.povray
+**** 454.calculix
+**** 456.hmmer
+**** 458.sjeng
+**** 459.GemsFDTD
+**** 462.libquantum
+**** 464.h264ref
+**** 465.tonto
+**** 470.lbm
+**** 471.omnetpp
+**** 473.astar
+**** 481.wrf
+**** 482.sphinx3
+**** 483.xalancbmk
+**** 998.specrand
+**** 999.specrand
 ** DONE Select Energy Models [2/2]
 \begin{equation*}
   kwh = c_{1} + c_{2} \times cyc + c_{3} \times ins + c_{4} \times ops + c_{5} \times tca + c_{6} \times mem
