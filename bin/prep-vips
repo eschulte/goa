@@ -1,0 +1,13 @@
+#!/bin/bash
+#
+# Usage: Run this script to prepare vips so that it doesn't need to be
+#        named "vips" to run.
+#
+. $(dirname $0)/common
+
+pushd "$BASE"/benchmarks/parsec-3.0
+source env.sh
+parsecmgmt -a clean -p vips
+sed -i '904s/argv\[0\]/"vips"/' pkgs/apps/vips/src/tools/iofuncs/vips.c
+parsecmgmt -a build -p vips
+popd
