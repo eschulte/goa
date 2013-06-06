@@ -18,8 +18,7 @@
             (list *fitness-evals*
                   (length (to-bytes *consolidated-edits*))
                   (length (to-bytes (car *population*)))))
-    (let ((*standard-output* out)) (room))
-    (flush ))
+    (let ((*standard-output* out)) (room)))
   (checkpoint))
 
 (setf *checkpoint-func* #'memory-checkpoint)
