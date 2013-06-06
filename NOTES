@@ -102,6 +102,7 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 
 * Tasks [15/30]
 ** TODO find minimal input sizes for each program
+   DEADLINE: <2013-06-11 Tue>
 Need to estimate the variance in our energy predictions, which are
 linear combinations of HW counters, from variance in the HW counters.
 
@@ -294,6 +295,7 @@ Both at UVA on Intel and at UNM on AMD.
 Cycles is a proxy for time, so 0 counters should imply 0 kwh.
 
 *** TODO include last two benchmark programs [0/2]
+    DEADLINE: <2013-06-11 Tue>
 - [ ] x264 from parsec (compiled)
 - [ ] dealII from SPEC
 
@@ -445,6 +447,7 @@ Modeling kwh
 
 *** TODO Intel Energy Model
 ** TODO measure energy consumption of evolved programs
+   DEADLINE: <2013-06-11 Tue>
 #+name: amd-results
 | results/swaptions-all |
 | results/bs-all        |
