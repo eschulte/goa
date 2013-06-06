@@ -493,11 +493,11 @@ Modeling kwh
    directory.
    #+begin_src sh
      for bench in blackscholes bzip2 fluidanimate freqmine swaptions;do
-         for exe in results/best-energy-exes/$bench-*;do
+         for exe in results/energy-final-metrics/$bench-*;do
              for i in $(seq 0 9);do
                  echo -e "running $bench\t$exe\t$i"
                  sleep 10
-                 wu.py -o $exe-$i.csv ttyUSB0 -- run $bench $exe -s large
+                 wu.py -o $exe-$i.csv ttyUSB0 -- run $bench $exe -s large -r 20
              done
          done
      done
