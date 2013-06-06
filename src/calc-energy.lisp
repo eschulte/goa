@@ -7,14 +7,6 @@
 Options:
  -m,--model NAME ------- model name~%")
 
-(defmacro getopts (&rest forms)
-  (let ((arg (gensym)))
-    `(loop :for ,arg = (pop args) :while ,arg :do
-        (cond
-          ,@(mapcar (lambda-bind ((short long . body))
-                      `((or (string= ,arg ,short) (string= ,arg ,long)) ,@body))
-                    forms)))))
-
 (defun main (args)
   (flet ((arg-pop () (pop args)))
     (let ((bin-path (arg-pop)))

@@ -1,3 +1,7 @@
+;;; run-optimize.lisp --- command line optimization driver
+
+;; Copyright (C) 2013  Eric Schulte
+
 ;;; Code:
 (load "src/optimize.lisp")
 (in-package :optimize)
@@ -26,18 +30,6 @@ Options:
                          default: 4
  -v,--verbose NUM ------ verbosity level 0-4
  -w,--work-dir DIR ----- use an sh-runner/work directory~%")
-
-(defun throw-error (&rest args)
-  (apply #'note 0 args)
-  (sb-ext:exit :code 1))
-
-(defmacro getopts (&rest forms)
-  (let ((arg (gensym)))
-    `(loop :for ,arg = (pop args) :while ,arg :do
-        (cond
-          ,@(mapcar (lambda-bind ((short long . body))
-                      `((or (string= ,arg ,short) (string= ,arg ,long)) ,@body))
-                    forms)))))
 
 (defvar *checkpoint-func* #'checkpoint "Function to record checkpoints.")
 
@@ -161,6 +153,10 @@ Options:
       (store *population* (make-pathname :directory *res-dir*
                                          :name "final-pop"
                                          :type "store"))
+      (store (extremum *population* *fitness-predicate* :key #'fitness)
+             (make-pathname :directory *res-dir*
+                            :name "final-best"
+                            :type "store"))
 
       (note 1 "done after ~a fitness evaluations~%" *fitness-evals*)
       (note 1 "results saved in ~a~%" *res-dir*)

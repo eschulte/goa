@@ -100,7 +100,7 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 | 998.specrand   |
 | 999.specrand   |
 
-* Tasks [14/61]
+* Tasks [15/30]
 ** TODO find minimal input sizes for each program
 Need to estimate the variance in our energy predictions, which are
 linear combinations of HW counters, from variance in the HW counters.
@@ -140,7 +140,7 @@ http://en.wikipedia.org/wiki/Variance#Sum_of_correlated_variables
   done|tee results/counter-by-size/fluidanimate.txt
 #+end_src
 
-** TODO Build all benchmarks to ASM [9/41]
+** TODO Build all benchmarks to ASM [9/10]
 *** parsec
 **** DONE Blackscholes
 **** DONE bodytrack
@@ -207,6 +207,11 @@ To make the executable: (updated to remove excess flags)
 #+end_src
 
 **** DONE vips
+     It turns out that the bulk of the computation is done in the library libvips.a so the solution described below is not very good.
+     Instead, we separate libvips.a into two parts and generate an asm file for the part we intend to evolve. See bin/libvips.sh
+
+     ------------------------------------------------------------------------------
+
      In the directory: <path to parsec>/parsec-3.0/pkgs/apps/vips/src/tools/iofuncs
      compile vips to assembly by:
      gcc -std=gnu99 -DHAVE_CONFIG_H -I. -I../../ -I../../libvips/include -DG_DISABLE_CAST_CHECKS -pthread -I ../../../../../libs/libxml2/inst/amd64-linux.gcc/include/libxml2 -I../../../../../libs/glib/inst/amd64-linux.gcc/lib/glib-2.0/include -I../../../../../libs/glib/inst/amd64-linux.gcc/include/glib-2.0/  -I../../../obj/amd64-linux.gcc/  -O3 -g -funroll-loops -fprefetch-loop-arrays -static-libgcc -Wl,--hash-style=both,--as-needed -DPARSEC_VERSION=3.0-beta-20120904 -L../../../inst/amd64-linux.gcc/lib/  -L../../../../../libs/glib/inst/amd64-linux.gcc/lib -L../../../../../libs/zlib/inst/amd64-linux.gcc/lib -L/usr/lib64 -L/usr/lib  -L../../../../../libs/glib/inst/amd64-linux.gcc/lib -L../../../../../libs/zlib/inst/amd64-linux.gcc/lib -DG_DISABLE_CAST_CHECKS -I../../../../../libs/libxml2/inst/amd64-linux.gcc/include/libxml2 -I../../../../../libs/glib/inst/amd64-linux.gcc/lib/glib-2.0/include -L../../../../../libs/glib/inst/amd64-linux.gcc/lib -L../../../../../libs/libxml2/inst/amd64-linux.gcc/lib -S vips.c  -lgobject-2.0 -lgthread-2.0 -pthread    -lvips   -lm  -lstdc++ -lxml2 -lgmodule-2.0 -ldl -lglib-2.0
@@ -215,37 +220,37 @@ To make the executable: (updated to remove excess flags)
      gcc -L../../../inst/amd64-linux.gcc/lib/  -L../../../../../libs/glib/inst/amd64-linux.gcc/lib -L../../../../../libs/zlib/inst/amd64-linux.gcc/lib -L/usr/lib64 -L/usr/lib  -L../../../../../libs/glib/inst/amd64-linux.gcc/lib -L../../../../../libs/zlib/inst/amd64-linux.gcc/lib -DG_DISABLE_CAST_CHECKS -L../../../../../libs/glib/inst/amd64-linux.gcc/lib -L../../../../../libs/libxml2/inst/amd64-linux.gcc/lib vips.s  -lgobject-2.0 -lgthread-2.0 -pthread    -lvips   -lm  -lstdc++ -lxml2 -lgmodule-2.0 -ldl -lglib-2.0
 **** TODO x264
 *** SPEC
-**** TODO 400.perlbench
-**** TODO 401.bzip2
-**** TODO 403.gcc
-**** TODO 410.bwaves
-**** TODO 416.gamess
-**** TODO 429.mcf
-**** TODO 433.milc
-**** TODO 434.zeusmp
-**** TODO 435.gromacs
-**** TODO 436.cactusADM
-**** TODO 437.leslie3d
-**** TODO 444.namd
-**** TODO 445.gobmk
-**** TODO 447.dealII
-**** TODO 450.soplex
-**** TODO 453.povray
-**** TODO 454.calculix
-**** TODO 456.hmmer
-**** TODO 458.sjeng
-**** TODO 459.GemsFDTD
-**** TODO 462.libquantum
-**** TODO 464.h264ref
-**** TODO 465.tonto
-**** TODO 470.lbm
-**** TODO 471.omnetpp
-**** TODO 473.astar
-**** TODO 481.wrf
-**** TODO 482.sphinx3
-**** TODO 483.xalancbmk
-**** TODO 998.specrand
-**** TODO 999.specrand
+**** 400.perlbench
+**** 401.bzip2
+**** 403.gcc
+**** 410.bwaves
+**** 416.gamess
+**** 429.mcf
+**** 433.milc
+**** 434.zeusmp
+**** 435.gromacs
+**** 436.cactusADM
+**** 437.leslie3d
+**** 444.namd
+**** 445.gobmk
+**** 447.dealII
+**** 450.soplex
+**** 453.povray
+**** 454.calculix
+**** 456.hmmer
+**** 458.sjeng
+**** 459.GemsFDTD
+**** 462.libquantum
+**** 464.h264ref
+**** 465.tonto
+**** 470.lbm
+**** 471.omnetpp
+**** 473.astar
+**** 481.wrf
+**** 482.sphinx3
+**** 483.xalancbmk
+**** 998.specrand
+**** 999.specrand
 ** DONE Select Energy Models [2/2]
 \begin{equation*}
   kwh = c_{1} + c_{2} \times cyc + c_{3} \times ins + c_{4} \times ops + c_{5} \times tca + c_{6} \times mem
@@ -282,10 +287,10 @@ with an "r".
 *** DONE Intel energy model
 : perf stat -e cycles,instructions,r532010,r538010,cache-references,LLC-loads,LLC-stores
 
-** TODO Train Energy Models [1/6]
+** TODO Train Energy Models [1/5]
 Both at UVA on Intel and at UNM on AMD.
 
-*** TODO constrain the model to pass through the origin
+*** constrain the model to pass through the origin
 Cycles is a proxy for time, so 0 counters should imply 0 kwh.
 
 *** TODO include last two benchmark programs [0/2]
@@ -439,6 +444,129 @@ Modeling kwh
 | constant         |  0.000410495 |
 
 *** TODO Intel Energy Model
+** TODO measure energy consumption of evolved programs
+#+name: amd-results
+| results/swaptions-all |
+| results/bs-all        |
+| results/bzip2-all     |
+| results/freqmine-all  |
+| results/fluid-all-2   |
+
+1. For all finished runs, collect some of the best individuals and
+   compile them to executables.
+   #+begin_src sh :var dirs=amd-results
+     for dir in $(echo "$dirs");do
+         sample $dir 8|xargs -I{} objread {} -l {}.exe
+     done
+   #+end_src
+
+2. Move all of the executables into a single results directory.
+   #+begin_src sh :var dirs=amd-results
+     mkdir -p results/best-energy-exes
+     for dir in $(echo "$dirs");do
+         base=$(basename $dir)
+         for exe in $dir/best*exe;do
+             mv $exe results/best-energy-exes/$base-$(basename $exe)
+         done
+     done
+   #+end_src
+
+3. Copy the originals into the results directory as well.
+   #+begin_src sh
+     for bench in blackscholes bzip2 fluidanimate freqmine swaptions;do
+         mgmt clean $bench
+         mgmt link $bench
+         cp benchmarks/$bench/$bench results/best-energy-exes/$bench-orig
+     done
+   #+end_src
+
+4. Normalize the names of the files in the results directory.
+
+5. Ensure output exists for every benchmark
+   #+begin_src sh
+     for bench in blackscholes bzip2 fluidanimate freqmine swaptions;do
+         mgmt output $bench -s large
+     done
+   #+end_src
+
+6. Measure the energy consumption of each program in the results
+   directory.
+   #+begin_src sh
+     for bench in blackscholes bzip2 fluidanimate freqmine swaptions;do
+         for exe in results/energy-final-metrics/$bench-*;do
+             for i in $(seq 0 9);do
+                 echo -e "running $bench\t$exe\t$i"
+                 sleep 10
+                 wu.py -o $exe-$i.csv ttyUSB0 -- run $bench $exe -s large -r 20
+             done
+         done
+     done
+   #+end_src
+
+7. Collect energy metrics for each program.
+   #+begin_src sh :dir results/energy-final-metrics/
+     mean(){
+         awk '{
+             for (i=1; i<=NF; i++)
+             {
+                 if($i ~ /[0-9.]/){sum[i] += $i; count[i]++}
+                     if(i == 1){ line = sum[i]/count[i] }else{ line = line " " sum[i]/count[i]}
+             }
+             print line
+         }'; }
+     
+     for prog in $(find ./ -perm 755);do
+         echo "$(basename $prog|cut -d- -f1) $(basename $prog|cut -d- -f2) $(cat $prog*csv|grep -v time|cut -d, -f5|mean|tail -1)"
+     done
+   #+end_src
+
+   #+RESULTS:
+   | blackscholes |   orig |       0 |
+   | blackscholes |  32768 |       0 |
+   | blackscholes |  65536 |       0 |
+   | blackscholes |  98304 |       0 |
+   | blackscholes | 131072 |       0 |
+   | blackscholes | 163840 |       0 |
+   | blackscholes | 196608 |       0 |
+   | blackscholes | 229376 |       0 |
+   | blackscholes | 262144 |       0 |
+   | bzip2        |   orig |       0 |
+   | bzip2        |  32768 |       0 |
+   | bzip2        |  65536 |       0 |
+   | bzip2        |  98304 |       0 |
+   | bzip2        | 131072 |       0 |
+   | bzip2        | 163840 |       0 |
+   | bzip2        | 196608 |       0 |
+   | bzip2        | 229376 |       0 |
+   | bzip2        | 262144 |       0 |
+   | fluidanimate |   orig | 0.00028 |
+   | fluidanimate |  32768 | 0.00026 |
+   | fluidanimate |  65536 | 0.00028 |
+   | fluidanimate |  98304 | 0.00026 |
+   | fluidanimate | 131072 | 0.00027 |
+   | fluidanimate | 163840 | 0.00026 |
+   | fluidanimate | 196608 | 0.00024 |
+   | fluidanimate | 229376 | 0.00025 |
+   | fluidanimate | 262144 | 0.00024 |
+   | freqmine     |   orig |   8e-05 |
+   | freqmine     |   9472 |   7e-05 |
+   | freqmine     |  18944 |   7e-05 |
+   | freqmine     |  28416 |   7e-05 |
+   | freqmine     |  37888 |   7e-05 |
+   | freqmine     |  47360 |   7e-05 |
+   | freqmine     |  56832 |   8e-05 |
+   | freqmine     |  66304 |   7e-05 |
+   | freqmine     |  75776 |   7e-05 |
+   | swaptions    |   orig | 0.00092 |
+   | swaptions    |  32768 | 0.00084 |
+   | swaptions    |  65536 | 0.00066 |
+   | swaptions    |  98304 |  0.0006 |
+   | swaptions    | 131072 | 0.00052 |
+   | swaptions    | 163840 | 0.00051 |
+   | swaptions    | 196608 | 0.00052 |
+   | swaptions    | 229376 | 0.00051 |
+   | swaptions    | 262144 |  0.0005 |
+
 ** TODO Complete test suites for some benchmarks
 Ideally at least one or two from each group of benchmark programs.
 Spec has some open-source programs (e.g., perl, gcc, bzip) which could
@@ -490,7 +618,7 @@ We could use the "bubble" and the "reporter" from [[#mars2011bubble]].
 Measuring the values of HW counters against the bubble could give us
 coefficients for a memory linear model.
 
-** TODO Find Warehouse Compute Benchmark Applications
+** CANCELED Find Warehouse Compute Benchmark Applications
 ** TODO Run Experiments
 | benchmark    | Energy UVA | Energy UNM | Memory UVA | Memory UNM |
 |--------------+------------+------------+------------+------------|
@@ -518,6 +646,26 @@ coefficients for a memory linear model.
 ** TODO Build table results table
 ** TODO Analyze Optimizations
 ** TODO Build optimization Taxonomy
+* Issues [1/2]
+** TODO Running out of memory
+** DONE SB-INT:BUG
+This was caused by running the room function, should no longer be a
+problem.
+
+: debugger invoked on a SB-INT:BUG in thread
+: #<THREAD RUNNING {1007754DD3}>:
+:     failed AVER:
+:       (OR (EQL (ROOM-INFO-LENGTH INFO) (1+ #)) (FLOATP OBJ)
+:           (SIMPLE-ARRAY-NIL-P OBJ))
+:   This is probably a bug in SBCL itself. (Alternatively, SBCL might have been
+:   corrupted by bad user code, e.g. by an undefined Lisp operation like
+:   (FMAKUNBOUND 'COMPILE), or by stray pointers from alien code or from unsafe
+:   Lisp code; or there might be a bug in the OS or hardware that SBCL is running
+:   on.) If it seems to be a bug in SBCL itself, the maintainers would like to
+:   know about it. Bug reports are welcome on the SBCL mailing lists, which you
+:   can find at <http://sbcl.sourceforge.net/>.
+: 
+
 * Setup and Reproduction Instructions
 The following instructions may be used to reproduce and expand upon
 these results.

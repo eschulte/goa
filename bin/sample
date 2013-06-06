@@ -1,0 +1,18 @@
+#!/bin/bash
+#
+# Usage: sample RESULTS-DIR NUM-SAMPLES
+#   return NUM-SAMPLES taken from the best in RESULTS-DIR
+#
+. $(dirname $0)/common
+if [ $# -lt 2 ];then help; fi
+
+dir=$1
+num=$2
+
+checks=$(ls $dir/best-*.store|sed 's/^.*best-//;s/.store//'|sort -n)
+num_checks=$(echo "$checks"|wc -l)
+step_size=$(($num_checks / $num))
+
+for i in $(seq 1 $num);do
+    echo "$dir/best-$(echo "$checks"|head -$(($i * $step_size))|tail -1).store"
+done

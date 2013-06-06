@@ -261,19 +261,12 @@ EOF
                 g++ $FULL_FLAGS -S all.cpp -o ${bench}.s||error "compilation failed"
                 ;;
             vips)
-                set_flags "-DHAVE_CONFIG_H"
-                tmp=$(mktemp)
-                pushd "$BASE"/benchmarks/parsec-3.0/pkgs/apps/$bench/src/tools/iofuncs >/dev/null
-                gcc -I. \
-                    -I../.. \
-                    -I../../libvips/include \
-                    -I../../../../../libs/libxml2/inst/amd64-linux.gcc/include/libxml2 \
-                    -I../../../../../libs/glib/inst/amd64-linux.gcc/lib/glib-2.0/include \
-                    -I../../../../../libs/glib/inst/amd64-linux.gcc/include/glib-2.0 \
-                    -I../../../obj/amd64-linux.gcc \
-                    $FULL_FLAGS -S vips.c -o $tmp ||error "compilation failed"
-                popd >/dev/null
-                mv $tmp ${bench}.s
+                if [ ! "$FLAGS" == "all" ] || [ ! -z "$FULL_FLAGS" ];then
+                    warning "$bench does not support special flags"
+                fi
+                VBASE="$BASE"/benchmarks/parsec-3.0/pkgs/apps/vips/
+                "$BASE"/bin/libvips.sh $VBASE
+                cp "$VBASE"/src/tools/iofuncs/some_libvips.s $bench.s
                 ;;
             x264) not_implemented $bench ;;
             
@@ -395,23 +388,15 @@ link(){
                 g++ $FLAGS ${bench}.s -o $bench||error "linking failed"
                 ;;
             vips)
-                FLAGS="-DHAVE_CONFIG_H -DG_DISABLE_CAST_CHECKS "
-                FLAGS+="-lgobject-2.0 -lgthread-2.0 -pthread "
-                FLAGS+="-lvips -lm -lstdc++ -lxml2 "
-                FLAGS+="-lgmodule-2.0 -ldl -lglib-2.0"
-                
-                lbase="$BASE"/benchmarks/parsec-3.0/pkgs
-
-                ldirs="-L/usr/lib64 -L/usr/lib "
-                ldirs+="-L${lbase}/apps/vips/inst/amd64-linux.gcc/lib "
-                ldirs+="-L${lbase}/libs/glib/inst/amd64-linux.gcc/lib "
-                ldirs+="-L${lbase}/libs/zlib/inst/amd64-linux.gcc/lib "
-                ldirs+="-L${lbase}/libs/glib/inst/amd64-linux.gcc/lib "
-                ldirs+="-L${lbase}/libs/zlib/inst/amd64-linux.gcc/lib "
-                ldirs+="-L${lbase}/libs/glib/inst/amd64-linux.gcc/lib "
-                ldirs+="-L${lbase}/libs/libxml2/inst/amd64-linux.gcc/lib"
-
-                gcc $ldirs ${bench}.s -o $bench $FLAGS||error "linking failed"
+                if [ ! "$FLAGS" == "all" ] || [ ! -z "$FULL_FLAGS" ];then
+                    warning "$bench does not support special flags"
+                fi
+                VBASE="$BASE"/benchmarks/parsec-3.0/pkgs/apps/vips/
+                VEXE="$VBASE"/src/tools/iofuncs/vips
+                if [ ! -f "$VEXE" ];then
+                    "$BASE"/bin/libvips.sh $VBASE
+                fi
+                cp "$VEXE" $bench
                 ;;
 
             ## SPEC

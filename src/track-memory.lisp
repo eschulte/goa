@@ -17,9 +17,8 @@
     (format out "~&~%;;----------------------------------------~%~S~%"
             (list *fitness-evals*
                   (length (to-bytes *consolidated-edits*))
-                  (length (to-bytes (car *population*)))))
-    (let ((*standard-output* out)) (room))
-    (flush ))
+                  (length (to-bytes (car *population*)))
+                  (sb-vm::type-breakdown :dynamic))))
   (checkpoint))
 
 (setf *checkpoint-func* #'memory-checkpoint)

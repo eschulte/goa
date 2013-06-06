@@ -1,6 +1,7 @@
 REMOTES
 optimize
 optimize*
+objread
 calc-energy
 *limit
 *.in

@@ -2,13 +2,14 @@
 
 ;; Copyright (C) 2013  Eric Schulte
 
-;; run with the optimize script with something like the following
-;; optimize bzip2.s bzip2 -e "(defvar optimize::*port* 4000)" -c dist-conf.lisp
-
 ;;; Commentary:
 
 ;; The following code assumes that the compiler flag has been saved
 ;; into the `flag' variable.
+;; 
+;; Run with the optimize script with something like the following
+;; 
+;;     optimize bzip2.s bzip2 -e "(defvar flag 'O0)" -c by-flag.lisp
 
 ;;; Code:
 (in-package :optimize)

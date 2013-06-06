@@ -209,7 +209,9 @@ case $BENCHMARK in
         run 0 $EXECUTABLE im_benchmark "$INPUT" $tmp
         EXIT=$?
         mv $tmp $OUT
-        if diff $OUT $OUTPUT;then
+        if diff \
+            <(grep --binary-file=text -v im_benchmark $OUT) \
+            <(grep --binary-file=text -v im_benchmark $OUTPUT);then
             ERROR=0;
         else
             ERROR=1;
