@@ -5,7 +5,8 @@
 . $(dirname $0)/common
 
 ASM=$1
-EXE=$2
+if [ "$2" == "-o" ];then EXE=$3; else EXE=$2; fi
+
 DIR=$(mktemp -d)
 
 PKGS="$BASE"/benchmarks/parsec-3.0/pkgs
