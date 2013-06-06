@@ -503,6 +503,70 @@ Modeling kwh
      done
    #+end_src
 
+7. Collect energy metrics for each program.
+   #+begin_src sh :dir results/energy-final-metrics/
+     mean(){
+         awk '{
+             for (i=1; i<=NF; i++)
+             {
+                 if($i ~ /[0-9.]/){sum[i] += $i; count[i]++}
+                     if(i == 1){ line = sum[i]/count[i] }else{ line = line " " sum[i]/count[i]}
+             }
+             print line
+         }'; }
+     
+     for prog in $(find ./ -perm 755);do
+         echo "$(basename $prog|cut -d- -f1) $(basename $prog|cut -d- -f2) $(cat $prog*csv|grep -v time|cut -d, -f5|mean|tail -1)"
+     done
+   #+end_src
+
+   #+RESULTS:
+   | blackscholes |   orig |       0 |
+   | blackscholes |  32768 |       0 |
+   | blackscholes |  65536 |       0 |
+   | blackscholes |  98304 |       0 |
+   | blackscholes | 131072 |       0 |
+   | blackscholes | 163840 |       0 |
+   | blackscholes | 196608 |       0 |
+   | blackscholes | 229376 |       0 |
+   | blackscholes | 262144 |       0 |
+   | bzip2        |   orig |       0 |
+   | bzip2        |  32768 |       0 |
+   | bzip2        |  65536 |       0 |
+   | bzip2        |  98304 |       0 |
+   | bzip2        | 131072 |       0 |
+   | bzip2        | 163840 |       0 |
+   | bzip2        | 196608 |       0 |
+   | bzip2        | 229376 |       0 |
+   | bzip2        | 262144 |       0 |
+   | fluidanimate |   orig | 0.00028 |
+   | fluidanimate |  32768 | 0.00026 |
+   | fluidanimate |  65536 | 0.00028 |
+   | fluidanimate |  98304 | 0.00026 |
+   | fluidanimate | 131072 | 0.00027 |
+   | fluidanimate | 163840 | 0.00026 |
+   | fluidanimate | 196608 | 0.00024 |
+   | fluidanimate | 229376 | 0.00025 |
+   | fluidanimate | 262144 | 0.00024 |
+   | freqmine     |   orig |   8e-05 |
+   | freqmine     |   9472 |   7e-05 |
+   | freqmine     |  18944 |   7e-05 |
+   | freqmine     |  28416 |   7e-05 |
+   | freqmine     |  37888 |   7e-05 |
+   | freqmine     |  47360 |   7e-05 |
+   | freqmine     |  56832 |   8e-05 |
+   | freqmine     |  66304 |   7e-05 |
+   | freqmine     |  75776 |   7e-05 |
+   | swaptions    |   orig | 0.00092 |
+   | swaptions    |  32768 | 0.00084 |
+   | swaptions    |  65536 | 0.00066 |
+   | swaptions    |  98304 |  0.0006 |
+   | swaptions    | 131072 | 0.00052 |
+   | swaptions    | 163840 | 0.00051 |
+   | swaptions    | 196608 | 0.00052 |
+   | swaptions    | 229376 | 0.00051 |
+   | swaptions    | 262144 |  0.0005 |
+
 ** TODO Complete test suites for some benchmarks
 Ideally at least one or two from each group of benchmark programs.
 Spec has some open-source programs (e.g., perl, gcc, bzip) which could
