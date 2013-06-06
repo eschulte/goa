@@ -4,8 +4,16 @@
 #
 . $(dirname $0)/common
 
-ASM=$1
-if [ "$2" == "-o" ];then EXE=$3; else EXE=$2; fi
+if [ "$1" == "-o" ];then
+    EXE=$2; ASM=$3;
+else
+    ASM=$1
+    if [ "$2" == "-o" ];then
+        EXE=$3;
+    else
+        EXE=$2;
+    fi
+fi
 
 DIR=$(mktemp -d)
 
