@@ -646,6 +646,26 @@ coefficients for a memory linear model.
 ** TODO Build table results table
 ** TODO Analyze Optimizations
 ** TODO Build optimization Taxonomy
+* Issues [1/2]
+** TODO Running out of memory
+** DONE SB-INT:BUG
+This was caused by running the room function, should no longer be a
+problem.
+
+: debugger invoked on a SB-INT:BUG in thread
+: #<THREAD RUNNING {1007754DD3}>:
+:     failed AVER:
+:       (OR (EQL (ROOM-INFO-LENGTH INFO) (1+ #)) (FLOATP OBJ)
+:           (SIMPLE-ARRAY-NIL-P OBJ))
+:   This is probably a bug in SBCL itself. (Alternatively, SBCL might have been
+:   corrupted by bad user code, e.g. by an undefined Lisp operation like
+:   (FMAKUNBOUND 'COMPILE), or by stray pointers from alien code or from unsafe
+:   Lisp code; or there might be a bug in the OS or hardware that SBCL is running
+:   on.) If it seems to be a bug in SBCL itself, the maintainers would like to
+:   know about it. Bug reports are welcome on the SBCL mailing lists, which you
+:   can find at <http://sbcl.sourceforge.net/>.
+: 
+
 * Setup and Reproduction Instructions
 The following instructions may be used to reproduce and expand upon
 these results.
