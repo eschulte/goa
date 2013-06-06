@@ -8,7 +8,7 @@
 #  -p,--perf ------ collect performance counters
 #  -c,--counters -- comma separated list of perf counters
 #  -w,--wattsup --- collect watts-up data during execution
-#  -r,--repeat N -- ask perf to repeat N times
+#  -r,--repeat N -- repeat the execution N times
 #  -R,--raw ------- print raw output
 #  -s,--size ------ input size test,tiny,small,medium,large
 #  -d,--debug ----- print commands before running them
@@ -60,7 +60,7 @@ while [ $# -gt 0 ];do
     case $1 in
         -l|--limit) LIMIT="$2"; shift;;
         -p|--perf)  PERF="yes";;
-        -r|--repeat) PERF="yes"; REPEAT="$2"; shift;;
+        -r|--repeat) REPEAT="$2"; shift;;
         -c|--counters) PERF="yes"; COUNTERS="$2"; shift;;
         -w|--wattsup) WATTSUP="yes";;
         -R|--raw) RAW="yes";;
@@ -128,6 +128,13 @@ num_diff(){ # diff of aggregate numerical closeness
 run(){ # run, first argument picks an output stream to return
     local out=$1; shift;
     if [ ! -z $DEBUG ];then echo "$PREFIX $@" >&2; fi
+    # possibly to multiple runs
+    if [ -z $PERF ] && [ ! -z $REPEAT ];then
+        for i in $(seq $(($REPEAT - 1)));do
+            $PREFIX $@ 1>/dev/null 2>/dev/null
+        done
+    fi
+    # then do the run that counts
     if [ $out -eq 1 ];then
         $PREFIX $@ 2>/dev/null
     elif [ $out -eq 2 ];then
