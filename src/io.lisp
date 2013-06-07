@@ -26,8 +26,10 @@
       (end-of-file ()
         (format t "server-error: end-of-file~%")))))
 
-(defun accept (&key (port *port*))
-  "Accept and `incorporate' any incoming individuals on PORT."
+(defun accept (&key (port *port*) (incorporate incorporate))
+  "Accept and INCORPORATE any incoming individuals on PORT.
+INCORPORATE will be called to incorporate received objects into the
+`*population*', if not specified the `incorporate' function is used."
   (with-open-socket (server :connect :passive :type :stream)
     ;; Bind the socket to all interfaces with specified port.
     (bind-address server +ipv4-unspecified+ :port port :reuse-addr t)
@@ -45,6 +47,6 @@
            (note 1 "connection from ~A:~A" who rport))
 
          ;; Process data from the client.
-         (handler-case (progn (incorporate (restore client))
+         (handler-case (progn (funcall incorporate (restore client))
                               (note 1 "incorporated"))
            (error (e) (note 1 "accept failed: ~S" e)))))))

@@ -50,5 +50,11 @@
 
 (setf *checkpoint-func* #'sharing-checkpoint)
 
+;; Lets try to get some more intra-individual flag mixing
+(defun heros-welcome (ind)
+  (mapc [#'incorporate {crossover ind}]
+        (loop :for i :below 12 :collect (tournament))))
+
 ;; Begin listening for shared individuals on flag-specified port.
-(sb-thread:make-thread (lambda () (accept :port (aget flag ports))))
+(sb-thread:make-thread (lambda () (accept :port (aget flag ports)
+                                     :incorporate #'heros-welcome)))
