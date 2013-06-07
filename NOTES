@@ -629,6 +629,7 @@ Just an exploratory test to see how this performs.  Running with bzip2.
    #+end_src
 
 *** analysis of results
+**** fittest individuals
 Collate all of the results files into one large text file.
 #+begin_src lisp
   (in-package :optimize)
@@ -663,6 +664,62 @@ Graph the improvement over time.
        "< grep O3 $data" u 2:3 w l title 'O3', \
        "< grep OS $data" u 2:3 w l title 'Os'
 #+end_src
+
+**** makeup of bests in each population
+For each of the bests, write out their percent makeup.
+
+1. best numbers
+   #+begin_src sh
+     for flag in O0 O1 O2 O3 OS;do
+         ls results/distributed-runs/bzip2/$flag/best-* \
+             |sed 's/^.*best-//;s/.store//'|sort -n \
+             > results/distributed-runs/bzip2/$flag.eval-nums
+     done
+   #+end_src
+
+2. For each flag, write out the composition of the best at each point
+   #+begin_src lisp
+     (in-package :optimize)
+     (defvar flag 'O0)
+     (load "src/by-flag.lisp")
+     
+     ;; read a file
+     (defvar flags (mapcar #'car ports))
+     (defvar base "results/distributed-runs/bzip2")
+     
+     (defun flag-compositions (flag)
+       (with-open-file (in (format nil "~a/~a.eval-nums" base flag))
+         (loop :for line = (read-line in nil nil) :while line :collect
+            (let* ((number (read-from-string line))
+                   (best (restore (format nil "~a/~a/best-~d.store"
+                                          base flag number))))
+              (cons (cons :evals number)
+                    (counts (mapcar [#'second {assoc :flag}] (genome best))
+                            :frac t))))))
+     
+     (defun compositions-to-file (flag comp)
+       (with-open-file (out (format nil "~a/~a.composition" base flag)
+                            :direction :output)
+         (format out "~{~{~f~^ ~}~^~%~}~%"
+                 (mapcar (lambda (list)
+                           (cons (aget :evals list)
+                                 (mapcar (lambda (it) (or it 0))
+                                         (mapcar {aget _ list} flags))))
+                         comp))))
+     
+     (mapc (lambda (flag) (compositions-to-file flag (flag-compositions flag))) flags)
+   #+end_src
+
+3. Plot these compositions
+   #+headers: :results silent
+   #+begin_src gnuplot :var data="results/distributed-runs/bzip2/O0.composition"
+     set key outside
+     set style fill solid
+     set style histogram rowstacked
+     set style data histograms
+     set xrange [0:1024]
+     plot data u 2 t 'O0', '' u 3 t 'O1', '' u 4 t 'O2', '' u 5 t 'O3', '' u 6 t 'Os'
+   #+end_src
 
 ** CANCELED Build a Memory Fitness Function
 We could use the "bubble" and the "reporter" from [[#mars2011bubble]].
