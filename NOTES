@@ -570,6 +570,18 @@ Modeling kwh
    | swaptions    | 229376 | 0.00051 |
    | swaptions    | 262144 |  0.0005 |
 
+*** auxiliary
+#+begin_src lisp :package optimize
+(defun ingest (file)
+  (with-open-file (in file :direction :input)
+    (apply #'mapcar #'cons
+           (loop :for line = (read-line in nil nil) :while line
+              :collect (let ((line (regex-replace-all "," line " ")))
+                         (read-from-string (format nil "(~a)" line)))))))
+
+(ingest "results/energy-final-metrics/swaptions-orig-0.csv")
+#+end_src
+
 ** TODO Complete test suites for some benchmarks
 Ideally at least one or two from each group of benchmark programs.
 Spec has some open-source programs (e.g., perl, gcc, bzip) which could
@@ -615,6 +627,31 @@ Just an exploratory test to see how this performs.  Running with bzip2.
              -e "(defvar flag '$flag)" -c src/by-flag.lisp &
      done   
    #+end_src
+
+*** analysis of results
+#+begin_src lisp
+  (in-package :optimize)
+  (defvar flag 'O0)
+  (load "src/by-flag.lisp")
+  
+  ;; read a file
+  (defun ingest (file)
+    (with-open-file (in file :direction :input)
+      (loop :for line = (read-line in nil nil) :while line
+         :collect (read-from-string (format nil "(~a)" line)))))
+  
+  (defvar base "results/distributed-runs/bzip2")
+  
+  ;; read and combine all files
+  (with-open-file (out (format nil "~a/all-stats.txt" base) :direction :output)
+    (format out "~{~{~a~^ ~}~^~%~}~%"
+            (mapcan (lambda-bind ((flag . stats))
+                      (mapcar [{cons flag} {subseq _ 0 2}] stats))
+                    (mapcar (lambda-bind ((flag . port))
+                              (cons flag (ingest (format nil "~a/~a/stats.txt"
+                                                         base flag))))
+                            ports))))
+#+end_src
 
 ** CANCELED Build a Memory Fitness Function
 We could use the "bubble" and the "reporter" from [[#mars2011bubble]].
