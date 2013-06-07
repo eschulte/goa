@@ -624,7 +624,8 @@ Just an exploratory test to see how this performs.  Running with bzip2.
    Kick off the five optimization threads.
    #+begin_src sh
      for flag in O0 O1 O2 O3 Os;do
-         optimize bzip2-dist/$flag.s bzip2 -t 12 -w sh-runner/work -r bzip2-dist \
+         optimize results/bzip2-dist/$flag.s bzip2 -t 12 -w sh-runner/work \
+             -r results/bzip2-dist \
              -e "(defvar flag '$flag)" -c src/by-flag.lisp &
      done   
    #+end_src
