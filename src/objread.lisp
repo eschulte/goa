@@ -25,10 +25,9 @@ Options:
       (let ((best (restore (arg-pop))))
         (getopts
          ("-l" "--link"   (phenome best :bin (arg-pop)))
-         ("-e" "--edits"  (format t "~S~%" (edits best)))
-         ("-s" "--stats"  (format t "~S~%" (stats best)))
-         ("-g" "--genome" (format t "~S~%" (genome best)))
-         ("-E" "--eval"   (format t "~S~%"
-                                  (eval `(let ((obj best))
-                                           ,@(read-from-string
-                                              (arg-pop)))))))))))
+         ("-e" "--edits"  (format t "~&~S~%" (edits best)))
+         ("-s" "--stats"  (format t "~&~S~%" (stats best)))
+         ("-g" "--genome" (format t "~&~S~%" (genome best)))
+         ("-E" "--eval"
+               (let ((form `(lambda (obj) ,(read-from-string (arg-pop)))))
+                 (format t "~&~S~%" (funcall (eval form) best)))))))))
