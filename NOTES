@@ -629,6 +629,7 @@ Just an exploratory test to see how this performs.  Running with bzip2.
    #+end_src
 
 *** analysis of results
+Collate all of the results files into one large text file.
 #+begin_src lisp
   (in-package :optimize)
   (defvar flag 'O0)
@@ -651,6 +652,16 @@ Just an exploratory test to see how this performs.  Running with bzip2.
                               (cons flag (ingest (format nil "~a/~a/stats.txt"
                                                          base flag))))
                             ports))))
+#+end_src
+
+Graph the improvement over time.
+#+headers: :results silent
+#+begin_src gnuplot :var data="results/distributed-runs/bzip2/all-stats.txt"
+  plot "< grep O0 $data" u 2:3 w l title 'O0', \
+       "< grep O1 $data" u 2:3 w l title 'O1', \
+       "< grep O2 $data" u 2:3 w l title 'O2', \
+       "< grep O3 $data" u 2:3 w l title 'O3', \
+       "< grep OS $data" u 2:3 w l title 'Os'
 #+end_src
 
 ** CANCELED Build a Memory Fitness Function
