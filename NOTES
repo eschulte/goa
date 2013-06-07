@@ -793,7 +793,7 @@ coefficients for a memory linear model.
 ** TODO Build table results table
 ** TODO Analyze Optimizations
 ** TODO Build optimization Taxonomy
-* Issues [1/2]
+* Issues [1/3]
 ** TODO Running out of memory
 ** DONE SB-INT:BUG
 This was caused by running the room function, should no longer be a
@@ -812,6 +812,12 @@ problem.
 :   know about it. Bug reports are welcome on the SBCL mailing lists, which you
 :   can find at <http://sbcl.sourceforge.net/>.
 : 
+
+** TODO Some multi-proc multi-threaded errors
+: debugger invoked on a POLL-ERROR in thread
+: #<THREAD RUNNING {10462AA273}>:
+:   Error caught while polling file descriptor 12: Unknown error
+: 2013.06.07.15.34.19: checkpoint after 60672 fitness evaluations
 
 * Setup and Reproduction Instructions
 The following instructions may be used to reproduce and expand upon
