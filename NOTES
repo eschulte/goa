@@ -717,7 +717,7 @@ For each of the bests, write out their percent makeup.
 
 3. Plot these compositions
    #+headers: :results silent
-   #+begin_src gnuplot :file etc/data/by-flag-sub-pop-compisition.svg
+   #+begin_src gnuplot :file /tmp/by-flag-sub-pop-comps.svg
      # data files
      O0="results/distributed-runs/bzip2/O0.composition"
      O1="results/distributed-runs/bzip2/O1.composition"
@@ -726,17 +726,17 @@ For each of the bests, write out their percent makeup.
      Os="results/distributed-runs/bzip2/OS.composition"
      
      # multiplot layout
-     set tmargin 2
+     set tmargin 1.5
      set bmargin 0
      set lmargin 5
-     set rmargin 12
+     set rmargin 5
      set multiplot layout 5,1 title "\nComposition of Sub-populations\n"
      
      # graph-wide options
      set style fill solid
      set style histogram rowstacked
      set style data histograms
-     set xrange [0:1024]
+     # set xrange [0:1024]
      unset title
      unset ytics
      unset xtics
@@ -759,6 +759,31 @@ For each of the bests, write out their percent makeup.
      
      unset multiplot
    #+end_src
+
+*** with better composition reporting and new naturalization
+#+begin_src lisp
+  (in-package :optimize)
+  (defvar flag 'O0)
+  (load "src/by-flag.lisp")
+  
+  ;; read a file
+  (defvar flags (mapcar #'car ports))
+  (defvar base "results/distributed-runs/bzip2")
+  
+  (defun cmps-for-flag (flag)
+    (with-open-file (out (format nil "~a/~a.composition" base flag)
+                         :direction :output)
+      ((lambda (cmps)
+         (format out "~{~{~f~^ ~}~^~%~}~%"
+                 (mapcar #'cons
+                         (mapcar #'car cmps)
+                         (mapcar [{mapcar #'cdr} #'collect #'cdr] cmps))))
+       (read-from-string
+        (format nil "(~a)" (file-to-string
+                            (format nil "~a/~a/cmp.lisp" base flag)))))))
+  
+  (mapc #'cmps-for-flag flags)
+#+end_src
 
 ** CANCELED Build a Memory Fitness Function
 We could use the "bubble" and the "reporter" from [[#mars2011bubble]].
