@@ -830,6 +830,22 @@ coefficients for a memory linear model.
 ** TODO Build optimization Taxonomy
 * Issues [1/3]
 ** TODO Running out of memory
+#+begin_quote
+I would suggest that your first stop should be the unglamorous ROOM
+and its more exotic cousin
+
+  (sb-vm::memory-usage :print-spaces t :print-summary nil)
+
+to figure out just what kind of objects you are leaking. If the answer
+is "instances", then
+
+  (sb-vm:instance-usage :dynamic :top-n 100)
+
+will tell you what kind of instances.
+
+...which will make tracking down the actual leak that much easier.
+#+end_quote
+
 ** DONE SB-INT:BUG
 This was caused by running the room function, should no longer be a
 problem.

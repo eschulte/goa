@@ -10,15 +10,21 @@
 
 (defun memory-checkpoint ()
   (with-open-file
-      (out (make-pathname :directory *res-dir* :name "memory" :type "txt")
+      (out (make-pathname :directory *res-dir* :name "memory" :type "lisp")
            :direction :output
            :if-exists :append
            :if-does-not-exist :create)
-    (format out "~&~%;;----------------------------------------~%~S~%"
+    (format out "~&~S~%"
             (list *fitness-evals*
-                  (length (to-bytes *consolidated-edits*))
-                  (length (to-bytes (car *population*)))
+                  (sb-vm::DYNAMIC-USAGE)
                   (sb-vm::type-breakdown :dynamic))))
+  ;; when interactive, quit running if dynamic space usage is too high
+  #+swank
+  (when (> (/ (sb-vm::DYNAMIC-USAGE) (sb-ext:dynamic-space-size)) 3/8)
+    (note 1 "Dynamic space usage is ~a/~a ~ ~f, pausing run!~%"
+          (sb-vm::DYNAMIC-USAGE) (sb-ext:dynamic-space-size)
+          (/ (sb-vm::DYNAMIC-USAGE) (sb-ext:dynamic-space-size)))
+    (setf *running* nil))
   (checkpoint))
 
 (setf *checkpoint-func* #'memory-checkpoint)
