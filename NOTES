@@ -770,9 +770,19 @@ For each of the bests, write out their percent makeup.
   (defvar flags (mapcar #'car ports))
   (defvar base "results/distributed-runs/bzip2")
   
+  (defun collect (it)
+    (let ((totals (mapcar {cons _ 0} flags)))
+      (mapcar (lambda (line)
+                (mapcar (lambda (f)
+                          (incf (cdr (assoc f totals))
+                                (or (cdr (assoc f line)) 0)))
+                        flags)) it)
+      (let ((total (reduce #'+ (mapcar #'cdr totals))))
+        (mapcar (lambda-bind ((obj . cnt)) (cons obj (/ cnt total))) totals))))
+  
   (defun cmps-for-flag (flag)
     (with-open-file (out (format nil "~a/~a.composition" base flag)
-                         :direction :output)
+                         :direction :output :if-exists :supersede)
       ((lambda (cmps)
          (format out "~{~{~f~^ ~}~^~%~}~%"
                  (mapcar #'cons
