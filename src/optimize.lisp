@@ -110,7 +110,7 @@
 
 (defun checkpoint ()
   (note 1 "checkpoint after ~a fitness evaluations~%" *fitness-evals*)
-  (sb-ext:gc :force t)
+  (sb-ext:gc :force t :full t)
   ;; save the best of the entire population
   (store (extremum *population* *fitness-predicate* :key #'fitness)
          (make-pathname :directory *res-dir*
