@@ -19,7 +19,7 @@
                   (sb-vm::DYNAMIC-USAGE)
                   (sb-vm::type-breakdown :dynamic))))
   ;; when interactive, quit running if dynamic space usage is too high
-  #+swank
+  #+nil ;; this throws the same error as room
   (when (> (/ (sb-vm::DYNAMIC-USAGE) (sb-ext:dynamic-space-size)) 3/8)
     (note 1 "Dynamic space usage is ~a/~a ~ ~f, pausing run!~%"
           (sb-vm::DYNAMIC-USAGE) (sb-ext:dynamic-space-size)
