@@ -15,20 +15,17 @@
 
 ;;; Memory analysis
 (defvar *bad* nil)
+(defvar *perf* nil)
 
-(let ((vector-cnt 0)
-      (cons-cnt 0)
-      (other-cnt 0))
+(let ((counter 0) (asm-counter 0))
   (sb-vm::map-allocated-objects
    (lambda (obj type size)
      (declare (ignorable type size))
      (typecase obj
-       (asm-perf (format t "main object"))
-       ((SIMPLE-VECTOR 256)
-        (incf vector-cnt)
-        (when (= vector-cnt 10)
-          (setf *bad* obj)))
-       (cons (incf cons-cnt))
-       (t (incf other-cnt))))
+       (asm-perf (incf asm-counter)
+                 (when (= asm-counter 200) (setf *perf* obj)))
+       ((SIMPLE-VECTOR 256))
+       (cons (incf counter) (when (= counter 3000000) (setf *bad* obj)))
+       (t)))
    :dynamic)
-  (list vector-cnt cons-cnt other-cnt))
+  asm-counter)
