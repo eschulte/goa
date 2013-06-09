@@ -20,11 +20,13 @@
     (note 1 "sharing ~S with ~A:~A" software host port)
     (handler-case (progn (store software socket) (finish-output socket))
       (socket-connection-reset-error ()
-        (format t "server-error: connection reset~%"))
+        (note 1 "server-error: connection reset"))
       (hangup ()
-        (format t "server-error: hangup~%"))
+        (note 1 "server-error: hangup"))
       (end-of-file ()
-        (format t "server-error: end-of-file~%")))))
+        (note 1 "server-error: end-of-file"))
+      (error (e)
+        (note 1 "transmission-error: ~S" e)))))
 
 (defun accept (&key (port *port*) (add-fn #'incorporate))
   "Accept and incorporate any incoming individuals on PORT.
@@ -39,14 +41,16 @@ ADD-FN will be called to incorporate received objects into the
     (note 1 "listening on ~a~%" port)
 
     ;; Keep accepting connections forever.
-    (loop
-       (with-accept-connection (client server :wait t)
+    (loop :while *running*
+       (handler-case
+           (with-accept-connection (client server :wait t)
 
-         ;; When we get a new connection, show who it is from.
-         (multiple-value-bind (who rport) (remote-name client)
-           (note 1 "connection from ~A:~A" who rport))
+             ;; When we get a new connection, show who it is from.
+             (multiple-value-bind (who rport) (remote-name client)
+               (note 1 "connection from ~A:~A" who rport))
 
-         ;; Process data from the client.
-         (handler-case (progn (funcall add-fn (restore client))
-                              (note 1 "incorporated"))
-           (error (e) (note 1 "accept failed: ~S" e)))))))
+             ;; Process data from the client.
+             (handler-case (progn (funcall add-fn (restore client))
+                                  (note 1 "incorporated"))
+               (error (e) (note 1 "accept failed: ~S" e))))
+         (error (e) (note 1 "bind failed: ~S" e))))))
