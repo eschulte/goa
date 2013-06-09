@@ -33,6 +33,15 @@
 ;; Periodically share individuals with a neighbor.
 (defun sharing-checkpoint ()
   (checkpoint)
+  ;; write out composition information
+  (let ((cmp-file (make-pathname :directory *res-dir* :name "cmp" :type "lisp"))
+        (cmps (mapcar [#'counts {mapcar [#'second {assoc :flag}]} #'genome]
+                      *population*)))
+    (with-open-file (out cmp-file
+                         :direction :output
+                         :if-exists :append
+                         :if-does-not-exist :create)
+      (format out "~S~%" (cons *fitness-evals* cmps))))
   ;; Share an individual with a neighbor 1/4 checkpoints.
   (let ((share-roll (random 4)))
     (when (zerop share-roll)
@@ -41,5 +50,11 @@
 
 (setf *checkpoint-func* #'sharing-checkpoint)
 
+;; Lets try to get some more intra-individual flag mixing
+(defun heros-welcome (ind)
+  (mapc [#'incorporate {crossover ind}]
+        (loop :for i :below 12 :collect (tournament))))
+
 ;; Begin listening for shared individuals on flag-specified port.
-(sb-thread:make-thread (lambda () (accept :port (aget flag ports))))
+(sb-thread:make-thread (lambda () (accept :port (aget flag ports)
+                                     :add-fn #'heros-welcome)))

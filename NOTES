@@ -100,8 +100,9 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 | 998.specrand   |
 | 999.specrand   |
 
-* Tasks [15/30]
+* Tasks [17/32]
 ** TODO find minimal input sizes for each program
+   DEADLINE: <2013-06-11 Tue>
 Need to estimate the variance in our energy predictions, which are
 linear combinations of HW counters, from variance in the HW counters.
 
@@ -294,6 +295,7 @@ Both at UVA on Intel and at UNM on AMD.
 Cycles is a proxy for time, so 0 counters should imply 0 kwh.
 
 *** TODO include last two benchmark programs [0/2]
+    DEADLINE: <2013-06-11 Tue>
 - [ ] x264 from parsec (compiled)
 - [ ] dealII from SPEC
 
@@ -444,7 +446,8 @@ Modeling kwh
 | constant         |  0.000410495 |
 
 *** TODO Intel Energy Model
-** TODO measure energy consumption of evolved programs
+** DONE measure energy consumption of evolved programs
+   DEADLINE: <2013-06-11 Tue>
 #+name: amd-results
 | results/swaptions-all |
 | results/bs-all        |
@@ -530,50 +533,63 @@ Modeling kwh
    | blackscholes | 196608 |       0 |
    | blackscholes | 229376 |       0 |
    | blackscholes | 262144 |       0 |
-   | bzip2        |   orig |       0 |
-   | bzip2        |  32768 |       0 |
-   | bzip2        |  65536 |       0 |
-   | bzip2        |  98304 |       0 |
-   | bzip2        | 131072 |       0 |
-   | bzip2        | 163840 |       0 |
-   | bzip2        | 196608 |       0 |
-   | bzip2        | 229376 |       0 |
-   | bzip2        | 262144 |       0 |
-   | fluidanimate |   orig | 0.00028 |
-   | fluidanimate |  32768 | 0.00026 |
-   | fluidanimate |  65536 | 0.00028 |
-   | fluidanimate |  98304 | 0.00026 |
-   | fluidanimate | 131072 | 0.00027 |
-   | fluidanimate | 163840 | 0.00026 |
-   | fluidanimate | 196608 | 0.00024 |
-   | fluidanimate | 229376 | 0.00025 |
-   | fluidanimate | 262144 | 0.00024 |
-   | freqmine     |   orig |   8e-05 |
-   | freqmine     |   9472 |   7e-05 |
-   | freqmine     |  18944 |   7e-05 |
-   | freqmine     |  28416 |   7e-05 |
-   | freqmine     |  37888 |   7e-05 |
-   | freqmine     |  47360 |   7e-05 |
-   | freqmine     |  56832 |   8e-05 |
-   | freqmine     |  66304 |   7e-05 |
-   | freqmine     |  75776 |   7e-05 |
-   | swaptions    |   orig | 0.00092 |
-   | swaptions    |  32768 | 0.00084 |
-   | swaptions    |  65536 | 0.00066 |
-   | swaptions    |  98304 |  0.0006 |
-   | swaptions    | 131072 | 0.00052 |
-   | swaptions    | 163840 | 0.00051 |
-   | swaptions    | 196608 | 0.00052 |
-   | swaptions    | 229376 | 0.00051 |
-   | swaptions    | 262144 |  0.0005 |
+   | bzip2        |   orig | 0.00032 |
+   | bzip2        |  32768 |  0.0003 |
+   | bzip2        |  65536 |  0.0003 |
+   | bzip2        |  98304 |  0.0003 |
+   | bzip2        | 131072 | 0.00029 |
+   | bzip2        | 163840 |  0.0003 |
+   | bzip2        | 196608 |  0.0003 |
+   | bzip2        | 229376 |  0.0003 |
+   | bzip2        | 262144 |  0.0003 |
+   | fluidanimate |   orig | 0.00734 |
+   | fluidanimate |  32768 | 0.00713 |
+   | fluidanimate |  65536 | 0.00714 |
+   | fluidanimate |  98304 | 0.00708 |
+   | fluidanimate | 131072 | 0.00697 |
+   | fluidanimate | 163840 | 0.00697 |
+   | fluidanimate | 196608 | 0.00679 |
+   | fluidanimate | 229376 | 0.00674 |
+   | fluidanimate | 262144 |  0.0067 |
+   | freqmine     |   orig |   0.002 |
+   | freqmine     |   9472 | 0.00196 |
+   | freqmine     |  18944 | 0.00198 |
+   | freqmine     |  28416 | 0.00199 |
+   | freqmine     |  37888 | 0.00191 |
+   | freqmine     |  47360 | 0.00192 |
+   | freqmine     |  56832 |   0.002 |
+   | freqmine     |  66304 | 0.00199 |
+   | freqmine     |  75776 |   0.002 |
+   | swaptions    |   orig | 0.02065 |
+   | swaptions    |  32768 | 0.01888 |
+   | swaptions    |  65536 |  0.0152 |
+   | swaptions    |  98304 | 0.01389 |
+   | swaptions    | 131072 |  0.0124 |
+   | swaptions    | 163840 | 0.01237 |
+   | swaptions    | 196608 | 0.01238 |
+   | swaptions    | 229376 | 0.01219 |
+   | swaptions    | 262144 | 0.01221 |
 
+*** auxiliary
+#+begin_src lisp :package optimize
+(defun ingest (file)
+  (with-open-file (in file :direction :input)
+    (apply #'mapcar #'cons
+           (loop :for line = (read-line in nil nil) :while line
+              :collect (let ((line (regex-replace-all "," line " ")))
+                         (read-from-string (format nil "(~a)" line)))))))
+
+(ingest "results/energy-final-metrics/swaptions-orig-0.csv")
+#+end_src
+
+** TODO measure runtime of evolved programs
 ** TODO Complete test suites for some benchmarks
 Ideally at least one or two from each group of benchmark programs.
 Spec has some open-source programs (e.g., perl, gcc, bzip) which could
 be good candidates.  Eric will look into some better tests for PARSEC
 programs.
 
-** distributed sub-pop by compiler flags
+** DONE distributed sub-pop by compiler flags
 Just an exploratory test to see how this performs.  Running with bzip2.
 
 1. Build five seeds with different optimization levels.
@@ -608,10 +624,176 @@ Just an exploratory test to see how this performs.  Running with bzip2.
    Kick off the five optimization threads.
    #+begin_src sh
      for flag in O0 O1 O2 O3 Os;do
-         optimize bzip2-dist/$flag.s bzip2 -t 12 -w sh-runner/work -r bzip2-dist \
+         optimize results/bzip2-dist/$flag.s bzip2 -t 12 -w sh-runner/work \
+             -r results/bzip2-dist \
              -e "(defvar flag '$flag)" -c src/by-flag.lisp &
      done   
    #+end_src
+
+*** analysis of results
+**** fittest individuals
+Collate all of the results files into one large text file.
+#+begin_src lisp
+  (in-package :optimize)
+  (defvar flag 'O0)
+  (load "src/by-flag.lisp")
+  
+  ;; read a file
+  (defun ingest (file)
+    (with-open-file (in file :direction :input)
+      (loop :for line = (read-line in nil nil) :while line
+         :collect (read-from-string (format nil "(~a)" line)))))
+  
+  (defvar base "results/distributed-runs/bzip2")
+  
+  ;; read and combine all files
+  (with-open-file (out (format nil "~a/all-stats.txt" base) :direction :output)
+    (format out "~{~{~a~^ ~}~^~%~}~%"
+            (mapcan (lambda-bind ((flag . stats))
+                      (mapcar [{cons flag} {subseq _ 0 2}] stats))
+                    (mapcar (lambda-bind ((flag . port))
+                              (cons flag (ingest (format nil "~a/~a/stats.txt"
+                                                         base flag))))
+                            ports))))
+#+end_src
+
+Graph the improvement over time.
+#+headers: :results silent
+#+headers: :file etc/data/by-flag-fitness-by-time.svg
+#+begin_src gnuplot :var data="results/distributed-runs/bzip2/all-stats.txt"
+  # set logscale x
+  # set logscale y
+  plot "< grep O0 $data" u 2:3 w l title 'O0', \
+       "< grep O1 $data" u 2:3 w l title 'O1', \
+       "< grep O2 $data" u 2:3 w l title 'O2', \
+       "< grep O3 $data" u 2:3 w l title 'O3', \
+       "< grep OS $data" u 2:3 w l title 'Os'
+#+end_src
+
+**** makeup of bests in each population
+For each of the bests, write out their percent makeup.
+
+1. best numbers
+   #+begin_src sh
+     for flag in O0 O1 O2 O3 OS;do
+         ls results/distributed-runs/bzip2/$flag/best-* \
+             |sed 's/^.*best-//;s/.store//'|sort -n \
+             > results/distributed-runs/bzip2/$flag.eval-nums
+     done
+   #+end_src
+
+2. For each flag, write out the composition of the best at each point
+   #+begin_src lisp
+     (in-package :optimize)
+     (defvar flag 'O0)
+     (load "src/by-flag.lisp")
+     
+     ;; read a file
+     (defvar flags (mapcar #'car ports))
+     (defvar base "results/distributed-runs/bzip2")
+     
+     (defun flag-compositions (flag)
+       (with-open-file (in (format nil "~a/~a.eval-nums" base flag))
+         (loop :for line = (read-line in nil nil) :while line :collect
+            (let* ((number (read-from-string line))
+                   (best (restore (format nil "~a/~a/best-~d.store"
+                                          base flag number))))
+              (cons (cons :evals number)
+                    (counts (mapcar [#'second {assoc :flag}] (genome best))
+                            :frac t))))))
+     
+     (defun compositions-to-file (flag comp)
+       (with-open-file (out (format nil "~a/~a.composition" base flag)
+                            :direction :output)
+         (format out "~{~{~f~^ ~}~^~%~}~%"
+                 (mapcar (lambda (list)
+                           (cons (aget :evals list)
+                                 (mapcar (lambda (it) (or it 0))
+                                         (mapcar {aget _ list} flags))))
+                         comp))))
+     
+     (mapc (lambda (flag) (compositions-to-file flag (flag-compositions flag))) flags)
+   #+end_src
+
+3. Plot these compositions
+   #+headers: :results silent
+   #+begin_src gnuplot :file /tmp/by-flag-sub-pop-comps.svg
+     # data files
+     O0="results/distributed-runs/bzip2/O0.composition"
+     O1="results/distributed-runs/bzip2/O1.composition"
+     O2="results/distributed-runs/bzip2/O2.composition"
+     O3="results/distributed-runs/bzip2/O3.composition"
+     Os="results/distributed-runs/bzip2/OS.composition"
+     
+     # multiplot layout
+     set tmargin 1.5
+     set bmargin 0
+     set lmargin 5
+     set rmargin 5
+     set multiplot layout 5,1 title "\nComposition of Sub-populations\n"
+     
+     # graph-wide options
+     set style fill solid
+     set style histogram rowstacked
+     set style data histograms
+     # set xrange [0:1024]
+     unset title
+     unset ytics
+     unset xtics
+     
+     # plots
+     set key above
+     set ylabel 'O0'
+     plot O0 u 2 t 'O0', '' u 3 t 'O1', '' u 4 t 'O2', '' u 5 t 'O3', '' u 6 t 'Os'
+     
+     set tmargin 0
+     unset key
+     set ylabel 'O1'
+     plot O1 u 2, '' u 3, '' u 4, '' u 5, '' u 6
+     set ylabel 'O2'
+     plot O2 u 2, '' u 3, '' u 4, '' u 5, '' u 6
+     set ylabel 'O3'
+     plot O3 u 2, '' u 3, '' u 4, '' u 5, '' u 6
+     set ylabel 'Os'
+     plot Os u 2:xtic(1), '' u 3, '' u 4, '' u 5, '' u 6
+     
+     unset multiplot
+   #+end_src
+
+*** with better composition reporting and new naturalization
+#+begin_src lisp
+  (in-package :optimize)
+  (defvar flag 'O0)
+  (load "src/by-flag.lisp")
+  
+  ;; read a file
+  (defvar flags (mapcar #'car ports))
+  (defvar base "results/distributed-runs/bzip2")
+  
+  (defun collect (it)
+    (let ((totals (mapcar {cons _ 0} flags)))
+      (mapcar (lambda (line)
+                (mapcar (lambda (f)
+                          (incf (cdr (assoc f totals))
+                                (or (cdr (assoc f line)) 0)))
+                        flags)) it)
+      (let ((total (reduce #'+ (mapcar #'cdr totals))))
+        (mapcar (lambda-bind ((obj . cnt)) (cons obj (/ cnt total))) totals))))
+  
+  (defun cmps-for-flag (flag)
+    (with-open-file (out (format nil "~a/~a.composition" base flag)
+                         :direction :output :if-exists :supersede)
+      ((lambda (cmps)
+         (format out "~{~{~f~^ ~}~^~%~}~%"
+                 (mapcar #'cons
+                         (mapcar #'car cmps)
+                         (mapcar [{mapcar #'cdr} #'collect #'cdr] cmps))))
+       (read-from-string
+        (format nil "(~a)" (file-to-string
+                            (format nil "~a/~a/cmp.lisp" base flag)))))))
+  
+  (mapc #'cmps-for-flag flags)
+#+end_src
 
 ** CANCELED Build a Memory Fitness Function
 We could use the "bubble" and the "reporter" from [[#mars2011bubble]].
@@ -646,11 +828,30 @@ coefficients for a memory linear model.
 ** TODO Build table results table
 ** TODO Analyze Optimizations
 ** TODO Build optimization Taxonomy
-* Issues [1/2]
+* Issues [1/3]
 ** TODO Running out of memory
+#+begin_quote
+I would suggest that your first stop should be the unglamorous ROOM
+and its more exotic cousin
+
+  (sb-vm::memory-usage :print-spaces t :print-summary nil)
+
+to figure out just what kind of objects you are leaking. If the answer
+is "instances", then
+
+  (sb-vm:instance-usage :dynamic :top-n 100)
+
+will tell you what kind of instances.
+
+...which will make tracking down the actual leak that much easier.
+#+end_quote
+
 ** DONE SB-INT:BUG
 This was caused by running the room function, should no longer be a
 problem.
+
+Caused by =room= and either =sb-ext:dynamic-space-size= or
+=sb-vm::DYNAMIC-USAGE=.
 
 : debugger invoked on a SB-INT:BUG in thread
 : #<THREAD RUNNING {1007754DD3}>:
@@ -665,6 +866,25 @@ problem.
 :   know about it. Bug reports are welcome on the SBCL mailing lists, which you
 :   can find at <http://sbcl.sourceforge.net/>.
 : 
+
+: debugger invoked on a SB-INT:BUG in thread
+: #<THREAD RUNNING {10E3291603}>:
+:     failed AVER:
+:       (OR (EQL (ROOM-INFO-LENGTH INFO) (1+ #)) (FLOATP OBJ)
+:           (SIMPLE-ARRAY-NIL-P OBJ))
+:   This is probably a bug in SBCL itself. (Alternatively, SBCL might have been
+:   corrupted by bad user code, e.g. by an undefined Lisp operation like
+:   (FMAKUNBOUND 'COMPILE), or by stray pointers from alien code or from unsafe
+:   Lisp code; or there might be a bug in the OS or hardware that SBCL is running
+:   on.) If it seems to be a bug in SBCL itself, the maintainers would like to
+:   know about it. Bug reports are welcome on the SBCL mailing lists, which you
+:   can find at <http://sbcl.sourceforge.net/>.
+
+** TODO Some multi-proc multi-threaded errors
+: debugger invoked on a POLL-ERROR in thread
+: #<THREAD RUNNING {10462AA273}>:
+:   Error caught while polling file descriptor 12: Unknown error
+: 2013.06.07.15.34.19: checkpoint after 60672 fitness evaluations
 
 * Setup and Reproduction Instructions
 The following instructions may be used to reproduce and expand upon
