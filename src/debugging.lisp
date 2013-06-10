@@ -61,13 +61,16 @@
                       (sb-vm:instance-usage space :top-n top-n)))
                   :remove-empty-subseqs t) 2))))
 
-(defun preview-output-streams (&optional (stream *standard-output*))
-  "Print the prefix of every allocated output stream."
+(defun preview-printable-type
+    (&key (type 'SB-IMPL::STRING-OUTPUT-STREAM) (stream *standard-output*))
+  "Print the prefix of every allocated output stream.
+In this case TYPE will generally be SB-IMPL::STRING-OUTPUT-STREAM (the
+default) or SIMPLE-CHARACTER-STRING."
   (let ((count 0) (biggest 0))
     (sb-vm::map-allocated-objects
      (lambda (obj this-type size)
        (declare (ignorable this-type size))
-       (when (typep obj 'SB-IMPL::STRING-OUTPUT-STREAM)
+       (when (typep obj )
          (incf count)
          (when (> (length (sb-impl::string-output-stream-buffer obj)) biggest)
            (setf biggest (length (sb-impl::string-output-stream-buffer obj))))
