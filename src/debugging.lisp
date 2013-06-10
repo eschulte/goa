@@ -29,3 +29,35 @@
        (t)))
    :dynamic)
   asm-counter)
+
+(defun top-memory-instances (space &key (top-n 15))
+  "Return a list of the TOP-N memory consuming instances in SPACE."
+  (mapcar (lambda (line)
+            (let ((re "^ *([^ ]\+): ([0-9,]\+) bytes, ([0-9,]\+) objects.$"))
+              (multiple-value-bind (whole matches) (scan-to-strings re line)
+                (declare (ignorable whole))
+                (let ((m (coerce matches 'list)))
+                  (cons (car m)
+                        (mapcar (lambda (l)
+                                  (parse-integer (regex-replace-all "," l "")))
+                                (cdr m)))))))
+          (cdr (butlast
+                (split-sequence #\Newline
+                  (with-output-to-string (out)
+                    (let ((*standard-output* out))
+                      (sb-vm:instance-usage space :top-n top-n)))
+                  :remove-empty-subseqs t) 2))))
+
+(defun preview-output-streams (&optional (stream *standard-output*))
+  "Print the prefix of every allocated output stream."
+  (let ((count 0))
+    (sb-vm::map-allocated-objects
+     (lambda (obj this-type size)
+       (declare (ignorable this-type size))
+       (when (typep obj 'SB-IMPL::STRING-OUTPUT-STREAM)
+         (incf count)
+         (format stream "~S~%"
+                 (subseq (sb-impl::string-output-stream-buffer obj)
+                         0 (min 40 (length (sb-impl::string-output-stream-buffer obj)))))))
+     :dynamic)
+    count))
