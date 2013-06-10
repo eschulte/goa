@@ -31,7 +31,6 @@
     (note 1 "Dynamic space usage is ~a/~a ~ ~f, pausing run!~%"
           (sb-vm::DYNAMIC-USAGE) (sb-ext:dynamic-space-size)
           (/ (sb-vm::DYNAMIC-USAGE) (sb-ext:dynamic-space-size)))
-    (setf *running* nil))
-  (checkpoint))
+    (setf *running* nil)))
 
-(setf *checkpoint-func* #'memory-checkpoint)
+(push #'memory-checkpoint *checkpoint-func*)

@@ -31,11 +31,13 @@ Options:
  -v,--verbose NUM ------ verbosity level 0-4
  -w,--work-dir DIR ----- use an sh-runner/work directory~%")
 
-(defvar *checkpoint-func* #'checkpoint "Function to record checkpoints.")
+(defvar *checkpoint-funcs* (list #'checkpoint)
+  "Functions to record checkpoints.")
 
 (defun do-optimize ()
   (evolve #'test :max-evals *evals*
-          :period *period* :period-func *checkpoint-func*))
+          :period *period*
+          :period-func (lambda () (mapc #'funcall *checkpoint-funcs*))))
 
 (setf *note-level* 1)
 
