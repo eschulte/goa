@@ -120,6 +120,9 @@ The HW counters are definitely correlated, so we should use something
 like the following.
 http://wikipedia.org/wiki/Variance#Sum_of_correlated_variables
 
+*** variance of sum
+
+
 *** correlations between counters
 #+begin_src sh
   ./bin/energy-corr.R results/energy-metrics/combined-benchmarks.csv
@@ -898,6 +901,8 @@ will tell you what kind of instances.
 |     160 | SB-C::DEBUG-SOURCE                        |
 
 *** h264 analysis
+h264 is not showing any real memory leak...
+
 #+begin_src sh
   instances(){
       cat etc/data/h264-memory/$1  \
@@ -905,31 +910,31 @@ will tell you what kind of instances.
           | sed 's/^ *//;s/: / /;s/ bytes,//;s/ objects//' \
           | sort; }
   
-  join <(instances 0.txt) <(instances 260.txt) \
+  join <(instances 0.txt) <(instances 2052.txt) \
       |awk '{print ($4-$2), $1}'|sort -rn|head -20
 #+end_src
 
 #+RESULTS:
-| 575 | ASM-PERF                                         |
-| 248 | Other                                            |
-| 112 | TWO-WAY-STREAM                                   |
-|  25 | Dynamic                                          |
-|   1 | SB-IMPL::CASE-FROB-STREAM                        |
-|   1 | SB-DI::COMPILED-DEBUG-VAR                        |
-|   1 | SB-DI::COMPILED-DEBUG-FUN                        |
-|   0 | SYNONYM-STREAM                                   |
-|   0 | SWANK-BACKEND::MAILBOX                           |
-|   0 | STRUCTURE-CLASS                                  |
-|   0 | STANDARD-METHOD                                  |
-|   0 | STANDARD-CLASS                                   |
-|   0 | SB-VM::SPECIALIZED-ARRAY-ELEMENT-TYPE-PROPERTIES |
-|   0 | SB-VM::ROOM-INFO                                 |
-|   0 | SB-VM::PRIM-OBJECT-SLOT                          |
-|   0 | SB-VM:PRIMITIVE-OBJECT                           |
-|   0 | SB-THREAD:WAITQUEUE                              |
-|   0 | SB-PRETTY:PRETTY-STREAM                          |
-|   0 | SB-PRETTY::PPRINT-DISPATCH-ENTRY                 |
-|   0 | SB-PRETTY::NEWLINE                               |
+| 958 | SB-THREAD:SEMAPHORE    |
+| 575 | ASM-PERF               |
+| 256 | SB-KERNEL:HAIRY-TYPE   |
+| 248 | Other                  |
+| 224 | TWO-WAY-STREAM         |
+|  80 | SB-C::FILE-INFO        |
+|  64 | SB-C::SOURCE-INFO      |
+|  64 | SB-C::NLX-INFO         |
+|  48 | SB-THREAD:MUTEX        |
+|  48 | SB-C::IR2-NLX-INFO     |
+|  46 | SB-C::REF              |
+|  37 | SB-C::LVAR             |
+|  32 | SB-PCL::DISPATCH       |
+|  32 | SB-C::VOP              |
+|  32 | SB-C::CTRAN            |
+|  30 | SB-C::LAMBDA-VAR       |
+|  28 | SB-THREAD:THREAD       |
+|  28 | SB-C::CLAMBDA          |
+|  25 | Dynamic                |
+|  22 | SB-KERNEL:NUMERIC-TYPE |
 
 ** DONE SB-INT:BUG
 This was caused by running the room function, should no longer be a
