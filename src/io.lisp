@@ -41,7 +41,7 @@ ADD-FN will be called to incorporate received objects into the
     (note 1 "listening on ~a~%" port)
 
     ;; Keep accepting connections forever.
-    (loop :while *running*
+    (loop :while *running* :do
        (handler-case
            (with-accept-connection (client server :wait t)
 
