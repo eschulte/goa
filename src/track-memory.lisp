@@ -18,11 +18,13 @@
             (list *fitness-evals*
                   (sb-vm::DYNAMIC-USAGE)
                   (sb-vm::type-breakdown :dynamic)))
-    (let ((*standard-output* out))
-      (format *standard-output* "~&#|~%")
-      (sb-vm::memory-usage :print-spaces t :print-summary nil)
-      (sb-vm:instance-usage :dynamic :top-n 200)
-      (format *standard-output* "~&|#~%")))
+    (handler-case
+        (let ((*standard-output* out))
+          (format *standard-output* "~&#|~%")
+          (sb-vm::memory-usage :print-spaces t :print-summary nil)
+          (sb-vm:instance-usage :dynamic :top-n 200)
+          (format *standard-output* "~&|#~%"))
+      (error (e) (note 1 "track-memory error: ~S" e))))
   ;; when interactive, quit running if dynamic space usage is too high
   #+nil ;; this throws the same error as room
   (when (> (/ (sb-vm::DYNAMIC-USAGE) (sb-ext:dynamic-space-size)) 3/8)
