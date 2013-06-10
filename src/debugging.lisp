@@ -50,14 +50,17 @@
 
 (defun preview-output-streams (&optional (stream *standard-output*))
   "Print the prefix of every allocated output stream."
-  (let ((count 0))
+  (let ((count 0) (biggest 0))
     (sb-vm::map-allocated-objects
      (lambda (obj this-type size)
        (declare (ignorable this-type size))
        (when (typep obj 'SB-IMPL::STRING-OUTPUT-STREAM)
          (incf count)
-         (format stream "~S~%"
+         (when (> (length (sb-impl::string-output-stream-buffer obj)) biggest)
+           (setf biggest (length (sb-impl::string-output-stream-buffer obj))))
+         (format stream "[~d] ~S~%"
+                 (length (sb-impl::string-output-stream-buffer obj))
                  (subseq (sb-impl::string-output-stream-buffer obj)
                          0 (min 40 (length (sb-impl::string-output-stream-buffer obj)))))))
      :dynamic)
-    count))
+    (cons count biggest)))
