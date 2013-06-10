@@ -238,9 +238,12 @@ case $BENCHMARK in
     # able to simply re-use their stuff.
     # 
     bzip2)
-        run 1 $EXECUTABLE -c "$INPUT" > $OUT
+        tmp=$(mktemp)
+        cp "$INPUT" $tmp
+        run 1 $EXECUTABLE -c $tmp > $OUT
         EXIT=$?
         ERROR=0
+        rm -f $tpm
         # compare compressed size to original compressed file
         if [ $(cat $OUT|wc -c) -gt $(cat $OUTPUT|wc -c) ];then
             ERROR=$(($ERROR + 1))
