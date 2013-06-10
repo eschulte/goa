@@ -33,4 +33,4 @@
           (/ (sb-vm::DYNAMIC-USAGE) (sb-ext:dynamic-space-size)))
     (setf *running* nil)))
 
-(push #'memory-checkpoint *checkpoint-func*)
+(push #'memory-checkpoint *checkpoint-funcs*)
