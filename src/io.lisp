@@ -15,18 +15,21 @@
 
 (defun share (software &key (host "localhost") (port *port*))
   "Push SOFTWARE to the server listening on PORT at HOST."
-  (with-open-socket (socket :connect :active :type :stream)
-    (connect socket (lookup-hostname host) :port port :wait t)
-    (note 1 "sharing ~S with ~A:~A" software host port)
-    (handler-case (progn (store software socket) (finish-output socket))
-      (socket-connection-reset-error ()
-        (note 1 "server-error: connection reset"))
-      (hangup ()
-        (note 1 "server-error: hangup"))
-      (end-of-file ()
-        (note 1 "server-error: end-of-file"))
-      (error (e)
-        (note 1 "transmission-error: ~S" e)))))
+  (handler-case
+      (with-open-socket (socket :connect :active :type :stream)
+        (connect socket (lookup-hostname host) :port port :wait t)
+        (note 1 "sharing ~S with ~A:~A" software host port)
+        (handler-case (progn (store software socket) (finish-output socket))
+          (socket-connection-reset-error ()
+            (note 1 "server-error: connection reset"))
+          (hangup ()
+            (note 1 "server-error: hangup"))
+          (end-of-file ()
+            (note 1 "server-error: end-of-file"))
+          (error (e)
+            (note 1 "transmission-error: ~S" e)))))
+  (error (e)
+         (note 1 "connection-error: ~S" e)))
 
 (defun accept (&key (port *port*) (add-fn #'incorporate))
   "Accept and incorporate any incoming individuals on PORT.
