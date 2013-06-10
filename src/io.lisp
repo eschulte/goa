@@ -35,6 +35,7 @@
   "Accept and incorporate any incoming individuals on PORT.
 ADD-FN will be called to incorporate received objects into the
 `*population*', if not specified the `incorporate' function is used."
+  (setf *running* t)
   (with-open-socket (server :connect :passive :type :stream)
     ;; Bind the socket to all interfaces with specified port.
     (bind-address server +ipv4-unspecified+ :port port :reuse-addr t)
