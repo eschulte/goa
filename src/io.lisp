@@ -27,9 +27,9 @@
           (end-of-file ()
             (note 1 "server-error: end-of-file"))
           (error (e)
-            (note 1 "transmission-error: ~S" e)))))
-  (error (e)
-         (note 1 "connection-error: ~S" e)))
+            (note 1 "transmission-error: ~S" e))))
+    (error (e)
+      (note 1 "connection-error: ~S" e))))
 
 (defun accept (&key (port *port*) (add-fn #'incorporate))
   "Accept and incorporate any incoming individuals on PORT.
