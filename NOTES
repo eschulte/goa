@@ -878,6 +878,40 @@ will tell you what kind of instances.
 |     224 | SB-PCL::CACHING                           |
 |     160 | SB-C::DEBUG-SOURCE                        |
 
+*** h264 analysis
+#+begin_src sh
+  instances(){
+      cat etc/data/h264-memory/$1  \
+          | sed -n '/Top 200 dynamic/,$p' \
+          | sed 's/^ *//;s/: / /;s/ bytes,//;s/ objects//' \
+          | sort; }
+  
+  join <(instances 0.txt) <(instances 260.txt) \
+      |awk '{print ($4-$2), $1}'|sort -rn|head -20
+#+end_src
+
+#+RESULTS:
+| 575 | ASM-PERF                                         |
+| 248 | Other                                            |
+| 112 | TWO-WAY-STREAM                                   |
+|  25 | Dynamic                                          |
+|   1 | SB-IMPL::CASE-FROB-STREAM                        |
+|   1 | SB-DI::COMPILED-DEBUG-VAR                        |
+|   1 | SB-DI::COMPILED-DEBUG-FUN                        |
+|   0 | SYNONYM-STREAM                                   |
+|   0 | SWANK-BACKEND::MAILBOX                           |
+|   0 | STRUCTURE-CLASS                                  |
+|   0 | STANDARD-METHOD                                  |
+|   0 | STANDARD-CLASS                                   |
+|   0 | SB-VM::SPECIALIZED-ARRAY-ELEMENT-TYPE-PROPERTIES |
+|   0 | SB-VM::ROOM-INFO                                 |
+|   0 | SB-VM::PRIM-OBJECT-SLOT                          |
+|   0 | SB-VM:PRIMITIVE-OBJECT                           |
+|   0 | SB-THREAD:WAITQUEUE                              |
+|   0 | SB-PRETTY:PRETTY-STREAM                          |
+|   0 | SB-PRETTY::PPRINT-DISPATCH-ENTRY                 |
+|   0 | SB-PRETTY::NEWLINE                               |
+
 ** DONE SB-INT:BUG
 This was caused by running the room function, should no longer be a
 problem.
