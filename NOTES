@@ -118,9 +118,28 @@ the smallest input which results in stable HW counters.
 
 The HW counters are definitely correlated, so we should use something
 like the following.
-http://en.wikipedia.org/wiki/Variance#Sum_of_correlated_variables
+http://wikipedia.org/wiki/Variance#Sum_of_correlated_variables
 
-*** blackscholes
+*** correlations between counters
+#+begin_src sh
+  ./bin/energy-corr.R results/energy-metrics/combined-benchmarks.csv
+#+end_src
+
+|                  |      time |       kwh |     watts |    cycles | instructions |    r533f00 | cache.references | cache.misses |       fops |       mem |
+|------------------+-----------+-----------+-----------+-----------+--------------+------------+------------------+--------------+------------+-----------|
+| time             | 1.0000000 | 0.9998898 | 0.3940147 | 0.9960861 |    0.8712129 | 0.73035026 |        0.8471467 |   0.19391254 | 0.73035026 | 0.8472130 |
+| kwh              | 0.9998898 | 1.0000000 | 0.3931483 | 0.9962569 |    0.8696761 | 0.72807567 |        0.8457947 |   0.19282785 | 0.72807567 | 0.8458599 |
+| watts            | 0.3940147 | 0.3931483 | 1.0000000 | 0.3930538 |    0.3599522 | 0.24647386 |        0.3530418 |   0.18568374 | 0.24647386 | 0.3532131 |
+| cycles           | 0.9960861 | 0.9962569 | 0.3930538 | 1.0000000 |    0.8781929 | 0.73041858 |        0.8602901 |   0.19068333 | 0.73041858 | 0.8603490 |
+| instructions     | 0.8712129 | 0.8696761 | 0.3599522 | 0.8781929 |    1.0000000 | 0.79738744 |        0.9468056 |   0.14760667 | 0.79738744 | 0.9467851 |
+| r533f00          | 0.7303503 | 0.7280757 | 0.2464739 | 0.7304186 |    0.7973874 | 1.00000000 |        0.6469583 |   0.05427842 | 1.00000000 | 0.6468804 |
+| cache.references | 0.8471467 | 0.8457947 | 0.3530418 | 0.8602901 |    0.9468056 | 0.64695825 |        1.0000000 |   0.17103341 | 0.64695825 | 0.9999991 |
+| cache.misses     | 0.1939125 | 0.1928278 | 0.1856837 | 0.1906833 |    0.1476067 | 0.05427842 |        0.1710334 |   1.00000000 | 0.05427842 | 0.1723629 |
+| fops             | 0.7303503 | 0.7280757 | 0.2464739 | 0.7304186 |    0.7973874 | 1.00000000 |        0.6469583 |   0.05427842 | 1.00000000 | 0.6468804 |
+| mem              | 0.8472130 | 0.8458599 | 0.3532131 | 0.8603490 |    0.9467851 | 0.64688045 |        0.9999991 |   0.17236293 | 0.64688045 | 1.0000000 |
+
+*** input size runs for specific benchmark programs
+**** blackscholes
 #+begin_src sh :results silent
   for size in test tiny small medium large;do
       mgmt clean blackscholes >&2
@@ -131,7 +150,7 @@ http://en.wikipedia.org/wiki/Variance#Sum_of_correlated_variables
   done > results/counter-by-size/blackscholes.txt
 #+end_src
 
-*** fluidanimate
+**** fluidanimate
 #+begin_src sh :results silent
   for size in test tiny small medium large;do
       mgmt clean fluidanimate >&2         

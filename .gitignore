@@ -17,5 +17,8 @@ sh-runner
 *.store
 results
 
+# Ignore R cruft
+.Rhistory
+
 # Ignore log files
 logs
