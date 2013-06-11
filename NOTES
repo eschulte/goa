@@ -100,7 +100,7 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 | 998.specrand   |
 | 999.specrand   |
 
-* Tasks [17/32]
+* Tasks [18/34]
 ** TODO find minimal input sizes for each program
    DEADLINE: <2013-06-11 Tue>
 Need to estimate the variance in our energy predictions, which are
@@ -120,101 +120,88 @@ The HW counters are definitely correlated, so we should use something
 like the following.
 http://wikipedia.org/wiki/Variance#Sum_of_correlated_variables
 
-*** variance of sum
-*** correlations between counters
-#+begin_src sh
-  ./bin/energy-corr.R results/energy-metrics/combined-benchmarks.csv
-#+end_src
-
-|                  |      time |       kwh |     watts |    cycles | instructions |    r533f00 | cache.references | cache.misses |       fops |       mem |
-|------------------+-----------+-----------+-----------+-----------+--------------+------------+------------------+--------------+------------+-----------|
-| time             | 1.0000000 | 0.9998898 | 0.3940147 | 0.9960861 |    0.8712129 | 0.73035026 |        0.8471467 |   0.19391254 | 0.73035026 | 0.8472130 |
-| kwh              | 0.9998898 | 1.0000000 | 0.3931483 | 0.9962569 |    0.8696761 | 0.72807567 |        0.8457947 |   0.19282785 | 0.72807567 | 0.8458599 |
-| watts            | 0.3940147 | 0.3931483 | 1.0000000 | 0.3930538 |    0.3599522 | 0.24647386 |        0.3530418 |   0.18568374 | 0.24647386 | 0.3532131 |
-| cycles           | 0.9960861 | 0.9962569 | 0.3930538 | 1.0000000 |    0.8781929 | 0.73041858 |        0.8602901 |   0.19068333 | 0.73041858 | 0.8603490 |
-| instructions     | 0.8712129 | 0.8696761 | 0.3599522 | 0.8781929 |    1.0000000 | 0.79738744 |        0.9468056 |   0.14760667 | 0.79738744 | 0.9467851 |
-| r533f00          | 0.7303503 | 0.7280757 | 0.2464739 | 0.7304186 |    0.7973874 | 1.00000000 |        0.6469583 |   0.05427842 | 1.00000000 | 0.6468804 |
-| cache.references | 0.8471467 | 0.8457947 | 0.3530418 | 0.8602901 |    0.9468056 | 0.64695825 |        1.0000000 |   0.17103341 | 0.64695825 | 0.9999991 |
-| cache.misses     | 0.1939125 | 0.1928278 | 0.1856837 | 0.1906833 |    0.1476067 | 0.05427842 |        0.1710334 |   1.00000000 | 0.05427842 | 0.1723629 |
-| fops             | 0.7303503 | 0.7280757 | 0.2464739 | 0.7304186 |    0.7973874 | 1.00000000 |        0.6469583 |   0.05427842 | 1.00000000 | 0.6468804 |
-| mem              | 0.8472130 | 0.8458599 | 0.3532131 | 0.8603490 |    0.9467851 | 0.64688045 |        0.9999991 |   0.17236293 | 0.64688045 | 1.0000000 |
-
-*** stats by input size
+*** DONE Step by step process
     :PROPERTIES:
     :shebang:  #!/bin/bash
     :END:
-#+begin_src sh :tangle stats-by-input
-  bench=$1
-  for size in test tiny small medium large;do
-      mgmt clean $bench >&2
-      mgmt output $bench -s $size >&2
-      echo ""
-      echo $size
-      for i in {1..30};do
-          run $bench benchmarks/$bench/$bench -s $size -p
-      done
-  done > results/counters-by-input-size/$bench.txt
-#+end_src
 
-clean up the stats by size
-#+begin_src sh :tangle clean-input-stats
-  bench=$1
-  for size in test tiny small medium large;do
-      cat results/counters-by-input-size/$bench.txt \
-          |sed -n "/$size/,/^$/p"|grep ","|sed 's/,/ /' \
-          |awk '{print $2, $1}'|sort \
-          > results/counters-by-input-size/$bench-$size.txt
-  done
-#+end_src
+1. Perform 30 runs collecting counters for each size.
+   #+begin_src sh :tangle stats-by-input
+     bench=$1
+     for size in test tiny small medium large;do
+         mgmt clean $bench >&2
+         mgmt output $bench -s $size >&2
+         echo ""
+         echo $size
+         for i in {1..30};do
+             run $bench benchmarks/$bench/$bench -s $size -p
+         done
+     done > results/counters-by-input-size/$bench.txt
+   #+end_src
 
-collect stats into something usable
-#+begin_src lisp
-  (in-package :optimize)
-  
-  (defun counters (bench size)
-    (let* ((base "results/counters-by-input-size")
-           (raw (file-to-string (format nil "~a/~a-~a.txt" base bench size)))
-           vals)
-      (mapc (lambda-bind ((counter count))
-              (if (assoc counter vals)
-                  (push count (cdr (assoc counter vals)))
-                  (push (list counter count) vals)))
-            (mapcar (lambda (list)
-                      (cons (make-keyword (string-upcase (car list)))
-                            (mapcar #'read-from-string (cdr list))))
-                    (mapcar {split-sequence #\Space}
-                            (split-sequence #\Newline raw
-                                            :remove-empty-subseqs t))))
-      vals))
-  
-  (defun covariance (a b)
-    (/ (reduce #'+ (mapcar #'*
-                           (mapcar {- _ (mean a)} a)
-                           (mapcar {- _ (mean b)} b)))
-       (- (length a) 1)))
-  
-  ;; http://en.wikipedia.org/wiki/Variance#Weighted_sum_of_variables
-  (defun weighted-sum-of-var (model samples)
-    "Return the weighted variance of MODEL given SAMPLES."
-    (let ((mod (mapcar (lambda-bind ((a b)) (cons b a)) model)))
-      (loop :for i :in (mapcar #'car mod) :summing
-         (loop :for j :in (mapcar #'car mod) :summing
-            (* (aget i mod) (aget j mod)
-               (covariance (aget i samples) (aget i samples)))))))
-  
-  (let ((benchmarks (list "blackscholes"))
-        (sizes (list "test" "tiny" "small" "medium" "large"))
-        (model amd-opteron-energy-model))
-    (cons (cons "" sizes)
-          (mapcar (lambda (b)
-                    (cons b (mapcar [{weighted-sum-of-var model} {counters b}]
-                                    sizes)))
-                  benchmarks)))
-#+end_src
+2. Clean up the stats and organize by size.
+   #+begin_src sh :tangle clean-input-stats
+     bench=$1
+     for size in test tiny small medium large;do
+         cat results/counters-by-input-size/$bench.txt \
+             |sed -n "/$size/,/^$/p"|grep ","|sed 's/,/ /' \
+             |awk '{print $2, $1}'|sort \
+             > results/counters-by-input-size/$bench-$size.txt
+     done
+   #+end_src
 
-#+RESULTS:
-|              |          test |          tiny |         small |        medium |         large |
-| blackscholes | 1.9632377e-14 | 1.3618151e-13 | 6.0662375e-13 | 1.6117804e-12 | 2.6060975e-11 |
+3. Using the architecture-specific model, calculate the variance of
+   the model for each size based on the counter values for that size.
+   Use the technique described in
+   [[http://en.wikipedia.org/wiki/Variance#Weighted_sum_of_variables][wikipedia/Variance#Weighted_sum_of_variables]].
+   #+begin_src lisp :var benchmark="blackscholes"
+     (in-package :optimize)
+
+     (defun counters (bench size)
+       (let* ((base "results/counters-by-input-size")
+              (raw (file-to-string (format nil "~a/~a-~a.txt" base bench size)))
+              vals)
+         (mapc (lambda-bind ((counter count))
+                 (if (assoc counter vals)
+                     (push count (cdr (assoc counter vals)))
+                     (push (list counter count) vals)))
+               (mapcar (lambda (list)
+                         (cons (make-keyword (string-upcase (car list)))
+                               (mapcar #'read-from-string (cdr list))))
+                       (mapcar {split-sequence #\Space}
+                               (split-sequence #\Newline raw
+                                               :remove-empty-subseqs t))))
+         vals))
+
+     (defun covariance (a b)
+       (/ (reduce #'+ (mapcar #'*
+                              (mapcar {- _ (mean a)} a)
+                              (mapcar {- _ (mean b)} b)))
+          (- (length a) 1)))
+
+     ;; http://en.wikipedia.org/wiki/Variance#Weighted_sum_of_variables
+     (defun weighted-sum-of-var (model samples)
+       "Return the weighted variance of MODEL given SAMPLES."
+       (let ((mod (mapcar (lambda-bind ((a b)) (cons b a)) model)))
+         (loop :for i :in (mapcar #'car mod) :summing
+            (loop :for j :in (mapcar #'car mod) :summing
+               (* (aget i mod) (aget j mod)
+                  (covariance (aget i samples) (aget i samples)))))))
+
+     (let ((sizes (list "test" "tiny" "small" "medium" "large"))
+           (model amd-opteron-energy-model))
+       (list sizes
+             (mapcar [{weighted-sum-of-var model} {counters benchmark}] sizes)))
+   #+end_src
+
+   #+RESULTS:
+   |          test |          tiny |         small |        medium |         large |
+   | 1.9632377e-14 | 1.3618151e-13 | 6.0662375e-13 | 1.6117804e-12 | 2.6060975e-11 |
+
+4. Find the mean calculated energy for each run.
+
+5. Pick the smallest input size which keeps variance within some
+   fraction of the output (TBD).
 
 **** fluidanimate
 #+begin_src sh :results silent
