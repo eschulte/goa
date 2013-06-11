@@ -121,8 +121,6 @@ like the following.
 http://wikipedia.org/wiki/Variance#Sum_of_correlated_variables
 
 *** variance of sum
-
-
 *** correlations between counters
 #+begin_src sh
   ./bin/energy-corr.R results/energy-metrics/combined-benchmarks.csv
@@ -141,17 +139,82 @@ http://wikipedia.org/wiki/Variance#Sum_of_correlated_variables
 | fops             | 0.7303503 | 0.7280757 | 0.2464739 | 0.7304186 |    0.7973874 | 1.00000000 |        0.6469583 |   0.05427842 | 1.00000000 | 0.6468804 |
 | mem              | 0.8472130 | 0.8458599 | 0.3532131 | 0.8603490 |    0.9467851 | 0.64688045 |        0.9999991 |   0.17236293 | 0.64688045 | 1.0000000 |
 
-*** input size runs for specific benchmark programs
-**** blackscholes
-#+begin_src sh :results silent
+*** stats by input size
+    :PROPERTIES:
+    :shebang:  #!/bin/bash
+    :END:
+#+begin_src sh :tangle stats-by-input
+  bench=$1
   for size in test tiny small medium large;do
-      mgmt clean blackscholes >&2
-      mgmt output blackscholes -s $size >&2
+      mgmt clean $bench >&2
+      mgmt output $bench -s $size >&2
       echo ""
       echo $size
-      run blackscholes benchmarks/blackscholes/blackscholes -s $size -r 30
-  done > results/counter-by-size/blackscholes.txt
+      for i in {1..30};do
+          run $bench benchmarks/$bench/$bench -s $size -p
+      done
+  done > results/counters-by-input-size/$bench.txt
 #+end_src
+
+clean up the stats by size
+#+begin_src sh :tangle clean-input-stats
+  bench=$1
+  for size in test tiny small medium large;do
+      cat results/counters-by-input-size/$bench.txt \
+          |sed -n "/$size/,/^$/p"|grep ","|sed 's/,/ /' \
+          |awk '{print $2, $1}'|sort \
+          > results/counters-by-input-size/$bench-$size.txt
+  done
+#+end_src
+
+collect stats into something usable
+#+begin_src lisp
+  (in-package :optimize)
+  
+  (defun counters (bench size)
+    (let* ((base "results/counters-by-input-size")
+           (raw (file-to-string (format nil "~a/~a-~a.txt" base bench size)))
+           vals)
+      (mapc (lambda-bind ((counter count))
+              (if (assoc counter vals)
+                  (push count (cdr (assoc counter vals)))
+                  (push (list counter count) vals)))
+            (mapcar (lambda (list)
+                      (cons (make-keyword (string-upcase (car list)))
+                            (mapcar #'read-from-string (cdr list))))
+                    (mapcar {split-sequence #\Space}
+                            (split-sequence #\Newline raw
+                                            :remove-empty-subseqs t))))
+      vals))
+  
+  (defun covariance (a b)
+    (/ (reduce #'+ (mapcar #'*
+                           (mapcar {- _ (mean a)} a)
+                           (mapcar {- _ (mean b)} b)))
+       (- (length a) 1)))
+  
+  ;; http://en.wikipedia.org/wiki/Variance#Weighted_sum_of_variables
+  (defun weighted-sum-of-var (model samples)
+    "Return the weighted variance of MODEL given SAMPLES."
+    (let ((mod (mapcar (lambda-bind ((a b)) (cons b a)) model)))
+      (loop :for i :in (mapcar #'car mod) :summing
+         (loop :for j :in (mapcar #'car mod) :summing
+            (* (aget i mod) (aget j mod)
+               (covariance (aget i samples) (aget i samples)))))))
+  
+  (let ((benchmarks (list "blackscholes"))
+        (sizes (list "test" "tiny" "small" "medium" "large"))
+        (model amd-opteron-energy-model))
+    (cons (cons "" sizes)
+          (mapcar (lambda (b)
+                    (cons b (mapcar [{weighted-sum-of-var model} {counters b}]
+                                    sizes)))
+                  benchmarks)))
+#+end_src
+
+#+RESULTS:
+|              |          test |          tiny |         small |        medium |         large |
+| blackscholes | 1.9632377e-14 | 1.3618151e-13 | 6.0662375e-13 | 1.6117804e-12 | 2.6060975e-11 |
 
 **** fluidanimate
 #+begin_src sh :results silent
