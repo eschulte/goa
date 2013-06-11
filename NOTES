@@ -944,7 +944,7 @@ coefficients for a memory linear model.
 ** TODO Build table results table
 ** TODO Analyze Optimizations
 ** TODO Build optimization Taxonomy
-* Issues [1/4]
+* Issues [2/4]
 ** TODO Running out of memory
 #+begin_quote
 I would suggest that your first stop should be the unglamorous ROOM
@@ -1087,7 +1087,8 @@ With a handler case printing out the errors
 : 2013.06.09.23.42.54: track-memory error: #<TYPE-ERROR expected-type: INTEGER
 :                                  datum: #<invalid object #x3200000039>>
 
-** TODO Some multi-proc multi-threaded errors
+** DONE Some multi-proc multi-threaded errors
+Wrapped the socket communication functions in error handlers.
 : debugger invoked on a POLL-ERROR in thread
 : #<THREAD RUNNING {10462AA273}>:
 :   Error caught while polling file descriptor 12: Unknown error
