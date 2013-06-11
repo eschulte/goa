@@ -102,7 +102,6 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 
 * Tasks [18/34]
 ** TODO find minimal input sizes for each program
-   DEADLINE: <2013-06-11 Tue>
 Need to estimate the variance in our energy predictions, which are
 linear combinations of HW counters, from variance in the HW counters.
 
@@ -120,7 +119,22 @@ The HW counters are definitely correlated, so we should use something
 like the following.
 http://wikipedia.org/wiki/Variance#Sum_of_correlated_variables
 
-*** DONE Step by step process
+*** TODO minimum input size for each program
+| Program      | size |
+|--------------+------|
+| blackscholes |      |
+| bodytrack    |      |
+| facesim      |      |
+| ferret       |      |
+| fluidanimate |      |
+| freqmine     |      |
+| raytrace     |      |
+| swaptions    |      |
+| vips         |      |
+| x264         |      |
+
+*** DONE Step by step process for energy minimization
+    DEADLINE: <2013-06-11 Tue>
     :PROPERTIES:
     :shebang:  #!/bin/bash
     :END:
