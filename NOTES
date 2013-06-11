@@ -579,6 +579,7 @@ Modeling kwh
    #+end_src
 
 7. Collect energy metrics for each program.
+   #+name: energy-reduction
    #+begin_src sh :dir results/energy-final-metrics/
      mean(){
          awk '{
@@ -595,7 +596,7 @@ Modeling kwh
      done
    #+end_src
 
-   #+RESULTS:
+   #+RESULTS: energy-reduction
    | blackscholes |   orig |       0 |
    | blackscholes |  32768 |       0 |
    | blackscholes |  65536 |       0 |
@@ -641,6 +642,35 @@ Modeling kwh
    | swaptions    | 196608 | 0.01238 |
    | swaptions    | 229376 | 0.01219 |
    | swaptions    | 262144 | 0.01221 |
+
+8. Reduction for each program
+   #+begin_src lisp :var in=energy-reduction
+     (setf all nil)
+     
+     (mapc (lambda-bind ((bench evals energy))
+             (let ((b (make-keyword (string-upcase bench))))
+               (if (assoc b all)
+                   (push energy (cdr (assoc b all)))
+                   (push (list b energy) all))))
+           (cdr in))
+     
+     (remove nil
+       (mapcar (lambda-bind ((bench . energies))
+                 (let ((top (extremum energies #'<))
+                       (bot (extremum energies #'>)))
+                   (unless (zerop top)
+                     (list bench (float (/ (- top bot) top))))))
+               all))
+   #+end_src
+
+   #+RESULTS:
+   | :SWAPTIONS    |   -0.6940114 |
+   | :BZIP2        | -0.103448264 |
+   | :FREQMINE     | -0.047120474 |
+   | :FLUIDANIMATE | -0.095522426 |
+   |---------------+--------------|
+   |               |  -0.23502564 |
+   #+TBLFM: @5$2=vmean(@1..@-1)
 
 *** auxiliary
 #+begin_src lisp :package optimize
