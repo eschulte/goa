@@ -4,7 +4,6 @@
 
 ;;; Code:
 (in-package :optimize)
-(require :hu.dwim.debug)
 
 (defun setup ()
   (setf *orig* (from-file (make-instance 'asm-perf)
@@ -62,16 +61,13 @@
                       (sb-vm:instance-usage space :top-n top-n)))
                   :remove-empty-subseqs t) 2))))
 
-(defun preview-printable-type
-    (&key (type 'SB-IMPL::STRING-OUTPUT-STREAM) (stream *standard-output*))
-  "Print the prefix of every allocated output stream.
-In this case TYPE will generally be SB-IMPL::STRING-OUTPUT-STREAM (the
-default) or SIMPLE-CHARACTER-STRING."
+(defun preview-printable-type (&optional (stream *standard-output*))
+  "Print the prefix of every allocated output stream."
   (let ((count 0) (biggest 0))
     (sb-vm::map-allocated-objects
      (lambda (obj this-type size)
        (declare (ignorable this-type size))
-       (when (typep obj )
+       (when (typep obj 'SB-IMPL::STRING-OUTPUT-STREAM)
          (incf count)
          (when (> (length (sb-impl::string-output-stream-buffer obj)) biggest)
            (setf biggest (length (sb-impl::string-output-stream-buffer obj))))
@@ -81,6 +77,29 @@ default) or SIMPLE-CHARACTER-STRING."
                          0 (min 40 (length (sb-impl::string-output-stream-buffer
                                             obj)))))))
      :dynamic)
+    (cons count biggest)))
+
+(defun browse-conses (space &key next size)
+  "Print selected allocated conses.
+Starting with the START cons, or the at least SIZE big."
+  (let ((count 0) (biggest 0) current-size)
+    (sb-vm::map-allocated-objects
+     (lambda (obj this-type this-size)
+       (declare (ignorable this-type this-size))
+       (when (typep obj 'cons)
+         (incf count)
+         (when (> this-size biggest) (setf biggest this-size))
+         ;; interactive section
+         (when (or (and next (= next count))
+                   (and size (>= this-size size)))
+           (format t "[~s,~s,~s] ~S~%"
+                   next size this-size obj)
+           (if next
+               (progn (format t "set next to: ")
+                      (setf next (ignore-errors (read))))
+               (progn (format t "set size to: ")
+                      (setf size (ignore-errors (read))))))))
+     space)
     (cons count biggest)))
 
 (defun print-memory (&optional (stream *standard-output*))
