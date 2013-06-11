@@ -171,8 +171,17 @@ class Model:
             for j, x in enumerate( self.xs ):
                 v += self.coeff[ j ] * self.data[ bmark ][ x ]
             target = self.data[ bmark ][ self.y ]
-            err = abs( v - target ) / target * 100
-            table.append( ( bmark + ":", target, v, err ) )
+            if self.y == "watts":
+                v *= self.data[ bmark ][ "time" ]
+                target *= self.data[ bmark ][ "time" ]
+            try:
+                err = abs( v - target ) / target * 100
+                if not math.isinf( err ):
+                    table.append( ( bmark + ":", target, v, err ) )
+                else:
+                    print "WARN: skipping bmark:", bmark
+            except:
+                pass
         return table
 
 def evalModel( values, target, varnames ):
