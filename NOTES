@@ -100,7 +100,7 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 | 998.specrand   |
 | 999.specrand   |
 
-* Tasks [18/34]
+* Tasks [18/35]
 ** TODO find minimal input sizes for each program
 Need to estimate the variance in our energy predictions, which are
 linear combinations of HW counters, from variance in the HW counters.
@@ -374,8 +374,14 @@ with an "r".
 *** DONE Intel energy model
 : perf stat -e cycles,instructions,r532010,r538010,cache-references,LLC-loads,LLC-stores
 
-** TODO Train Energy Models [1/5]
+** TODO Train Energy Models [1/6]
 Both at UVA on Intel and at UNM on AMD.
+
+*** TODO retrain the energy models with evolved individuals
+Use sampling used in [[#evolved-energy-consumption]], dump through objread
+to get stats, combine those stats with watts-up output in
+results/energy-final-metrics, combine *that* with original training
+data, and re-train the model.
 
 *** constrain the model to pass through the origin
 Cycles is a proxy for time, so 0 counters should imply 0 kwh.
@@ -534,6 +540,9 @@ Modeling kwh
 *** TODO Intel Energy Model
 ** DONE measure energy consumption of evolved programs
    DEADLINE: <2013-06-11 Tue>
+   :PROPERTIES:
+   :CUSTOM_ID: evolved-energy-consumption
+   :END:
 #+name: amd-results
 | results/swaptions-all |
 | results/bs-all        |

@@ -24,7 +24,10 @@ if('r533f00' %in% colnames(metrics))
 { fops <- metrics$r533f00; } else
 { fops <- rowSums(data.frame(metrics$r532010, metrics$r538010)); }
 
-mem <- rowSums(data.frame(metrics$cache.references, metrics$cache.misses));
+ipc <- metrics$instructions/metrics$cycles
+fpc <- fops/metrics$cycles
+cpc <- metrics$cache.references/metrics$cycles
+mpc <- metrics$cache.misses/metrics$cycles
 
 ## summary(lm(metrics$kwh ~ metrics$cycles + metrics$instructions + fops + mem))
-summary(lm(metrics$kwh ~ metrics$cycles + metrics$instructions + fops + metrics$cache.references + metrics$cache.misses))
+summary(lm(metrics$watts ~ ipc + fpc + cpc + mpc))
