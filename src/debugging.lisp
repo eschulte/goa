@@ -45,6 +45,7 @@
 
 (defun top-memory-instances (space &key (top-n 15))
   "Return a list of the TOP-N memory consuming instances in SPACE."
+  (sb-ext:gc :full t :force t)
   (mapcar (lambda (line)
             (let ((re "^ *([^ ]\+): ([0-9,]\+) bytes, ([0-9,]\+) objects.$"))
               (multiple-value-bind (whole matches) (scan-to-strings re line)
