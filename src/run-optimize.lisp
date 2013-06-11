@@ -37,7 +37,7 @@ Options:
 (defun do-optimize ()
   (evolve #'test :max-evals *evals*
           :period *period*
-          :period-func (lambda () (mapc #'funcall *checkpoint-funcs*))))
+          :period-fn (lambda () (mapc #'funcall *checkpoint-funcs*))))
 
 (setf *note-level* 1)
 

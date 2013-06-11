@@ -54,7 +54,7 @@ between it's output and the oracle output.")
        #'multi-obj
        :filter (lambda (var) (< (fitness var) (* 10 (fitness *orig*))))
        :period (expt 2 9)
-       :period-func
+       :period-fn
        (lambda ()
          ;; free memory before these memory-hog operations
          (sb-ext:gc :force t)

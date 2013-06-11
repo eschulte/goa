@@ -81,7 +81,7 @@
        #'multi-obj
        :filter #'neutralp
        :period (expt 2 7)
-       :period-func #'checkpoint
+       :period-fn #'checkpoint
        ))
     :name (format nil "opt-~d" i)))
 )
