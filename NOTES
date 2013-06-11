@@ -964,40 +964,58 @@ will tell you what kind of instances.
 |     160 | SB-C::DEBUG-SOURCE                        |
 
 *** h264 analysis
-h264 is not showing any real memory leak...
+**** breakdown of total space
+#+begin_src sh
+  instances(){
+      cat etc/data/h264-memory/$1  \
+          | sed -n '/Breakdown for dynamic space:/,/space total./p' \
+          | grep -v "Breakdown for dynamic space" \
+          | grep -v "space total." \
+          | sed 's/^ *//;s/,//g;s/bytes for \+[0-9]\+ //;s/ objects.//' \
+          | awk '{print $2, $1}' \
+          | sort; }
+  
+  join <(instances 0.txt) <(instances 14506.txt) \
+      |awk '{print ($2-$4), $1}'|sort -rn|head
+#+end_src
 
+#+RESULTS:
+| 430292496 | cons                          |
+|  70620400 | simple-character-string       |
+|  25039664 | instance                      |
+|  18791088 | code                          |
+|  14332816 | simple-vector                 |
+|   3639552 | symbol                        |
+|   3160016 | simple-array-unsigned-byte-64 |
+|   1842688 | simple-base-string            |
+|   1217472 | closure                       |
+|   1206144 | simple-bit-vector             |
+
+**** dynamic types
 #+begin_src sh
   instances(){
       cat etc/data/h264-memory/$1  \
           | sed -n '/Top 200 dynamic/,$p' \
+          | grep -v "Dynamic instance total" \
+          | grep -v "Other types" \
           | sed 's/^ *//;s/: / /;s/ bytes,//;s/ objects//' \
           | sort; }
   
-  join <(instances 0.txt) <(instances 2052.txt) \
-      |awk '{print ($4-$2), $1}'|sort -rn|head -20
+  join <(instances 0.txt) <(instances 14506.txt) \
+      |awk '{print ($4-$2), $1}'|sort -rn|head
 #+end_src
 
 #+RESULTS:
-| 958 | SB-THREAD:SEMAPHORE    |
-| 575 | ASM-PERF               |
-| 256 | SB-KERNEL:HAIRY-TYPE   |
-| 248 | Other                  |
-| 224 | TWO-WAY-STREAM         |
-|  80 | SB-C::FILE-INFO        |
-|  64 | SB-C::SOURCE-INFO      |
-|  64 | SB-C::NLX-INFO         |
-|  48 | SB-THREAD:MUTEX        |
-|  48 | SB-C::IR2-NLX-INFO     |
-|  46 | SB-C::REF              |
-|  37 | SB-C::LVAR             |
-|  32 | SB-PCL::DISPATCH       |
-|  32 | SB-C::VOP              |
-|  32 | SB-C::CTRAN            |
-|  30 | SB-C::LAMBDA-VAR       |
-|  28 | SB-THREAD:THREAD       |
-|  28 | SB-C::CLAMBDA          |
-|  25 | Dynamic                |
-|  22 | SB-KERNEL:NUMERIC-TYPE |
+| 240 | SB-C::FILE-INFO    |
+| 224 | TWO-WAY-STREAM     |
+| 192 | SB-C::SOURCE-INFO  |
+|  64 | SB-C::NLX-INFO     |
+|  61 | SB-THREAD:MUTEX    |
+|  50 | SB-C::REF          |
+|  48 | SB-C::IR2-NLX-INFO |
+|  44 | SB-C::VOP          |
+|  41 | SB-C::LVAR         |
+|  35 | SB-C::CTRAN        |
 
 ** DONE SB-INT:BUG
 This was caused by running the room function, should no longer be a
