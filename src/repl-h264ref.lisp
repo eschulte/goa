@@ -14,16 +14,10 @@
                  :collect (copy *orig*))
  *evals* (expt 2 10))
 
-(defun safe-test (asm)
-  (let ((used (/ (sb-vm::dynamic-usage) (sb-ext:dynamic-space-size))))
-    (format t "~f ~s~%" used *fitness-evals*)
-    (if (> used 1/2)
-        (prog1 infinity (setf *running* nil))
-        (test asm))))
-
 (defun proactive-gc ()
   (ignore-errors
     (let ((used (/ (sb-vm::dynamic-usage) (sb-ext:dynamic-space-size))))
+      (note 4 "~s ~f~%" *fitness-evals* used)
       (when (> used 1/2) (sb-ext:gc :force t :full t)))))
 
 (loop :for i :below 4 :do
