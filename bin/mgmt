@@ -110,11 +110,18 @@ unpack(){ # dispatch depending on benchmark suite
         msg "$bench/ exists"
     else
         if echo "${PARSEC_APPS[@]}"|grep -q $bench;then
-            mkdir -p "$bench_dir"
             case $bench in
-                bodytrack|vips|ferret|raytrace) ;;
-                *) cp -R "$BASE"/benchmarks/parsec-3.0/pkgs/apps/$bench/src/* "$bench_dir" ;;
+                bodytrack|facesim|ferret|raytrace|vips)
+                    env PATH="$BASE"/benchmarks/parsec-3.0/bin:"$PATH" \
+                        parsecmgmt -a build -p $bench \
+                    || error "parsecmgmt could not build $bench"
+                    ;;
+                *)
+                    # It won't hurt to call "mkdir -p" again later
+                    mkdir -p "$bench_dir"
+                    cp -R "$BASE"/benchmarks/parsec-3.0/pkgs/apps/$bench/src/* "$bench_dir" ;;
             esac
+            mkdir -p "$bench_dir"
         elif echo "${SPEC_APPS[@]}"|grep -q $bench;then
             SPEC_BENCH=$(echo "${SPEC_APPS[@]}"|tr ' ' '\n'|grep $bench)
             mkdir -p "$bench_dir"
@@ -190,17 +197,19 @@ compile(){
                 ;;
             facesim)
                 set_flags "-DENABLE_PTHREADS -DUSE_ALAMERE_TASKQ -DNDEBUG"
+                tmp=$(mktemp)
                 FACE_SOURCE=""
                 FACE_SOURCE+="FACE_DRIVER.cpp "
                 FACE_SOURCE+="FACE_LANDMARK_OPTIMIZATION_GOAL.cpp "
                 FACE_SOURCE+="FACE_OPTIMIZATION.cpp "
                 FACE_SOURCE+="LANDMARK_PROXIMITY_OPTIMIZATION.cpp "
                 FACE_SOURCE+="main.cpp"
-                pushd Benchmarks/facesim >/dev/null
+                pushd "$BASE"/benchmarks/parsec-3.0/pkgs/apps/$bench/src/Benchmarks/facesim >/dev/null
                 cat $FACE_SOURCE > all.cpp
-                g++ $FULL_FLAGS -S all.cpp -o ../../${bench}.s \
+                g++ $FULL_FLAGS -S all.cpp -o $tmp \
                     ||error "compilation failed"
                 popd >/dev/null
+                mv $tmp ${bench}.s
                 ;;
             ferret)
                 set_flags ""
@@ -272,14 +281,14 @@ EOF
             
             ## SPEC
             bzip2)
-                set_flags "" "-O3"
+                set_flags "" "-O3 -fno-inline"
                 $GCC_COMBINE -combine -S $FULL_FLAGS \
                     blocksort.c bzip2.c compress.c \
                     crctable.c decompress.c huffman.c randtable.c \
                     bzlib.c -o $bench.s||error "compilation failed"
                 ;;
             h264ref)
-                set_flags "" "-O3"
+                set_flags "" "-O3 -fno-inline"
                 ## cleaning
                 # delete lines 48-50 of macroblock.h
                 sed -i '48,50d' macroblock.h
@@ -322,7 +331,7 @@ link(){
                 g++ -lpthread ${bench}.s -o $bench||error "linking failed"
                 ;;
             bodytrack)
-                FLAGS="-lflex -lpthread -lthreads"
+                FLAGS="-lflex -lthreads -lpthread"
 
                 ldir="$BASE"/benchmarks/parsec-3.0/pkgs/apps/$bench/obj/amd64-linux.gcc
 
@@ -366,7 +375,7 @@ link(){
                 g++ -Wno-deprecated ${bench}.s -o $bench||error "linking failed"
                 ;;
             raytrace)
-                error "linking raytrace fails for me (ERIC)"
+                #error "linking raytrace fails for me (ERIC)"
                 FLAGS="-lglut -lGL -lGL -lGLU -lXmu -lXext -lXau -lX11 "
                 FLAGS+="-ldl -lpthread -lstdc++ -lpthread -lrt -rdynamic "
 
@@ -503,6 +512,7 @@ input(){
                     medium) convert -resize 800x1200 $tmp $target;;
                     large)  cp $tmp $target;;
                 esac
+                [ $? = 0 ] || error "input failed"
                 rm $tmp;;
 
             h264ref)
