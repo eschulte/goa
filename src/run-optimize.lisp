@@ -99,7 +99,10 @@ Options:
                                      :type "log")))
         (if (probe-file log-name)
             (throw-error "Log file already exists ~S.~%" log-name)
-            (push (open log-name :direction :output) *note-out*)))
+            (push
+             #+ccl (open log-name :direction :output :sharing :external)
+             #-ccl (open log-name :direction :output)
+             *note-out*)))
 
       (unless *model*
         (setf *model* (case (arch)
