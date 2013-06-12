@@ -109,3 +109,9 @@ Starting with the START cons, or the at least SIZE big."
     (sb-vm::memory-usage :print-spaces t :print-summary nil)
     (sb-vm:instance-usage :dynamic :top-n 200)
     (format *standard-output* "~&|#~%")))
+
+#+ccl
+(defun count-memory-objects ()
+  (let ((count 0))
+    (ccl:map-heap-objects (lambda (obj) (declare (ignorable obj)) (incf count)))
+    count))
