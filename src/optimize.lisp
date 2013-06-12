@@ -32,7 +32,7 @@
 
 (defun error-out ()
   #+sbcl (sb-ext:exit :code 1)
-  #+ccl (ccl:quit)
+  #+ccl (format t "done~%")
   #-(or ccl sbcl) (error "not implemented"))
 
 (defclass asm-perf (asm)
