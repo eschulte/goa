@@ -383,6 +383,21 @@ to get stats, combine those stats with watts-up output in
 results/energy-final-metrics, combine *that* with original training
 data, and re-train the model.
 
+#+begin_src sh :results silent
+  export PATH=bin/:$PATH
+  
+  for prog in $(find results/energy-final-metrics/ -type f -executable|head -1);do
+      echo ""
+      echo $prog
+      watts=$(cat $prog*csv|grep -v time|awk 'FS="," {print $2}'|mean|tail -1)
+      bench=$(echo $prog|sed 's/.*metrics.//;s/-.*$//')
+      (
+          run $bench $prog -p
+          echo "$watts,watts"
+      ) |tee $prog.stats
+  done
+#+end_src
+
 *** constrain the model to pass through the origin
 Cycles is a proxy for time, so 0 counters should imply 0 kwh.
 

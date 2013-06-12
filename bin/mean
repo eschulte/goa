@@ -1,0 +1,10 @@
+#!/usr/bin/gawk -f
+# mean
+{
+    for (i=1; i<=NF; i++)
+    {
+        if($i ~ /[0-9.]/){sum[i] += $i; count[i]++}
+        if(i == 1){ line = sum[i]/count[i] }else{ line = line " " sum[i]/count[i]}
+    }
+    print line
+}
