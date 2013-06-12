@@ -52,7 +52,7 @@ Options:
                 (string= (subseq (car args) 0 2) "-h")
                 (string= (subseq (car args) 0 3) "--h"))
         (format t *help* bin-path)
-        (sb-ext:exit :code 1))
+        (error-out))
 
       ;; process command line arguments
       (setf
@@ -147,11 +147,11 @@ Options:
       (let (threads)
         ;; kick off optimization threads
         (loop :for n :below *threads* :do
-           (push (sb-thread:make-thread #'do-optimize) threads))
+           (push (make-thread #'do-optimize) threads))
         ;; wait for all threads to return
-        (mapc #'sb-thread:join-thread threads))
+        (mapc #'join-thread threads))
 
-      (sb-ext:gc :force t)
+      #+sbcl (sb-ext:gc :force t)
       (store *population* (make-pathname :directory *res-dir*
                                          :name "final-pop"
                                          :type "store"))

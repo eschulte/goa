@@ -17,7 +17,9 @@
 (defvar infinity
   #+sbcl
   SB-EXT:DOUBLE-FLOAT-POSITIVE-INFINITY
-  #-(or sbcl)
+  #+ccl
+  CCL::DOUBLE-FLOAT-POSITIVE-INFINITY
+  #-(or sbcl ccl)
   (error "must specify a positive infinity value"))
 
 (defvar *test-fmt* nil

@@ -20,7 +20,7 @@ Options:
                 (string= (subseq (car args) 0 2) "-h")
                 (string= (subseq (car args) 0 3) "--h"))
         (format t *help* bin-path)
-        (sb-ext:exit :code 1))
+        (error-out))
 
       (let ((best (restore (arg-pop))))
         (getopts

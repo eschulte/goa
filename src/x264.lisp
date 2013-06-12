@@ -36,7 +36,7 @@
 
 (defun checkpoint ()
   ;; free memory before these memory-hog operations
-  (sb-ext:gc :force t)
+  #+sbcl (sb-ext:gc :force t)
   ;; save stats on the run to a file
   (let ((log (format nil "~a/stats" *base*))
         (fitness (mapcar #'fitness *population*))
@@ -75,7 +75,7 @@
  *population* (loop :for n :below *max-population-size* :collect (copy *orig*)))
 
 (loop :for i :from 1 :to 7 :do
-   (sb-thread:make-thread
+   (make-thread
     (lambda ()
       (evolve
        #'multi-obj

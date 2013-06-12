@@ -25,4 +25,4 @@
 (format t "~d total individuals incorporated into population~%"
         (length *population*))
 
-(sb-ext:exit)
+(error-out)

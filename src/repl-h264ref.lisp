@@ -14,6 +14,7 @@
                  :collect (copy *orig*))
  *evals* (expt 2 10))
 
+#+sbcl
 (defun proactive-gc ()
   (ignore-errors
     (let ((used (/ (sb-vm::dynamic-usage) (sb-ext:dynamic-space-size))))
@@ -21,7 +22,9 @@
       (when (> used 1/2) (sb-ext:gc :force t :full t)))))
 
 (loop :for i :below 4 :do
-   (sb-thread:make-thread (lambda ()
-                            (evolve #'test
-                                    :max-evals *evals*
-                                    :every-fn #'proactive-gc))))
+   (make-thread (lambda ()
+                  (evolve #'test
+                          :max-evals *evals*
+                          :every-fn
+                          #+sbcl #'proactive-gc
+                          #-sbcl nil))))

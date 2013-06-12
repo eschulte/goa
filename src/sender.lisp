@@ -24,4 +24,4 @@
 
 (format t "done~%")
 
-(sb-ext:exit)
+(error-out)

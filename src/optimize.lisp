@@ -16,16 +16,24 @@
               (declare (ignorable e))
               (format t "missing dependency on ~S~%" pkg)
               (format t "install with (ql:quickload ~S)~%" pkg)
-              (sb-ext:exit :code 1))))
-        '(:software-evolution :cl-store :split-sequence :cl-ppcre))
+              #+sbcl (sb-ext:exit :code 1)
+              #+ccl (ccl:quit)
+              #-(or ccl sbcl) (error "not implemented"))))
+        '(:software-evolution :cl-store :split-sequence :cl-ppcre
+          :bordeaux-threads))
 (defpackage :optimize
   (:use :common-lisp :software-evolution :software-evolution-utility
         :alexandria :metabang-bind :curry-compose-reader-macros
-        :cl-store :split-sequence :cl-ppcre)
+        :cl-store :split-sequence :cl-ppcre :bordeaux-threads)
   (:shadow :type :magic-number))
 (in-package :optimize)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (enable-curry-compose-reader-macros))
+
+(defun error-out ()
+  #+sbcl (sb-ext:exit :code 1)
+  #+ccl (ccl:quit)
+  #-(or ccl sbcl) (error "not implemented"))
 
 (defclass asm-perf (asm)
   ((stats :initarg :stats :accessor stats :initform nil)))
@@ -51,7 +59,9 @@
 (defvar infinity
   #+sbcl
   SB-EXT:DOUBLE-FLOAT-POSITIVE-INFINITY
-  #-(or sbcl)
+  #+ccl
+  CCL::DOUBLE-FLOAT-POSITIVE-INFINITY
+  #-(or sbcl ccl)
   (error "must specify a positive infinity value"))
 
 (defvar *path*   nil "Path to Assembly file.")
@@ -110,7 +120,7 @@
 
 (defun checkpoint ()
   (note 1 "checkpoint after ~a fitness evaluations~%" *fitness-evals*)
-  (sb-ext:gc :force t :full t)
+  #+sbcl (sb-ext:gc :force t :full t)
   ;; save the best of the entire population
   (store (extremum *population* *fitness-predicate* :key #'fitness)
          (make-pathname :directory *res-dir*
@@ -144,7 +154,7 @@
 ;;; Simple command line helpers
 (defun throw-error (&rest args)
   (apply #'note 0 args)
-  (sb-ext:exit :code 1))
+  (error-out))
 
 (defmacro getopts (&rest forms)
   (let ((arg (gensym)))

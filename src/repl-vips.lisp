@@ -20,7 +20,7 @@
 
 ;; kick off optimization threads
 (loop :for n :below *num-threads* :do
-   (push (sb-thread:make-thread #'do-optimize) *threads*))
+   (push (make-thread #'do-optimize) *threads*))
 
 
 ;;; Memory usage at the beginning of the run
