@@ -970,6 +970,17 @@ coefficients for a memory linear model.
 ** TODO Build optimization Taxonomy
 * Issues [3/4]
 ** TODO Running out of memory
+*** dynamic extent
+If problems persists, look into dynamic extents for large short-lives
+software objects.
+
+#+begin_src lisp
+  (let ((x (list 1 2 3)))
+    (declare (dynamic-extent x))
+    #| ... |#)
+#+end_src
+
+*** sbcl
 #+begin_quote
 I would suggest that your first stop should be the unglamorous ROOM
 and its more exotic cousin
