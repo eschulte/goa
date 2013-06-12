@@ -25,6 +25,7 @@ Options:
                          default: 2^9
  -r,--res-dir DIR ------ save results to dir
                          default: program.opt/
+ -s,--size SIZE -------- input size test,tiny,small,medium,large
  -t,--threads NUM ------ number of threads
  -T,--tourny-size NUM -- tournament size
                          default: 4
@@ -65,28 +66,29 @@ Options:
 
       ;; process command line options
       (getopts
-       ("-e" "--eval"      (eval (read-from-string (arg-pop))))
        ("-c" "--config"    (load (arg-pop)))
-       ("-l" "--linker"    (setf (linker *orig*) (arg-pop)))
-       ("-f" "--flags"     (setf (flags *orig*) (list (arg-pop))))
-       ("-t" "--threads"   (setf *threads* (parse-integer (arg-pop))))
-       ("-T" "--tourny-size" (setf *tournament-size* (parse-integer (arg-pop))))
-       ("-e" "--max-evals" (setf *evals* (parse-integer (arg-pop))))
-       ("-w" "--work-dir"  (setf *work-dir* (arg-pop)))
        ("-E" "--max-err"   (setf *max-err* (read-from-string (arg-pop))))
-       ("-p" "--pop-size"  (setf *max-population-size*
-                                 (parse-integer (arg-pop))))
+       ("-e" "--eval"      (eval (read-from-string (arg-pop))))
+       ("-F" "--fit-evals" (setf *evals* (parse-integer (arg-pop))))
+       ("-f" "--flags"     (setf (flags *orig*) (list (arg-pop))))
+       ("-l" "--linker"    (setf (linker *orig*) (arg-pop)))
        ("-m" "--model"     (setf *model* (intern (string-upcase (arg-pop)))))
        ("-P" "--period"    (setf *period* (parse-integer (arg-pop))))
-       ("-v" "--verb"      (let ((lvl (parse-integer (arg-pop))))
-                             (when (= lvl 4) (setf *shell-debug* t))
-                             (setf *note-level* lvl)))
+       ("-p" "--pop-size"  (setf *max-population-size*
+                                 (parse-integer (arg-pop))))
        ("-r" "--res-dir"   (setf *res-dir*
                                  (let ((dir (arg-pop)))
                                    (pathname-directory
                                     (if (string= (subseq dir (1- (length dir)))
                                                  "/")
-                                        dir (concatenate 'string dir "/")))))))
+                                        dir (concatenate 'string dir "/"))))))
+       ("-s" "--size"      (setf *size* (arg-pop)))
+       ("-t" "--threads"   (setf *threads* (parse-integer (arg-pop))))
+       ("-T" "--tourny-size" (setf *tournament-size* (parse-integer (arg-pop))))
+       ("-v" "--verbose"   (let ((lvl (parse-integer (arg-pop))))
+                             (when (>= lvl 4) (setf *shell-debug* t))
+                             (setf *note-level* lvl)))
+       ("-w" "--work-dir"  (setf *work-dir* (arg-pop))))
       (unless *period* (setf *period* (ceiling (/ *evals* (expt 2 10)))))
 
       ;; directories for results saving and logging
@@ -111,6 +113,7 @@ Options:
                       (cons param (eval param)))
                     '(*path*
                       *benchmark*
+                      *size*
                       (linker *orig*)
                       (flags *orig*)
                       *threads*

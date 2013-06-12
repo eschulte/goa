@@ -40,11 +40,11 @@
 
 ;;; Models
 (defvar intel-sandybridge-energy-model
-  '((1.0 :cycles)
-    (1.0 :instructions)
-    (1.0 :r532010 :r538010)
-    (1.0 :cache-references)
-    (1.0 :cache-misses))
+  '((5.007e-15 :cycles)
+    (1.774e-16 :instructions)
+    (2.787e-16 :r532010 :r538010)
+    (2.374e-14 :cache-references)
+    (1.464e-14 :cache-misses))
   "HW counters and coefficients for the Intel Sandybridge energy model.")
 
 (defvar amd-opteron-energy-model
@@ -66,6 +66,7 @@
 
 (defvar *path*   nil "Path to Assembly file.")
 (defvar *script* "./bin/run" "Script used to test benchmark application.")
+(defvar *size*   nil "size of input for fitness evaluation")
 (defvar *res-dir* nil "Directory in which to save results.")
 (defvar *orig*   nil "Original version of the program to be run.")
 (defvar *benchmark* nil "Name of the benchmark.")
@@ -99,10 +100,16 @@
 
 (defun run (asm)
   (with-temp-file (bin)
-    (phenome asm :bin bin)
+    (multiple-value-bind (info exit)
+        (phenome asm :bin bin)
+      (unless (zerop exit)
+        (note 5 "ERROR [~a]: ~a" exit info)
+        (error "error [~a]: ~a" exit info)))
     (note 4 "running ~S~%" (edits asm))
     (multiple-value-bind (stdout stderr errno)
-        (shell "~a ~a ~a -p" *script* *benchmark* bin)
+        (if (null *size*)
+          (shell "~a ~a ~a -p" *script* *benchmark* bin)
+          (shell "~a ~a ~a -s ~a -p" *script* *benchmark* bin *size*))
       (declare (ignorable stderr))
       (cons `(:exit . ,errno) (ignore-errors (parse-stdout stdout))))))
 
