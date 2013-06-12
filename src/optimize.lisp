@@ -40,20 +40,47 @@
 
 ;;; Models
 (defvar intel-sandybridge-energy-model
-  '((5.007e-15 :cycles)
-    (1.774e-16 :instructions)
-    (2.787e-16 :r532010 :r538010)
-    (2.374e-14 :cache-references)
-    (1.464e-14 :cache-misses))
+  '(+
+    (* 5.007e-15 cycles)
+    (* 1.774e-16 instructions)
+    (* 2.787e-16 (+ r532010 r538010))
+    (* 2.374e-14 cache-references)
+    (* 1.464e-14 cache-misses))
   "HW counters and coefficients for the Intel Sandybridge energy model.")
 
 (defvar amd-opteron-energy-model
-  '(( 4.411e-14 :cycles)
-    ( 2.235e-15 :instructions)
-    (-8.531e-16 :r533f00)
-    (-1.256e-14 :cache-references)
-    ( 3.679e-13 :cache-misses))
+  '(+
+    (*  4.411e-14 cycles)
+    (*  2.235e-15 instructions)
+    (* -8.531e-16 r533f00)
+    (* -1.256e-14 cache-references)
+    (* 3.679e-13  cache-misses))
   "HW counters and coefficients in the AMD Opteron energy model.")
+
+(defvar intel-sandybridge-power-model
+  '(* seconds (+ 31.530
+               (*   20.490 (/ instructions cycles))
+               (*    9.838 (/ (+ r532010 r538010) cycles))
+               (*   -4.102 (/ cache-references cycles))
+               (* 2962.678 (/ cache-misses cycles))))
+  "HW counters and coefficients for the Intel Sandybridge power model.")
+
+(defvar amd-opteron-power-model-base
+  '(* seconds (+ 371.47
+               (*   -66.72 (/ instructions cycles))
+               (*    66.66 (/ r533f00 cycles))
+               (*   -18.54 (/ cache-references cycles))
+               (* -6509.46 (/ cache-misses cycles))))
+  "HW counters and coefficients in the AMD Opteron power model.")
+
+(defvar amd-opteron-power-model-plus
+  '(* seconds (+ 328.284
+               (*    -1.266 (/ instructions cycles))
+               (*    10.987 (/ r533f00 cycles))
+               (*   -22.999 (/ cache-references cycles))
+               (* -7783.918 (/ cache-misses cycles))))
+  "HW counters and coefficients in the AMD Opteron power model.
+This includes evolved individuals in the training set.")
 
 ;;; Utility functions
 (defvar infinity
@@ -113,16 +140,23 @@
       (declare (ignorable stderr))
       (cons `(:exit . ,errno) (ignore-errors (parse-stdout stdout))))))
 
+(defun apply-model (model stats)
+  "Apply MODEL to STATS."
+  (flet ((key-to-sym (keyword)
+           (if (keywordp keyword)
+               (intern (string-upcase (symbol-name keyword)) :optimize)
+               keyword)))
+    (eval `(let ,(mapcar (lambda (pair) (list (key-to-sym (car pair)) (cdr pair)))
+                         stats)
+             ,model))))
+
 (defun test (asm)
   (note 4 "testing ~S~%" (edits asm))
   (or (ignore-errors
         (unless (stats asm) (setf (stats asm) (run asm)))
         (note 4 "stats:~%~S~%" (stats asm))
         (when (<= (aget :error (stats asm)) *max-err*)
-          (let ((stats (stats asm)))
-            (reduce (lambda-bind (acc (cf . cntrs))
-                      (+ acc (* cf (reduce #'+ (mapcar {aget _ stats} cntrs)))))
-                    *model* :initial-value 0))))
+          (apply-model *model* (stats asm))))
       infinity))
 
 (defun checkpoint ()

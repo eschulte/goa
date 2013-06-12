@@ -79,9 +79,9 @@ fi
 
 if [ -z $COUNTER ];then
   if grep -q Intel /proc/cpuinfo; then
-    COUNTERS="cycles,instructions,r532010,r538010,cache-references,cache-misses"
+    COUNTERS="task-clock,cycles,instructions,r532010,r538010,cache-references,cache-misses"
   elif grep -q AMD /proc/cpuinfo; then
-    COUNTERS="cycles,instructions,r533f00,cache-references,cache-misses"
+    COUNTERS="task-clock,cycles,instructions,r533f00,cache-references,cache-misses"
   fi
 fi
 
@@ -102,13 +102,15 @@ if [ -z $PERF ];then
 else
     # perf prefix to the command
     PERF_OUT=$(mktemp)
-    PREFIX+=" perf stat -x, -e $COUNTERS -o $PERF_OUT"
+    PREFIX+=" perf stat -e $COUNTERS -o $PERF_OUT"
     if [ ! -z "$REPEAT" ];then PREFIX+=" -r $REPEAT"; fi
     # handle perf output on exit
     function exit_hook (){
         echo "$EXIT,exit"
         echo "$ERROR,error"
-        cat $PERF_OUT|tail -n +3;
+        cat $PERF_OUT \
+            |grep "[0-9,]\+ [a-z]\+" \
+            |sed 's/^ *//;s/,//g;s/ \([^ ]\+\).*$/,\1/';
         rm -f $PERF_OUT;
         rm -f $OUT; }
 fi

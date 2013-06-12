@@ -60,8 +60,7 @@ Options:
 
       ;; Apply the model to the counters
       (format t "~S~%"
-              (reduce (lambda-bind (acc (cf . cntrs))
-                        (let ((val (reduce #'+ (mapcar {aget _ cs} cntrs))))
-                          (when *debug* (format t "~s ~s ~s~%" acc cf cntrs))
-                          (+ acc (* cf val))))
-                      *model* :initial-value 0)))))
+              (let ((*error-output* (make-broadcast-stream))
+                    (*standard-output* (make-broadcast-stream)))
+                (apply-model *model* cs))))))
+
