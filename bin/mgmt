@@ -35,7 +35,17 @@ ACTION="$1"
 BENCHMARK="$2"
 FLAGS="all"
 FULL_FLAGS=""
-SIZE="large"
+case $BENCHMARK in
+    blackscholes) SIZE=large;;
+    bodytrack)    SIZE=large;;
+    fluidanimate) SIZE=large;;
+    freqmine)     SIZE=medium;;
+    swaptions)    SIZE=medium;;
+    vips)         SIZE=medium;;
+    bzip2)        SIZE=large;;
+    h264ref)      SIZE=large;;
+    *)            SIZE=large;;
+esac
 LLVM=""
 eval set -- $(getopt -o f:F:s:l -l flags:,Flags:,size:,llvm -- "$@" || help;)
 while [ $# -gt 0 ];do
