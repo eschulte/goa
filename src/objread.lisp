@@ -26,7 +26,12 @@ Options:
         (getopts
          ("-l" "--link"   (phenome best :bin (arg-pop)))
          ("-e" "--edits"  (format t "~&~S~%" (edits best)))
-         ("-s" "--stats"  (format t "~&~S~%" (stats best)))
+         ("-s" "--stats"
+               (mapc (lambda-bind ((counter . count))
+                       (format t "~a ~a~%"
+                               (string-downcase (symbol-name counter))
+                               count))
+                     (stats best)))
          ("-g" "--genome" (format t "~&~S~%" (genome best)))
          ("-E" "--eval"
                (let ((form `(lambda (obj) ,(read-from-string (arg-pop)))))
