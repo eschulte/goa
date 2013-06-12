@@ -100,7 +100,7 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 | 998.specrand   |
 | 999.specrand   |
 
-* Tasks [19/35]
+* Tasks [22/35]
 ** TODO find minimal input sizes for each program
 Need to estimate the variance in our energy predictions, which are
 linear combinations of HW counters, from variance in the HW counters.
@@ -374,10 +374,15 @@ with an "r".
 *** DONE Intel energy model
 : perf stat -e cycles,instructions,r532010,r538010,cache-references,LLC-loads,LLC-stores
 
-** TODO Train Energy Models [2/6]
+** TODO Train Energy Models [5/6]
 Both at UVA on Intel and at UNM on AMD.
 
-*** TODO retrain the energy models with evolved individuals
+*** TODO comparative effectiveness of our three models
+1. original energy
+2. power model
+3. power model with included evolved individuals
+
+*** DONE retrain the power models with evolved individuals
 Use sampling used in [[#evolved-energy-consumption]], dump through objread
 to get stats, combine those stats with watts-up output in
 results/energy-final-metrics, combine *that* with original training
@@ -398,19 +403,70 @@ data, and re-train the model.
   done
 #+end_src
 
+Collect all of the stats into a single large csv file.
+#+begin_src sh :results silent
+  (
+      echo "bench,watts,kwh,exit,error,cycles,instructions,r533f00,cache-references,cache-misses"
+      for prog in $(find results/energy-final-metrics/ -type f -executable);do
+          tail=$(cat $prog.stats|grep -v watts|sed 's/,.*$//'|tr '\n' ','|sed 's/,$//')
+          bench=$(echo $prog|sed 's/.*metrics.//;s/-.*$//')
+          for i in $(seq 0 9);do
+              echo "$bench,$(tail -1 $prog-$i.csv|awk -F, '{printf "%f,%f", $2, $5}'),$tail"
+          done
+      done|grep -v blackscholes
+  ) > results/energy-final-metrics.csv
+#+end_src
+
+And convert the original stats to this format
+#+begin_src sh
+  cat results/energy-metrics/combined-benchmarks.csv \
+      |tail -n +2 \
+      |awk -F, '{ print $1,$4,$3,0,0,$5,$6,$7,$8,$9 }' \
+      |sed 's/ /,/g' >> results/energy-final-metrics.csv
+#+end_src
+
+And now we can train the power model against this large csv file.
+#+begin_src sh :results scalar
+  ./bin/power-model.R results/energy-final-metrics.csv
+#+end_src
+
+#+RESULTS:
+: 
+: Call:
+: lm(formula = metrics$watts ~ ipc + fpc + cpc + mpc)
+: 
+: Residuals:
+:     Min      1Q  Median      3Q     Max 
+: -332.63   -0.20    1.32    6.36   72.28 
+: 
+: Coefficients:
+:              Estimate Std. Error t value Pr(>|t|)    
+: (Intercept)   328.284     13.407  24.486  < 2e-16 ***
+: ipc            -1.266     12.524  -0.101    0.920    
+: fpc            10.987     10.132   1.084    0.279    
+: cpc            22.999     43.770   0.525    0.600    
+: mpc         -7783.918   1560.120  -4.989 8.93e-07 ***
+: ---
+: Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+: 
+: Residual standard error: 38.59 on 415 degrees of freedom
+: Multiple R-squared:  0.09615,	Adjusted R-squared:  0.08743 
+: F-statistic: 11.04 on 4 and 415 DF,  p-value: 1.628e-08
+: 
+
 *** constrain the model to pass through the origin
 Cycles is a proxy for time, so 0 counters should imply 0 kwh.
 
-*** TODO include last two benchmark programs [0/2]
+*** CANCELED include last two benchmark programs [0/2]
     DEADLINE: <2013-06-11 Tue>
 - [ ] x264 from parsec (compiled)
 - [ ] dealII from SPEC
 
-*** TODO compile both of these last two benchmark programs [1/2]
+*** CANCELED compile both of these last two benchmark programs [0/0]
 - [X] x264 from parsec (compiled)
 - [ ] dealII from SPEC
 
-**** TODO DealII
+**** DealII
 This discussion looks to be relevant to our build problems.
 http://gcc.gnu.org/bugzilla/show_bug.cgi?id=44416
 
