@@ -100,7 +100,7 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 | 998.specrand   |
 | 999.specrand   |
 
-* Tasks [22/35]
+* Tasks [23/36]
 ** TODO find minimal input sizes for each program
 Need to estimate the variance in our energy predictions, which are
 linear combinations of HW counters, from variance in the HW counters.
@@ -374,7 +374,7 @@ with an "r".
 *** DONE Intel energy model
 : perf stat -e cycles,instructions,r532010,r538010,cache-references,LLC-loads,LLC-stores
 
-** TODO Train Energy Models [5/6]
+** TODO Train Energy Models [6/7]
 Both at UVA on Intel and at UNM on AMD.
 
 *** TODO comparative effectiveness of our three models
@@ -382,13 +382,27 @@ Both at UVA on Intel and at UNM on AMD.
 2. power model
 3. power model with included evolved individuals
 
+|              |   wall plug |   original |          new |    new power | new power | new power |
+| program      | measurement |     energy |        power |    w/evolved |    joules | w/evo (j) |
+|--------------+-------------+------------+--------------+--------------+-----------+-----------|
+| swaptions    |  6.88333e-4 | 1.03268e-3 | 9.8714811e-4 | 9.3214667e-4 | 3553.7332 |  3355.728 |
+| bzip2        |  1.06667e-5 | 1.89788e-5 | 1.5615243e-5 | 1.7711784e-5 | 56.214874 | 63.762424 |
+| freqmine     |  6.66667e-5 | 2.23895e-3 | 1.6509342e-3 | 2.0344936e-3 |  5943.363 |  7324.177 |
+| fluidanimate |  2.44666e-4 | 3.68712e-4 | 3.6373519e-4 |   3.38953e-4 | 1309.4467 | 1220.2308 |
+|--------------+-------------+------------+--------------+--------------+-----------+-----------|
+| correlation  |             |            |            0 |            0 |           |           |
+#+TBLFM: $4=$6/(60 * 60 * 1000)::$5=$7/(60 * 60 * 1000)
+
 *** DONE retrain the power models with evolved individuals
+    :PROPERTIES:
+    :results:  silent
+    :END:
 Use sampling used in [[#evolved-energy-consumption]], dump through objread
 to get stats, combine those stats with watts-up output in
 results/energy-final-metrics, combine *that* with original training
 data, and re-train the model.
 
-#+begin_src sh :results silent
+#+begin_src sh
   export PATH=bin/:$PATH
   
   for prog in $(find results/energy-final-metrics/ -type f -executable);do
@@ -404,14 +418,14 @@ data, and re-train the model.
 #+end_src
 
 Collect all of the stats into a single large csv file.
-#+begin_src sh :results silent
+#+begin_src sh
   (
-      echo "bench,watts,kwh,exit,error,cycles,instructions,r533f00,cache-references,cache-misses"
+      echo "bench,watts,kwh,exit,error,cycles,instructions,r533f00,cache-references,cache-misses,seconds"
       for prog in $(find results/energy-final-metrics/ -type f -executable);do
           tail=$(cat $prog.stats|grep -v watts|sed 's/,.*$//'|tr '\n' ','|sed 's/,$//')
           bench=$(echo $prog|sed 's/.*metrics.//;s/-.*$//')
           for i in $(seq 0 9);do
-              echo "$bench,$(tail -1 $prog-$i.csv|awk -F, '{printf "%f,%f", $2, $5}'),$tail"
+              echo "$bench,$(tail -1 $prog-$i.csv|awk -F, '{printf "%f,%f", $2, ($5 / 30)}'),$tail"
           done
       done|grep -v blackscholes
   ) > results/energy-final-metrics.csv
@@ -421,13 +435,19 @@ And convert the original stats to this format
 #+begin_src sh
   cat results/energy-metrics/combined-benchmarks.csv \
       |tail -n +2 \
-      |awk -F, '{ print $1,$4,$3,0,0,$5,$6,$7,$8,$9 }' \
+      |awk -F, '{ print $1,$4,$3,0,0,$5,$6,$7,$8,$9,$2 }' \
       |sed 's/ /,/g' >> results/energy-final-metrics.csv
 #+end_src
 
+Removing any duplicate rows (because R complains otherwise).
+#+begin_src sh :var csv="results/energy-final-metrics.csv"
+  head -1 $csv > /tmp/sorted.csv
+  tail -n +2 $csv|sort -u > /tmp/sorted.csv
+#+end_src
+
 And now we can train the power model against this large csv file.
-#+begin_src sh :results scalar
-  ./bin/power-model.R results/energy-final-metrics.csv
+#+begin_src sh :results replace scalar
+  ./bin/power-model.R /tmp/sorted.csv
 #+end_src
 
 #+RESULTS:
@@ -436,22 +456,23 @@ And now we can train the power model against this large csv file.
 : lm(formula = metrics$watts ~ ipc + fpc + cpc + mpc)
 : 
 : Residuals:
-:     Min      1Q  Median      3Q     Max 
-: -332.63   -0.20    1.32    6.36   72.28 
+:      Min       1Q   Median       3Q      Max 
+: -304.913   -0.981    0.229    1.774   45.620 
 : 
 : Coefficients:
 :              Estimate Std. Error t value Pr(>|t|)    
-: (Intercept)   328.284     13.407  24.486  < 2e-16 ***
-: ipc            -1.266     12.524  -0.101    0.920    
-: fpc            10.987     10.132   1.084    0.279    
-: cpc            22.999     43.770   0.525    0.600    
-: mpc         -7783.918   1560.120  -4.989 8.93e-07 ***
+: (Intercept) 3.049e+02  5.073e+00  60.104   <2e-16 ***
+: ipc         7.205e-06  1.264e-05   0.570    0.569    
+: fpc         9.395e-07  1.166e-05   0.081    0.936    
+: cpc         7.031e-06  9.429e-06   0.746    0.456    
+: mpc         1.370e-05  3.043e-05   0.450    0.653    
 : ---
 : Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 : 
-: Residual standard error: 38.59 on 415 degrees of freedom
-: Multiple R-squared:  0.09615,	Adjusted R-squared:  0.08743 
-: F-statistic: 11.04 on 4 and 415 DF,  p-value: 1.628e-08
+: Residual standard error: 39.3 on 404 degrees of freedom
+:   (349 observations deleted due to missingness)
+: Multiple R-squared:  0.08757,	Adjusted R-squared:  0.07854 
+: F-statistic: 9.694 on 4 and 404 DF,  p-value: 1.704e-07
 : 
 
 *** constrain the model to pass through the origin
@@ -499,6 +520,35 @@ The command lines work out to be roughly
   # for your system
   runspec --action build -c complex.cfg -v 1 447.dealII -I
 #+end_src
+
+*** DONE AMD power model
+#+begin_src sh :results replace scalar
+  ./bin/power-model.R results/energy-metrics/combined-benchmarks.csv
+#+end_src
+
+#+RESULTS:
+: 
+: Call:
+: lm(formula = metrics$watts ~ ipc + fpc + cpc + mpc)
+: 
+: Residuals:
+:      Min       1Q   Median       3Q      Max 
+: -296.876   -4.442   22.773   53.215  115.186 
+: 
+: Coefficients:
+:             Estimate Std. Error t value Pr(>|t|)    
+: (Intercept)   371.47      51.35   7.234 1.56e-09 ***
+: ipc           -66.72      57.72  -1.156    0.253    
+: fpc            66.66      52.18   1.277    0.207    
+: cpc           -18.54     210.05  -0.088    0.930    
+: mpc         -6509.46    4777.01  -1.363    0.179    
+: ---
+: Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+: 
+: Residual standard error: 99.3 on 55 degrees of freedom
+: Multiple R-squared:  0.1297,	Adjusted R-squared:  0.06636 
+: F-statistic: 2.048 on 4 and 55 DF,  p-value: 0.1002
+: 
 
 *** DONE AMD Energy Model
 | metric           | perf             | coefficient |
@@ -661,8 +711,9 @@ Modeling kwh
 6. Measure the energy consumption of each program in the results
    directory.
    #+begin_src sh
+     dir=results/energy-metrics
      for bench in blackscholes bzip2 fluidanimate freqmine swaptions;do
-         for exe in results/energy-final-metrics/$bench-*;do
+         for exe in $dir/$bench-*;do
              for i in $(seq 0 9);do
                  echo -e "running $bench\t$exe\t$i"
                  sleep 10

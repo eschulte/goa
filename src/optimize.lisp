@@ -74,11 +74,11 @@
   "HW counters and coefficients in the AMD Opteron power model.")
 
 (defvar amd-opteron-power-model-plus
-  '(* seconds (+ 328.284
-               (*    -1.266 (/ instructions cycles))
-               (*    10.987 (/ r533f00 cycles))
-               (*   -22.999 (/ cache-references cycles))
-               (* -7783.918 (/ cache-misses cycles))))
+  '(* seconds (+ 3.049e+02
+               (* 7.205e-06 (/ instructions cycles))
+               (* 9.395e-07 (/ r533f00 cycles))
+               (* 7.031e-06 (/ cache-references cycles))
+               (* 1.370e-05 (/ cache-misses cycles))))
   "HW counters and coefficients in the AMD Opteron power model.
 This includes evolved individuals in the training set.")
 
