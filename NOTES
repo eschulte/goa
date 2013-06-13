@@ -100,7 +100,7 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 | 998.specrand   |
 | 999.specrand   |
 
-* Tasks [23/36]
+* Tasks [25/36]
 ** TODO find minimal input sizes for each program
 Need to estimate the variance in our energy predictions, which are
 linear combinations of HW counters, from variance in the HW counters.
@@ -374,10 +374,10 @@ with an "r".
 *** DONE Intel energy model
 : perf stat -e cycles,instructions,r532010,r538010,cache-references,LLC-loads,LLC-stores
 
-** TODO Train Energy Models [6/7]
+** DONE Train Energy Models [7/7]
 Both at UVA on Intel and at UNM on AMD.
 
-*** TODO comparative effectiveness of our three models
+*** DONE comparative effectiveness of our three models
 1. original energy
 2. power model
 3. power model with included evolved individuals
