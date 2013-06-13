@@ -382,16 +382,38 @@ Both at UVA on Intel and at UNM on AMD.
 2. power model
 3. power model with included evolved individuals
 
-|              |   wall plug |   original |          new |    new power | new power | new power |
-| program      | measurement |     energy |        power |    w/evolved |    joules | w/evo (j) |
-|--------------+-------------+------------+--------------+--------------+-----------+-----------|
-| swaptions    |  6.88333e-4 | 1.03268e-3 | 9.8714811e-4 | 9.3214667e-4 | 3553.7332 |  3355.728 |
-| bzip2        |  1.06667e-5 | 1.89788e-5 | 1.5615243e-5 | 1.7711784e-5 | 56.214874 | 63.762424 |
-| freqmine     |  6.66667e-5 | 2.23895e-3 | 1.6509342e-3 | 2.0344936e-3 |  5943.363 |  7324.177 |
-| fluidanimate |  2.44666e-4 | 3.68712e-4 | 3.6373519e-4 |   3.38953e-4 | 1309.4467 | 1220.2308 |
-|--------------+-------------+------------+--------------+--------------+-----------+-----------|
-| correlation  |             |            |            0 |            0 |           |           |
+#+name: energy-model-comparison
+|              |   wall plug |    original |          new |    new power | new power | new power |
+| program      | measurement |      energy |        power |    w/evolved |    joules | w/evo (j) |
+|--------------+-------------+-------------+--------------+--------------+-----------+-----------|
+| swaptions    |  6.88333e-4 |  1.03268e-3 | 9.8714811e-4 | 9.3214667e-4 | 3553.7332 |  3355.728 |
+| bzip2        |  1.06667e-5 |  1.89788e-5 | 1.5615243e-5 | 1.7711784e-5 | 56.214874 | 63.762424 |
+| freqmine     |  6.66667e-5 |  2.23895e-3 | 1.6509342e-3 | 2.0344936e-3 |  5943.363 |  7324.177 |
+| fluidanimate |  2.44666e-4 |  3.68712e-4 | 3.6373519e-4 |   3.38953e-4 | 1309.4467 | 1220.2308 |
+|--------------+-------------+-------------+--------------+--------------+-----------+-----------|
+| correlation  |             | 0.038806602 |   0.23415537 |  0.034193274 |           |           |
 #+TBLFM: $4=$6/(60 * 60 * 1000)::$5=$7/(60 * 60 * 1000)
+
+#+begin_src lisp :var data=energy-model-comparison
+  (defun covariance (a b)
+    (/ (reduce #'+ (mapcar #'*
+                           (mapcar {- _ (mean a)} a)
+                           (mapcar {- _ (mean b)} b)))
+       (- (length a) 1)))
+  
+  (defun correlation (a b)
+    (/ (covariance a b)
+       (sqrt (* (variance a) (variance b)))))
+  
+  (let* ((raw (mapcar {mapcar (lambda (n) (if (numberp n) n (read-from-string n)))}
+                      (butlast (mapcar #'cdr (cddr data)))))
+         (wall (mapcar #'first raw))
+         (orig (mapcar #'second raw))
+         (power (mapcar #'third raw))
+         (power-plus (mapcar #'fourth raw)))
+    (mapcar {correlation wall}
+            (list orig power power-plus)))
+#+end_src
 
 *** DONE retrain the power models with evolved individuals
     :PROPERTIES:
