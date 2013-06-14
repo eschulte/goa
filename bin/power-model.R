@@ -18,18 +18,41 @@ library( boot )
 args <- commandArgs(trailingOnly = TRUE);
 
 if (length(args) < 1) # Check that required arguments exist
-{ stop("Pass the path to benchmarks.csv as first argument.") }
+{
+    cat( "Usage: power-model.R benchmarks.csv [error-mode]\n" )
+    stop("Pass the path to benchmarks.csv as first argument.")
+}
 
 metrics <- read.csv(args[1]);
+err_mode <- if (length(args) == 1) "RMS" else args[2]
+
+error <- function( observations, predictions ) {
+    # cv.glm uses average squared error by default: mean( delta * delta )
+    delta <- observations - predictions
+    if ( err_mode == "RMS" )
+        sqrt( mean( delta * delta ) )
+    else if ( err_mode == "average square" )
+        mean( delta * delta )
+    else if ( err_mode == "average absolute" )
+        mean( abs( delta ) )
+    else
+        stop( paste( "unknown error mode:", err_mode ) )
+}
+x <- error( 0, 0 )
 
 if('r533f00' %in% colnames(metrics)) {
     fops <- metrics$r533f00;
 } else {
     fops <- metrics$r532010 + metrics$r538010;
 }
+if ( 'time' %in% colnames( metrics ) ) {
+    secs <- metrics$time
+} else {
+    secs <- metrics$seconds
+}
 
 data <- data.frame(
-    energy = metrics$watts * metrics$time,
+    energy = metrics$watts * secs,
     kwh = metrics$kwh,
     cyc = metrics$cycles,
     ins = metrics$instructions,
@@ -48,16 +71,8 @@ data <- data.frame(
 model <- with( data, glm( watts ~ ipc + fpc + cpc + mpc ) )
 summary( model )
 
-# cv.glm uses average squared error by default: mean( delta * delta )
-
-error <- function( observations, predictions ) {
-    delta <- observations - predictions
-    #mean( delta * delta )
-    #sqrt( mean( delta * delta ) )
-    mean( abs( delta ) )
-}
-
 cat( "performing cross-validation...\n" )
+cat( paste( "using", err_mode, "error\n" ) )
 model.error <- error( model$residuals, 0 )
 xval.error  <- cv.glm( data, model, cost = error, K = 10 )$delta[ 2 ]
 
