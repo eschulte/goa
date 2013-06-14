@@ -10,30 +10,9 @@
 ;; consumption etc...
 
 ;;; Code:
-(mapcar (lambda (pkg)
-          (handler-case (require pkg)
-            (error (e)
-              (declare (ignorable e))
-              (format t "missing dependency on ~S~%" pkg)
-              (format t "install with (ql:quickload ~S)~%" pkg)
-              #+sbcl (sb-ext:exit :code 1)
-              #+ccl (ccl:quit)
-              #-(or ccl sbcl) (error "not implemented"))))
-        '(:software-evolution :cl-store :split-sequence :cl-ppcre
-          :bordeaux-threads))
-(defpackage :optimize
-  (:use :common-lisp :software-evolution :software-evolution-utility
-        :alexandria :metabang-bind :curry-compose-reader-macros
-        :cl-store :split-sequence :cl-ppcre :bordeaux-threads)
-  (:shadow :type :magic-number))
 (in-package :optimize)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (enable-curry-compose-reader-macros))
-
-(defun error-out ()
-  #+sbcl (sb-ext:exit :code 1)
-  #+ccl (format t "done~%")
-  #-(or ccl sbcl) (error "not implemented"))
 
 (defclass asm-perf (asm)
   ((stats :initarg :stats :accessor stats :initform nil)))
@@ -135,10 +114,10 @@ This includes evolved individuals in the training set.")
     (note 4 "running ~S~%" (edits asm))
     (multiple-value-bind (stdout stderr errno)
         (if (null *size*)
-          (shell "~a ~a ~a -p" *script* *benchmark* bin)
-          (shell "~a ~a ~a -s ~a -p" *script* *benchmark* bin *size*))
-      (declare (ignorable stderr))
-      (cons `(:exit . ,errno) (ignore-errors (parse-stdout stdout))))))
+            (shell "~a ~a ~a -p"       *script* *benchmark* bin)
+            (shell "~a ~a ~a -s ~a -p" *script* *benchmark* bin *size*))
+      (declare (ignorable stderr) (ignorable errno))
+      (ignore-errors (parse-stdout stdout)))))
 
 (defun apply-model (model stats)
   "Apply MODEL to STATS."
@@ -146,9 +125,11 @@ This includes evolved individuals in the training set.")
            (if (keywordp keyword)
                (intern (string-upcase (symbol-name keyword)) :optimize)
                keyword)))
-    (eval `(let ,(mapcar (lambda (pair) (list (key-to-sym (car pair)) (cdr pair)))
-                         stats)
-             ,model))))
+    (let ((*error-output* (make-broadcast-stream))
+          (*standard-output* (make-broadcast-stream)))
+      (eval `(let ,(mapcar (lambda (pair) (list (key-to-sym (car pair)) (cdr pair)))
+                           stats)
+               ,model)))))
 
 (defun test (asm)
   (note 4 "testing ~S~%" (edits asm))
@@ -195,7 +176,7 @@ This includes evolved individuals in the training set.")
 ;;; Simple command line helpers
 (defun throw-error (&rest args)
   (apply #'note 0 args)
-  (error-out))
+  (quit))
 
 (defmacro getopts (&rest forms)
   (let ((arg (gensym)))

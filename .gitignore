@@ -7,8 +7,9 @@ ltxpng
 *.cfg
 *.dat
 
-# The virtual machine itself
+# The virtual machine stuff
 *.qcow
+overlays
 
 # Ignore the shell runner
 sh-runner

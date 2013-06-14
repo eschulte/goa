@@ -1,53 +1,27 @@
 # Path to SBCL buildapp executable, http://www.xach.com/lisp/buildapp/
-BA:=buildapp
-
-# Size of the lisp memory in Mb, defaults to 2G
-LISP_STACK?=2048
-
-# Pointer to local Quicklisp directory
-QUICK_LISP?=$(HOME)/quick-lisp
-
-# Lisp Libraries to compile into optimize
-#
-#  Set the LL env variable to load another lisp system for use in a
-#  config file.
-#
-LISP_LIBRARIES+=$(LL)
-LISP_LIBRARIES+=software-evolution
-LISP_LIBRARIES+=cl-store
-LISP_LIBRARIES+=split-sequence
-LISP_LIBRARIES+=cl-ppcre
-
-LISP_LIBRARIES:=$(addprefix --load-system , $(LISP_LIBRARIES))
+CLC:=cl-launch
+LISP:="sbcl ccl"
 
 # Compiled lisp executables
 LISP_EXES=optimize objread calc-energy
 LISP_BINS=$(addprefix bin/, $(LISP_EXES))
 
-ifeq ($(shell [ -f $(QUICK_LISP)/setup.lisp ] && echo exists),)
-$(error The QUICK_LISP environment variable must point to your quicklisp install)
-endif
-
-BUILD_APP_FLAGS= --manifest-file $(QUICK_LISP)/local-projects/system-index.txt \
-	--manifest-file etc/data/ql-manifest.txt \
-	$(LISP_LIBRARIES) \
-	--dynamic-space-size $(LISP_STACK)
+# Flags to build standalone executables
+CLFLAGS=--no-include --system optimize --lisp $(LISP) --dump '!' -f etc/cl-launch.lisp
 
 all: bin/no-limit bin/no-stack-limit bin/limit $(LISP_BINS)
 
-etc/data/ql-manifest.txt:
-	sbcl --eval '(progn (ql:write-asdf-manifest-file "$@") (sb-ext:exit))'
+bin/optimize: src/run-optimize.lisp
+	$(CLC) $(CLFLAGS) --output $@ -r optimize:main
 
-bin/optimize: src/run-optimize.lisp src/optimize.lisp etc/data/ql-manifest.txt
-	$(BA) $(BUILD_APP_FLAGS) --load $< --output $@ --entry "optimize:main"
+bin/objread: src/objread.lisp
+	$(CLC) $(CLFLAGS) --output $@ -r optimize:objread
 
-bin/objread: src/objread.lisp src/objread.lisp etc/data/ql-manifest.txt
-	$(BA) $(BUILD_APP_FLAGS) --load $< --output $@ --entry "optimize:main"
-
-bin/calc-energy: src/calc-energy.lisp etc/data/ql-manifest.txt
-	$(BA) $(BUILD_APP_FLAGS) --load $< --output $@ --entry "optimize:main"
+bin/calc-energy: src/calc-energy.lisp
+	$(CLC) $(CLFLAGS) --output $@ -r optimize:calc-energy
 
 clean:
-	rm -f bin/no-limit bin/no-stack-limit bin/limit \
-	      etc/data/ql-manifest.txt \
-	      $(LISP_BINS)
+	rm -f bin/no-limit bin/no-stack-limit bin/limit $(LISP_BINS)
+
+real-clean: clean
+	rm -f **/*.fasl **/*.lx32fsl

@@ -1,10 +1,3 @@
 REMOTES
 create-vms
 startup-vms
-*.fasl
-limit
-re-run.lisp
-*.cache
-*.go
-*.output
-*.gz

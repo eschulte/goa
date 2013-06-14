@@ -1,7 +1,8 @@
-(load "src/optimize.lisp")
 (in-package :optimize)
 
-(defvar *help* "Usage: ~a object.store [OPTIONS...]
+(defun objread (&optional (args *arguments*))
+  (flet ((arg-pop () (pop args)))
+    (let ((help "Usage: objread object.store [OPTIONS...]
  manipulate a stored software object
 
 Options:
@@ -10,17 +11,12 @@ Options:
  -e,--edits ------------ write the edits to STDOUT
  -s,--stats ------------ write the stats to STDOUT
  -g,--genome ----------- write the genome to STDOUT
- -E,--eval LISP -------- eval LISP with `obj' bound~%")
-
-(defun main (args)
-  (in-package :optimize)
-  (flet ((arg-pop () (pop args)))
-    (let ((bin-path (arg-pop)))
+ -G,--genome-string ---- write the genome string to STDOUT
+ -E,--eval LISP -------- eval LISP with `obj' bound~%"))
       (when (or (not args)
                 (string= (subseq (car args) 0 2) "-h")
                 (string= (subseq (car args) 0 3) "--h"))
-        (format t *help* bin-path)
-        (error-out))
+        (format t help) (quit))
 
       (let ((best (restore (arg-pop))))
         (getopts
@@ -33,6 +29,9 @@ Options:
                                count))
                      (stats best)))
          ("-g" "--genome" (format t "~&~S~%" (genome best)))
+         ("-G" "--genome-string"
+               (format t "~&~a~%" (software-evolution::genome-string best)))
          ("-E" "--eval"
                (let ((form `(lambda (obj) ,(read-from-string (arg-pop)))))
-                 (format t "~&~S~%" (funcall (eval form) best)))))))))
+                 (format t "~&~S~%" (funcall (eval form) best))))))))
+  (quit))

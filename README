@@ -48,17 +48,17 @@ Instillation and Usage
 ======================
 
 The evolution toolkit which we'll use to evolve programs is written in
-Common Lisp.  The tests for program execution will be bash shell
-scripts and the test harness (used to limit evolved variants) is a
-short C script.  Assuming you already have both bash and a C compiler
-on your system, the following additional tools will need to be
-installed.
+Common Lisp.  Each optimized program also requires a shell script test
+driver, and a test harness (used to limit resources consumed by
+evolved variants) is written in C.  Assuming you already have both
+bash and a C compiler on your system, the following additional tools
+will need to be installed.
 
-1. Install SBCL [6] with your package manager
+1. Steel Bank Common Lisp (SBCL) [6] or Clozure Common Lisp (CCL) [7].
 
-2. Download the Quicklisp [7] Common Lisp package manager which will
-   be used to install all of the required lisp packages.  Follow the
-   instructions on the Quicklisp site to install it.
+2. The Quicklisp [8] Common Lisp package manager which will be used to
+   install all of the required lisp packages.  Follow the instructions
+   on the Quicklisp site to install it.
 
 3. Under the directory to which quicklisp has been installed (by
    default ~/quicklisp), there will be a "local-projects" directory.
@@ -67,30 +67,39 @@ installed.
      git clone git://github.com/eschulte/curry-compose-reader-macros.git
      git clone git://github.com/eschulte/software-evolution.git
 
-   Ensure Quicklisp has been added to your SBCL init file, and then
-   use Quicklisp to register these newly cloned local projects
+   You will also need to symlink this repository into your
+   local-projects directory.
+
+     ln -s $(pwd) ~/quicklisp/local-projects/
+
+   Finally, ensure Quicklisp has been added to your init file, and
+   then use Quicklisp to register these newly cloned local projects.
 
      (ql:add-to-init-file)
      (ql:register-local-projects)
 
 4. Once Quicklisp and these dependencies have all been installed, run
-   the following to install the SOFTWARE-EVOLUTION package and all of
-   its dependencies.
+   the following to install the OPTIMIZE package and all of its
+   dependencies.
 
-     (ql:quickload :software-evolution)
+     (ql:quickload :optimize)
 
 5. Checkout the following tool for the protected execution of shell
    commands through the file system.  This serves to isolate the
    evolutionary process from the many errors thrown during extremely
    long-running optimization runs, the accumulation of which can
    occasionally stall the lisp process.  From the base of this
-   directory run
+   directory run the following to clone sh-runner.
 
      git clone git://github.com/eschulte/sh-runner.git
 
 6. At this point it is possible to run program optimization from the
    lisp REPL as described below.  To build a command line program
-   optimization executable, install buildapp [8] and then run make.
+   optimization executable, install cl-launch [9] and then run make.
+
+   The LISP environment variable may be set to "sbcl" or "ccl" to
+   compile executables with Steel Bank Common Lisp or Clozure Common
+   Lisp respectively.
 
 Batch Optimization at the Command Line
 --------------------------------------
@@ -143,6 +152,8 @@ Footnotes
 
 [6]  http://www.sbcl.org/
 
-[7]  http://www.quicklisp.org/beta/
+[7]  http://ccl.clozure.com/
 
-[8]  http://www.xach.com/lisp/buildapp/
+[8]  http://www.quicklisp.org/beta/
+
+[9]  http://www.xach.com/lisp/buildapp/
