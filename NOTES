@@ -1097,8 +1097,23 @@ coefficients for a memory linear model.
 ** TODO Build table results table
 ** TODO Analyze Optimizations
 ** TODO Build optimization Taxonomy
-* Issues [3/4]
+* Issues [3/5]
 ** TODO Running out of memory
+#+begin_quote
+> As it turns out, after much investigation of how I could be leaking
+> massive amounts of cons cells and strings--the two main ingredients in
+> my GP object which are constantly being created, tested and
+> destroyed. Ultimately I believe that my problem isn't a memory leak, but
+> is rather that I've done a poor job of configuring SBCL's GC to my
+> application domain.
+
+Or you're getting bit by the spectacularly coarse granularity of the
+conservative roots.  Have a look at SB-EXT:GC-LOGFILE, use it, and check
+the output to see how many pinned pages there are per generation.  All of
+the objects in all of those pages are considered by the GC to be "live",
+and this can sometimes cause quite a bit of garbage to be retained.
+#+end_quote
+
 *** dynamic extent
 If problems persists, look into dynamic extents for large short-lives
 software objects.
@@ -1211,6 +1226,25 @@ will tell you what kind of instances.
 |  44 | SB-C::VOP          |
 |  41 | SB-C::LVAR         |
 |  35 | SB-C::CTRAN        |
+
+** TODO Probably CCL needs to use sh-runner as well
+: 2013.06.14.02.29.41: checkpoint after 2304 fitness evaluations
+: 
+: > Error: The value 0 is not of the expected type LIST.
+: > While executing: CCL::LIST-DELETE-VERY-SIMPLE, in process Monitor thread for external process (/bin/sh -c g++  -o /tmp/NILF88j6u /tmp/NILxsCkcK.s -lpthread)(4607).
+: 
+: 
+: ;;;
+: ;;; #<PROCESS Monitor thread for external process (/bin/sh -c g++  -o /tmp/NILF88j6u /tmp/NILxsCkcK.s -lpthread)(4607) [Active] #x30205085D54D> requires access to Shared Terminal Input
+: ;;; Type (:y 4607) to yield control to this thread.
+: ;;;
+: Unhandled exception 11 at 0x41cd90, context->regs at #x7f5fdd3915c8
+: Exception occurred while executing foreign code
+:  at set_n_bits + 112
+: received signal 11; faulting address: 0x307e402c1000
+: invalid permissions for mapped object
+: ? for help
+: [31935] Clozure CL kernel debugger: 
 
 ** DONE SB-INT:BUG
 This was caused by running the room function, should no longer be a
