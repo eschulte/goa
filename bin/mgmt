@@ -370,11 +370,11 @@ link(){
 
                 lbase="$BASE"/benchmarks/parsec-3.0/pkgs
 
-                ldirs="-L/usr/lib64 -L/usr/lib "
-                ldirs+="-L${lbase}/libs/gsl/inst/amd64-linux.gcc/lib "
-                ldirs+="-L${lbase}/libs/libjpeg/inst/amd64-linux.gcc/lib "
+                ldirs="-L${lbase}/libs/libjpeg/inst/amd64-linux.gcc/lib "
+                ldirs+="-L${lbase}/libs/gsl/inst/amd64-linux.gcc/lib "                
                 ldirs+="-L${lbase}/apps/ferret/inst/amd64-linux.gcc/lib "
                 ldirs+="-L${lbase}/../lib "
+                ldirs+="-L/usr/lib64 -L/usr/lib "
 
                 g++ $ldirs ${bench}.s -o $bench $FLAGS||error "linking failed"
                 ;;
