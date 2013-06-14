@@ -12,6 +12,10 @@ LISP:="sbcl ccl"
 # quicklisp install location.  If you do, ensure that it ends in a "/"
 # character, and that you use the $HOME variable instead of ~.
 QUICK_LISP?=$(HOME)/quicklisp/
+ifeq "$(wildcard $(QUICK_LISP)/setup.lisp)" ""
+$(warning $(QUICK_LISP) does not appear to be a valid quicklisp install)
+$(error Please point QUICK_LISP to your quicklisp installation)
+endif
 
 # Compiled lisp executables
 LISP_EXES=optimize objread calc-energy
