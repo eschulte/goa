@@ -254,6 +254,17 @@ To build the executable:
 : g++ -L../../../obj/amd64-linux.gcc/lib -L/usr/lib64 -L/usr/lib ../../../obj/amd64-linux.gcc/TaskQ/lib/taskQ.o all.s -o facesim -pthread -lPhysBAM -xW -lm
 
 **** DONE ferret
+UPDATE: The problem was that the order of the -L arguments in mgmt was bad.
+It caused the libjpeg.a from /usr/lib to be loaded but that was the wrong
+version. Putting that -L last makes ferret build correctly
+
+========================================================
+
+UPDATE: when trying to run the executable you get the following message:
+`Wrong JPEG library version: library is 80, caller expects 70'
+I will investigate this and update
+
+========================================================
 
 To make the .S file:
 First build with the parsec build tool
