@@ -449,7 +449,7 @@ Collect all of the stats into a single large csv file.
   (
       echo "bench,watts,kwh,exit,error,cycles,instructions,r533f00,cache-references,cache-misses,seconds"
       for prog in $(find results/energy-final-metrics/ -type f -executable);do
-          tail=$(cat $prog.stats|grep -v watts|sed 's/,.*$//'|tr '\n' ','|sed 's/,$//')
+          tail=$(cat $prog.stats|grep -v watts|grep -v "task-clock"|sed 's/,.*$//'|tr '\n' ','|sed 's/,$//')
           bench=$(echo $prog|sed 's/.*metrics.//;s/-.*$//')
           for i in $(seq 0 9);do
               echo "$bench,$(tail -1 $prog-$i.csv|awk -F, '{printf "%f,%f", $2, ($5 / 30)}'),$tail"
