@@ -227,7 +227,7 @@ http://wikipedia.org/wiki/Variance#Sum_of_correlated_variables
   done|tee results/counter-by-size/fluidanimate.txt
 #+end_src
 
-** TODO Build all benchmarks to ASM [9/10]
+** TODO Build all benchmarks to ASM [8/10]
 *** parsec
 **** DONE Blackscholes
 **** DONE bodytrack
@@ -253,7 +253,12 @@ then:
 To build the executable:
 : g++ -L../../../obj/amd64-linux.gcc/lib -L/usr/lib64 -L/usr/lib ../../../obj/amd64-linux.gcc/TaskQ/lib/taskQ.o all.s -o facesim -pthread -lPhysBAM -xW -lm
 
-**** DONE ferret
+**** TODO ferret
+UPDATE: when trying to run the executable you get the following message:
+`Wrong JPEG library version: library is 80, caller expects 70'
+I will investigate this and update
+
+========================================================
 
 To make the .S file:
 First build with the parsec build tool
