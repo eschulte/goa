@@ -17,7 +17,7 @@ CLFLAGS=--no-include --system optimize --lisp $(LISP) --dump '!' -f etc/cl-launc
 all: bin/no-limit bin/no-stack-limit bin/limit $(LISP_BINS)
 
 etc/cl-launch.lisp:
-	echo "(load (merge-pathnames \"$(QUICK_LISP)\" \"setup.lisp\"))" >$@
+	echo "(load \"$(QUICK_LISP)/setup.lisp\")" >$@
 
 bin/optimize: src/run-optimize.lisp etc/cl-launch.lisp
 	$(CLC) $(CLFLAGS) --output $@ -r optimize:main
