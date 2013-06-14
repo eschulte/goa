@@ -477,6 +477,10 @@ input(){
             facesim)
                 error "missing input for $bench"
                 ;;
+            ferret)
+                tar xf ${parsec_dir}/inputs/$INPUT
+                in="corel queries" 
+                mv $in $target;;
             fluidanimate)
                 tar xf ${parsec_dir}/inputs/$INPUT
                 case $SIZE  in
@@ -531,7 +535,7 @@ input(){
                 mkdir -p "$bench_dir"
                 cp ${H_DATA}/all/input/foreman_qcif.yuv $target
                 cp ${H_DATA}/train/input/foreman_train_encoder_baseline.cfg ${bench}.cfg;;
-
+            
             *) error "input not implemented for $bench";;
         esac;
         popd>/dev/null
@@ -564,6 +568,15 @@ output(){
                 esac
                 # collect the output
                 cat $bench.input/Result000*.bmp > $target
+                ;;
+            ferret)
+                case $SIZE in
+                    test)  ./$bench corel lsh queries 5 5 1 output.txt;;
+                    tiny)  ./$bench corel lsh queries 5 5 1 output.txt;;
+                    small) ./$bench corel lsh queries 10 20 1 output.txt;;
+                    medium)./$bench corel lsh queries 10 20 1 output.txt;;
+                    large) ./$bench corel lsh queries 10 20 1 output.txt;;
+                esac
                 ;;
             fluidanimate)
                 case $SIZE in
