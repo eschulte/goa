@@ -142,7 +142,7 @@ Options:
     ;; populate population
     (unless *population* ;; only if it hasn't already been populated
       (note 1 "Building the Population")
-      #+ccl (ccl:set-lisp-heap-gc-threshold (expt 2 28))
+      #+ccl (ccl:set-lisp-heap-gc-threshold (expt 2 30))
       #+ccl (ccl:egc nil)
       (setf *population* (loop :for n :below *max-population-size*
                             :collect (copy *orig*)))
