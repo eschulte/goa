@@ -142,8 +142,11 @@ Options:
     ;; populate population
     (unless *population* ;; only if it hasn't already been populated
       (note 1 "Building the Population")
+      #+ccl (ccl:set-lisp-heap-gc-threshold (expt 2 28))
+      #+ccl (ccl:egc nil)
       (setf *population* (loop :for n :below *max-population-size*
-                            :collect (copy *orig*))))
+                            :collect (copy *orig*)))
+      #+ccl (ccl:egc t))
 
     ;; run optimization
     (note 1 "Kicking off ~a optimization threads" *threads*)
@@ -168,3 +171,4 @@ Options:
     (note 1 "results saved in ~a~%" *res-dir*)
     (close (pop *note-out*))
     (quit)))
+

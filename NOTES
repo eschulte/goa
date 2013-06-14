@@ -1097,7 +1097,7 @@ coefficients for a memory linear model.
 ** TODO Build table results table
 ** TODO Analyze Optimizations
 ** TODO Build optimization Taxonomy
-* Issues [3/5]
+* Issues [4/5]
 ** TODO Running out of memory
 #+begin_quote
 > As it turns out, after much investigation of how I could be leaking
@@ -1112,6 +1112,41 @@ conservative roots.  Have a look at SB-EXT:GC-LOGFILE, use it, and check
 the output to see how many pinned pages there are per generation.  All of
 the objects in all of those pages are considered by the GC to be "live",
 and this can sometimes cause quite a bit of garbage to be retained.
+#+end_quote
+
+*** efficiently generate large populations with ccl
+#+begin_quote
+: 12:24 < gbyers> It probably has less to do with GC precision 
+:                 than with GC frequency.  The manual discusses 
+:                 how to tune this.
+: 12:28 < gbyers> An ephemeral/generational GC operates under the 
+:                 assumption that most newly-created objects are 
+:                 very short-lived.   If you're allocating lots of 
+:                 long-lived objects, then it won't be very 
+:                 effective.  By default, CCL's egc runs every 
+:                 time 1 or 2 MB have been allocated, and GC time 
+:                 depends (mostly) on how much non-garbage 
+:                 survives.
+: 12:28 < _schulte_> gbyers: alright thanks, I'll look for 
+:                    reducing gc frequency in the manual
+: 12:28 < _schulte_> oh, that makes sense then, since I'm 
+:                    generating lots of large long-lived objects
+: 12:29 < _schulte_> are there ways to declare objects as 
+:                    long-lived, or possibly a without-gc macro?
+: 12:31 < gbyers> (EGC NIL) will turn off the EGC, and 
+:                 (SET-LISP-GC-THRESHOLD N) controls how often 
+:                 full GC happens,  If you're creating many GB of 
+:                 long-lived objects, then the GC will spend a lot 
+:                 of time finding that there isn't much garbage.
+: 12:31 < _schulte_> gbyers: thanks, I'll let-bind that while I 
+:                    build up the pop and see if it helps
+: 12:31  * _schulte_ is reading the gc chapter of the manual now
+: 12:41 < gbyers> I don't remember whether it's documented, but 
+:                 (GC-VERBOSE T) will print messages whenever the 
+:                 GC runs (to C's stderr; if you use SLIME, that 
+:                 stream may be hard to find ...) I suspect that 
+:                 you'll see that the GC is running very often and 
+:                 that it isn't freeing much.
 #+end_quote
 
 *** dynamic extent
@@ -1227,7 +1262,7 @@ will tell you what kind of instances.
 |  41 | SB-C::LVAR         |
 |  35 | SB-C::CTRAN        |
 
-** TODO Probably CCL needs to use sh-runner as well
+** DONE Probably CCL needs to use sh-runner as well
 : 2013.06.14.02.29.41: checkpoint after 2304 fitness evaluations
 : 
 : > Error: The value 0 is not of the expected type LIST.
