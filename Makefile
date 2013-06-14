@@ -1,5 +1,11 @@
-# Path to SBCL buildapp executable, http://www.xach.com/lisp/buildapp/
+# Build uses cl-launch
 CLC:=cl-launch
+
+ifneq ($(LISP_STACK),)
+ifneq ($(LISP),)
+$(error LISP_STACK overrides LISP forcing use of sbcl.  Unset LISP_STACK or LISP)
+endif
+endif
 LISP:="sbcl ccl"
 
 # You can set this as an environment variable to point to an alternate
@@ -13,6 +19,11 @@ LISP_BINS=$(addprefix bin/, $(LISP_EXES))
 
 # Flags to build standalone executables
 CLFLAGS=--no-include --system optimize --lisp $(LISP) --dump '!' -f etc/cl-launch.lisp
+
+ifneq ($(LISP_STACK),)
+	LISP=sbcl
+	CLFLAGS+= --wrap 'SBCL_OPTIONS="--dynamic-space-size $(LISP_STACK)"'
+endif
 
 all: bin/no-limit bin/no-stack-limit bin/limit $(LISP_BINS)
 
