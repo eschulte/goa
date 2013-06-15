@@ -1,6 +1,19 @@
 Optimization Notes  -*- mode:org; org-attach-directory:"etc/data/" -*-
 #+Options: ^:{}
 
+| Program      | compile | link | input | output | run | opt |
+|--------------+---------+------+-------+--------+-----+-----|
+| blackscholes | a       | a    | a     | a      | a   | a   |
+| bodytrack    | a       | a    | a     | a      | a   |     |
+| facesim      |         |      |       |        |     |     |
+| ferret       |         |      |       |        |     |     |
+| fluidanimate | a       | a    | a     | a      | a   | a   |
+| freqmine     | a       | a    | a     | a      | a   | a   |
+| raytrace     |         |      |       |        |     |     |
+| swaptions    | a       | a    | a     | a      | a   | a   |
+| vips         | a       | a    | a     | a      | a   | a   |
+| x264         | a       |      |       |        |     |     |
+
 * Work Plan
 :   train energy    memory       benchmarks       baselines       write
 :     models      fitness func       |         (Rinard, O2 O3)      |
@@ -317,6 +330,17 @@ To make the executable: (updated to remove excess flags)
      To make an executable:
      gcc -L../../../inst/amd64-linux.gcc/lib/  -L../../../../../libs/glib/inst/amd64-linux.gcc/lib -L../../../../../libs/zlib/inst/amd64-linux.gcc/lib -L/usr/lib64 -L/usr/lib  -L../../../../../libs/glib/inst/amd64-linux.gcc/lib -L../../../../../libs/zlib/inst/amd64-linux.gcc/lib -DG_DISABLE_CAST_CHECKS -L../../../../../libs/glib/inst/amd64-linux.gcc/lib -L../../../../../libs/libxml2/inst/amd64-linux.gcc/lib vips.s  -lgobject-2.0 -lgthread-2.0 -pthread    -lvips   -lm  -lstdc++ -lxml2 -lgmodule-2.0 -ldl -lglib-2.0
 **** TODO x264
+We're *not* using the hand-coded ASM.  Rather we just build entirely
+from the C source.
+
+Interestingly O3 and O2 both throw the following error (with the
+latest GCC which supports the =--combine= flag).
+: x264.c: In function ‘main’:
+: x264.c:92: internal compiler error: in insert_into_preds_of_block, at tree-ssa-pre.c:3155
+: Please submit a full bug report,
+: with preprocessed source if appropriate.
+: See <http://gcc.gnu.org/bugs.html> for instructions.
+
 *** SPEC
 **** 400.perlbench
 **** 401.bzip2
