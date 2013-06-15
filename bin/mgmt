@@ -288,8 +288,10 @@ EOF
                 cp "$VBASE"/src/tools/iofuncs/some_libvips.s $bench.s
                 ;;
             x264)
-                set_flags " " " "
-                X264_SOURCE="x264.c matroska.c muxers.c "
+                set_flags " " "-O1"
+                X264_SOURCE="x264.c"
+                X264_SOURCE+=" matroska.c"
+                X264_SOURCE+=" muxers.c"
                 X264_SOURCE+=" common/mc.c"
                 X264_SOURCE+=" common/predict.c"
                 X264_SOURCE+=" common/pixel.c"
@@ -311,10 +313,7 @@ EOF
                 X264_SOURCE+=" encoder/cabac.c"
                 X264_SOURCE+=" encoder/cavlc.c"
                 X264_SOURCE+=" encoder/encoder.c"
-                X264_SOURCE+=" common/x86/mc-c.c"
-                X264_SOURCE+=" common/x86/predict-c.c"
-                ./configure
-                echo "gcc-4.4 $FULL_FLAGS --combine -S -I. -Icommon $X264_SOURCE -o $bench.s"
+                ./configure --disable-asm
                 gcc-4.4 $FULL_FLAGS --combine -S -I. -Icommon \
                     $X264_SOURCE -o $bench.s ||error "compilation failed"
                 ;;
@@ -446,7 +445,10 @@ link(){
                 fi
                 cp "$VEXE" $bench
                 ;;
-
+            x264)
+                FLAGS="-lm -lpthread"
+                gcc $bench.s -o $bench $FLAGS
+                ;;
             ## SPEC
             bzip2)
                 gcc ${bench}.s -o $bench||error "linking failed";;
