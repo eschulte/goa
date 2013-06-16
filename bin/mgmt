@@ -124,6 +124,15 @@ unpack(){ # dispatch depending on benchmark suite
         if echo "${PARSEC_APPS[@]}"|grep -q $bench;then
             case $bench in
                 bodytrack|facesim|ferret|raytrace|vips)
+                    # pre-build prep
+                    case $bench in
+                        ferret)
+                            pushd "$BASE"/benchmarks/parsec-3.0/pkgs/libs/gsl/src
+                            sed -i 's/\(SUBDIRS =.*\) doc/\1/' Makefile.{in,am}
+                            popd
+                            ;;
+                    esac
+                    # build with parsecmgmt
                     env PATH="$BASE"/benchmarks/parsec-3.0/bin:"$PATH" \
                         parsecmgmt -a build -p $bench \
                     || error "parsecmgmt could not build $bench"
