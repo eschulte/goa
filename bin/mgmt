@@ -42,6 +42,7 @@ case $BENCHMARK in
     freqmine)     SIZE=medium;;
     swaptions)    SIZE=medium;;
     vips)         SIZE=medium;;
+    x264)         SIZE=small;;
     bzip2)        SIZE=large;;
     h264ref)      SIZE=large;;
     *)            SIZE=large;;
@@ -546,6 +547,16 @@ input(){
                     large)     in=bigben_2662x5500.v;;
                 esac
                 mv $in $target;;
+            x264)
+                tar xf ${parsec_dir}/inputs/$INPUT
+                case $SIZE  in
+                    test)   in=eledream_32x18_1.y4m;;
+                    tiny)   in=eledream_64x36_3.y4m;;
+                    small)  in=eledream_640x360_8.y4m;;
+                    medium) in=eledream_640x360_32.y4m;;
+                    large)  in=eledream_640x360_128.y4m;;
+                esac
+                mv $in $target;;
             ## SPEC
             bzip2)
                 SPEC_BENCH=$(echo "${SPEC_APPS[@]}"|tr ' ' '\n'|grep $bench)
@@ -642,8 +653,19 @@ output(){
                 tmp=$(mktemp XXXXXXXX.v)
                 rm -f $tmp
                 ./$bench im_benchmark $bench.input $tmp
-                mv $tmp $target;;
-
+                mv $tmp $target
+                ;;
+            x264)
+                X264_CMD=""
+                X264_CMD+=" --quiet --qp 20 --partitions b8x8,i4x4 --ref 5"
+                X264_CMD+=" --direct auto --b-pyramid --weightb --mixed-refs"
+                X264_CMD+=" --no-fast-pskip --me umh --subme 7"
+                X264_CMD+=" --analyse b8x8,i4x4 --threads 1"
+                tmp=$(mktemp XXXXXXXX.y4m)
+                cp $bench.input $tmp
+                ./$bench $X264_CMD -o $bench.output $tmp
+                rm -f $tmp
+                ;;
             ## SPEC
             bzip2)
                 ./$bench -c $bench.input > $target;;

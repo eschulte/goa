@@ -37,6 +37,7 @@ case $BENCHMARK in
     freqmine)     SIZE=medium;;
     swaptions)    SIZE=medium;;
     vips)         SIZE=medium;;
+    x264)         SIZE=small;;
     bzip2)        SIZE=large;;
     h264ref)      SIZE=large;;
     *) error "no test implemented for '$BENCHMARK'";;
@@ -224,6 +225,23 @@ case $BENCHMARK in
             ERROR=0;
         else
             ERROR=1;
+        fi
+        ;;
+    x264)
+        X264_CMD=""
+        X264_CMD+=" --quiet --qp 20 --partitions b8x8,i4x4 --ref 5"
+        X264_CMD+=" --direct auto --b-pyramid --weightb --mixed-refs"
+        X264_CMD+=" --no-fast-pskip --me umh --subme 7"
+        X264_CMD+=" --analyse b8x8,i4x4 --threads 1"
+        tmp=$(mktemp XXXXXXXX.y4m)
+        cp $INPUT $tmp
+        run 0 $EXECUTABLE $X264_CMD -o $OUT $tmp
+        EXIT=$?
+        rm -f $tmp
+        if $(diff -q $OUT $OUTPUT);then
+            ERROR=0;
+        else
+            ERROR=10;
         fi
         ;;
 
