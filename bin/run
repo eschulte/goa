@@ -238,7 +238,7 @@ case $BENCHMARK in
         run 0 $EXECUTABLE $X264_CMD -o $OUT $tmp
         EXIT=$?
         rm -f $tmp
-        if $(diff -q $OUT $OUTPUT);then
+        if diff $OUT $OUTPUT;then
             ERROR=0;
         else
             ERROR=10;
