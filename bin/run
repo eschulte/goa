@@ -110,8 +110,8 @@ else
         echo "$EXIT,exit"
         echo "$ERROR,error"
         cat $PERF_OUT \
-            |grep "[0-9,]\+ [a-z]\+" \
-            |sed 's/^ *//;s/,//g;s/ \([^ ]\+\).*$/,\1/';
+            |grep "^ *[0-9,]\+ [a-z]\+" \
+            |sed 's/^ *//;s/,//g;s/ \([^ ]\+\)[^(]*/,\1/;s/([^0-9]*\([0-9.]\+\).*$/,\1%/';
         rm -f $PERF_OUT;
         rm -f $OUT; }
 fi
