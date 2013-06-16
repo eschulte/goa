@@ -38,6 +38,7 @@ FULL_FLAGS=""
 case $BENCHMARK in
     blackscholes) SIZE=large;;
     bodytrack)    SIZE=large;;
+    facesim)      SIZE=medium;;
     ferret)       SIZE=medium;;
     fluidanimate) SIZE=large;;
     freqmine)     SIZE=medium;;
@@ -518,8 +519,16 @@ input(){
                 
                 mv $in $target;;
             facesim)
-                error "missing input for $bench"
-                ;;
+                if [ ! -d ${parsec_dir}/inputs/ ];then
+                    warning "downloading facesim input data"
+                    pushd "$BASE/benchmarks/parsec-3.0/"
+                    wget http://cs.unm.edu/~eschulte/data/pkgs-apps-facesim-inputs.tar.gz
+                    tar xzf pkgs-apps-facesim-inputs.tar.gz
+                    popd
+                fi
+                tar xf ${parsec_dir}/inputs/$INPUT
+                in="Face_Data"
+                mv $in $target;;
             ferret)
                 tar xf ${parsec_dir}/inputs/$INPUT
                 in="corel queries"
@@ -623,6 +632,11 @@ output(){
                 esac
                 # collect the output
                 cat $bench.input/Result000*.bmp > $target
+                ;;
+            facesim)
+                ln -s $bench.input Face_Data
+                ./$bench -timing -threads 1
+                mv Storytelling $target
                 ;;
             ferret)
                 case $SIZE in

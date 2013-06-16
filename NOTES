@@ -5,7 +5,7 @@ Optimization Notes  -*- mode:org; org-attach-directory:"etc/data/" -*-
 |--------------+---------+------+-------+--------+-----+-----|
 | blackscholes | a       | a    | a     | a      | a   | a   |
 | bodytrack    | a       | a    | a     | a      | a   |     |
-| facesim      |         |      |       |        |     |     |
+| facesim      | a       | a    | a     | a      |     |     |
 | ferret       | a       | a    | a     | a      | a   |     |
 | fluidanimate | a       | a    | a     | a      | a   | a   |
 | freqmine     | a       | a    | a     | a      | a   | a   |
