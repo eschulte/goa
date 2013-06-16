@@ -1131,7 +1131,7 @@ coefficients for a memory linear model.
 ** TODO Build table results table
 ** TODO Analyze Optimizations
 ** TODO Build optimization Taxonomy
-* Code Tasks [2/4]
+* Code Tasks [3/4]
 ** DONE add GC flag to optimize executable
 with separate help and default for SBCL and CCL
 
@@ -1206,7 +1206,7 @@ with command line flag
 : (...)
 : OPTIMIZE> 
 
-** TODO add version information
+** DONE add version information
 - git and CL info
 - command line option and in log file
 

@@ -30,8 +30,17 @@ Options:
  -T,--tourny-size NUM -- tournament size
                          default: 4
  -t,--threads NUM ------ number of threads
+ -V,--version ---------- print version and exit
  -v,--verbose NUM ------ verbosity level 0-4
  -w,--work-dir DIR ----- use an sh-runner/work directory~%")
+
+(defvar *version*
+  (format nil
+          #+ccl "optimize version ~a using Clozure Common Lisp (CCL)~%"
+          #+sbcl "optimize version ~a using Steel Bank Common Lisp (SBCL)~%"
+          (eval-when (:compile-toplevel :load-toplevel :execute)
+            (let ((raw (shell "git describe --always")))
+              (subseq raw 0 (1- (length raw)))))))
 
 (defvar *checkpoint-funcs* (list #'checkpoint)
   "Functions to record checkpoints.")
@@ -52,15 +61,19 @@ Options:
     #+sbcl (setf (sb-ext:bytes-consed-between-gcs) (expt 2 24))
 
     ;; check command line arguments
-    (when (or (when (<= (length args) 2)
-                (format t "Insufficient command line arguments~%~%") t)
+    (when (or (<= (length args) 2)
               (string= (subseq (car args) 0 2) "-h")
-              (string= (subseq (car args) 0 3) "--h"))
-      (format t *help*
-              #+ccl "space left after a full GC pass"
-              #+sbcl "bytes consed between every GC pass"
-              #+ccl (ccl:lisp-heap-gc-threshold)
-              #+sbcl (sb-ext:bytes-consed-between-gcs))
+              (string= (subseq (car args) 0 3) "--h")
+              (string= (car args) "-V")
+              (string= (car args) "--version"))
+      (if (or (string= (car args) "-V")
+              (string= (car args) "--version"))
+          (progn (format t *version*) (quit))
+          (format t *help*
+                  #+ccl "space left after a full GC pass"
+                  #+sbcl "bytes consed between every GC pass"
+                  #+ccl (ccl:lisp-heap-gc-threshold)
+                  #+sbcl (sb-ext:bytes-consed-between-gcs)))
       (quit))
 
     ;; process command line arguments
@@ -122,6 +135,9 @@ Options:
                       (:intel 'intel-sandybridge-energy-model)
                       (:amd   'amd-opteron-energy-model))))
     (when (symbolp *model*) (setf *model* (eval *model*)))
+
+    ;; write out version information
+    (note 1 *version*)
 
     ;; write out configuration parameters
     (note 1 "Parameters:~%~S~%"
