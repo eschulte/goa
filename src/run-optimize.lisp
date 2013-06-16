@@ -25,9 +25,9 @@ Options:
  -r,--res-dir DIR ------ save results to dir
                          default: program.opt/
  -s,--size SIZE -------- input size test,tiny,small,medium,large
- -t,--threads NUM ------ number of threads
  -T,--tourny-size NUM -- tournament size
                          default: 4
+ -t,--threads NUM ------ number of threads
  -v,--verbose NUM ------ verbosity level 0-4
  -w,--work-dir DIR ----- use an sh-runner/work directory~%")
 
@@ -81,8 +81,8 @@ Options:
                                                "/")
                                       dir (concatenate 'string dir "/"))))))
      ("-s" "--size"      (setf *size* (arg-pop)))
-     ("-t" "--threads"   (setf *threads* (parse-integer (arg-pop))))
      ("-T" "--tourny-size" (setf *tournament-size* (parse-integer (arg-pop))))
+     ("-t" "--threads"   (setf *threads* (parse-integer (arg-pop))))
      ("-v" "--verbose"   (let ((lvl (parse-integer (arg-pop))))
                            (when (>= lvl 4) (setf *shell-debug* t))
                            (setf *note-level* lvl)))
