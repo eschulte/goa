@@ -12,6 +12,7 @@
 #  -R,--raw ------- print raw output
 #  -s,--size ------ input size test,tiny,small,medium,large
 #  -d,--debug ----- print commands before running them
+#  -k,--keep ------ keep output
 #
 # Benchmark should be one of
 #  blackscholes
@@ -33,6 +34,7 @@ BENCHMARK="$1"
 case $BENCHMARK in
     blackscholes) SIZE=large;;
     bodytrack)    SIZE=large;;
+    ferret)       SIZE=medium;;
     fluidanimate) SIZE=large;;
     freqmine)     SIZE=medium;;
     swaptions)    SIZE=medium;;
@@ -50,12 +52,13 @@ WATTSUP=""
 REPEAT=""
 RAW=""
 DEBUG=""
+KEEP=""
 EXIT=""
 ERROR=""
 OUT=$(mktemp)
 eval set -- \
-    $(getopt -o l:pc:wr:rs:d \
-    -l limit:,perf,counters:,wattsup,repeat:,raw,size:,debug \
+    $(getopt -o l:pc:wr:rs:dk \
+    -l limit:,perf,counters:,wattsup,repeat:,raw,size:,debug,keep \
     -- "$@" || help;)
 while [ $# -gt 0 ];do
     case $1 in
@@ -67,6 +70,7 @@ while [ $# -gt 0 ];do
         -R|--raw) RAW="yes";;
         -s|--size) SIZE="$2"; shift;;
         -d|--debug) DEBUG="yes";;
+        -k|--keep) KEEP="yes";;
         (--) shift; break;;
         (-*) error "unrecognized option $1";;
         (*)  break;;
@@ -99,7 +103,11 @@ if [ -z $PERF ];then
         else
             cat $OUT
         fi
-        rm -f $OUT; }
+        if [ -z $KEEP ];then
+            rm -f $OUT;
+        else
+            echo "output keep at $OUT";
+        fi; }
 else
     # perf prefix to the command
     PERF_OUT=$(mktemp)
@@ -113,7 +121,11 @@ else
             |grep "^ *[0-9,]\+ [a-z]\+" \
             |sed 's/^ *//;s/,//g;s/ \([^ ]\+\)[^(]*/,\1/;s/([^0-9]*\([0-9.]\+\).*$/,\1%/';
         rm -f $PERF_OUT;
-        rm -f $OUT; }
+        if [ -z $KEEP ];then
+            rm -f $OUT;
+        else
+            echo "output keep at $OUT";
+        fi; }
 fi
 trap exit_hook EXIT
 
@@ -172,6 +184,17 @@ case $BENCHMARK in
         else
             ERROR=1;
         fi
+        ;;
+    ferret)
+        case $SIZE in
+            test)   run 0 $EXECUTABLE $INPUT/corel lsh $INPUT/queries 5  5  1 $OUT;;
+            tiny)   run 0 $EXECUTABLE $INPUT/corel lsh $INPUT/queries 5  5  1 $OUT;;
+            small)  run 0 $EXECUTABLE $INPUT/corel lsh $INPUT/queries 10 20 1 $OUT;;
+            medium) run 0 $EXECUTABLE $INPUT/corel lsh $INPUT/queries 10 20 1 $OUT;;
+            large)  run 0 $EXECUTABLE $INPUT/corel lsh $INPUT/queries 10 20 1 $OUT;;
+        esac
+        EXIT=$?
+        ERROR=$(diff <(sed 's/^.*ferret.input//' $OUT) <(sed 's/^.*ferret.input//' $OUTPUT)|wc -l)
         ;;
     fluidanimate)
         case $SIZE in
@@ -285,7 +308,7 @@ case $BENCHMARK in
             -p FramesToBeEncoded=$FRAMES \
             -p InputFile="$INPUT" \
             -p OutputFile="$OUT"
-        EXIT=$?
+p        EXIT=$?
         if ! diff -q $OUTPUT $OUT;then
             ERROR=10
         else

@@ -38,6 +38,7 @@ FULL_FLAGS=""
 case $BENCHMARK in
     blackscholes) SIZE=large;;
     bodytrack)    SIZE=large;;
+    ferret)       SIZE=medium;;
     fluidanimate) SIZE=large;;
     freqmine)     SIZE=medium;;
     swaptions)    SIZE=medium;;
@@ -512,9 +513,10 @@ input(){
                 ;;
             ferret)
                 tar xf ${parsec_dir}/inputs/$INPUT
-                in="corel queries" 
-                mkdir $target
-                mv $in $target;;
+                in="corel queries"
+                rm -rf $target
+                mkdir -p $target
+                mv $in $target/;;
             fluidanimate)
                 tar xf ${parsec_dir}/inputs/$INPUT
                 case $SIZE  in
@@ -615,12 +617,12 @@ output(){
                 ;;
             ferret)
                 case $SIZE in
-                    test)   ./$bench corel lsh queries 5  5  1 output.txt;;
-                    tiny)   ./$bench corel lsh queries 5  5  1 output.txt;;
-                    small)  ./$bench corel lsh queries 10 20 1 output.txt;;
-                    medium) ./$bench corel lsh queries 10 20 1 output.txt;;
-                    large)  ./$bench corel lsh queries 10 20 1 output.txt;;
-                esac
+                    test)   ./$bench $bench.input/corel lsh $bench.input/queries 5  5  1 $target;;
+                    tiny)   ./$bench $bench.input/corel lsh $bench.input/queries 5  5  1 $target;;
+                    small)  ./$bench $bench.input/corel lsh $bench.input/queries 10 20 1 $target;;
+                    medium) ./$bench $bench.input/corel lsh $bench.input/queries 10 20 1 $target;;
+                    large)  ./$bench $bench.input/corel lsh $bench.input/queries 10 20 1 $target;;
+                esac >/dev/null 2>/dev/null ||error "output failed"
                 ;;
             fluidanimate)
                 case $SIZE in
