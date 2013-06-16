@@ -15,8 +15,8 @@ Options:
  -F,--fit-evals NUM ---- max number of fitness evals
                          default: 2^18
  -f,--flags FLAGS ------ flags to use when linking
+ -L,--light ------------ use lighter genome representation
  -l,--linker LINKER ---- linker to use
- -L,--listen ADDRESS --- listen for shared individuals
  -m,--model NAME ------- model name
  -P,--period NUM ------- period (in evals) of checkpoints
                          default: max-evals/(2^10)
@@ -69,6 +69,7 @@ Options:
      ("-e" "--eval"      (eval (read-from-string (arg-pop))))
      ("-F" "--fit-evals" (setf *evals* (parse-integer (arg-pop))))
      ("-f" "--flags"     (setf (flags *orig*) (list (arg-pop))))
+     ("-L" "--light"     (setf *orig* (to-asm-light *orig*)))
      ("-l" "--linker"    (setf (linker *orig*) (arg-pop)))
      ("-m" "--model"     (setf *model* (intern (string-upcase (arg-pop)))))
      ("-P" "--period"    (setf *period* (parse-integer (arg-pop))))

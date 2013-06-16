@@ -19,6 +19,21 @@
 (defclass asm-perf (asm)
   ((stats :initarg :stats :accessor stats :initform nil)))
 
+(defclass asm-light (asm-perf) ())
+
+(defmethod software-evolution::lines ((asm asm-light)) (genome asm))
+
+(defmethod software-evolution:from-file ((asm asm-light) path)
+  (split-sequence #\Newline (file-to-string path)))
+
+(defmethod to-asm-light ((asm asm-perf))
+  (with-slots (flags linker edits genome) asm
+    (make-instance 'asm-light
+      :flags flags
+      :linker linker
+      :edits edits
+      :genome (mapcar {aget :line} genome))))
+
 
 ;;; Models
 (defvar intel-sandybridge-energy-model

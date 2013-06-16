@@ -1131,11 +1131,11 @@ coefficients for a memory linear model.
 ** TODO Build table results table
 ** TODO Analyze Optimizations
 ** TODO Build optimization Taxonomy
-* Code Tasks [0/3]
+* Code Tasks [1/3]
 ** TODO add GC flag to optimize executable
 with separate help and default for SBCL and CCL
 
-** TODO =asm-perf-light= for smaller memory footprint
+** DONE =asm-perf-light= for smaller memory footprint
 with command line flag
 
 ** TODO minimal test suite
@@ -1144,8 +1144,8 @@ failures at stages.
 
 Run with =make check=.
 
-* Issues [4/5]
-** TODO Running out of memory
+* Issues [5/5]
+** DONE Running out of memory
 #+begin_quote
 > As it turns out, after much investigation of how I could be leaking
 > massive amounts of cons cells and strings--the two main ingredients in
