@@ -400,7 +400,7 @@ link(){
                 link_dirs="-L/usr/lib64 -L/usr/lib "
                 link_dirs+="-L${ldir}/lib "
                 link_dirs+="${ldir}/TaskQ/lib/taskQ.o"
-                
+
                 g++ $link_dirs ${bench}.s -o $bench $FLAGS \
                     ||error "linking failed"
                 ;;
@@ -411,7 +411,7 @@ link(){
                 lbase="$BASE"/benchmarks/parsec-3.0/pkgs
 
                 ldirs="-L${lbase}/libs/libjpeg/inst/amd64-linux.gcc/lib "
-                ldirs+="-L${lbase}/libs/gsl/inst/amd64-linux.gcc/lib "                
+                ldirs+="-L${lbase}/libs/gsl/inst/amd64-linux.gcc/lib "
                 ldirs+="-L${lbase}/apps/ferret/inst/amd64-linux.gcc/lib "
                 ldirs+="-L${lbase}/../lib "
                 ldirs+="-L/usr/lib64 -L/usr/lib "
@@ -430,7 +430,7 @@ link(){
                 FLAGS+="-ldl -lpthread -lstdc++ -lpthread -lrt -rdynamic "
 
                 lbase="$BASE"/benchmarks/parsec-3.0/pkgs
-                
+
                 ldirs="-L/usr/lib64 -L/usr/lib "
                 ldirs+="-L${lbase}/libs/mesa/inst/amd64-linux.gcc/lib "
                 ldirs+="-L${lbase}/libs/mesa/inst/amd64-linux.gcc/lib "
@@ -516,7 +516,7 @@ input(){
                     medium) in=sequenceB_2;;
                     large)  in=sequenceB_4;;
                 esac
-                
+
                 mv $in $target;;
             facesim)
                 if [ ! -d ${parsec_dir}/inputs/ ];then
@@ -599,7 +599,7 @@ input(){
                 mkdir -p "$bench_dir"
                 cp ${H_DATA}/all/input/foreman_qcif.yuv $target
                 cp ${H_DATA}/train/input/foreman_train_encoder_baseline.cfg ${bench}.cfg;;
-            
+
             *) error "input not implemented for $bench";;
         esac;
         popd>/dev/null
@@ -617,7 +617,7 @@ output(){
     else
         input $bench;
         case $BENCHMARK in
-            
+
             ## PARSEC
             blackscholes)
                 ./$bench 1 $bench.input $target;;
@@ -743,7 +743,7 @@ case $ACTION in
     input) unpack $BENCHMARK && input $BENCHMARK;;
 
     unpack|compile|link|output)
-        
+
         unpack $BENCHMARK
         [[ $ACTION == "unpack" ]] && exit 0;
 
