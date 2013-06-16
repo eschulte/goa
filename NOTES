@@ -1138,6 +1138,74 @@ with separate help and default for SBCL and CCL
 ** DONE =asm-perf-light= for smaller memory footprint
 with command line flag
 
+: OPTIMIZE> (progn (setf *population* nil) (ccl:gc))
+: NIL
+: OPTIMIZE> (time (setf *population* (loop :for n :below 16 :collect (copy *orig*))))
+: (SETF *POPULATION* (LOOP :FOR N :BELOW 16 :COLLECT (COPY *ORIG*)))
+: took 11,668 milliseconds (11.668 seconds) to run.
+:      11,172 milliseconds (11.172 seconds, 95.75%) of which was spent in GC.
+: During that period, and with 4 available CPU cores,
+:      11,540 milliseconds (11.540 seconds) were spent in user mode
+:         140 milliseconds ( 0.140 seconds) were spent in system mode
+:  242,969,352 bytes of memory allocated.
+:  51,143 minor page faults, 0 major page faults, 0 swaps.
+: (...)
+: OPTIMIZE> (ccl:lisp-heap-gc-threshold)
+: 16777216
+: OPTIMIZE> (ccl:set-lisp-heap-gc-threshold (expt 2 28))
+: 268500992
+: OPTIMIZE> (progn (setf *population* nil) (ccl:gc))
+: NIL
+: OPTIMIZE> (time (setf *population* (loop :for n :below 16 :collect (copy *orig*))))
+: (SETF *POPULATION* (LOOP :FOR N :BELOW 16 :COLLECT (COPY *ORIG*)))
+: took 3,307 milliseconds (3.307 seconds) to run.
+:      2,865 milliseconds (2.865 seconds, 86.63%) of which was spent in GC.
+: During that period, and with 4 available CPU cores,
+:      3,310 milliseconds (3.310 seconds) were spent in user mode
+:         20 milliseconds (0.020 seconds) were spent in system mode
+:  242,969,352 bytes of memory allocated.
+: (...)
+: OPTIMIZE> (progn (setf *population* nil) (ccl:gc))
+: NIL
+: OPTIMIZE> (time (prog2 (ccl:egc nil) (setf *population* (loop :for n :below 16 :collect (copy *orig*))) (ccl:egc t)))
+: (PROG2 (CCL:EGC NIL) (SETF *POPULATION* (LOOP :FOR N :BELOW 16 :COLLECT (COPY *ORIG*))) (CCL:EGC T))
+: took 474 milliseconds (0.474 seconds) to run.
+: During that period, and with 4 available CPU cores,
+:      410 milliseconds (0.410 seconds) were spent in user mode
+:       70 milliseconds (0.070 seconds) were spent in system mode
+:  242,969,352 bytes of memory allocated.
+:  53,176 minor page faults, 0 major page faults, 0 swaps.
+: (...)
+: OPTIMIZE> (ccl:set-lisp-heap-gc-threshold 16777216)
+: 16777216
+: OPTIMIZE> (setf *orig* (to-asm-light *orig*))
+: #<ASM-LIGHT #x2AC49356>
+: OPTIMIZE> (progn (setf *population* nil) (ccl:gc))
+: NIL
+: OPTIMIZE> (time (setf *population* (loop :for n :below 16 :collect (copy *orig*))))
+: (SETF *POPULATION* (LOOP :FOR N :BELOW 16 :COLLECT (COPY *ORIG*)))
+: took 5,965 milliseconds (5.965 seconds) to run.
+:      5,827 milliseconds (5.827 seconds, 97.69%) of which was spent in GC.
+: During that period, and with 4 available CPU cores,
+:      5,970 milliseconds (5.970 seconds) were spent in user mode
+:          0 milliseconds (0.000 seconds) were spent in system mode
+:  80,991,208 bytes of memory allocated.
+:  16,364 minor page faults, 0 major page faults, 0 swaps.
+: (...)
+: OPTIMIZE> (ccl:set-lisp-heap-gc-threshold (expt 2 28))
+: 268500992
+: OPTIMIZE> (progn (setf *population* nil) (ccl:gc))
+: NIL
+: OPTIMIZE> (time (prog2 (ccl:egc nil) (setf *population* (loop :for n :below 16 :collect (copy *orig*))) (ccl:egc t)))
+: (PROG2 (CCL:EGC NIL) (SETF *POPULATION* (LOOP :FOR N :BELOW 16 :COLLECT (COPY *ORIG*))) (CCL:EGC T))
+: took 114 milliseconds (0.114 seconds) to run.
+: During that period, and with 4 available CPU cores,
+:      110 milliseconds (0.110 seconds) were spent in user mode
+:        0 milliseconds (0.000 seconds) were spent in system mode
+:  80,990,472 bytes of memory allocated.
+: (...)
+: OPTIMIZE> 
+
 ** TODO minimal test suite
 Including tests for mgmt and run which should output tables of
 failures at stages.
