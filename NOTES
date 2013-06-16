@@ -1131,8 +1131,8 @@ coefficients for a memory linear model.
 ** TODO Build table results table
 ** TODO Analyze Optimizations
 ** TODO Build optimization Taxonomy
-* Code Tasks [1/4]
-** TODO add GC flag to optimize executable
+* Code Tasks [2/4]
+** DONE add GC flag to optimize executable
 with separate help and default for SBCL and CCL
 
 ** DONE =asm-perf-light= for smaller memory footprint

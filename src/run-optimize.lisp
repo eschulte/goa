@@ -15,6 +15,8 @@ Options:
  -F,--fit-evals NUM ---- max number of fitness evals
                          default: 2^18
  -f,--flags FLAGS ------ flags to use when linking
+ -g,--gc-size ---------- ~a
+                         default: ~:d
  -L,--light ------------ use lighter genome representation
  -l,--linker LINKER ---- linker to use
  -m,--model NAME ------- model name
@@ -45,12 +47,20 @@ Options:
   (in-package :optimize)
   (flet ((arg-pop () (pop args)))
 
+    ;; Set default GC threshold
+    #+ccl (ccl:set-lisp-heap-gc-threshold (expt 2 30))
+    #+sbcl (setf (sb-ext:bytes-consed-between-gcs) (expt 2 24))
+
     ;; check command line arguments
     (when (or (when (<= (length args) 2)
                 (format t "Insufficient command line arguments~%~%") t)
               (string= (subseq (car args) 0 2) "-h")
               (string= (subseq (car args) 0 3) "--h"))
-      (format t *help*)
+      (format t *help*
+              #+ccl "space left after a full GC pass"
+              #+sbcl "bytes consed between every GC pass"
+              #+ccl (ccl:lisp-heap-gc-threshold)
+              #+sbcl (sb-ext:bytes-consed-between-gcs))
       (quit))
 
     ;; process command line arguments
@@ -69,6 +79,10 @@ Options:
      ("-e" "--eval"      (eval (read-from-string (arg-pop))))
      ("-F" "--fit-evals" (setf *evals* (parse-integer (arg-pop))))
      ("-f" "--flags"     (setf (flags *orig*) (list (arg-pop))))
+     ("-g" "--gc-size"
+           #+ccl  (ccl:set-lisp-heap-gc-threshold (parse-integer (arg-pop)))
+           #+sbcl (setf (sb-ext:bytes-consed-between-gcs)
+                        (parse-integer (arg-pop))))
      ("-L" "--light"     (setf *orig* (to-asm-light *orig*)))
      ("-l" "--linker"    (setf (linker *orig*) (arg-pop)))
      ("-m" "--model"     (setf *model* (intern (string-upcase (arg-pop)))))
@@ -143,7 +157,6 @@ Options:
     ;; populate population
     (unless *population* ;; only if it hasn't already been populated
       (note 1 "Building the Population")
-      #+ccl (ccl:set-lisp-heap-gc-threshold (expt 2 30))
       #+ccl (ccl:egc nil)
       (setf *population* (loop :for n :below *max-population-size*
                             :collect (copy *orig*)))
