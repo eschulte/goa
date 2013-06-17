@@ -246,7 +246,8 @@ compile(){
                 ;;
             ferret)
                 set_flags ""
-                sed -i 'd/^int image_segment/' image/image.h
+                sed -i '31i/*' image/image.h
+                sed -i '31a*/' image/image.h
                 gcc-4.4 --combine -S \
                     -Iinclude/ \
                     -I"$BASE"/benchmarks/parsec-3.0/pkgs/libs/libjpeg/inst/amd64-linux.gcc/include \
