@@ -1,0 +1,58 @@
+#!/bin/bash
+#
+# Usage: self-test
+#  test the functionality of this optimization install
+#
+# Options:
+#  -m,--mgmt ------- just check mgmt
+#  -r,--run -------- just check run
+#
+. $(dirname $0)/common
+
+MGMT="YES"
+RUN="YES"
+
+eval set -- $(getopt -o mr -l mgmt,run -- "$@" || help;)
+while [ $# -gt 0 ];do
+    case $1 in
+        -m|--mgmt)  RUN="";;
+        -r|--run)   MGMT="";;
+        (--) shift; break;;
+        (-*) error "unrecognized option $1";;
+        (*)  break;;
+    esac
+    shift
+done
+
+check(){
+    if $@ >/dev/null;then echo "✓"; else echo "×"; fi; }
+
+declare -a BENCHMARKS
+BENCHMARKS+=(blackscholes)
+BENCHMARKS+=(bodytrack)
+BENCHMARKS+=(facesim)
+BENCHMARKS+=(ferret)
+BENCHMARKS+=(fluidanimate)
+BENCHMARKS+=(freqmine)
+BENCHMARKS+=(raytrace)
+BENCHMARKS+=(swaptions)
+BENCHMARKS+=(vips)
+BENCHMARKS+=(x264)
+
+msg "Testing mgmt support for all benchmarks"
+mgmt="$BASE"/bin/mgmt
+
+if [ ! -z $MGMT ];then
+    (
+        echo "Benchmark clean unpack compile link input output"
+        for bench in ${BENCHMARKS[@]};do
+            clean=$(check $mgmt clean $bench)
+            unpack=$(check $mgmt unpack $bench)
+            compile=$(check $mgmt compile $bench)
+            link=$(check $mgmt link $bench)
+            input=$(check $mgmt input $bench)
+            output=$(check $mgmt output $bench)
+            echo "$bench $clean $unpack $compile $link $input $output"
+        done
+    )|column -t
+fi
