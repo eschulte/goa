@@ -250,6 +250,7 @@ compile(){
                 gcc-4.4 --combine -S \
                     -Iinclude/ \
                     -I"$BASE"/benchmarks/parsec-3.0/pkgs/libs/libjpeg/inst/amd64-linux.gcc/include \
+                    -I"$BASE"/benchmarks/parsec-3.0/pkgs/libs/gsl/inst/amd64-linux.gcc/include \
                     $FULL_FLAGS \
                     src/*.c src/lsh/*.c \
                     image/{image,extract,edge,srm}.c \
