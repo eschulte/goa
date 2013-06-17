@@ -38,10 +38,13 @@ FULL_FLAGS=""
 case $BENCHMARK in
     blackscholes) SIZE=large;;
     bodytrack)    SIZE=large;;
+    facesim)      SIZE=medium;;
+    ferret)       SIZE=medium;;
     fluidanimate) SIZE=large;;
     freqmine)     SIZE=medium;;
     swaptions)    SIZE=medium;;
     vips)         SIZE=medium;;
+    x264)         SIZE=small;;
     bzip2)        SIZE=large;;
     h264ref)      SIZE=large;;
     *)            SIZE=large;;
@@ -122,6 +125,15 @@ unpack(){ # dispatch depending on benchmark suite
         if echo "${PARSEC_APPS[@]}"|grep -q $bench;then
             case $bench in
                 bodytrack|facesim|ferret|raytrace|vips)
+                    # pre-build prep
+                    case $bench in
+                        ferret)
+                            pushd "$BASE"/benchmarks/parsec-3.0/pkgs/libs/gsl/src
+                            sed -i 's/\(SUBDIRS =.*\) doc/\1/' Makefile.{in,am}
+                            popd
+                            ;;
+                    esac
+                    # build with parsecmgmt
                     env PATH="$BASE"/benchmarks/parsec-3.0/bin:"$PATH" \
                         parsecmgmt -a build -p $bench \
                     || error "parsecmgmt could not build $bench"
@@ -287,8 +299,36 @@ EOF
                 "$BASE"/bin/libvips.sh $VBASE
                 cp "$VBASE"/src/tools/iofuncs/some_libvips.s $bench.s
                 ;;
-            x264) not_implemented $bench ;;
-            
+            x264)
+                set_flags " " "-O1"
+                X264_SOURCE="x264.c"
+                X264_SOURCE+=" matroska.c"
+                X264_SOURCE+=" muxers.c"
+                X264_SOURCE+=" common/mc.c"
+                X264_SOURCE+=" common/predict.c"
+                X264_SOURCE+=" common/pixel.c"
+                X264_SOURCE+=" common/macroblock.c"
+                X264_SOURCE+=" common/frame.c"
+                X264_SOURCE+=" common/dct.c"
+                X264_SOURCE+=" common/cpu.c"
+                X264_SOURCE+=" common/cabac.c"
+                X264_SOURCE+=" common/common.c"
+                X264_SOURCE+=" common/mdate.c"
+                X264_SOURCE+=" common/set.c"
+                X264_SOURCE+=" common/quant.c"
+                X264_SOURCE+=" common/vlc.c"
+                X264_SOURCE+=" encoder/analyse.c"
+                X264_SOURCE+=" encoder/me.c"
+                X264_SOURCE+=" encoder/ratecontrol.c"
+                X264_SOURCE+=" encoder/set.c"
+                X264_SOURCE+=" encoder/macroblock.c"
+                X264_SOURCE+=" encoder/cabac.c"
+                X264_SOURCE+=" encoder/cavlc.c"
+                X264_SOURCE+=" encoder/encoder.c"
+                ./configure --disable-asm
+                gcc-4.4 $FULL_FLAGS --combine -S -I. -Icommon \
+                    $X264_SOURCE -o $bench.s ||error "compilation failed"
+                ;;
             ## SPEC
             bzip2)
                 set_flags "" "-O3 -fno-inline"
@@ -360,7 +400,7 @@ link(){
                 link_dirs="-L/usr/lib64 -L/usr/lib "
                 link_dirs+="-L${ldir}/lib "
                 link_dirs+="${ldir}/TaskQ/lib/taskQ.o"
-                
+
                 g++ $link_dirs ${bench}.s -o $bench $FLAGS \
                     ||error "linking failed"
                 ;;
@@ -370,11 +410,11 @@ link(){
 
                 lbase="$BASE"/benchmarks/parsec-3.0/pkgs
 
-                ldirs="-L/usr/lib64 -L/usr/lib "
+                ldirs="-L${lbase}/libs/libjpeg/inst/amd64-linux.gcc/lib "
                 ldirs+="-L${lbase}/libs/gsl/inst/amd64-linux.gcc/lib "
-                ldirs+="-L${lbase}/libs/libjpeg/inst/amd64-linux.gcc/lib "
                 ldirs+="-L${lbase}/apps/ferret/inst/amd64-linux.gcc/lib "
                 ldirs+="-L${lbase}/../lib "
+                ldirs+="-L/usr/lib64 -L/usr/lib "
 
                 g++ $ldirs ${bench}.s -o $bench $FLAGS||error "linking failed"
                 ;;
@@ -390,7 +430,7 @@ link(){
                 FLAGS+="-ldl -lpthread -lstdc++ -lpthread -lrt -rdynamic "
 
                 lbase="$BASE"/benchmarks/parsec-3.0/pkgs
-                
+
                 ldirs="-L/usr/lib64 -L/usr/lib "
                 ldirs+="-L${lbase}/libs/mesa/inst/amd64-linux.gcc/lib "
                 ldirs+="-L${lbase}/libs/mesa/inst/amd64-linux.gcc/lib "
@@ -417,7 +457,10 @@ link(){
                 fi
                 cp "$VEXE" $bench
                 ;;
-
+            x264)
+                FLAGS="-lm -lpthread"
+                gcc $bench.s -o $bench $FLAGS
+                ;;
             ## SPEC
             bzip2)
                 gcc ${bench}.s -o $bench||error "linking failed";;
@@ -473,14 +516,25 @@ input(){
                     medium) in=sequenceB_2;;
                     large)  in=sequenceB_4;;
                 esac
+
                 mv $in $target;;
             facesim)
-                error "missing input for $bench"
-                ;;
+                if [ ! -d ${parsec_dir}/inputs/ ];then
+                    warning "downloading facesim input data"
+                    pushd "$BASE/benchmarks/parsec-3.0/"
+                    wget http://cs.unm.edu/~eschulte/data/pkgs-apps-facesim-inputs.tar.gz
+                    tar xzf pkgs-apps-facesim-inputs.tar.gz
+                    popd
+                fi
+                tar xf ${parsec_dir}/inputs/$INPUT
+                in="Face_Data"
+                mv $in $target;;
             ferret)
                 tar xf ${parsec_dir}/inputs/$INPUT
-                in="corel queries" 
-                mv $in $target;;
+                in="corel queries"
+                rm -rf $target
+                mkdir -p $target
+                mv $in $target/;;
             fluidanimate)
                 tar xf ${parsec_dir}/inputs/$INPUT
                 case $SIZE  in
@@ -513,6 +567,16 @@ input(){
                     large)     in=bigben_2662x5500.v;;
                 esac
                 mv $in $target;;
+            x264)
+                tar xf ${parsec_dir}/inputs/$INPUT
+                case $SIZE  in
+                    test)   in=eledream_32x18_1.y4m;;
+                    tiny)   in=eledream_64x36_3.y4m;;
+                    small)  in=eledream_640x360_8.y4m;;
+                    medium) in=eledream_640x360_32.y4m;;
+                    large)  in=eledream_640x360_128.y4m;;
+                esac
+                mv $in $target;;
             ## SPEC
             bzip2)
                 SPEC_BENCH=$(echo "${SPEC_APPS[@]}"|tr ' ' '\n'|grep $bench)
@@ -535,7 +599,7 @@ input(){
                 mkdir -p "$bench_dir"
                 cp ${H_DATA}/all/input/foreman_qcif.yuv $target
                 cp ${H_DATA}/train/input/foreman_train_encoder_baseline.cfg ${bench}.cfg;;
-            
+
             *) error "input not implemented for $bench";;
         esac;
         popd>/dev/null
@@ -553,64 +617,80 @@ output(){
     else
         input $bench;
         case $BENCHMARK in
-            
+
             ## PARSEC
             blackscholes)
                 ./$bench 1 $bench.input $target;;
             bodytrack)
                 # run the program
                 case $SIZE in
-                    test)  ./$bench $bench.input 4 1 5 1 0 1;;
-                    tiny)  ./$bench $bench.input 4 1 100 3 0 1;;
-                    small) ./$bench $bench.input 4 1 1000 5 0 1;;
-                    medium)./$bench $bench.input 4 2 2000 5 0 1;;
-                    large) ./$bench $bench.input 4 4 4000 5 0 1;;
+                    test)   ./$bench $bench.input 4 1 5    1 0 1;;
+                    tiny)   ./$bench $bench.input 4 1 100  3 0 1;;
+                    small)  ./$bench $bench.input 4 1 1000 5 0 1;;
+                    medium) ./$bench $bench.input 4 2 2000 5 0 1;;
+                    large)  ./$bench $bench.input 4 4 4000 5 0 1;;
                 esac
                 # collect the output
                 cat $bench.input/Result000*.bmp > $target
                 ;;
+            facesim)
+                ln -s $bench.input Face_Data
+                ./$bench -timing -threads 1
+                mv Storytelling $target
+                ;;
             ferret)
                 case $SIZE in
-                    test)  ./$bench corel lsh queries 5 5 1 output.txt;;
-                    tiny)  ./$bench corel lsh queries 5 5 1 output.txt;;
-                    small) ./$bench corel lsh queries 10 20 1 output.txt;;
-                    medium)./$bench corel lsh queries 10 20 1 output.txt;;
-                    large) ./$bench corel lsh queries 10 20 1 output.txt;;
-                esac
+                    test)   ./$bench $bench.input/corel lsh $bench.input/queries 5  5  1 $target;;
+                    tiny)   ./$bench $bench.input/corel lsh $bench.input/queries 5  5  1 $target;;
+                    small)  ./$bench $bench.input/corel lsh $bench.input/queries 10 20 1 $target;;
+                    medium) ./$bench $bench.input/corel lsh $bench.input/queries 10 20 1 $target;;
+                    large)  ./$bench $bench.input/corel lsh $bench.input/queries 10 20 1 $target;;
+                esac >/dev/null 2>/dev/null ||error "output failed"
                 ;;
             fluidanimate)
                 case $SIZE in
-                    test)  ./$bench 1 1 $bench.input $target;;
-                    tiny)  ./$bench 1 3 $bench.input $target;;
-                    small) ./$bench 1 5 $bench.input $target;;
+                    test)   ./$bench 1 1 $bench.input $target;;
+                    tiny)   ./$bench 1 3 $bench.input $target;;
+                    small)  ./$bench 1 5 $bench.input $target;;
                     medium) ./$bench 1 5 $bench.input $target;;
-                    large) ./$bench 1 5 $bench.input $target;;
+                    large)  ./$bench 1 5 $bench.input $target;;
                 esac
                 ;;
             freqmine)
                 case $SIZE in
-                    test)  ./$bench $bench.input 1 $target;;
-                    tiny)  ./$bench $bench.input 3 $target;;
-                    small) ./$bench $bench.input 220 $target;;
+                    test)   ./$bench $bench.input 1   $target;;
+                    tiny)   ./$bench $bench.input 3   $target;;
+                    small)  ./$bench $bench.input 220 $target;;
                     medium) ./$bench $bench.input 410 $target;;
-                    large) ./$bench $bench.input 790 $target;;
+                    large)  ./$bench $bench.input 790 $target;;
                 esac
                 ;;
             swaptions)
                 case $SIZE in
-                    test)  ./$bench -ns 1  -sm 5     -nt 1 2> $target;;
-                    tiny)  ./$bench -ns 3  -sm 50    -nt 1 2> $target;;
-                    small) ./$bench -ns 16 -sm 10000 -nt 1 2> $target;;
-                    medium)./$bench -ns 32 -sm 20000 -nt 1 2> $target;;
-                    large) ./$bench -ns 64 -sm 40000 -nt 1 2> $target;;
+                    test)   ./$bench -ns 1  -sm 5     -nt 1 2> $target;;
+                    tiny)   ./$bench -ns 3  -sm 50    -nt 1 2> $target;;
+                    small)  ./$bench -ns 16 -sm 10000 -nt 1 2> $target;;
+                    medium) ./$bench -ns 32 -sm 20000 -nt 1 2> $target;;
+                    large)  ./$bench -ns 64 -sm 40000 -nt 1 2> $target;;
                 esac
                 ;;
             vips)
                 tmp=$(mktemp XXXXXXXX.v)
                 rm -f $tmp
                 ./$bench im_benchmark $bench.input $tmp
-                mv $tmp $target;;
-
+                mv $tmp $target
+                ;;
+            x264)
+                X264_CMD=""
+                X264_CMD+=" --quiet --qp 20 --partitions b8x8,i4x4 --ref 5"
+                X264_CMD+=" --direct auto --b-pyramid --weightb --mixed-refs"
+                X264_CMD+=" --no-fast-pskip --me umh --subme 7"
+                X264_CMD+=" --analyse b8x8,i4x4 --threads 1"
+                tmp=$(mktemp XXXXXXXX.y4m)
+                cp $bench.input $tmp
+                ./$bench $X264_CMD -o $bench.output $tmp
+                rm -f $tmp
+                ;;
             ## SPEC
             bzip2)
                 ./$bench -c $bench.input > $target;;
@@ -663,7 +743,7 @@ case $ACTION in
     input) unpack $BENCHMARK && input $BENCHMARK;;
 
     unpack|compile|link|output)
-        
+
         unpack $BENCHMARK
         [[ $ACTION == "unpack" ]] && exit 0;
 

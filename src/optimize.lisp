@@ -14,9 +14,28 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (enable-curry-compose-reader-macros))
 
+
+;;; Optimization Software Objects
 (defclass asm-perf (asm)
   ((stats :initarg :stats :accessor stats :initform nil)))
 
+(defclass asm-light (asm-perf) ())
+
+(defmethod software-evolution::lines ((asm asm-light)) (genome asm))
+
+(defmethod software-evolution:from-file ((asm asm-light) path)
+  (setf (genome asm) (split-sequence #\Newline (file-to-string path)))
+  asm)
+
+(defmethod to-asm-light ((asm asm-perf))
+  (with-slots (flags linker edits genome) asm
+    (make-instance 'asm-light
+      :flags flags
+      :linker linker
+      :edits edits
+      :genome (mapcar {aget :line} genome))))
+
+
 ;;; Models
 (defvar intel-sandybridge-energy-model
   '(+
@@ -61,15 +80,8 @@
   "HW counters and coefficients in the AMD Opteron power model.
 This includes evolved individuals in the training set.")
 
-;;; Utility functions
-(defvar infinity
-  #+sbcl
-  SB-EXT:DOUBLE-FLOAT-POSITIVE-INFINITY
-  #+ccl
-  CCL::DOUBLE-FLOAT-POSITIVE-INFINITY
-  #-(or sbcl ccl)
-  (error "must specify a positive infinity value"))
-
+
+;;; Configuration Fitness and Runtime
 (defvar *path*   nil "Path to Assembly file.")
 (defvar *script* "./bin/run" "Script used to test benchmark application.")
 (defvar *size*   nil "size of input for fitness evaluation")
@@ -98,11 +110,11 @@ This includes evolved individuals in the training set.")
 (defun parse-stdout (stdout)
   (mapcar (lambda-bind ((val key))
             (cons (make-keyword (string-upcase key))
-                  (or (ignore-errors (parse-number val)) infinity)))
+                  (ignore-errors (parse-number val))))
           (mapcar {split-sequence #\,}
                   (split-sequence #\Newline
-                                  (regex-replace-all ":HG" stdout "")
-                                  :remove-empty-subseqs t))))
+                    (regex-replace-all ":HG" stdout "")
+                    :remove-empty-subseqs t))))
 
 (defun run (asm)
   (with-temp-file (bin)
@@ -130,6 +142,14 @@ This includes evolved individuals in the training set.")
       (eval `(let ,(mapcar (lambda (pair) (list (key-to-sym (car pair)) (cdr pair)))
                            stats)
                ,model)))))
+
+(defvar infinity
+  #+sbcl
+  SB-EXT:DOUBLE-FLOAT-POSITIVE-INFINITY
+  #+ccl
+  CCL::DOUBLE-FLOAT-POSITIVE-INFINITY
+  #-(or sbcl ccl)
+  (error "must specify a positive infinity value"))
 
 (defun test (asm)
   (note 4 "testing ~S~%" (edits asm))

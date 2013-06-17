@@ -1,6 +1,19 @@
 Optimization Notes  -*- mode:org; org-attach-directory:"etc/data/" -*-
 #+Options: ^:{}
 
+| Program      | compile | link | input | output | run | opt |
+|--------------+---------+------+-------+--------+-----+-----|
+| blackscholes | a       | a    | a     | a      | a   | a   |
+| bodytrack    | a       | a    | a     | a      | a   |     |
+| facesim      | a       | a    | a     | a      |     |     |
+| ferret       | a       | a    | a     | a      | a   |     |
+| fluidanimate | a       | a    | a     | a      | a   | a   |
+| freqmine     | a       | a    | a     | a      | a   | a   |
+| raytrace     |         |      |       |        |     |     |
+| swaptions    | a       | a    | a     | a      | a   | a   |
+| vips         | a       | a    | a     | a      | a   | a   |
+| x264         | a       | a    | a     | a      | a   |     |
+
 * Work Plan
 :   train energy    memory       benchmarks       baselines       write
 :     models      fitness func       |         (Rinard, O2 O3)      |
@@ -100,7 +113,7 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 | 998.specrand   |
 | 999.specrand   |
 
-* Tasks [25/36]
+* Tasks [26/36]
 ** TODO find minimal input sizes for each program
 Need to estimate the variance in our energy predictions, which are
 linear combinations of HW counters, from variance in the HW counters.
@@ -227,7 +240,7 @@ http://wikipedia.org/wiki/Variance#Sum_of_correlated_variables
   done|tee results/counter-by-size/fluidanimate.txt
 #+end_src
 
-** TODO Build all benchmarks to ASM [9/10]
+** TODO Build all benchmarks to ASM [10/10]
 *** parsec
 **** DONE Blackscholes
 **** DONE bodytrack
@@ -254,6 +267,17 @@ To build the executable:
 : g++ -L../../../obj/amd64-linux.gcc/lib -L/usr/lib64 -L/usr/lib ../../../obj/amd64-linux.gcc/TaskQ/lib/taskQ.o all.s -o facesim -pthread -lPhysBAM -xW -lm
 
 **** DONE ferret
+UPDATE: The problem was that the order of the -L arguments in mgmt was bad.
+It caused the libjpeg.a from /usr/lib to be loaded but that was the wrong
+version. Putting that -L last makes ferret build correctly
+
+========================================================
+
+UPDATE: when trying to run the executable you get the following message:
+`Wrong JPEG library version: library is 80, caller expects 70'
+I will investigate this and update
+
+========================================================
 
 To make the .S file:
 First build with the parsec build tool
@@ -280,7 +304,6 @@ NOTE: there are other versions of ferret that can be built. This is the one that
 **** DONE raytrace
 To make the .S file:
 First build raytrace by using the parsec mgmt tool. Then in pkgs/apps/raytrace/src/MiniView:
-
 : g++ -DTHIS_IS_CMAKE -I/nfs/adaptive/stharding/tmp/parsec-3.0/bin/../pkgs/libs/mesa/inst/amd64-linux.gcc/include -O3 -g -funroll-loops -fprefetch-loop-arrays -fpermissive -fno-exceptions -static-libgcc -Wl,--hash-style=both,--as-needed -DPARSEC_VERSION=3.0-beta-20120904 -fexceptions -fno-strict-aliasing -fno-align-labels -DNDEBUG -D_MM_NO_ALIGN_CHECK  -I/nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/raytrace/obj/amd64-linux.gcc -I/nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/raytrace/obj/amd64-linux.gcc/RTTL -I/nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/raytrace/obj/amd64-linux.gcc/RTTL/common -I/nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/raytrace/obj/amd64-linux.gcc/RTTL/BVH -I/nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/raytrace/obj/amd64-linux.gcc/SG -I/nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/raytrace/obj/amd64-linux.gcc/LRT/include -I/nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/raytrace/obj/amd64-linux.gcc/LRT -L/nfs/adaptive/stharding/tmp/parsec-3.0/bin/../pkgs/libs/mesa/inst/amd64-linux.gcc/lib -L/usr/lib64 -L/usr/lib -L/nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/libs/mesa/inst/amd64-linux.gcc/lib -L/nfs/adaptive/stharding/tmp/parsec-3.0/pkgs/apps/raytrace/obj/amd64-linux.gcc/lib -S rtview.cxx -rdynamic  -lglut -lGL -lGL -lGLU -lXmu -lXext -lXau -lX11 -ldl -lpthread -lstdc++ -lpthread -lrt -lglut -lGL -lGL -lGLU -lXmu -lXext -lXau -lX11 -ldl -lpthread -lstdc++ -lrt
 
 To make the executable: (updated to remove excess flags)
@@ -305,7 +328,18 @@ To make the executable: (updated to remove excess flags)
 
      To make an executable:
      gcc -L../../../inst/amd64-linux.gcc/lib/  -L../../../../../libs/glib/inst/amd64-linux.gcc/lib -L../../../../../libs/zlib/inst/amd64-linux.gcc/lib -L/usr/lib64 -L/usr/lib  -L../../../../../libs/glib/inst/amd64-linux.gcc/lib -L../../../../../libs/zlib/inst/amd64-linux.gcc/lib -DG_DISABLE_CAST_CHECKS -L../../../../../libs/glib/inst/amd64-linux.gcc/lib -L../../../../../libs/libxml2/inst/amd64-linux.gcc/lib vips.s  -lgobject-2.0 -lgthread-2.0 -pthread    -lvips   -lm  -lstdc++ -lxml2 -lgmodule-2.0 -ldl -lglib-2.0
-**** TODO x264
+**** DONE x264
+We're *not* using the hand-coded ASM.  Rather we just build entirely
+from the C source.
+
+Interestingly O3 and O2 both throw the following error (with the
+latest GCC which supports the =--combine= flag).
+: x264.c: In function ‘main’:
+: x264.c:92: internal compiler error: in insert_into_preds_of_block, at tree-ssa-pre.c:3155
+: Please submit a full bug report,
+: with preprocessed source if appropriate.
+: See <http://gcc.gnu.org/bugs.html> for instructions.
+
 *** SPEC
 **** 400.perlbench
 **** 401.bzip2
@@ -1097,8 +1131,93 @@ coefficients for a memory linear model.
 ** TODO Build table results table
 ** TODO Analyze Optimizations
 ** TODO Build optimization Taxonomy
-* Issues [4/5]
-** TODO Running out of memory
+* Code Tasks [3/4]
+** DONE add GC flag to optimize executable
+with separate help and default for SBCL and CCL
+
+** DONE =asm-perf-light= for smaller memory footprint
+with command line flag
+
+: OPTIMIZE> (progn (setf *population* nil) (ccl:gc))
+: NIL
+: OPTIMIZE> (time (setf *population* (loop :for n :below 16 :collect (copy *orig*))))
+: (SETF *POPULATION* (LOOP :FOR N :BELOW 16 :COLLECT (COPY *ORIG*)))
+: took 11,668 milliseconds (11.668 seconds) to run.
+:      11,172 milliseconds (11.172 seconds, 95.75%) of which was spent in GC.
+: During that period, and with 4 available CPU cores,
+:      11,540 milliseconds (11.540 seconds) were spent in user mode
+:         140 milliseconds ( 0.140 seconds) were spent in system mode
+:  242,969,352 bytes of memory allocated.
+:  51,143 minor page faults, 0 major page faults, 0 swaps.
+: (...)
+: OPTIMIZE> (ccl:lisp-heap-gc-threshold)
+: 16777216
+: OPTIMIZE> (ccl:set-lisp-heap-gc-threshold (expt 2 28))
+: 268500992
+: OPTIMIZE> (progn (setf *population* nil) (ccl:gc))
+: NIL
+: OPTIMIZE> (time (setf *population* (loop :for n :below 16 :collect (copy *orig*))))
+: (SETF *POPULATION* (LOOP :FOR N :BELOW 16 :COLLECT (COPY *ORIG*)))
+: took 3,307 milliseconds (3.307 seconds) to run.
+:      2,865 milliseconds (2.865 seconds, 86.63%) of which was spent in GC.
+: During that period, and with 4 available CPU cores,
+:      3,310 milliseconds (3.310 seconds) were spent in user mode
+:         20 milliseconds (0.020 seconds) were spent in system mode
+:  242,969,352 bytes of memory allocated.
+: (...)
+: OPTIMIZE> (progn (setf *population* nil) (ccl:gc))
+: NIL
+: OPTIMIZE> (time (prog2 (ccl:egc nil) (setf *population* (loop :for n :below 16 :collect (copy *orig*))) (ccl:egc t)))
+: (PROG2 (CCL:EGC NIL) (SETF *POPULATION* (LOOP :FOR N :BELOW 16 :COLLECT (COPY *ORIG*))) (CCL:EGC T))
+: took 474 milliseconds (0.474 seconds) to run.
+: During that period, and with 4 available CPU cores,
+:      410 milliseconds (0.410 seconds) were spent in user mode
+:       70 milliseconds (0.070 seconds) were spent in system mode
+:  242,969,352 bytes of memory allocated.
+:  53,176 minor page faults, 0 major page faults, 0 swaps.
+: (...)
+: OPTIMIZE> (ccl:set-lisp-heap-gc-threshold 16777216)
+: 16777216
+: OPTIMIZE> (setf *orig* (to-asm-light *orig*))
+: #<ASM-LIGHT #x2AC49356>
+: OPTIMIZE> (progn (setf *population* nil) (ccl:gc))
+: NIL
+: OPTIMIZE> (time (setf *population* (loop :for n :below 16 :collect (copy *orig*))))
+: (SETF *POPULATION* (LOOP :FOR N :BELOW 16 :COLLECT (COPY *ORIG*)))
+: took 5,965 milliseconds (5.965 seconds) to run.
+:      5,827 milliseconds (5.827 seconds, 97.69%) of which was spent in GC.
+: During that period, and with 4 available CPU cores,
+:      5,970 milliseconds (5.970 seconds) were spent in user mode
+:          0 milliseconds (0.000 seconds) were spent in system mode
+:  80,991,208 bytes of memory allocated.
+:  16,364 minor page faults, 0 major page faults, 0 swaps.
+: (...)
+: OPTIMIZE> (ccl:set-lisp-heap-gc-threshold (expt 2 28))
+: 268500992
+: OPTIMIZE> (progn (setf *population* nil) (ccl:gc))
+: NIL
+: OPTIMIZE> (time (prog2 (ccl:egc nil) (setf *population* (loop :for n :below 16 :collect (copy *orig*))) (ccl:egc t)))
+: (PROG2 (CCL:EGC NIL) (SETF *POPULATION* (LOOP :FOR N :BELOW 16 :COLLECT (COPY *ORIG*))) (CCL:EGC T))
+: took 114 milliseconds (0.114 seconds) to run.
+: During that period, and with 4 available CPU cores,
+:      110 milliseconds (0.110 seconds) were spent in user mode
+:        0 milliseconds (0.000 seconds) were spent in system mode
+:  80,990,472 bytes of memory allocated.
+: (...)
+: OPTIMIZE> 
+
+** DONE add version information
+- git and CL info
+- command line option and in log file
+
+** TODO minimal test suite
+Including tests for mgmt and run which should output tables of
+failures at stages.
+
+Run with =make check=.
+
+* Issues [5/5]
+** DONE Running out of memory
 #+begin_quote
 > As it turns out, after much investigation of how I could be leaking
 > massive amounts of cons cells and strings--the two main ingredients in

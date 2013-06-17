@@ -15,8 +15,10 @@ Options:
  -F,--fit-evals NUM ---- max number of fitness evals
                          default: 2^18
  -f,--flags FLAGS ------ flags to use when linking
+ -g,--gc-size ---------- ~a
+                         default: ~:d
+ -L,--light ------------ use lighter genome representation
  -l,--linker LINKER ---- linker to use
- -L,--listen ADDRESS --- listen for shared individuals
  -m,--model NAME ------- model name
  -P,--period NUM ------- period (in evals) of checkpoints
                          default: max-evals/(2^10)
@@ -25,11 +27,20 @@ Options:
  -r,--res-dir DIR ------ save results to dir
                          default: program.opt/
  -s,--size SIZE -------- input size test,tiny,small,medium,large
- -t,--threads NUM ------ number of threads
  -T,--tourny-size NUM -- tournament size
                          default: 4
+ -t,--threads NUM ------ number of threads
+ -V,--version ---------- print version and exit
  -v,--verbose NUM ------ verbosity level 0-4
  -w,--work-dir DIR ----- use an sh-runner/work directory~%")
+
+(defvar *version*
+  (format nil
+          #+ccl "optimize version ~a using Clozure Common Lisp (CCL)~%"
+          #+sbcl "optimize version ~a using Steel Bank Common Lisp (SBCL)~%"
+          (eval-when (:compile-toplevel :load-toplevel :execute)
+            (let ((raw (shell "git describe --always")))
+              (subseq raw 0 (1- (length raw)))))))
 
 (defvar *checkpoint-funcs* (list #'checkpoint)
   "Functions to record checkpoints.")
@@ -45,12 +56,24 @@ Options:
   (in-package :optimize)
   (flet ((arg-pop () (pop args)))
 
+    ;; Set default GC threshold
+    #+ccl (ccl:set-lisp-heap-gc-threshold (expt 2 30))
+    #+sbcl (setf (sb-ext:bytes-consed-between-gcs) (expt 2 24))
+
     ;; check command line arguments
-    (when (or (when (<= (length args) 2)
-                (format t "Insufficient command line arguments~%~%") t)
+    (when (or (<= (length args) 2)
               (string= (subseq (car args) 0 2) "-h")
-              (string= (subseq (car args) 0 3) "--h"))
-      (format t *help*)
+              (string= (subseq (car args) 0 3) "--h")
+              (string= (car args) "-V")
+              (string= (car args) "--version"))
+      (if (or (string= (car args) "-V")
+              (string= (car args) "--version"))
+          (progn (format t *version*) (quit))
+          (format t *help*
+                  #+ccl "space left after a full GC pass"
+                  #+sbcl "bytes consed between every GC pass"
+                  #+ccl (ccl:lisp-heap-gc-threshold)
+                  #+sbcl (sb-ext:bytes-consed-between-gcs)))
       (quit))
 
     ;; process command line arguments
@@ -69,6 +92,11 @@ Options:
      ("-e" "--eval"      (eval (read-from-string (arg-pop))))
      ("-F" "--fit-evals" (setf *evals* (parse-integer (arg-pop))))
      ("-f" "--flags"     (setf (flags *orig*) (list (arg-pop))))
+     ("-g" "--gc-size"
+           #+ccl  (ccl:set-lisp-heap-gc-threshold (parse-integer (arg-pop)))
+           #+sbcl (setf (sb-ext:bytes-consed-between-gcs)
+                        (parse-integer (arg-pop))))
+     ("-L" "--light"     (setf *orig* (to-asm-light *orig*)))
      ("-l" "--linker"    (setf (linker *orig*) (arg-pop)))
      ("-m" "--model"     (setf *model* (intern (string-upcase (arg-pop)))))
      ("-P" "--period"    (setf *period* (parse-integer (arg-pop))))
@@ -81,8 +109,8 @@ Options:
                                                "/")
                                       dir (concatenate 'string dir "/"))))))
      ("-s" "--size"      (setf *size* (arg-pop)))
-     ("-t" "--threads"   (setf *threads* (parse-integer (arg-pop))))
      ("-T" "--tourny-size" (setf *tournament-size* (parse-integer (arg-pop))))
+     ("-t" "--threads"   (setf *threads* (parse-integer (arg-pop))))
      ("-v" "--verbose"   (let ((lvl (parse-integer (arg-pop))))
                            (when (>= lvl 4) (setf *shell-debug* t))
                            (setf *note-level* lvl)))
@@ -107,6 +135,9 @@ Options:
                       (:intel 'intel-sandybridge-energy-model)
                       (:amd   'amd-opteron-energy-model))))
     (when (symbolp *model*) (setf *model* (eval *model*)))
+
+    ;; write out version information
+    (note 1 *version*)
 
     ;; write out configuration parameters
     (note 1 "Parameters:~%~S~%"
@@ -142,7 +173,6 @@ Options:
     ;; populate population
     (unless *population* ;; only if it hasn't already been populated
       (note 1 "Building the Population")
-      #+ccl (ccl:set-lisp-heap-gc-threshold (expt 2 28))
       #+ccl (ccl:egc nil)
       (setf *population* (loop :for n :below *max-population-size*
                             :collect (copy *orig*)))
