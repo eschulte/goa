@@ -143,7 +143,7 @@ unpack(){ # dispatch depending on benchmark suite
                         parsecmgmt -a build -p $bench \
                     || error "parsecmgmt could not build $bench"
                     case $bench in
-                        ferret)
+                        ferret|raytrace)
                             mkdir -p "$bench_dir"
                             cp -R "$BASE"/benchmarks/parsec-3.0/pkgs/apps/$bench/src/* "$bench_dir" ;;
                     esac
@@ -275,25 +275,20 @@ EOF
                 g++ $FULL_FLAGS -S all.cpp -o ${bench}.s||error "compilation failed"
                 ;;
             raytrace)
-                BASE_FLAGS="-DTHIS_IS_CMAKE -fpermissive -fno-exceptions "
-                BASE_FLAGS+="-fexceptions -fno-strict-aliasing "
-                BASE_FLAGS+="-fno-align-labels -DNDEBUG -D_MM_NO_ALIGN_CHECK"
-                set_flags "$BASE_FLAGS"
-                tmp=$(mktemp)
-                pushd "$BASE"/benchmarks/parsec-3.0/pkgs >/dev/null
-                g++ $FULL_FLAGS \
-                    -Ilibs/mesa/inst/amd64-linux.gcc/include \
-                    -Iapps/raytrace/obj/amd64-linux.gcc \
-                    -Iapps/raytrace/obj/amd64-linux.gcc/RTTL \
-                    -Iapps/raytrace/obj/amd64-linux.gcc/RTTL/common \
-                    -Iapps/raytrace/obj/amd64-linux.gcc/RTTL/BVH \
-                    -Iapps/raytrace/obj/amd64-linux.gcc/SG \
-                    -Iapps/raytrace/obj/amd64-linux.gcc/LRT/include \
-                    -Iapps/raytrace/obj/amd64-linux.gcc/LRT \
-                    -S apps/raytrace/src/MiniView/rtview.cxx -o $tmp \
-                    || error "compilation failed: build ${bench} with parsecmgt"
-                popd >/dev/null
-                mv $tmp ${bench}.s
+                (
+                    cat LRT/render.cxx
+                    find LRT/ -name "*.cxx"|grep -v test|grep -v render.cxx|xargs cat
+                    find RTTL/ -name "*.cxx"|grep -v test|xargs cat
+                    cat MiniView/Camera.hxx|sed 's/Camera/MiniCamera/'
+                    cat MiniView/rtview.cxx|sed 's/^Camera/MiniCamera/'
+                ) > all.cxx
+                CMD="$FULL_FLAGS "
+                CMD+="$(find LRT/ -type d -exec echo {} \+|sed 's/^/-I.\//;s/ / -I.\//g') "
+                CMD+="$(find RTTL/ -type d -exec echo {} \+|sed 's/^/-I.\//;s/ / -I.\//g') "
+                CMD+="$(find MiniView/ -type d -exec echo {} \+|sed 's/^/-I.\//;s/ / -I.\//g') "
+                CMD+="-I./ -I./RTTL -I./RTTL/common -I./RTTL/BVH -I./SG -I./LRT/include -I./LRT "
+                CMD+="all.cxx -S -o ${bench}.s"
+                g++ $CMD ||error "compilation failed"
                 ;;
             swaptions)
                 set_flags "-pthread -DENABLE_THREADS"
@@ -430,7 +425,6 @@ link(){
                 g++ -Wno-deprecated ${bench}.s -o $bench||error "linking failed"
                 ;;
             raytrace)
-                #error "linking raytrace fails for me (ERIC)"
                 FLAGS="-lglut -lGL -lGL -lGLU -lXmu -lXext -lXau -lX11 "
                 FLAGS+="-ldl -lpthread -lstdc++ -lpthread -lrt -rdynamic "
 
@@ -439,11 +433,8 @@ link(){
                 ldirs="-L/usr/lib64 -L/usr/lib "
                 ldirs+="-L${lbase}/libs/mesa/inst/amd64-linux.gcc/lib "
                 ldirs+="-L${lbase}/libs/mesa/inst/amd64-linux.gcc/lib "
-                ldirs+="-L${lbase}/apps/raytrace/obj/amd64-linux.gcc/lib"
 
                 g++ $ldirs ${bench}.s -o $bench \
-                    ${lbase}/apps/raytrace/obj/amd64-linux.gcc/lib/libLRT.a \
-                    ${lbase}/apps/raytrace/obj/amd64-linux.gcc/lib/libRTTL.a \
                     ${lbase}/libs/mesa/inst/amd64-linux.gcc/lib/libGLU.a \
                     $FLAGS||error "linking failed"
                 ;;
