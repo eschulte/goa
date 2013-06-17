@@ -34,6 +34,7 @@ BENCHMARK="$1"
 case $BENCHMARK in
     blackscholes) SIZE=large;;
     bodytrack)    SIZE=large;;
+    facesim)      SIZE=medium;;
     ferret)       SIZE=medium;;
     fluidanimate) SIZE=large;;
     freqmine)     SIZE=medium;;
@@ -45,7 +46,7 @@ case $BENCHMARK in
     *) error "no test implemented for '$BENCHMARK'";;
 esac
 EXECUTABLE="$2"
-LIMIT="./bin/no-stack-limit"
+LIMIT="$(pwd)/bin/no-stack-limit"
 PERF=""
 COUNTERS=""
 WATTSUP=""
@@ -104,7 +105,7 @@ if [ -z $PERF ];then
             cat $OUT
         fi
         if [ -z $KEEP ];then
-            rm -f $OUT;
+            rm -rf $OUT;
         else
             echo "output keep at $OUT";
         fi; }
@@ -122,7 +123,7 @@ else
             |sed 's/^ *//;s/,//g;s/ \([^ ]\+\)[^(]*/,\1/;s/([^0-9]*\([0-9.]\+\).*$/,\1%/';
         rm -f $PERF_OUT;
         if [ -z $KEEP ];then
-            rm -f $OUT;
+            rm -rf $OUT;
         else
             echo "output keep at $OUT";
         fi; }
@@ -184,6 +185,23 @@ case $BENCHMARK in
         else
             ERROR=1;
         fi
+        ;;
+    facesim)
+        tmp=$(mktemp -d)
+        base=$(pwd)
+        pushd $tmp >/dev/null
+        ln -s $INPUT Face_Data
+        run 0 $base/$EXECUTABLE -timing -threads 1
+        EXIT=$?
+        rm $OUT
+        mv Storytelling $OUT
+        popd >/dev/null
+        ERROR=0
+        for file in $(ls $OUT/output|grep -v log.txt);do
+            if ! diff $OUT/output/$file $OUTPUT/output/$file >/dev/null 2>/dev/null;then
+                ERROR=$(($ERROR + 1))
+            fi
+        done
         ;;
     ferret)
         case $SIZE in
