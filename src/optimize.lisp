@@ -63,7 +63,7 @@
                (* 2962.678 (/ cache-misses cycles))))
   "HW counters and coefficients for the Intel Sandybridge power model.")
 
-(defvar amd-opteron-power-model-base
+(defvar amd-opteron-power-model
   '(* seconds (+ 371.47
                (*   -66.72 (/ instructions cycles))
                (*    66.66 (/ r533f00 cycles))

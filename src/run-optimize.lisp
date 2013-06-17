@@ -135,8 +135,8 @@ Options:
 
     (unless *model*
       (setf *model* (case (arch)
-                      (:intel 'intel-sandybridge-energy-model)
-                      (:amd   'amd-opteron-energy-model))))
+                      (:intel 'intel-sandybridge-power-model)
+                      (:amd   'amd-opteron-power-model))))
     (when (symbolp *model*) (setf *model* (eval *model*)))
 
     ;; write out version information
