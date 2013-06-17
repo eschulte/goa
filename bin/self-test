@@ -62,9 +62,9 @@ if [ ! -z $MGMT ];then
             input=$(check $mgmt input $bench)
             output=$(check $mgmt output $bench)
             if [ -z $LIGHT ];then
-                echo "$bench $clean $unpack $compile $link $input $output"
-            else
                 echo "$bench $unpack $compile $link $input $output"
+            else
+                echo "$bench $clean $unpack $compile $link $input $output"
             fi
         done
     )|column -t
