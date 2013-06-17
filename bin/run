@@ -38,6 +38,7 @@ case $BENCHMARK in
     ferret)       SIZE=medium;;
     fluidanimate) SIZE=large;;
     freqmine)     SIZE=medium;;
+    raytrace)     SIZE=small;;
     swaptions)    SIZE=medium;;
     vips)         SIZE=medium;;
     x264)         SIZE=small;;
@@ -162,6 +163,9 @@ run(){ # run, first argument picks an output stream to return
 freqclean(){
     sed 's/[()]//g'|awk '{all=0; for(i=1; i<=NF; i++){all+=$i}; print all}'; }
 
+rayclean(){
+    cat $1|grep -ve "^ *\(files\|build time\|Adding obj file:\) "; }
+
 case $BENCHMARK in
     blackscholes)
         run 0 $EXECUTABLE 1 "$INPUT" $OUT
@@ -180,7 +184,7 @@ case $BENCHMARK in
         esac
         EXIT=$?
         cat $INPUT/Result000*.bmp > $OUT
-        if diff $OUT $OUTPUT;then
+        if diff $OUT $OUTPUT >/dev/null 2>/dev/null;then
             ERROR=0;
         else
             ERROR=1;
@@ -221,7 +225,7 @@ case $BENCHMARK in
             small|medium|large) run 0 $EXECUTABLE 1 5 "$INPUT" $OUT;;
         esac
         EXIT=$?
-        if diff $OUT $OUTPUT;then
+        if diff $OUT $OUTPUT >/dev/null 2>/dev/null;then
             ERROR=0;
         else
             ERROR=1;
@@ -238,6 +242,21 @@ case $BENCHMARK in
         EXIT=$?
         if [ -z $RAW ];then
             ERROR=$(num_diff <(cat $OUT|freqclean) <(cat $OUTPUT|freqclean));
+        fi
+        ;;
+    raytrace)
+        case $SIZE in
+            test)   run 1 $EXECUTABLE "$INPUT" -automove -nthreads 1 -frames 1 -res 1 1;;
+            tiny)   run 1 $EXECUTABLE "$INPUT" -automove -nthreads 1 -frames 1 -res 16 16;;
+            small)  run 1 $EXECUTABLE "$INPUT" -automove -nthreads 1 -frames 3 -res 480 270;;
+            medium) run 1 $EXECUTABLE "$INPUT" -automove -nthreads 1 -frames 3 -res 960 540;;
+            large)  run 1 $EXECUTABLE "$INPUT" -automove -nthreads 1 -frames 3 -res 1920 1080;;
+        esac >$OUT
+        EXIT=$?
+        if diff -Bw <(rayclean $OUT) <(rayclean $OUTPUT) >/dev/null 2>/dev/null;then
+            ERROR=0;
+        else
+            ERROR=1;
         fi
         ;;
     swaptions)
