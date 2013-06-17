@@ -1,19 +1,6 @@
 Optimization Notes  -*- mode:org; org-attach-directory:"etc/data/" -*-
 #+Options: ^:{}
 
-| Program      | compile | link | input | output | run | opt |
-|--------------+---------+------+-------+--------+-----+-----|
-| blackscholes | a       | a    | a     | a      | a   | a   |
-| bodytrack    | a       | a    | a     | a      | a   |     |
-| facesim      | a       | a    | a     | a      | a   |     |
-| ferret       | a       | a    | a     | a      | a   |     |
-| fluidanimate | a       | a    | a     | a      | a   | a   |
-| freqmine     | a       | a    | a     | a      | a   | a   |
-| raytrace     | a       | a    | a     | a      | a   |     |
-| swaptions    | a       | a    | a     | a      | a   | a   |
-| vips         | a       | a    | a     | a      | a   | a   |
-| x264         | a       | a    | a     | a      | a   |     |
-
 * Work Plan
 :   train energy    memory       benchmarks       baselines       write
 :     models      fitness func       |         (Rinard, O2 O3)      |
@@ -886,10 +873,9 @@ Modeling kwh
 #+end_src
 
 ** TODO measure runtime of evolved programs
-** TODO Complete test suites for some benchmarks
-Ideally at least one or two from each group of benchmark programs.
-Spec has some open-source programs (e.g., perl, gcc, bzip) which could
-be good candidates.  Eric will look into some better tests for PARSEC
+** TODO Expanded test suites for some benchmarks
+To ensure that our optimizations don't trample all over the non-tested
+functionality, we should include expanded test suites for some
 programs.
 
 ** DONE distributed sub-pop by compiler flags
