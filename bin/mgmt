@@ -142,6 +142,11 @@ unpack(){ # dispatch depending on benchmark suite
                     env PATH="$BASE"/benchmarks/parsec-3.0/bin:"$PATH" \
                         parsecmgmt -a build -p $bench \
                     || error "parsecmgmt could not build $bench"
+                    case $bench in
+                        ferret)
+                            mkdir -p "$bench_dir"
+                            cp -R "$BASE"/benchmarks/parsec-3.0/pkgs/apps/$bench/src/* "$bench_dir" ;;
+                    esac
                     ;;
                 *)
                     # It won't hurt to call "mkdir -p" again later
@@ -240,17 +245,15 @@ compile(){
                 ;;
             ferret)
                 set_flags ""
-                tmp=$(mktemp)
-                pushd "$BASE"/benchmarks/parsec-3.0/pkgs >/dev/null
-                gcc -w \
+                sed -i 'd/^int image_segment/' image/image.h
+                gcc-4.4 --combine -S \
+                    -Iinclude/ \
+                    -I"$BASE"/benchmarks/parsec-3.0/pkgs/libs/libjpeg/inst/amd64-linux.gcc/include \
                     $FULL_FLAGS \
-                    -Iapps/$bench/src/include \
-                    -Ilibs/gsl/inst/amd64-linux.gcc/include \
-                    -Ilibs/libjpeg/inst/amd64-linux.gcc/include \
-                    -S apps/$bench/src/benchmark/ferret-pthreads.c -o $tmp \
-                    || error "compilation failed: build ${bench} with parsecmgt"
-                popd >/dev/null
-                mv $tmp ${bench}.s
+                    src/*.c src/lsh/*.c \
+                    image/{image,extract,edge,srm}.c \
+                    benchmark/ferret-pthreads.c \
+                    -o ${bench}.s|| error "compilation failed"
                 ;;
             fluidanimate)
                 cat pthreads.cpp >  all.cpp
@@ -410,16 +413,12 @@ link(){
                     ||error "linking failed"
                 ;;
             ferret)
-                FLAGS="-lrt -lcass -lgsl -lcassimage -lgslcblas "
-                FLAGS+="-ljpeg -lstdc++ -lpthread -lm"
+                FLAGS="-lrt -lgsl -lgslcblas -ljpeg -lstdc++ -lpthread -lm"
 
                 lbase="$BASE"/benchmarks/parsec-3.0/pkgs
 
                 ldirs="-L${lbase}/libs/libjpeg/inst/amd64-linux.gcc/lib "
                 ldirs+="-L${lbase}/libs/gsl/inst/amd64-linux.gcc/lib "
-                ldirs+="-L${lbase}/apps/ferret/inst/amd64-linux.gcc/lib "
-                ldirs+="-L${lbase}/../lib "
-                ldirs+="-L/usr/lib64 -L/usr/lib "
 
                 g++ $ldirs ${bench}.s -o $bench $FLAGS||error "linking failed"
                 ;;
