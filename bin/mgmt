@@ -132,6 +132,10 @@ unpack(){ # dispatch depending on benchmark suite
                             sed -i 's/\(SUBDIRS =.*\) doc/\1/' Makefile.{in,am}
                             popd
                             ;;
+                        raytrace)
+                            sed -i '22s/^$/#include <unistd.h>/' \
+                                "$BASE"/benchmarks/parsec-3.0/pkgs/apps/raytrace/src/RTTL/common/MapOptions.hxx
+                            ;;
                     esac
                     # build with parsecmgmt
                     env PATH="$BASE"/benchmarks/parsec-3.0/bin:"$PATH" \

@@ -9,7 +9,7 @@ Optimization Notes  -*- mode:org; org-attach-directory:"etc/data/" -*-
 | ferret       | a       | a    | a     | a      | a   |     |
 | fluidanimate | a       | a    | a     | a      | a   | a   |
 | freqmine     | a       | a    | a     | a      | a   | a   |
-| raytrace     |         |      |       |        |     |     |
+| raytrace     | a       | a    |       |        |     |     |
 | swaptions    | a       | a    | a     | a      | a   | a   |
 | vips         | a       | a    | a     | a      | a   | a   |
 | x264         | a       | a    | a     | a      | a   |     |
@@ -113,7 +113,7 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 | 998.specrand   |
 | 999.specrand   |
 
-* Tasks [26/36]
+* Tasks [27/36]
 ** TODO find minimal input sizes for each program
 Need to estimate the variance in our energy predictions, which are
 linear combinations of HW counters, from variance in the HW counters.
@@ -240,7 +240,7 @@ http://wikipedia.org/wiki/Variance#Sum_of_correlated_variables
   done|tee results/counter-by-size/fluidanimate.txt
 #+end_src
 
-** TODO Build all benchmarks to ASM [10/10]
+** DONE Build all benchmarks to ASM [10/10]
 *** parsec
 **** DONE Blackscholes
 **** DONE bodytrack
