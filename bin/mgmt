@@ -238,8 +238,103 @@ compile(){
                 FACE_SOURCE+="LANDMARK_PROXIMITY_OPTIMIZATION.cpp "
                 FACE_SOURCE+="main.cpp"
                 pushd "$BASE"/benchmarks/parsec-3.0/pkgs/apps/$bench/src/Benchmarks/facesim >/dev/null
-                cat $FACE_SOURCE > all.cpp
-                g++ $FULL_FLAGS -S all.cpp -o $tmp \
+                cat $FACE_SOURCE > ../../Public_Library/all.cpp
+                cd ../../Public_Library
+                files=""
+                files+="Arrays/ARRAY_PARALLEL_OPERATIONS.cpp "
+                files+="Collisions_And_Interactions/BOX_HIERARCHY.cpp "
+                files+="Collisions_And_Interactions/COLLISION_BODY_LIST_3D.cpp "
+                files+="Collisions_And_Interactions/TETRAHEDRON_COLLISION_BODY.cpp "
+                files+="Collisions_And_Interactions/TETRAHEDRON_HIERARCHY.cpp "
+                files+="Constitutive_Models/STRAIN_MEASURE_3D.cpp "
+                files+="Data_Structures/SPLAY_TREE.cpp "
+                files+="Deformable_Objects/DEFORMABLE_OBJECT.cpp "
+                files+="Deformable_Objects/DEFORMABLE_OBJECT_3D.cpp "
+                files+="Deformable_Objects/DEFORMABLE_OBJECT_COLLISIONS_3D.cpp "
+                files+="Fracture/EMBEDDED_TETRAHEDRALIZED_VOLUME_BOUNDARY_SURFACE.cpp "
+                files+="Forces_And_Torques/BODY_FORCES_3D.cpp "
+                files+="Forces_And_Torques/DIAGONALIZED_FINITE_VOLUME_3D.cpp "
+                files+="Geometry/BOX_2D.cpp "
+                files+="Geometry/BOX_3D.cpp "
+                files+="Geometry/EMBEDDED_OBJECT.cpp "
+                files+="Geometry/EMBEDDED_TETRAHEDRALIZED_VOLUME.cpp "
+                files+="Geometry/IMPLICIT_SURFACE.cpp "
+                files+="Geometry/IMPLICIT_SURFACE_LIST.cpp "
+                files+="Geometry/PLANE.cpp "
+                files+="Geometry/SEGMENT_2D.cpp "
+                files+="Geometry/SEGMENT_3D.cpp "
+                files+="Geometry/SEGMENTED_CURVE_3D.cpp "
+                files+="Geometry/TETRAHEDRALIZED_VOLUME.cpp "
+                files+="Geometry/TETRAHEDRALIZED_VOLUME_LIST.cpp "
+                files+="Geometry/TETRAHEDRON.cpp "
+                files+="Geometry/TRIANGLE_3D.cpp "
+                files+="Geometry/TRIANGULATED_OBJECT.cpp "
+                files+="Geometry/TRIANGULATED_SURFACE.cpp "
+                files+="Geometry/TRIANGULATED_SURFACE_LIST.cpp "
+                files+="Grids/SEGMENT_MESH.cpp "
+                files+="Grids/TETRAHEDRON_MESH.cpp "
+                files+="Grids/TRIANGLE_MESH.cpp "
+                files+="Level_Sets/LEVELSET.cpp "
+                files+="Level_Sets/LEVELSET_3D.cpp "
+                files+="Matrices_And_Vectors/MATRIX_3X3.cpp "
+                files+="Matrices_And_Vectors/SYMMETRIC_MATRIX_3X3.cpp "
+                files+="Matrices_And_Vectors/VECTOR_ND_PARALLEL.cpp "
+                files+="Particles/PARTICLE.cpp "
+                files+="Particles/SOLIDS_PARTICLE.cpp "
+                files+="Read_Write/FILE_UTILITIES.cpp "
+                files+="Rigid_Bodies/MASS_PROPERTIES_3D.cpp "
+                files+="Rigid_Bodies/RIGID_BODY_3D.cpp "
+                files+="Rigid_Bodies/RIGID_BODY_COLLISIONS_3D.cpp "
+                files+="Rigid_Bodies/RIGID_BODY_EVOLUTION_3D.cpp "
+                files+="Rigid_Bodies/RIGID_BODY_INTERSECTIONS_3D.cpp "
+                files+="Rigid_Bodies/RIGID_BODY_LIST_3D.cpp "
+                files+="Solids_And_Fluids/SOLIDS_EVOLUTION_3D.cpp "
+                files+="Solids_And_Fluids/SOLIDS_FLUIDS_DRIVER.cpp "
+                files+="Solids_And_Fluids/SOLIDS_FLUIDS_DRIVER_3D.cpp "
+                files+="Solids_And_Fluids/SOLIDS_FLUIDS_EXAMPLE_3D.cpp "
+                files+="Solids_And_Fluids/SOLIDS_PARAMETERS_3D.cpp "
+                files+="Thread_Utilities/THREAD_DIVISION_PARAMETERS.cpp "
+                files+="Thread_Utilities/THREAD_POOL_ALAMERE.cpp "
+                files+="Thread_Utilities/THREAD_POOL.cpp "
+                files+="Thread_Utilities/THREAD_POOL_SINGLE.cpp "
+                files+="Thread_Utilities/THREAD_ARRAY_LOCK.cpp "
+                files+="Utilities/DEBUG_UTILITIES.cpp "
+                files+="Utilities/LOG.cpp "
+                files+="Utilities/LOG_ENTRY.cpp "
+                files+="Utilities/PARSE_ARGS.cpp "
+                files+="Utilities/STRING_UTILITIES.cpp "
+                files+="Utilities/TIMER.cpp"
+
+                PL="$BASE"/benchmarks/parsec-3.0/pkgs/apps/$bench/src/Public_Library
+                INCLUDE=" -I $PL/../Benchmarks/facesim/ "
+                INCLUDE+="-I $PL/../TaskQ/include/ "
+                INCLUDE+="-I $PL/Arrays/ "
+                INCLUDE+="-I $PL/Collisions_And_Interactions/ "
+                INCLUDE+="-I $PL/Constitutive_Models/ "
+                INCLUDE+="-I $PL/Data_Structures/ "
+                INCLUDE+="-I $PL/Deformable_Objects/ "
+                INCLUDE+="-I $PL/Fracture/ "
+                INCLUDE+="-I $PL/Forces_And_Torques/ "
+                INCLUDE+="-I $PL/Geometry/ "
+                INCLUDE+="-I $PL/Grids/ "
+                INCLUDE+="-I $PL/Level_Sets/ "
+                INCLUDE+="-I $PL/Matrices_And_Vectors/ "
+                INCLUDE+="-I $PL/Particles/ "
+                INCLUDE+="-I $PL/Read_Write/ "
+                INCLUDE+="-I $PL/Rigid_Bodies/ "
+                INCLUDE+="-I $PL/Solids_And_Fluids/ "
+                INCLUDE+="-I $PL/Thread_Utilities/ "
+                INCLUDE+="-I $PL/Utilities/ "
+
+                cat $files > physbam.cpp
+
+                sed -i '10085i/*' physbam.cpp
+                sed -i '10091a*/' physbam.cpp
+
+                cat physbam.cpp >> all.cpp
+                
+                # echo "g++ $FULL_FLAGS $INCLUDE -S all.cpp -o $tmp"
+                g++ $FULL_FLAGS -fexceptions $INCLUDE -S all.cpp -o $tmp \
                     ||error "compilation failed"
                 popd >/dev/null
                 mv $tmp ${bench}.s
@@ -398,7 +493,7 @@ link(){
                     ||error "linking failed"
                 ;;
             facesim)
-                FLAGS="-pthread -lPhysBAM -xW -lm"
+                FLAGS="-pthread -xW -lm"
 
                 ldir="$BASE"/benchmarks/parsec-3.0/pkgs/apps/$bench/obj/amd64-linux.gcc
 
