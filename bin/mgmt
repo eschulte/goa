@@ -207,6 +207,7 @@ compile(){
                 mv TrackingModelTBB.cpp TrackingModelTBB.bkup
                 rm -f bodytrack.cpp
                 cat *.c* > bodytrack.cpp
+                cat ../FlexImageLib/*.c* >> bodytrack.cpp # this makes libflex part of the asm
                 mv TrackingModelTBB.bkup TrackingModelTBB.cpp
 
                 # now we undef USE_TBB to controll the includes and
@@ -389,7 +390,7 @@ link(){
                 g++ -lpthread ${bench}.s -o $bench||error "linking failed"
                 ;;
             bodytrack)
-                FLAGS="-lflex -lthreads -lpthread"
+                FLAGS="-lthreads -lpthread"
 
                 ldir="$BASE"/benchmarks/parsec-3.0/pkgs/apps/$bench/obj/amd64-linux.gcc
 
