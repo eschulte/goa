@@ -17,7 +17,7 @@ Options:
  -f,--flags FLAGS ------ flags to use when linking
  -g,--gc-size ---------- ~a
                          default: ~:d
- -L,--light ------------ use lighter genome representation
+ -L,--no-light --------- don't use light genome representation
  -l,--linker LINKER ---- linker to use
  -m,--model NAME ------- model name
  -P,--period NUM ------- period (in evals) of checkpoints
@@ -51,6 +51,8 @@ Options:
           :period-fn (lambda () (mapc #'funcall *checkpoint-funcs*))))
 
 (setf *note-level* 1)
+
+(defvar *light* t "If truthy then use the light genome representation.")
 
 (defun main (&optional (args *arguments*))
   (in-package :optimize)
@@ -96,7 +98,7 @@ Options:
            #+ccl  (ccl:set-lisp-heap-gc-threshold (parse-integer (arg-pop)))
            #+sbcl (setf (sb-ext:bytes-consed-between-gcs)
                         (parse-integer (arg-pop))))
-     ("-L" "--light"     (setf *orig* (to-asm-light *orig*)))
+     ("-L" "--no-light"  (setf *light* nil))
      ("-l" "--linker"    (setf (linker *orig*) (arg-pop)))
      ("-m" "--model"     (setf *model* (intern (string-upcase (arg-pop)))))
      ("-P" "--period"    (setf *period* (parse-integer (arg-pop))))
@@ -116,6 +118,7 @@ Options:
                            (setf *note-level* lvl)))
      ("-w" "--work-dir"  (setf *work-dir* (arg-pop))))
     (unless *period* (setf *period* (ceiling (/ *evals* (expt 2 10)))))
+    (when *light* (setf *orig* (to-asm-light *orig*)))
 
     ;; directories for results saving and logging
     (unless (ensure-directories-exist (make-pathname :directory *res-dir*))
