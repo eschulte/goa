@@ -24,7 +24,8 @@
 (defmethod software-evolution::lines ((asm asm-light)) (genome asm))
 
 (defmethod software-evolution:from-file ((asm asm-light) path)
-  (split-sequence #\Newline (file-to-string path)))
+  (setf (genome asm) (split-sequence #\Newline (file-to-string path)))
+  asm)
 
 (defmethod to-asm-light ((asm asm-perf))
   (with-slots (flags linker edits genome) asm
