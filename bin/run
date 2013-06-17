@@ -13,6 +13,7 @@
 #  -s,--size ------ input size test,tiny,small,medium,large
 #  -d,--debug ----- print commands before running them
 #  -k,--keep ------ keep output
+#  -K,--keep-perf - keep perf output
 #
 # Benchmark should be one of
 #  blackscholes
@@ -55,12 +56,13 @@ REPEAT=""
 RAW=""
 DEBUG=""
 KEEP=""
+KEEP_PERF=""
 EXIT=""
 ERROR=""
 OUT=$(mktemp)
 eval set -- \
-    $(getopt -o l:pc:wr:rs:dk \
-    -l limit:,perf,counters:,wattsup,repeat:,raw,size:,debug,keep \
+    $(getopt -o l:pc:wr:rs:dkK \
+    -l limit:,perf,counters:,wattsup,repeat:,raw,size:,debug,keep,keep-perf \
     -- "$@" || help;)
 while [ $# -gt 0 ];do
     case $1 in
@@ -73,6 +75,7 @@ while [ $# -gt 0 ];do
         -s|--size) SIZE="$2"; shift;;
         -d|--debug) DEBUG="yes";;
         -k|--keep) KEEP="yes";;
+        -K|--keep-perf) KEEP_PERF="yes";;
         (--) shift; break;;
         (-*) error "unrecognized option $1";;
         (*)  break;;
@@ -120,9 +123,13 @@ else
         echo "$EXIT,exit"
         echo "$ERROR,error"
         cat $PERF_OUT \
-            |grep "^ *[0-9,]\+ [a-z]\+" \
+            |grep "^ *[0-9,.]\+ [a-z]\+" \
             |sed 's/^ *//;s/,//g;s/ \([^ ]\+\)[^(]*/,\1/;s/([^0-9]*\([0-9.]\+\).*$/,\1%/';
-        rm -f $PERF_OUT;
+        if [ -z $KEEP_PERF ];then
+            rm -f $PERF_OUT;
+        else
+            echo "perf output keep at $PERF_OUT";
+        fi
         if [ -z $KEEP ];then
             rm -rf $OUT;
         else
