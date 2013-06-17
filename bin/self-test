@@ -30,18 +30,6 @@ done
 check(){
     if $@ >/dev/null;then echo "✓"; else echo "×"; fi; }
 
-declare -a BENCHMARKS
-BENCHMARKS+=(blackscholes)
-BENCHMARKS+=(bodytrack)
-BENCHMARKS+=(facesim)
-BENCHMARKS+=(ferret)
-BENCHMARKS+=(fluidanimate)
-BENCHMARKS+=(freqmine)
-BENCHMARKS+=(raytrace)
-BENCHMARKS+=(swaptions)
-BENCHMARKS+=(vips)
-BENCHMARKS+=(x264)
-
 msg "Testing mgmt support for all benchmarks"
 mgmt="$BASE"/bin/mgmt
 
