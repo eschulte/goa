@@ -1068,6 +1068,28 @@ coefficients for a memory linear model.
 - top level search driver
 - possibly a fixed with 
 
+Thoughts
+- we want the walk to be ergodic, which will allow us to sample the
+  whole space independent of our 
+
+- no deletion, rather just moving code around between two buckets,
+  one which serializes to disk, and one which is ignored, but keeps
+  the relative instruction mix the same
+
+- the following function of the fitness of a step decides if it is
+  taken or not
+
+  \begin{equation*}
+    keep = \left \{
+    \begin{array}{cl}
+    1 & if  f_{1} > f_{0} \\
+    \frac{f_{1}}{f_{0}} & otherwise
+    \end{array}
+    \right .
+  \end{equation*}
+  (metropolis hasting step)
+  ("gibbs" would be another option using /e/)
+
 ** TODO Memory efficient diff-rep for large genomes
 ** DONE add GC flag to optimize executable
 with separate help and default for SBCL and CCL
