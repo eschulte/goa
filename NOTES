@@ -1058,7 +1058,17 @@ coefficients for a memory linear model.
 ** TODO Build table results table
 ** TODO Analyze Optimizations
 ** TODO Build optimization Taxonomy
-* Code Tasks [3/4]
+* Code Tasks [3/7]
+** TODO focus mutation operators on hot spots
+- use =perf annotate= to highlight "hot" instructions
+- focus mutations on those instructions
+- maintain annotations over mutations
+
+** TODO MCMC search strategy
+- top level search driver
+- possibly a fixed with 
+
+** TODO Memory efficient diff-rep for large genomes
 ** DONE add GC flag to optimize executable
 with separate help and default for SBCL and CCL
 
