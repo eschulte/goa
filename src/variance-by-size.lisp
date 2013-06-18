@@ -86,18 +86,26 @@ Options:
        ("-m" "--model" (setf *model* (eval (to-sym (arg-pop)))))
        ("-c" "--counter" (setf counter (to-sym (arg-pop)))))
 
-      (format t "size   mean       variance   number ~a~%" (or counter ""))
-      (mapc [{apply #'format t
-              (if counter "~6a ~10a ~10a ~6a ~f~%" "~6a ~10a ~10a ~6a~%") }
-              #'append]
-            (mapcar #'list sizes)
+      ;; TODO: add var/mean percent
+      (format t "size   mean       variance   percent    number ~a~%"
+              (string-downcase (or counter "")))
+      (mapc (lambda (size stats counter)
+              (let ((mean (first stats))
+                    (variance (second stats))
+                    (number (third stats)))
+                (apply #'format t
+                       (format nil "~~6a ~~10a ~~10a ~~9f% ~~6a ~a~~%"
+                               (if counter " ~f" ""))
+                       size mean variance (* 100 (/ variance mean)) number
+                       (list counter))))
+            (mapcar [#'string-downcase #'symbol-name] sizes)
             (mapcar {power-stats-for-size runs} sizes)
             (mapcar
              (lambda (size)
                (if counter
-                   (list (mean (remove nil
-                                 (mapcar {aget counter}
-                                         (remove-if-not [{eq size} {aget 'size}]
-                                                        runs)))))
+                   (mean (remove nil
+                           (mapcar {aget counter}
+                                   (remove-if-not [{eq size} {aget 'size}]
+                                                  runs))))
                    nil))
              sizes)))))

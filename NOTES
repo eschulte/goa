@@ -100,7 +100,7 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 | 998.specrand   |
 | 999.specrand   |
 
-* Tasks [27/37]
+* Tasks [27/35]
 ** TODO find minimal input sizes for each program
 Need to estimate the variance in our energy predictions, which are
 linear combinations of HW counters, from variance in the HW counters.
@@ -814,7 +814,6 @@ Modeling kwh
 (ingest "results/energy-final-metrics/swaptions-orig-0.csv")
 #+end_src
 
-** TODO measure runtime of evolved programs
 ** TODO Expanded test suites for some benchmarks
 To ensure that our optimizations don't trample all over the non-tested
 functionality, we should include expanded test suites for some
