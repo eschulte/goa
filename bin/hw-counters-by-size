@@ -8,19 +8,22 @@
 #  -o,--overwrite ----- overwrite pre-existing output
 #  -b,--bench BENCH --- only run on BENCH
 #  -s,--size SIZE ----- only run on SIZE
+#  -C,--collate ------- collate counters by size
 #
 . $(dirname $0)/common
 
 COUNT=30
 OVER=""
+COLLATE=""
 
-eval set -- $(getopt -o c:ob:s: -l count:,overwrite,bench:,size: -- "$@" || help;)
+eval set -- $(getopt -o c:ob:s:C -l count:,overwrite,bench:,size:,collate -- "$@" || help;)
 while [ $# -gt 0 ];do
     case $1 in
         -c|--count) COUNT=$2; shift;;
         -o|--overwrite) OVER="YES"; shift;;
         -b|--bench) BENCHMARKS=($2); shift;;
         -s|--size) SIZES=($2); shift;;
+        -C|--collate) COLLATE="YES";;
         (--) shift; break;;
         (-*) error "unrecognized option $1";;
         (*)  break;;
@@ -52,16 +55,18 @@ for bench in ${BENCHMARKS[@]};do
         echo "skipping $bench"
     fi
 
-    msg "collating counts for $bench"
-    for size in ${SIZES[@]};do
-        OUT="$BASE"/results/counters-by-input-size/$bench-$size.txt
-        if [ ! -f "$OUT" ] || [ ! -z $OVER ];then
-            cat results/counters-by-input-size/$bench.txt \
-                |sed -n "/$size/,/^$/p"|grep ","|sed 's/,/ /' \
-                |awk '{print $2, $1}'|sort \
-                > "$OUT"
-        else
-            echo "skipping $bench $size"
-        fi
-    done
+    if [ ! -z $COLLATE ];then
+        msg "collating counts for $bench"
+        for size in ${SIZES[@]};do
+            OUT="$BASE"/results/counters-by-input-size/$bench-$size.txt
+            if [ ! -f "$OUT" ] || [ ! -z $OVER ];then
+                cat results/counters-by-input-size/$bench.txt \
+                    |sed -n "/$size/,/^$/p"|grep ","|sed 's/,/ /' \
+                    |awk '{print $2, $1}'|sort \
+                    > "$OUT"
+            else
+                echo "skipping $bench $size"
+            fi
+        done
+    fi
 done
