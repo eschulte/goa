@@ -24,8 +24,7 @@
         (* (nth i coefficients) (nth j coefficients)
            (covariance (nth i samples) (nth i samples))))))
 
-;; TODO: add option to output energy as well
-(defun power-stats-for-size (runs size)
+(defun power-stats (runs size)
   "Return the mean and variance of the `*model*' for RUNS of size SIZE."
   (block nil
     (let* ((hw-cs (mapcar [#'second #'third] (cddr (third *model*))))
@@ -41,22 +40,46 @@
            (clean (mapcar
                    (lambda (run)
                      (let ((cycles (aget 'cycles run)))
-                       (cons (aget 'seconds run)
-                             (mapcar (lambda (c)
-                                       (/ (if (listp c)
-                                              (reduce #'+ (mapcar {aget _ run}
-                                                                  (cdr c)))
-                                              (aget c run))
-                                          cycles))
-                                     hw-cs))))
+                       (mapcar (lambda (c)
+                                 (/ (if (listp c)
+                                        (reduce #'+ (mapcar {aget _ run}
+                                                            (cdr c)))
+                                        (aget c run))
+                                    cycles))
+                               hw-cs)))
                    (or valid (return (list nil nil 0)))))
            (pwr-var (sum-of-var
-                     cfs (apply #'mapcar #'list (mapcar #'cdr clean))))
+                     cfs (apply #'mapcar #'list clean)))
            (pwr-mean (mean (mapcar (lambda (vars)
                                      (+ (second (third *model*)) ;; constant
                                         (reduce #'+ (mapcar #'* cfs vars))))
                                    clean))))
       (list pwr-mean pwr-var (length valid)))))
+
+(defun energy-stats (runs size)
+  (let* ((power-stats (power-stats runs size))
+         (pwr-mean (first power-stats))
+         (pwr-var (second power-stats))
+         (hw-cs (mapcar [#'second #'third] (cddr (third *model*))))
+         (valid (remove-if-not (lambda (record)
+                                 (every (lambda (c)
+                                          (if (listp c)
+                                              (every {aget _ record} (cdr c))
+                                              (aget c record)))
+                                        (cons 'cycles hw-cs)))
+                               (remove-if-not [{eq size} {aget 'size}] runs)))
+         (seconds (mapcar {aget 'seconds} valid))
+         (sec-mean (mean seconds))
+         (sec-var (variance seconds)))
+    (list
+     ;; Note: should do mean of products and not products of mean, but
+     ;;       this is easier and we mainly want order of magnitude
+     (* sec-mean pwr-mean)
+     ;; http://en.wikipedia.org/wiki/Variance#Product_of_independent_variables
+     (+ (* (expt sec-mean 2) pwr-var)
+        (* (expt pwr-mean 2) sec-var)
+        (* pwr-var sec-var))
+     (length valid))))
 
 (defun model-variance (&optional (args *arguments*))
   (in-package :optimize)
@@ -73,8 +96,9 @@ Options:
  -h,--help --------- print this help message and exit
  -s,--size --------- only for size
  -m,--model NAME --- set model to NAME
+ -e,--energy ------- variance of energy, not power 
  -c,--counter C ---- also print values of counter C~%")
-          runs counter)
+          runs counter energy)
       (when (or (not args)
                 (string= (subseq (car args) 0 2) "-h")
                 (string= (subseq (car args) 0 3) "--h"))
@@ -84,9 +108,9 @@ Options:
       (getopts
        ("-s" "--size" (setf sizes (list (to-sym (arg-pop)))))
        ("-m" "--model" (setf *model* (eval (to-sym (arg-pop)))))
-       ("-c" "--counter" (setf counter (to-sym (arg-pop)))))
+       ("-c" "--counter" (setf counter (to-sym (arg-pop))))
+       ("-e" "--energy" (setf energy t)))
 
-      ;; TODO: add var/mean percent
       (format t "size   mean       variance   percent    number ~a~%"
               (string-downcase (or counter "")))
       (mapc (lambda (size stats counter)
@@ -99,7 +123,7 @@ Options:
                        size mean variance (* 100 (/ variance mean)) number
                        (list counter))))
             (mapcar [#'string-downcase #'symbol-name] sizes)
-            (mapcar {power-stats-for-size runs} sizes)
+            (mapcar (curry (if energy #'energy-stats #'power-stats) runs) sizes)
             (mapcar
              (lambda (size)
                (if counter
