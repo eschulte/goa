@@ -72,8 +72,9 @@
 Options:
  -h,--help --------- print this help message and exit
  -s,--size --------- only for size
- -m,--model NAME --- set model to NAME~%")
-          runs)
+ -m,--model NAME --- set model to NAME
+ -c,--counter C ---- also print values of counter C~%")
+          runs counter)
       (when (or (not args)
                 (string= (subseq (car args) 0 2) "-h")
                 (string= (subseq (car args) 0 3) "--h"))
@@ -82,9 +83,21 @@ Options:
       (setf runs (parse-counter-by-size-file (arg-pop)))
       (getopts
        ("-s" "--size" (setf sizes (list (to-sym (arg-pop)))))
-       ("-m" "--model" (setf *model* (eval (to-sym (arg-pop))))))
+       ("-m" "--model" (setf *model* (eval (to-sym (arg-pop)))))
+       ("-c" "--counter" (setf counter (to-sym (arg-pop)))))
 
-      (format t "size   mean       variance   number~%")
-      (mapc [{apply #'format t "~6a ~10a ~10a ~a~%"} #'cons] 
-            sizes
-            (mapcar {power-stats-for-size runs} sizes)))))
+      (format t "size   mean       variance   number ~a~%" (or counter ""))
+      (mapc [{apply #'format t
+              (if counter "~6a ~10a ~10a ~6a ~f~%" "~6a ~10a ~10a ~6a~%") }
+              #'append]
+            (mapcar #'list sizes)
+            (mapcar {power-stats-for-size runs} sizes)
+            (mapcar
+             (lambda (size)
+               (if counter
+                   (list (mean (remove nil
+                                 (mapcar {aget counter}
+                                         (remove-if-not [{eq size} {aget 'size}]
+                                                        runs)))))
+                   nil))
+             sizes)))))
