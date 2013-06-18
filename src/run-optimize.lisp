@@ -202,6 +202,4 @@ Options:
 
     (note 1 "done after ~a fitness evaluations~%" *fitness-evals*)
     (note 1 "results saved in ~a~%" *res-dir*)
-    (close (pop *note-out*))
-    (quit)))
-
+    (close (pop *note-out*))))

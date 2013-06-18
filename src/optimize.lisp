@@ -138,10 +138,12 @@ This includes evolved individuals in the training set.")
                (intern (string-upcase (symbol-name keyword)) :optimize)
                keyword)))
     (let ((*error-output* (make-broadcast-stream))
-          (*standard-output* (make-broadcast-stream)))
-      (eval `(let ,(mapcar (lambda (pair) (list (key-to-sym (car pair)) (cdr pair)))
-                           stats)
-               ,model)))))
+          (*standard-output* (make-broadcast-stream))
+          (expr `(let ,(mapcar (lambda (pair)
+                                 (list (key-to-sym (car pair)) (cdr pair)))
+                               stats)
+                   ,model)))
+      (values (eval expr) expr))))
 
 (defvar infinity
   #+sbcl
@@ -193,7 +195,7 @@ This includes evolved individuals in the training set.")
                                   ,@(stats sizes)))))))))
 
 
-;;; Simple command line helpers
+;;; Simple helpers
 (defun throw-error (&rest args)
   (apply #'note 0 args)
   (quit))
@@ -205,3 +207,9 @@ This includes evolved individuals in the training set.")
           ,@(mapcar (lambda-bind ((short long . body))
                       `((or (string= ,arg ,short) (string= ,arg ,long)) ,@body))
                     forms)))))
+
+(defun covariance (a b)
+  (/ (reduce #'+ (mapcar #'*
+                         (mapcar {- _ (mean a)} a)
+                         (mapcar {- _ (mean b)} b)))
+     (- (length a) 1)))

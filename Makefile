@@ -39,6 +39,9 @@ bin/objread: src/objread.lisp etc/cl-launch.lisp
 bin/calc-energy: src/calc-energy.lisp etc/cl-launch.lisp
 	$(CLC) $(CLFLAGS) --output $@ -r optimize:calc-energy
 
+bin/variance-by-size: src/variance-by-size.lisp etc/cl-launch.lisp
+	$(CLC) $(CLFLAGS) --output $@ -r optimize:variance-by-size
+
 clean:
 	rm -f bin/no-limit bin/no-stack-limit bin/limit etc/cl-launch.lisp $(LISP_BINS)
 

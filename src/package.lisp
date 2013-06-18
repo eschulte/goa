@@ -14,4 +14,5 @@
   (:export
    :main
    :objread
-   :calc-energy))
+   :calc-energy
+   :variance-by-size))

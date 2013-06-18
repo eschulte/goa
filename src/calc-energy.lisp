@@ -27,7 +27,7 @@ Options:
                               (case (arch)
                                 (:intel 'intel-sandybridge-power-model)
                                 (:amd   'amd-opteron-power-model)))))
-      (when debug (format t "~&~%; model~%~S~%" *model*))
+      (when debug (format t "~&; model~%~S~%~%" *model*))
 
       ;; parse inputs
       (let ((cs (mapcar
@@ -39,10 +39,9 @@ Options:
                           (lambda (l) (split-sequence "," l :test #'string=))
                           (loop :for line = (read-line *standard-input* nil)
                              :while line :collect line))))))
-        (when debug (format t "~&~%; counters~%~S~%" cs))
+        (when debug (format t "~&; counters~%~S~%~%" cs))
 
         ;; Apply the model to the counters
         (multiple-value-bind (value expr) (apply-model *model* cs)
-          (when debug (format t "~&~%; expression~%~S~%" expr))
-          (format t "~S~%" value)))))
-  (quit))
+          (when debug (format t "~&; expression~%~S~%~%" expr))
+          (format t "~S~%" value))))))

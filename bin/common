@@ -39,6 +39,13 @@ BENCHMARKS+=(swaptions)
 BENCHMARKS+=(vips)
 BENCHMARKS+=(x264)
 
+declare -a SIZES
+SIZES+=(test)
+SIZES+=(tiny)
+SIZES+=(small)
+SIZES+=(medium)
+SIZES+=(large)
+
 rand_remote(){ echo ${REMOTES[$RANDOM % ${#REMOTES[@]}]}; }
 
 my_remote(){ echo ${REMOTES[$(expr $$ % ${#REMOTES[@]})]}; }
