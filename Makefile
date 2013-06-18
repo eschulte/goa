@@ -14,7 +14,7 @@ LISP:="sbcl ccl"
 QUICK_LISP?=$(HOME)/quicklisp/
 
 # Compiled lisp executables
-LISP_EXES=optimize objread calc-energy variance-by-size
+LISP_EXES=optimize objread calc-energy model-variance
 LISP_BINS=$(addprefix bin/, $(LISP_EXES))
 
 # Flags to build standalone executables
@@ -39,8 +39,8 @@ bin/objread: src/objread.lisp etc/cl-launch.lisp
 bin/calc-energy: src/calc-energy.lisp etc/cl-launch.lisp
 	$(CLC) $(CLFLAGS) --output $@ -r optimize:calc-energy
 
-bin/variance-by-size: src/variance-by-size.lisp etc/cl-launch.lisp
-	$(CLC) $(CLFLAGS) --output $@ -r optimize:variance-by-size
+bin/model-variance: src/model-variance.lisp etc/cl-launch.lisp
+	$(CLC) $(CLFLAGS) --output $@ -r optimize:model-variance
 
 clean:
 	rm -f bin/no-limit bin/no-stack-limit bin/limit etc/cl-launch.lisp $(LISP_BINS)

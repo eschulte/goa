@@ -15,4 +15,4 @@
    :main
    :objread
    :calc-energy
-   :variance-by-size))
+   :model-variance))

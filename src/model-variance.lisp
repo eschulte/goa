@@ -1,6 +1,6 @@
 (in-package :optimize)
 
-(defun parse-counter-by-size-file (path &aux run results size)
+(defun parse-hw-counter-file (path &aux run results size)
   (with-open-file (in path)
     (loop :for line = (read-line in nil nil) :while line
        :do (let ((parts (split-sequence #\, line :remove-empty-subseqs t)))
@@ -58,7 +58,7 @@
                                    clean))))
       (list pwr-mean pwr-var (length valid)))))
 
-(defun variance-by-size (&optional (args *arguments*))
+(defun model-variance (&optional (args *arguments*))
   (in-package :optimize)
   (flet ((arg-pop () (pop args))
          (to-sym (str) (intern (string-upcase str))))
@@ -80,7 +80,7 @@ Options:
                 (string= (subseq (car args) 0 3) "--h"))
         (format t help) (quit))
 
-      (setf runs (parse-counter-by-size-file (arg-pop)))
+      (setf runs (parse-hw-counter-file (arg-pop)))
       (getopts
        ("-s" "--size" (setf sizes (list (to-sym (arg-pop)))))
        ("-m" "--model" (setf *model* (eval (to-sym (arg-pop)))))
