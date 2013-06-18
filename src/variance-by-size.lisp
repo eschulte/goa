@@ -1,96 +1,90 @@
 (in-package :optimize)
 
-(defun counters (base bench size &aux vals)
-  (mapc (lambda-bind ((counter count))
-          (if (assoc counter vals)
-              (push count (cdr (assoc counter vals)))
-              (push (list counter count) vals)))
-        (mapcar (lambda (list)
-                  (cons (intern (string-upcase (car list)))
-                        (mapcar #'read-from-string (cdr list))))
-                (mapcar {split-sequence #\Space}
-                        (split-sequence #\Newline
-                          (file-to-string
-                           (format nil "~a/~a-~a.txt" base bench size))
-                          :remove-empty-subseqs t))))
-  vals)
+(defun parse-counter-by-size-file (path &aux run results size)
+  (with-open-file (in path)
+    (loop :for line = (read-line in nil nil) :while line
+       :do (let ((parts (split-sequence #\, line :remove-empty-subseqs t)))
+             (when parts
+               (if  (= (length parts) 1)
+                    (setf size (intern (string-upcase (car parts))))
+                    (let ((key (intern (string-upcase (second parts))))
+                          (val (parse-number (car parts))))
+                      (if (eq key 'exit)
+                          (progn (when run (push run results))
+                                 (setf run (list (cons key val)
+                                                 (cons 'size size))))
+                          (push (cons key val) run))))))))
+  (push run results)
+  results)
 
 ;; http://en.wikipedia.org/wiki/Variance#Weighted_sum_of_variables
 (defun sum-of-var (coefficients samples)
-  (loop :for i :in (mapcar #'car coefficients) :summing
-     (loop :for j :in (mapcar #'car coefficients) :summing
-        (* (aget i coefficients) (aget j coefficients)
-           (covariance (aget i samples) (aget i samples))))))
+  (loop :for i :below (length coefficients) :summing
+     (loop :for j :below (length coefficients) :summing
+        (* (nth i coefficients) (nth j coefficients)
+           (covariance (nth i samples) (nth i samples))))))
 
-;; This won't be fully general, rather it will assume that `*model*'
-;; is of the seconds × power variety, where power is the sum of the
-;; intercept with a number of /cycles counts w/coefficients.
-(defun power-model-variance (samples) ;; TODO: not dividing values by cycles!
-  "Return the mean and variance of power-model estimates of a list of samples.
-Using the model in `*model*'"
-  (let* (;; collect the counters from the model
-         (hw-cs (mapcar [#'car #'cdaddr] (cddr (third *model*))))
-         ;; pull the coefficients from the model
-         (w-vals (mapcar (lambda (c)
-                           (if (listp c)
-                               (cons 'fops (mapcar (first c)
-                                                   (aget (second c) samples)
-                                                   (aget (third c) samples)))
-                               (cons c (aget c samples))))
-                         hw-cs))
-         ;; collect the counter values into an alist keyed by counter
-         (cfs (mapcar #'cons
-                      (mapcar #'car w-vals)
-                      (mapcar #'second (cddr (third *model*)))))
-         ;; transpose of above gives a list of runs
-         (runs-w-headers (apply #'mapcar #'list w-vals))
-         ;; calculate the model power of each run
-         (powers (mapcar (lambda (vals)
-                           (+ (second (third *model*)) ;; power constant
-                              (reduce #'+ (mapcar (lambda (c v) (* (aget c cfs) v))
-                                                  (car runs-w-headers)
-                                                  vals))))
-                         (cdr runs-w-headers)))
-         ;; variance of the power portion of the model
-         (power-var (sum-of-var cfs w-vals))
-         (seconds (aget 'seconds samples)) (seconds-var (variance seconds)))
-    (values
-     (mean (mapcar #'* seconds powers))
-     ;; produce of independent variables, seconds and powers
-     ;; http://en.wikipedia.org/wiki/Variance#Product_of_independent_variables
-     (+ (* (expt (mean powers) 2) seconds-var)
-        (* (expt (mean seconds) 2) power-var)
-        (* seconds-var power-var)))))
+;; TODO: add option to output energy as well
+(defun power-stats-for-size (runs size)
+  "Return the mean and variance of the `*model*' for RUNS of size SIZE."
+  (block nil
+    (let* ((hw-cs (mapcar [#'second #'third] (cddr (third *model*))))
+           (cfs   (mapcar  #'second          (cddr (third *model*))))
+           (valid (remove-if-not (lambda (record)
+                                   (every (lambda (c)
+                                            (if (listp c)
+                                                (every {aget _ record} (cdr c))
+                                                (aget c record)))
+                                          (cons 'cycles hw-cs)))
+                                 (remove-if-not [{eq size} {aget 'size}] runs)))
+           ;; cleaned up inputs to the model
+           (clean (mapcar
+                   (lambda (run)
+                     (let ((cycles (aget 'cycles run)))
+                       (cons (aget 'seconds run)
+                             (mapcar (lambda (c)
+                                       (/ (if (listp c)
+                                              (reduce #'+ (mapcar {aget _ run}
+                                                                  (cdr c)))
+                                              (aget c run))
+                                          cycles))
+                                     hw-cs))))
+                   (or valid (return (list nil nil 0)))))
+           (pwr-var (sum-of-var
+                     cfs (apply #'mapcar #'list (mapcar #'cdr clean))))
+           (pwr-mean (mean (mapcar (lambda (vars)
+                                     (+ (second (third *model*)) ;; constant
+                                        (reduce #'+ (mapcar #'* cfs vars))))
+                                   clean))))
+      (list pwr-mean pwr-var (length valid)))))
 
 (defun variance-by-size (&optional (args *arguments*))
   (in-package :optimize)
-  (flet ((arg-pop () (pop args)))
-    (let ((sizes (list "test" "tiny" "small" "medium" "large"))
-          (base "results/counters-by-input-size")
-          (*model* (case (arch)
-                     (:intel 'intel-sandybridge-power-model)
-                     (:amd   'amd-opteron-power-model)))
-          bench
-          (help "Usage: variance-by-input benchmark [OPTIONS...]
+  (flet ((arg-pop () (pop args))
+         (to-sym (str) (intern (string-upcase str))))
+    (let ((sizes '(test tiny small medium large))
+          (*model* (eval (case (arch)
+                           (:intel 'intel-sandybridge-power-model)
+                           (:amd   'amd-opteron-power-model))))
+          (help "Usage: variance-by-input file [OPTIONS...]
  print the variance as a function of size
 
 Options:
  -h,--help --------- print this help message and exit
- -b,--base --------- change the base directory
- -m,--model NAME --- set model to NAME~%"))
+ -s,--size --------- only for size
+ -m,--model NAME --- set model to NAME~%")
+          runs)
       (when (or (not args)
                 (string= (subseq (car args) 0 2) "-h")
                 (string= (subseq (car args) 0 3) "--h"))
         (format t help) (quit))
 
-      (setf bench (arg-pop))
+      (setf runs (parse-counter-by-size-file (arg-pop)))
       (getopts
-       ("-b" "--base"  (setf base (arg-pop)))
-       ("-m" "--model" (setf *model* (intern (string-upcase (arg-pop))))))
-      (setf *model* (eval *model*))
+       ("-s" "--size" (setf sizes (list (to-sym (arg-pop)))))
+       ("-m" "--model" (setf *model* (eval (to-sym (arg-pop))))))
 
-      (format t "size   mean         variance~%")
-      (loop :for size :in sizes :do
-         (multiple-value-bind (mean variance)
-             (power-model-variance (counters base bench size))
-           (format t "~6a ~12a ~12a~%" size mean variance))))))
+      (format t "size   mean       variance   number~%")
+      (mapc [{apply #'format t "~6a ~10a ~10a ~a~%"} #'cons] 
+            sizes
+            (mapcar {power-stats-for-size runs} sizes)))))

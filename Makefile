@@ -14,7 +14,7 @@ LISP:="sbcl ccl"
 QUICK_LISP?=$(HOME)/quicklisp/
 
 # Compiled lisp executables
-LISP_EXES=optimize objread calc-energy
+LISP_EXES=optimize objread calc-energy variance-by-size
 LISP_BINS=$(addprefix bin/, $(LISP_EXES))
 
 # Flags to build standalone executables
