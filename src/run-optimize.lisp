@@ -17,13 +17,14 @@ Options:
  -f,--flags FLAGS ------ flags to use when linking
  -g,--gc-size ---------- ~a
                          default: ~:d
- -L,--no-light --------- don't use light genome representation
  -l,--linker LINKER ---- linker to use
  -m,--model NAME ------- model name
  -P,--period NUM ------- period (in evals) of checkpoints
                          default: max-evals/(2^10)
  -p,--pop-size NUM ----- population size
                          default: 2^9
+ -R,--rep REP ---------- use REP program representation
+                         light (default), range, or asm
  -r,--res-dir DIR ------ save results to dir
                          default: program.opt/
  -s,--size SIZE -------- input size test,tiny,small,medium,large
@@ -52,7 +53,8 @@ Options:
 
 (setf *note-level* 1)
 
-(defvar *light* t "If truthy then use the light genome representation.")
+(defvar *rep* 'light
+  "The type of program representation to use during optimization.")
 
 (defun main (&optional (args *arguments*))
   (in-package :optimize)
@@ -98,7 +100,6 @@ Options:
            #+ccl  (ccl:set-lisp-heap-gc-threshold (parse-integer (arg-pop)))
            #+sbcl (setf (sb-ext:bytes-consed-between-gcs)
                         (parse-integer (arg-pop))))
-     ("-L" "--no-light"  (setf *light* nil))
      ("-l" "--linker"    (setf (linker *orig*) (arg-pop)))
      ("-m" "--model"     (setf *model* (intern (string-upcase (arg-pop)))))
      ("-P" "--period"    (setf *period* (parse-integer (arg-pop))))
@@ -110,6 +111,7 @@ Options:
                                   (if (string= (subseq dir (1- (length dir)))
                                                "/")
                                       dir (concatenate 'string dir "/"))))))
+     ("-R" "--rep"       (setf *rep* (intern (string-upcase (arg-pop)))))
      ("-s" "--size"      (setf *size* (arg-pop)))
      ("-T" "--tourny-size" (setf *tournament-size* (parse-integer (arg-pop))))
      ("-t" "--threads"   (setf *threads* (parse-integer (arg-pop))))
@@ -118,7 +120,6 @@ Options:
                            (setf *note-level* lvl)))
      ("-w" "--work-dir"  (setf *work-dir* (arg-pop))))
     (unless *period* (setf *period* (ceiling (/ *evals* (expt 2 10)))))
-    (when *light* (setf *orig* (to-asm-light *orig*)))
 
     ;; directories for results saving and logging
     (unless (ensure-directories-exist (make-pathname :directory *res-dir*))
@@ -159,8 +160,20 @@ Options:
                     *max-population-size*
                     *model*
                     *period*
+                    *rep*
                     *note-level*
                     *res-dir*)))
+
+    ;; Convert the program to the specified representation
+    (case *rep*
+      (light
+       (setf *orig* (to-asm-light *orig*)))
+      (range
+       (setf *rep* (coerce (mapcar {aget :line} (genome *orig*)) 'vector))
+       (setf *orig* (to-asm-range *orig*))
+       (setf (reference *orig*) *rep*))
+      (asm)
+      (t (throw-error "representation ~S is not recognized" *rep*)))
 
     ;; Run optimization
     (unless (fitness *orig*)

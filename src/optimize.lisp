@@ -30,6 +30,27 @@
       :edits edits
       :genome (mapcar {aget :line} genome))))
 
+(defclass asm-range (range asm)
+  ((stats :initarg :stats :accessor stats :initform nil)))
+
+(defun to-asm-range (asm)
+  (with-slots (flags linker edits genome) asm
+    (make-instance 'asm-range
+      :flags flags
+      :linker linker
+      :edits edits)))
+
+(defmethod copy ((asm asm-range)
+                 &key (edits (copy-tree (edits asm))) (fitness (fitness asm)))
+  (with-slots (genome linker flags reference) asm
+      (make-instance (type-of asm)
+        :edits edits
+        :fitness fitness
+        :genome (copy-tree genome)
+        :linker linker
+        :flags flags
+        :reference reference)))
+
 
 ;;; Models
 (defvar intel-sandybridge-energy-model
