@@ -19,15 +19,10 @@
 (defclass asm-perf (asm)
   ((stats :initarg :stats :accessor stats :initform nil)))
 
-(defclass asm-light (asm-perf) ())
+(defclass asm-light (light asm)
+  ((stats :initarg :stats :accessor stats :initform nil)))
 
-(defmethod software-evolution::lines ((asm asm-light)) (genome asm))
-
-(defmethod software-evolution:from-file ((asm asm-light) path)
-  (setf (genome asm) (split-sequence #\Newline (file-to-string path)))
-  asm)
-
-(defmethod to-asm-light ((asm asm-perf))
+(defun to-asm-light (asm)
   (with-slots (flags linker edits genome) asm
     (make-instance 'asm-light
       :flags flags
