@@ -1058,7 +1058,7 @@ coefficients for a memory linear model.
 ** TODO Build table results table
 ** TODO Analyze Optimizations
 ** TODO Build optimization Taxonomy
-* Code Tasks [3/7]
+* Code Tasks [4/7]
 ** TODO focus mutation operators on hot spots
 - use =perf annotate= to highlight "hot" instructions
 - focus mutations on those instructions
@@ -1090,7 +1090,9 @@ Thoughts
   (metropolis hasting step)
   ("gibbs" would be another option using /e/)
 
-** TODO Memory efficient diff-rep for large genomes
+** DONE Memory efficient diff-rep for large genomes
+see [[https://github.com/eschulte/software-evolution/blob/master/software/simple.lisp#L161][software-evolution/software/simple.lisp#L161]]
+
 ** DONE add GC flag to optimize executable
 with separate help and default for SBCL and CCL
 

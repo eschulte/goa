@@ -24,7 +24,7 @@ Options:
  -p,--pop-size NUM ----- population size
                          default: 2^9
  -R,--rep REP ---------- use REP program representation
-                         light (default), range, or asm
+                         asm, light, or range (default)
  -r,--res-dir DIR ------ save results to dir
                          default: program.opt/
  -s,--size SIZE -------- input size test,tiny,small,medium,large
@@ -53,7 +53,7 @@ Options:
 
 (setf *note-level* 1)
 
-(defvar *rep* 'light
+(defvar *rep* 'range
   "The type of program representation to use during optimization.")
 
 (defun main (&optional (args *arguments*))
