@@ -43,13 +43,13 @@
 (defmethod copy ((asm asm-range)
                  &key (edits (copy-tree (edits asm))) (fitness (fitness asm)))
   (with-slots (genome linker flags reference) asm
-      (make-instance (type-of asm)
-        :edits edits
-        :fitness fitness
-        :genome (copy-tree genome)
-        :linker linker
-        :flags flags
-        :reference reference)))
+    (make-instance (type-of asm)
+      :edits edits
+      :fitness fitness
+      :genome (copy-tree genome)
+      :linker linker
+      :flags flags
+      :reference reference)))
 
 
 ;;; Models
@@ -98,17 +98,17 @@ This includes evolved individuals in the training set.")
 
 
 ;;; Configuration Fitness and Runtime
-(defvar *path*   nil "Path to Assembly file.")
-(defvar *script* "./bin/run" "Script used to test benchmark application.")
-(defvar *size*   nil "size of input for fitness evaluation")
-(defvar *res-dir* nil "Directory in which to save results.")
-(defvar *orig*   nil "Original version of the program to be run.")
-(defvar *benchmark* nil "Name of the benchmark.")
-(defvar *period* nil "Period at which to run `checkpoint'.")
-(defvar *threads*  1   "Number of cores to use.")
-(defvar *evals* (expt 2 18) "Maximum number of test evaluations.")
-(defvar *max-err* 0 "Maximum allowed error.")
-(defvar *model* nil "HW counter model to optimized.")
+(defvar *path*      nil        "Path to Assembly file.")
+(defvar *script*   "./bin/run" "Script used to test benchmark application.")
+(defvar *size*      nil        "size of input for fitness evaluation")
+(defvar *res-dir*   nil        "Directory in which to save results.")
+(defvar *orig*      nil        "Original version of the program to be run.")
+(defvar *benchmark* nil        "Name of the benchmark.")
+(defvar *period*    nil        "Period at which to run `checkpoint'.")
+(defvar *threads*   1          "Number of cores to use.")
+(defvar *evals*    (expt 2 18) "Maximum number of test evaluations.")
+(defvar *max-err*   0          "Maximum allowed error.")
+(defvar *model*     nil        "HW counter model to optimized.")
 (setf *max-population-size* (expt 2 9)) ;; Default max pop size
 (setf *fitness-predicate* #'<)
 (setf *tournament-size* 4)
