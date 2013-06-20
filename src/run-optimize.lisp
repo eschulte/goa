@@ -47,7 +47,7 @@ Options:
 (defvar *checkpoint-funcs* (list #'checkpoint)
   "Functions to record checkpoints.")
 
-(defvar do-evolve ()
+(defun do-evolve ()
   (evolve #'test :max-evals *evals*
           :period *period*
           :period-fn (lambda () (mapc #'funcall *checkpoint-funcs*))))
