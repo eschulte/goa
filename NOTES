@@ -1058,13 +1058,13 @@ coefficients for a memory linear model.
 ** TODO Build table results table
 ** TODO Analyze Optimizations
 ** TODO Build optimization Taxonomy
-* Code Tasks [4/7]
+* Code Tasks [5/7]
 ** TODO focus mutation operators on hot spots
 - use =perf annotate= to highlight "hot" instructions
 - focus mutations on those instructions
 - maintain annotations over mutations
 
-** TODO MCMC search strategy
+** DONE MCMC search strategy
 - top level search driver
 - possibly a fixed with 
 
