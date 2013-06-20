@@ -26,7 +26,7 @@ ifneq ($(LISP_STACK),)
 	CLFLAGS+= --wrap 'SBCL_OPTIONS="--dynamic-space-size $(LISP_STACK)"'
 endif
 
-all: bin/no-limit bin/no-stack-limit bin/limit $(LISP_BINS)
+all: bin/limit $(LISP_BINS)
 
 etc/cl-launch.lisp:
 	echo "(load \"$(QUICK_LISP)/setup.lisp\")" >$@

@@ -48,7 +48,6 @@ case $BENCHMARK in
     *) error "no test implemented for '$BENCHMARK'";;
 esac
 EXECUTABLE="$2"
-LIMIT="$(pwd)/bin/no-stack-limit"
 PERF=""
 COUNTERS=""
 WATTSUP=""
