@@ -86,13 +86,15 @@ if [ ! -z $RAW ] && [ ! -z $PERF ];then
     error "can't print RAW and PERF results simultaneously"
 fi
 
-
 if [ -z $COUNTER ];then
-  if grep -q Intel /proc/cpuinfo; then
-    COUNTERS="task-clock,cycles,instructions,r532010,r538010,cache-references,cache-misses"
-  elif grep -q AMD /proc/cpuinfo; then
-    COUNTERS="task-clock,cycles,instructions,r533f00,cache-references,cache-misses"
-  fi
+    case $ARCH in
+        intel)
+            COUNTERS="task-clock,cycles,instructions,r532010,r538010,cache-references,cache-misses"
+;;
+        amd)
+            COUNTERS="task-clock,cycles,instructions,r533f00,cache-references,cache-misses"
+            ;;
+    esac
 fi
 
 PREFIX="$LIMIT"

@@ -67,6 +67,13 @@ else
     OS=$(uname -s)
 fi
 
+# Architecture Identification
+if grep -q Intel /proc/cpuinfo; then
+    ARCH=intel
+elif grep -q AMD /proc/cpuinfo; then
+    ARCH=amd
+fi
+
 # OS-specific qemu command
 case $OS in
     Debian|Ubuntu)
