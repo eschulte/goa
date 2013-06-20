@@ -6,6 +6,7 @@
 # Options:
 #  -l,--limit ----- limit script for sandboxing
 #  -p,--perf ------ collect performance counters
+#  -a,--annotate -- annotate the assembly with perf
 #  -c,--counters -- comma separated list of perf counters
 #  -w,--wattsup --- collect watts-up data during execution
 #  -r,--repeat N -- repeat the execution N times
@@ -49,6 +50,7 @@ case $BENCHMARK in
 esac
 EXECUTABLE="$2"
 PERF=""
+ANNOTATE=""
 COUNTERS=""
 WATTSUP=""
 REPEAT=""
@@ -60,13 +62,14 @@ EXIT=""
 ERROR=""
 OUT=$(mktemp)
 eval set -- \
-    $(getopt -o l:pc:wr:rs:dkK \
-    -l limit:,perf,counters:,wattsup,repeat:,raw,size:,debug,keep,keep-perf \
+    $(getopt -o l:pac:wr:rs:dkK \
+    -l limit:,perf,annotate,counters:,wattsup,repeat:,raw,size:,debug,keep,keep-perf \
     -- "$@" || help;)
 while [ $# -gt 0 ];do
     case $1 in
         -l|--limit) LIMIT="$2"; shift;;
         -p|--perf)  PERF="yes";;
+        -a|--annotate) ANNOTATE="yes"; PERF="yes";;
         -r|--repeat) REPEAT="$2"; shift;;
         -c|--counters) PERF="yes"; COUNTERS="$2"; shift;;
         -w|--wattsup) WATTSUP="yes";;
@@ -117,15 +120,25 @@ if [ -z $PERF ];then
 else
     # perf prefix to the command
     PERF_OUT=$(mktemp)
-    PREFIX+=" perf stat -e $COUNTERS -o $PERF_OUT"
+    if [ -z $ANNOTATE ];then
+        PREFIX+=" perf stat -e $COUNTERS -o $PERF_OUT"
+    else
+        PREFIX+=" perf record -e $COUNTERS -o $PERF_OUT"
+    fi
     if [ ! -z "$REPEAT" ];then PREFIX+=" -r $REPEAT"; fi
     # handle perf output on exit
     function exit_hook (){
-        echo "$EXIT,exit"
-        echo "$ERROR,error"
-        cat $PERF_OUT \
-            |grep "^ *[0-9,.]\+ [a-z]\+" \
-            |sed 's/^ *//;s/,//g;s/ \([^ ]\+\)[^(]*/,\1/;s/([^0-9]*\([0-9.]\+\).*$/,\1%/';
+        if [ -z $ANNOTATE ];then
+            echo "$EXIT,exit"
+            echo "$ERROR,error"
+            cat $PERF_OUT \
+                |grep "^ *[0-9,.]\+ [a-z]\+" \
+                |sed 's/^ *//;s/,//g;s/ \([^ ]\+\)[^(]*/,\1/;s/([^0-9]*\([0-9.]\+\).*$/,\1%/';
+        else
+            perf annotate -i $PERF_OUT
+            # |grep ": \+[a-f0-9]\+" \
+            # |sed 's/ \([a-f0-9]\+\):.*$/\1/;s/\s*:\s*/,/;s/^\s*//'
+        fi
         if [ -z $KEEP_PERF ];then
             rm -f $PERF_OUT;
         else
