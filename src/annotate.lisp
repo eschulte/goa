@@ -39,35 +39,34 @@
                           (parse-number (aref matches 0))))))
               (split-sequence #\Newline raw)))))
 
-(defmacro annotate-w-addr (asm &key bin)
-  (let* ((bin-var (or bin (gensym)))
-         (func-addrs (gensym))
-         (body
-          `(let (,func-addrs)
-             (mapcar
-              (lambda (l)
-                (multiple-value-bind (all matches)
-                    (scan-to-strings "^([^\\.][a-zA-Z0-9_]*):" (aget :line l))
-                  (if all
-                      (setf ,func-addrs (asm-disassemble ,bin-var (aref matches 0)))
-                      (when ,func-addrs
-                        (push (cons :address (pop ,func-addrs)) l))))
-                l)
-              (genome ,asm)))))
-    (if bin
-        body
-        `(with-temp-file (,bin-var)
-           (phenome ,asm :bin ,bin-var)
-           ,body))))
+(defun annotate-w-addr (asm &key bin &aux func-addrs)
+  (unwind-protect
+       (let ((my-bin (or bin (phenome asm))))
+         (mapcar
+          (lambda (l)
+            (multiple-value-bind (all matches)
+                (scan-to-strings "^([^\\.][a-zA-Z0-9_]*):" (aget :line l))
+              (if all
+                  (setf func-addrs (asm-disassemble my-bin (aref matches 0)))
+                  (when func-addrs
+                    (push (cons :address (pop func-addrs)) l))))
+            l)
+          (genome asm)))
+    (when bin (delete-file bin))))
 
-(defun annotate-w-perf (asm)
-  (with-temp-file (bin)
-    (phenome asm :bin bin)
-    (let ((perf-ann (perf-annotations bin)))
-      (mapcar
-       (lambda (l)
-         (when-let ((addr (aget :addr l)))
-           (when-let ((anns (aget addr perf-ann)))
-             (push (cons :annotation anns) l)))
-         l)
-       (annotate-w-addr asm :bin bin)))))
+(defun annotate-w-perf (asm &key bin)
+  (unwind-protect
+       (let ((my-bin (or bin (phenome asm))))
+         (let ((perf-ann (perf-annotations my-bin)))
+           (format t "perf-ann has ~d~%" (length perf-ann))
+           (mapcar
+            (lambda (l)
+              (when-let ((addr (aget :address l)))
+                (when-let ((anns (aget addr perf-ann)))
+                  (push (cons :annotation anns) l)))
+              l)
+            (annotate-w-addr asm :bin my-bin))))
+    (when bin (delete-file bin))))
+
+;; apply the perf annotations to the genome
+(setf (genome *orig*) (annotate-w-perf *orig*))
