@@ -9,7 +9,8 @@
  Optimize the assembly code of a benchmark program
 
 Options:
- -c,--config FILE ------ read configuration from FILE
+ -C,--config FILE ------ read configuration from FILE
+ -c,--cross-p ---------- crossover chance
  -E,--max-error NUM ---- maximum allowed error
  -e,--eval SEXP -------- evaluate S-expression SEXP
  -F,--fit-evals NUM ---- max number of fitness evals
@@ -19,7 +20,8 @@ Options:
                          default: ~:d
  -l,--linker LINKER ---- linker to use
  -M,--mcmc ------------- run MCMC search instead of GP
- -m,--model NAME ------- model name
+ -m,--mut-p NUM -------- mutation chance
+ -o,--model NAME ------- model name
  -P,--period NUM ------- period (in evals) of checkpoints
                          default: max-evals/(2^10)
  -p,--pop-size NUM ----- population size
@@ -89,7 +91,8 @@ Options:
 
       ;; process command line options
       (getopts
-       ("-c" "--config"    (load (arg-pop)))
+       ("-C" "--config"    (load (arg-pop)))
+       ("-c" "--cross-p"   (setf *cross-chance* (parse-number (arg-pop))))
        ("-E" "--max-err"   (setf *max-err* (read-from-string (arg-pop))))
        ("-e" "--eval"      (eval (read-from-string (arg-pop))))
        ("-F" "--fit-evals" (setf *evals* (parse-integer (arg-pop))))
@@ -100,7 +103,8 @@ Options:
                           (parse-integer (arg-pop))))
        ("-l" "--linker"    (setf (linker *orig*) (arg-pop)))
        ("-M" "--mcmc"      (setf mcmc t))
-       ("-m" "--model"     (setf *model* (intern (string-upcase (arg-pop)))))
+       ("-m" "--mut-p"     (setf *mut-chance* (parse-number (arg-pop))))
+       ("-o" "--model"     (setf *model* (intern (string-upcase (arg-pop)))))
        ("-P" "--period"    (setf *period* (parse-integer (arg-pop))))
        ("-p" "--pop-size"  (setf *max-population-size*
                                  (parse-integer (arg-pop))))
