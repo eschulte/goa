@@ -100,7 +100,7 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 | 998.specrand   |
 | 999.specrand   |
 
-* Tasks [27/36]
+* Tasks [27/37]
 ** TODO range of GP parameters
 #+begin_src sh
   for bench in swaptions;do
@@ -350,8 +350,18 @@ with an "r".
 *** DONE Intel energy model
 : perf stat -e cycles,instructions,r532010,r538010,cache-references,LLC-loads,LLC-stores
 
-** DONE Train Energy Models [7/7]
+** DONE Train Energy Models [7/8]
 Both at UVA on Intel and at UNM on AMD.
+
+*** TODO more inputs runs
+#+begin_src sh
+  for gcc in 44 48;do
+      for flag in O1 O2 O3 Os;do
+          collect_model_data.py --spec-config=cx-$gcc-$flag 1  
+          mv benchmarks.csv benchmarks-$gcc-$flag.csv
+      done
+  done
+#+end_src
 
 *** DONE comparative effectiveness of our three models
 1. original energy
