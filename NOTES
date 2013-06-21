@@ -162,18 +162,104 @@ like the following.
 http://wikipedia.org/wiki/Variance#Sum_of_correlated_variables
 
 *** TODO minimum input size for each program
-| Program      | size |
-|--------------+------|
-| blackscholes |      |
-| bodytrack    |      |
-| facesim      |      |
-| ferret       |      |
-| fluidanimate |      |
-| freqmine     |      |
-| raytrace     |      |
-| swaptions    |      |
-| vips         |      |
-| x264         |      |
+| Program      | size   | % variance | runtime |
+|--------------+--------+------------+---------|
+| blackscholes | medium |     3.617% |   0.761 |
+| bodytrack    | small  |    10.618% |   0.522 |
+| facesim      | medium |    12.800% |  12.668 |
+| ferret       | small  |    19.161% |   0.501 |
+| fluidanimate | small  |    35.947% |   0.584 |
+| freqmine     | small  |     71.341 |   2.492 |
+| raytrace     |        |            |         |
+| swaptions    |        |            |         |
+| vips         |        |            |         |
+| x264         | medium |    805.573 |  15.528 |
+
+*** results
+#+name: amd-hw-counter-results
+#+begin_src sh :results scalar :cache yes
+  for csv in etc/hw-counters/amd/*.csv;do
+      echo ""
+      echo $(basename $csv)
+      ./bin/model-variance $csv -m amd-opteron-power-model -c seconds
+  done
+#+end_src
+
+#+RESULTS[3bea911d15560fc7745269bd2a5e4672a077d027]: amd-hw-counter-results
+: 
+: blackscholes.csv
+: size          mean    variance      percent number   seconds
+: test            NA          NA           NA   NA
+: tiny            NA          NA           NA   NA
+: small     346.8987   163.41093    47.10624%   60    0.18951055
+: medium   346.71255   12.541327   3.6172118%   60     0.7617375
+: large    347.29355    5.025036   1.4469131%   60     3.0985744
+: 
+: bodytrack.csv
+: size          mean    variance      percent number   seconds
+: test     317.00403    538.4976   169.87091%   60     0.1501637
+: tiny      320.4772   398.87482   124.46277%   60    0.17488833
+: small    329.38245   34.974712   10.618269%   60    0.52241516
+: medium   330.72498    6.372461   1.9268157%   60     1.6345919
+: large    331.72903   1.3191015  0.39764425%   60      5.708939
+: 
+: facesim.csv
+: size          mean    variance      percent number   seconds
+: test      271.4402   314402.38    115827.5%   59   0.009274179
+: tiny     324.40738    53.40426   16.462097%   60     12.693625
+: small    325.55566    44.18678   13.572725%   60     12.681024
+: medium   325.72247   41.692215    12.79992%   60     12.668328
+: large     326.6099   60.589775   18.551115%   60     12.713568
+: 
+: ferret.csv
+: size          mean    variance      percent number   seconds
+: test     339.91122   59622.754   17540.684%   60   0.017957868
+: tiny      325.0534    2782.593    856.0418%   60   0.046919268
+: small     317.0088   60.743114   19.161335%   60     0.5006953
+: medium   323.84186   159.60916    49.28614%   60     1.4408689
+: large     329.2015   507.27493   154.09253%   60      5.959686
+: 
+: fluidanimate.csv
+: size          mean    variance      percent number   seconds
+: test       312.268   2866.7375   918.03754%   60   0.027157063
+: tiny     330.72684    538.0708   162.69342%   60    0.15264207
+: small     331.9546   119.32736    35.94689%   60     0.5836928
+: medium    325.7775    312.4431   95.906906%   60     1.2899703
+: large    326.60492    411.1607   125.88931%   60     3.9668987
+: 
+: freqmine.csv
+: size          mean    variance      percent number   seconds
+: test      245.8545    653.3362     265.741%   60    0.10334522
+: tiny     285.50375    4741.816   1660.8595%   60   0.028545866
+: small    255.63167    182.3699    71.34089%   60     2.4921725
+: medium   242.78413   246.28793   101.44317%   60     24.001656
+: large    245.74487   2293.6982    933.3656%   60     24.795027
+: 
+: x264.csv
+: size          mean    variance      percent number   seconds
+: test            NA          NA           NA   NA
+: tiny   -127.111305  20463822.0 -16099136.0%   49   .0083309375
+: small    242.09781   2428.7747  1003.22046%   60     2.2106462
+: medium   235.27931   1895.3469    805.5732%   60     15.527754
+: large           NA          NA           NA   NA
+
+#+begin_src sh :var data=amd-hw-counter-results :results scalar
+  echo "$data" > /tmp/to-gnuplot
+#+end_src
+
+#+begin_src gnuplot :file etc/data/variance-by-input-size.svg
+  set title 'power model variance by run time'
+  set xlabel 'runtime in seconds'
+  set ylabel 'percent model variance'
+  set logscale y
+  set logscale x
+  plot for [bench in "blackscholes bodytrack facesim ferret fluidanimate freqmine x264"] \
+       "<(sed -n '/".bench."/,/^ *$/p' /tmp/to-gnuplot|grep '[0-9]')" \
+       u 6:4 title bench
+#+end_src
+
+#+RESULTS:
+[[file:etc/data/variance-by-input-size.svg]]
 
 *** DONE Step by step process for energy minimization
     DEADLINE: <2013-06-11 Tue>

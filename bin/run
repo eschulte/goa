@@ -33,21 +33,7 @@
 ## Parse Options
 if [ $# -lt 2 ];then help; fi
 BENCHMARK="$1"
-case $BENCHMARK in
-    blackscholes) SIZE=large;;
-    bodytrack)    SIZE=large;;
-    facesim)      SIZE=medium;;
-    ferret)       SIZE=medium;;
-    fluidanimate) SIZE=large;;
-    freqmine)     SIZE=medium;;
-    raytrace)     SIZE=small;;
-    swaptions)    SIZE=medium;;
-    vips)         SIZE=medium;;
-    x264)         SIZE=small;;
-    bzip2)        SIZE=large;;
-    h264ref)      SIZE=large;;
-    *) error "no test implemented for '$BENCHMARK'";;
-esac
+SIZE=$(size_for_benchmark $BENCHMARK)
 EXECUTABLE="$2"
 PERF=""
 ANNOTATE=""

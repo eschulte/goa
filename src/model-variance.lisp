@@ -125,7 +125,7 @@ Options:
                            (format
                             nil
                             "~~6,a ~~11F ~~11F ~~11F% ~~4d  ~a~~%"
-                            (if counter " ~9,3e" ""))
+                            (if counter " ~11F" ""))
                            size mean variance
                            (* 100 (/ variance mean))
                            number

@@ -35,21 +35,7 @@ ACTION="$1"
 BENCHMARK="$2"
 FLAGS="all"
 FULL_FLAGS=""
-case $BENCHMARK in
-    blackscholes) SIZE=large;;
-    bodytrack)    SIZE=large;;
-    facesim)      SIZE=medium;;
-    ferret)       SIZE=medium;;
-    fluidanimate) SIZE=large;;
-    freqmine)     SIZE=medium;;
-    raytrace)     SIZE=small;;
-    swaptions)    SIZE=medium;;
-    vips)         SIZE=medium;;
-    x264)         SIZE=small;;
-    bzip2)        SIZE=large;;
-    h264ref)      SIZE=large;;
-    *)            SIZE=large;;
-esac
+SIZE=$(size_for_benchmark $BENCHMARK)
 LLVM=""
 eval set -- $(getopt -o f:F:s:l -l flags:,Flags:,size:,llvm -- "$@" || help;)
 while [ $# -gt 0 ];do

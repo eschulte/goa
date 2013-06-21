@@ -46,6 +46,23 @@ SIZES+=(small)
 SIZES+=(medium)
 SIZES+=(large)
 
+size_for_benchmark(){
+    case $BENCHMARK in
+        blackscholes) echo medium;;
+        bodytrack)    echo small;;
+        facesim)      echo medium;;
+        ferret)       echo small;;
+        fluidanimate) echo small;;
+        freqmine)     echo small;;
+        raytrace)     echo small;;
+        swaptions)    echo medium;;
+        vips)         echo medium;;
+        x264)         echo medium;;
+        bzip2)        echo large;;
+        h264ref)      echo large;;
+        *)            echo large;;
+    esac; }
+
 rand_remote(){ echo ${REMOTES[$RANDOM % ${#REMOTES[@]}]}; }
 
 my_remote(){ echo ${REMOTES[$(expr $$ % ${#REMOTES[@]})]}; }
