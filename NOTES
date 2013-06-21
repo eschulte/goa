@@ -1064,6 +1064,14 @@ coefficients for a memory linear model.
 - focus mutations on those instructions
 - maintain annotations over mutations
 
+Process
+1. [X] use the run script to collect perf annotation by memory address
+2. [X] associate each assembly instruction with a memory address
+   1. [X] get the function names in the ASM file
+   2. [X] collect the addresses and the lines of code for each function
+   3. [X] associate addresses with lines of code
+3. [ ] map perf percents through addresses to lines of code
+
 ** DONE MCMC search strategy
 - top level search driver
 - possibly a fixed with 
