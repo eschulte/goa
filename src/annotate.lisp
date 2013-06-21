@@ -6,9 +6,9 @@
 
 ;; The following code assumes that the compiler flag has been saved
 ;; into the `flag' variable.
-;; 
+;;
 ;; Run with the optimize script with something like the following
-;; 
+;;
 ;;     optimize bzip2.s bzip2 -e "(defvar flag 'O0)" -c by-flag.lisp
 
 ;;; Code:
@@ -73,6 +73,25 @@
             (when (and (>= ind 0) (< ind (length list)))
               (incf (aref result ind) (* mult el))))))
     (coerce result 'list)))
+
+;; Weight mutation location selection using the annotations, and
+;; maintain annotation over mutations
+(defmethod pick-bad ((asm simple)) (pick asm [{+ 0.01} {aget :annotation}]))
+
+(defmethod mutate :around ((asm asm))
+  (call-next-method)
+  (let ((edit (car (edits asm))))
+    (with-slots (genome) asm
+      (flet ((blend (i)
+               (setf (cdr (assoc :annotation (nth i genome)))
+                     (mean (remove nil
+                             (list (when (> i 0)
+                                     (aget :annotation (nth (1- i) genome)))
+                                   (aget :annotation (nth (1+ i) genome))))))))
+        (case (car edit)
+          (:insert (blend (second edit)))
+          (:swap (blend (second edit)) (blend (third edit)))))))
+  asm)
 
 ;; apply the perf annotations to the genome
 (setf (genome *orig*)
