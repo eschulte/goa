@@ -102,6 +102,21 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 
 * Tasks [27/37]
 ** TODO range of GP parameters
+first run
+| mut | cross |
+|-----+-------|
+| 0.2 | 0.2   |
+| 0.5 | 0.5   |
+| 0.8 | 0.8   |
+
+second run
+|   mut | cross |
+|-------+-------|
+|  0.75 | 1/6   |
+| 0.875 | 2/6   |
+| 1.0   | 3/6   |
+|       | 4/6   |
+
 #+begin_src sh
   for bench in swaptions;do
       for mut in 0.2 0.5 0.8;do
