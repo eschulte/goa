@@ -100,7 +100,20 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 | 998.specrand   |
 | 999.specrand   |
 
-* Tasks [27/35]
+* Tasks [27/36]
+** TODO range of GP parameters
+#+begin_src sh
+  for bench in swaptions;do
+      for mut in 0.2 0.5 0.8;do
+          for cross in 0.2 0.5 0.8;do
+              optimize benchmarks/$bench/$bench.s $bench -l g++ -f -lpthread \
+                  -c $cross -m $mut -w sh-runner/work -t 4 \
+                  -r results/mut-cross/$bench-$mut-$cross &
+          done
+      done
+  done
+#+end_src
+
 ** TODO find minimal input sizes for each program
 Need to estimate the variance in our energy predictions, which are
 linear combinations of HW counters, from variance in the HW counters.
@@ -1058,8 +1071,8 @@ coefficients for a memory linear model.
 ** TODO Build table results table
 ** TODO Analyze Optimizations
 ** TODO Build optimization Taxonomy
-* Code Tasks [5/7]
-** TODO focus mutation operators on hot spots
+* Code Tasks [6/7]
+** DONE focus mutation operators on hot spots
 - use =perf annotate= to highlight "hot" instructions
 - focus mutations on those instructions
 - maintain annotations over mutations
@@ -1070,7 +1083,7 @@ Process
    1. [X] get the function names in the ASM file
    2. [X] collect the addresses and the lines of code for each function
    3. [X] associate addresses with lines of code
-3. [ ] map perf percents through addresses to lines of code
+3. [X] map perf percents through addresses to lines of code
 
 ** DONE MCMC search strategy
 - top level search driver

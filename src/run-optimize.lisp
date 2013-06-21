@@ -160,6 +160,8 @@ Options:
                     (flags *orig*)
                     *threads*
                     *mcmc*
+                    *mut-chance*
+                    *cross-chance*
                     *evals*
                     *tournament-size*
                     *work-dir*
