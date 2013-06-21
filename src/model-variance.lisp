@@ -19,6 +19,7 @@
 
 ;; http://en.wikipedia.org/wiki/Variance#Weighted_sum_of_variables
 (defun sum-of-var (coefficients samples)
+  (declare (optimize speed))
   (loop :for i :below (length coefficients) :summing
      (loop :for j :below (length coefficients) :summing
         (* (nth i coefficients) (nth j coefficients)
@@ -111,25 +112,39 @@ Options:
        ("-c" "--counter" (setf counter (to-sym (arg-pop))))
        ("-e" "--energy" (setf energy t)))
 
-      (format t "size   mean       variance   percent    number ~a~%"
+      (format t "size        mean  variance    percent number   ~a~%"
               (string-downcase (or counter "")))
       (mapc (lambda (size stats counter)
               (let ((mean (first stats))
                     (variance (second stats))
                     (number (third stats)))
-                (apply #'format t
-                       (format nil "~~6a ~~10a ~~10a ~~9f% ~~6a ~a~~%"
-                               (if counter " ~f" ""))
-                       size mean variance (* 100 (/ variance mean)) number
-                       (list counter))))
+                (if (or (null mean) (zerop mean))
+                    (format t "~6a ~9@a ~9@a  ~9@a ~4@a~%"
+                            size "NA" "NA" "NA" "NA")
+                    (apply #'format t
+                           (format
+                            nil
+                            "~~6,a ~~9,3e ~~9,3e ~~9,3e% ~~4d  ~a~~%"
+                            (if counter " ~9,3e" ""))
+                           size mean variance
+                           (* 100 (/ variance mean))
+                           number
+                           (list counter)))))
             (mapcar [#'string-downcase #'symbol-name] sizes)
-            (mapcar (curry (if energy #'energy-stats #'power-stats) runs) sizes)
+            (mapcar
+             (lambda (size)
+               (handler-case
+                   (funcall (if energy #'energy-stats #'power-stats) runs size)
+                 (error () (list nil nil 0))))
+             sizes)
             (mapcar
              (lambda (size)
                (if counter
-                   (mean (remove nil
-                           (mapcar {aget counter}
-                                   (remove-if-not [{eq size} {aget 'size}]
-                                                  runs))))
+                   (handler-case
+                       (mean (remove nil
+                               (mapcar {aget counter}
+                                       (remove-if-not [{eq size} {aget 'size}]
+                                                      runs))))
+                     (error () "NA"))
                    nil))
              sizes)))))

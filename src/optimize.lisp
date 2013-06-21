@@ -225,7 +225,9 @@ This includes evolved individuals in the training set.")
                     forms)))))
 
 (defun covariance (a b)
-  (/ (reduce #'+ (mapcar #'*
-                         (mapcar {- _ (mean a)} a)
-                         (mapcar {- _ (mean b)} b)))
-     (- (length a) 1)))
+  (declare (optimize speed))
+  (let ((ma (mean a))
+        (mb (mean b))
+        (total 0))
+    (mapc (lambda (al bl) (incf total (* (- al ma) (- bl mb)))) a b)
+    (/ total (- (length a) 1))))
