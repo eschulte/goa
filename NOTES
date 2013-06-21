@@ -130,12 +130,15 @@ second run
 #+end_src
 
 #+begin_src gnuplot :file etc/data/mut-params.svg
-  set term svg size 800,480
+  set term svg size 600,600
   set title 'multiple swaptions runs w/varied GP parameters'
   set ylabel 'energy model'
   set xlabel 'fitness evaluations'
-  set key outside right
+  set key outside below
   plot for [mut in "0.2 0.5 0.8"] for [cross in "0.2 0.5 0.8"] \
+       "results/mut-cross/swaptions-".mut."-".cross."/stats.txt" \
+       using 1:2 with lines title "mut:".mut." cross:".cross, \
+       for [mut in "0.75 0.875 1.0"] for [cross in "0.166 0.333 0.5 0.666"] \
        "results/mut-cross/swaptions-".mut."-".cross."/stats.txt" \
        using 1:2 with lines title "mut:".mut." cross:".cross
 #+end_src
