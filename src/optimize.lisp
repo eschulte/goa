@@ -19,21 +19,37 @@
 (defclass asm-perf (asm)
   ((stats :initarg :stats :accessor stats :initform nil)))
 
-(defclass asm-light (asm-perf) ())
+(defclass asm-light (light asm)
+  ((stats :initarg :stats :accessor stats :initform nil)))
 
-(defmethod software-evolution::lines ((asm asm-light)) (genome asm))
-
-(defmethod software-evolution:from-file ((asm asm-light) path)
-  (setf (genome asm) (split-sequence #\Newline (file-to-string path)))
-  asm)
-
-(defmethod to-asm-light ((asm asm-perf))
+(defun to-asm-light (asm)
   (with-slots (flags linker edits genome) asm
     (make-instance 'asm-light
       :flags flags
       :linker linker
       :edits edits
       :genome (mapcar {aget :line} genome))))
+
+(defclass asm-range (range asm)
+  ((stats :initarg :stats :accessor stats :initform nil)))
+
+(defun to-asm-range (asm)
+  (with-slots (flags linker edits genome) asm
+    (make-instance 'asm-range
+      :flags flags
+      :linker linker
+      :edits edits)))
+
+(defmethod copy ((asm asm-range)
+                 &key (edits (copy-tree (edits asm))) (fitness (fitness asm)))
+  (with-slots (genome linker flags reference) asm
+    (make-instance (type-of asm)
+      :edits edits
+      :fitness fitness
+      :genome (copy-tree genome)
+      :linker linker
+      :flags flags
+      :reference reference)))
 
 
 ;;; Models
@@ -63,7 +79,7 @@
                (* 2962.678 (/ cache-misses cycles))))
   "HW counters and coefficients for the Intel Sandybridge power model.")
 
-(defvar amd-opteron-power-model-base
+(defvar amd-opteron-power-model
   '(* seconds (+ 371.47
                (*   -66.72 (/ instructions cycles))
                (*    66.66 (/ r533f00 cycles))
@@ -82,17 +98,17 @@ This includes evolved individuals in the training set.")
 
 
 ;;; Configuration Fitness and Runtime
-(defvar *path*   nil "Path to Assembly file.")
-(defvar *script* "./bin/run" "Script used to test benchmark application.")
-(defvar *size*   nil "size of input for fitness evaluation")
-(defvar *res-dir* nil "Directory in which to save results.")
-(defvar *orig*   nil "Original version of the program to be run.")
-(defvar *benchmark* nil "Name of the benchmark.")
-(defvar *period* nil "Period at which to run `checkpoint'.")
-(defvar *threads*  1   "Number of cores to use.")
-(defvar *evals* (expt 2 18) "Maximum number of test evaluations.")
-(defvar *max-err* 0 "Maximum allowed error.")
-(defvar *model* nil "HW counter model to optimized.")
+(defvar *path*      nil        "Path to Assembly file.")
+(defvar *script*   "./bin/run" "Script used to test benchmark application.")
+(defvar *size*      nil        "size of input for fitness evaluation")
+(defvar *res-dir*   nil        "Directory in which to save results.")
+(defvar *orig*      nil        "Original version of the program to be run.")
+(defvar *benchmark* nil        "Name of the benchmark.")
+(defvar *period*    nil        "Period at which to run `checkpoint'.")
+(defvar *threads*   1          "Number of cores to use.")
+(defvar *evals*    (expt 2 18) "Maximum number of test evaluations.")
+(defvar *max-err*   0          "Maximum allowed error.")
+(defvar *model*     nil        "HW counter model to optimized.")
 (setf *max-population-size* (expt 2 9)) ;; Default max pop size
 (setf *fitness-predicate* #'<)
 (setf *tournament-size* 4)
@@ -138,10 +154,12 @@ This includes evolved individuals in the training set.")
                (intern (string-upcase (symbol-name keyword)) :optimize)
                keyword)))
     (let ((*error-output* (make-broadcast-stream))
-          (*standard-output* (make-broadcast-stream)))
-      (eval `(let ,(mapcar (lambda (pair) (list (key-to-sym (car pair)) (cdr pair)))
-                           stats)
-               ,model)))))
+          (*standard-output* (make-broadcast-stream))
+          (expr `(let ,(mapcar (lambda (pair)
+                                 (list (key-to-sym (car pair)) (cdr pair)))
+                               stats)
+                   ,model)))
+      (values (eval expr) expr))))
 
 (defvar infinity
   #+sbcl
@@ -193,7 +211,7 @@ This includes evolved individuals in the training set.")
                                   ,@(stats sizes)))))))))
 
 
-;;; Simple command line helpers
+;;; Simple helpers
 (defun throw-error (&rest args)
   (apply #'note 0 args)
   (quit))
@@ -205,3 +223,11 @@ This includes evolved individuals in the training set.")
           ,@(mapcar (lambda-bind ((short long . body))
                       `((or (string= ,arg ,short) (string= ,arg ,long)) ,@body))
                     forms)))))
+
+(defun covariance (a b)
+  (declare (optimize speed))
+  (let ((ma (mean a))
+        (mb (mean b))
+        (total 0))
+    (mapc (lambda (al bl) (incf total (* (- al ma) (- bl mb)))) a b)
+    (/ total (- (length a) 1))))

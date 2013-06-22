@@ -6,6 +6,7 @@
 # Options:
 #  -l,--limit ----- limit script for sandboxing
 #  -p,--perf ------ collect performance counters
+#  -a,--annotate -- annotate the assembly with perf
 #  -c,--counters -- comma separated list of perf counters
 #  -w,--wattsup --- collect watts-up data during execution
 #  -r,--repeat N -- repeat the execution N times
@@ -13,6 +14,7 @@
 #  -s,--size ------ input size test,tiny,small,medium,large
 #  -d,--debug ----- print commands before running them
 #  -k,--keep ------ keep output
+#  -K,--keep-perf - keep perf output
 #
 # Benchmark should be one of
 #  blackscholes
@@ -31,39 +33,29 @@
 ## Parse Options
 if [ $# -lt 2 ];then help; fi
 BENCHMARK="$1"
-case $BENCHMARK in
-    blackscholes) SIZE=large;;
-    bodytrack)    SIZE=large;;
-    ferret)       SIZE=medium;;
-    fluidanimate) SIZE=large;;
-    freqmine)     SIZE=medium;;
-    swaptions)    SIZE=medium;;
-    vips)         SIZE=medium;;
-    x264)         SIZE=small;;
-    bzip2)        SIZE=large;;
-    h264ref)      SIZE=large;;
-    *) error "no test implemented for '$BENCHMARK'";;
-esac
+SIZE=$(size_for_benchmark $BENCHMARK)
 EXECUTABLE="$2"
-LIMIT="./bin/no-stack-limit"
 PERF=""
+ANNOTATE=""
 COUNTERS=""
 WATTSUP=""
 REPEAT=""
 RAW=""
 DEBUG=""
 KEEP=""
+KEEP_PERF=""
 EXIT=""
 ERROR=""
 OUT=$(mktemp)
 eval set -- \
-    $(getopt -o l:pc:wr:rs:dk \
-    -l limit:,perf,counters:,wattsup,repeat:,raw,size:,debug,keep \
+    $(getopt -o l:pac:wr:rs:dkK \
+    -l limit:,perf,annotate,counters:,wattsup,repeat:,raw,size:,debug,keep,keep-perf \
     -- "$@" || help;)
 while [ $# -gt 0 ];do
     case $1 in
         -l|--limit) LIMIT="$2"; shift;;
         -p|--perf)  PERF="yes";;
+        -a|--annotate) ANNOTATE="yes"; PERF="yes";;
         -r|--repeat) REPEAT="$2"; shift;;
         -c|--counters) PERF="yes"; COUNTERS="$2"; shift;;
         -w|--wattsup) WATTSUP="yes";;
@@ -71,6 +63,7 @@ while [ $# -gt 0 ];do
         -s|--size) SIZE="$2"; shift;;
         -d|--debug) DEBUG="yes";;
         -k|--keep) KEEP="yes";;
+        -K|--keep-perf) KEEP_PERF="yes";;
         (--) shift; break;;
         (-*) error "unrecognized option $1";;
         (*)  break;;
@@ -81,13 +74,15 @@ if [ ! -z $RAW ] && [ ! -z $PERF ];then
     error "can't print RAW and PERF results simultaneously"
 fi
 
-
 if [ -z $COUNTER ];then
-  if grep -q Intel /proc/cpuinfo; then
-    COUNTERS="task-clock,cycles,instructions,r532010,r538010,cache-references,cache-misses"
-  elif grep -q AMD /proc/cpuinfo; then
-    COUNTERS="task-clock,cycles,instructions,r533f00,cache-references,cache-misses"
-  fi
+    case $ARCH in
+        intel)
+            COUNTERS="task-clock,cycles,instructions,r532010,r538010,cache-references,cache-misses"
+;;
+        amd)
+            COUNTERS="task-clock,cycles,instructions,r533f00,cache-references,cache-misses"
+            ;;
+    esac
 fi
 
 PREFIX="$LIMIT"
@@ -104,25 +99,39 @@ if [ -z $PERF ];then
             cat $OUT
         fi
         if [ -z $KEEP ];then
-            rm -f $OUT;
+            rm -rf $OUT;
         else
             echo "output keep at $OUT";
         fi; }
 else
     # perf prefix to the command
     PERF_OUT=$(mktemp)
-    PREFIX+=" perf stat -e $COUNTERS -o $PERF_OUT"
+    if [ -z $ANNOTATE ];then
+        PREFIX+=" perf stat -e $COUNTERS -o $PERF_OUT"
+    else
+        PREFIX+=" perf record -e $COUNTERS -o $PERF_OUT"
+    fi
     if [ ! -z "$REPEAT" ];then PREFIX+=" -r $REPEAT"; fi
     # handle perf output on exit
     function exit_hook (){
-        echo "$EXIT,exit"
-        echo "$ERROR,error"
-        cat $PERF_OUT \
-            |grep "^ *[0-9,]\+ [a-z]\+" \
-            |sed 's/^ *//;s/,//g;s/ \([^ ]\+\)[^(]*/,\1/;s/([^0-9]*\([0-9.]\+\).*$/,\1%/';
-        rm -f $PERF_OUT;
+        if [ -z $ANNOTATE ];then
+            echo "$EXIT,exit"
+            echo "$ERROR,error"
+            cat $PERF_OUT \
+                |grep "^ *[0-9,.]\+ [a-z]\+" \
+                |sed 's/^ *//;s/,//g;s/ \([^ ]\+\)[^(]*/,\1/;s/([^0-9]*\([0-9.]\+\).*$/,\1%/';
+        else
+            perf annotate -i $PERF_OUT
+            # |grep ": \+[a-fA-F0-9]\+" \
+            # |sed 's/ \([a-fA-F0-9]\+\):.*$/\1/;s/\s*:\s*/,/;s/^\s*//'
+        fi
+        if [ -z $KEEP_PERF ];then
+            rm -f $PERF_OUT;
+        else
+            echo "perf output keep at $PERF_OUT";
+        fi
         if [ -z $KEEP ];then
-            rm -f $OUT;
+            rm -rf $OUT;
         else
             echo "output keep at $OUT";
         fi; }
@@ -161,6 +170,9 @@ run(){ # run, first argument picks an output stream to return
 freqclean(){
     sed 's/[()]//g'|awk '{all=0; for(i=1; i<=NF; i++){all+=$i}; print all}'; }
 
+rayclean(){
+    cat $1|grep -ve "^ *\(files\|build time\|Adding obj file:\) "; }
+
 case $BENCHMARK in
     blackscholes)
         run 0 $EXECUTABLE 1 "$INPUT" $OUT
@@ -179,11 +191,28 @@ case $BENCHMARK in
         esac
         EXIT=$?
         cat $INPUT/Result000*.bmp > $OUT
-        if diff $OUT $OUTPUT;then
+        if diff $OUT $OUTPUT >/dev/null 2>/dev/null;then
             ERROR=0;
         else
             ERROR=1;
         fi
+        ;;
+    facesim)
+        tmp=$(mktemp -d)
+        base=$(pwd)
+        pushd $tmp >/dev/null
+        ln -s $INPUT Face_Data
+        run 0 $base/$EXECUTABLE -timing -threads 1
+        EXIT=$?
+        rm $OUT
+        mv Storytelling $OUT
+        popd >/dev/null
+        ERROR=0
+        for file in $(ls $OUT/output|grep -v log.txt);do
+            if ! diff $OUT/output/$file $OUTPUT/output/$file >/dev/null 2>/dev/null;then
+                ERROR=$(($ERROR + 1))
+            fi
+        done
         ;;
     ferret)
         case $SIZE in
@@ -203,7 +232,7 @@ case $BENCHMARK in
             small|medium|large) run 0 $EXECUTABLE 1 5 "$INPUT" $OUT;;
         esac
         EXIT=$?
-        if diff $OUT $OUTPUT;then
+        if diff $OUT $OUTPUT >/dev/null 2>/dev/null;then
             ERROR=0;
         else
             ERROR=1;
@@ -220,6 +249,21 @@ case $BENCHMARK in
         EXIT=$?
         if [ -z $RAW ];then
             ERROR=$(num_diff <(cat $OUT|freqclean) <(cat $OUTPUT|freqclean));
+        fi
+        ;;
+    raytrace)
+        case $SIZE in
+            test)   run 1 $EXECUTABLE "$INPUT" -automove -nthreads 1 -frames 1 -res 1 1;;
+            tiny)   run 1 $EXECUTABLE "$INPUT" -automove -nthreads 1 -frames 1 -res 16 16;;
+            small)  run 1 $EXECUTABLE "$INPUT" -automove -nthreads 1 -frames 3 -res 480 270;;
+            medium) run 1 $EXECUTABLE "$INPUT" -automove -nthreads 1 -frames 3 -res 960 540;;
+            large)  run 1 $EXECUTABLE "$INPUT" -automove -nthreads 1 -frames 3 -res 1920 1080;;
+        esac >$OUT
+        EXIT=$?
+        if diff -Bw <(rayclean $OUT) <(rayclean $OUTPUT) >/dev/null 2>/dev/null;then
+            ERROR=0;
+        else
+            ERROR=1;
         fi
         ;;
     swaptions)

@@ -9,7 +9,8 @@
  Optimize the assembly code of a benchmark program
 
 Options:
- -c,--config FILE ------ read configuration from FILE
+ -C,--config FILE ------ read configuration from FILE
+ -c,--cross-p ---------- crossover chance
  -E,--max-error NUM ---- maximum allowed error
  -e,--eval SEXP -------- evaluate S-expression SEXP
  -F,--fit-evals NUM ---- max number of fitness evals
@@ -17,13 +18,16 @@ Options:
  -f,--flags FLAGS ------ flags to use when linking
  -g,--gc-size ---------- ~a
                          default: ~:d
- -L,--light ------------ use lighter genome representation
  -l,--linker LINKER ---- linker to use
- -m,--model NAME ------- model name
+ -M,--mcmc ------------- run MCMC search instead of GP
+ -m,--mut-p NUM -------- mutation chance
+ -o,--model NAME ------- model name
  -P,--period NUM ------- period (in evals) of checkpoints
                          default: max-evals/(2^10)
  -p,--pop-size NUM ----- population size
                          default: 2^9
+ -R,--rep REP ---------- use REP program representation
+                         asm, light, or range (default)
  -r,--res-dir DIR ------ save results to dir
                          default: program.opt/
  -s,--size SIZE -------- input size test,tiny,small,medium,large
@@ -45,17 +49,20 @@ Options:
 (defvar *checkpoint-funcs* (list #'checkpoint)
   "Functions to record checkpoints.")
 
-(defun do-optimize ()
+(defvar *mcmc* nil "Use MCMC search instead of GP.")
+
+(defvar *rep* 'range
+  "The type of program representation to use during optimization.")
+
+(defun do-evolve ()
   (evolve #'test :max-evals *evals*
           :period *period*
           :period-fn (lambda () (mapc #'funcall *checkpoint-funcs*))))
 
-(setf *note-level* 1)
-
 (defun main (&optional (args *arguments*))
   (in-package :optimize)
+  (setf *note-level* 1)
   (flet ((arg-pop () (pop args)))
-
     ;; Set default GC threshold
     #+ccl (ccl:set-lisp-heap-gc-threshold (expt 2 30))
     #+sbcl (setf (sb-ext:bytes-consed-between-gcs) (expt 2 24))
@@ -87,7 +94,8 @@ Options:
 
     ;; process command line options
     (getopts
-     ("-c" "--config"    (load (arg-pop)))
+     ("-C" "--config"    (load (arg-pop)))
+     ("-c" "--cross-p"   (setf *cross-chance* (parse-number (arg-pop))))
      ("-E" "--max-err"   (setf *max-err* (read-from-string (arg-pop))))
      ("-e" "--eval"      (eval (read-from-string (arg-pop))))
      ("-F" "--fit-evals" (setf *evals* (parse-integer (arg-pop))))
@@ -96,9 +104,10 @@ Options:
            #+ccl  (ccl:set-lisp-heap-gc-threshold (parse-integer (arg-pop)))
            #+sbcl (setf (sb-ext:bytes-consed-between-gcs)
                         (parse-integer (arg-pop))))
-     ("-L" "--light"     (setf *orig* (to-asm-light *orig*)))
      ("-l" "--linker"    (setf (linker *orig*) (arg-pop)))
-     ("-m" "--model"     (setf *model* (intern (string-upcase (arg-pop)))))
+     ("-M" "--mcmc"      (setf *mcmc* t))
+     ("-m" "--mut-p"     (setf *mut-chance* (parse-number (arg-pop))))
+     ("-o" "--model"     (setf *model* (intern (string-upcase (arg-pop)))))
      ("-P" "--period"    (setf *period* (parse-integer (arg-pop))))
      ("-p" "--pop-size"  (setf *max-population-size*
                                (parse-integer (arg-pop))))
@@ -108,6 +117,7 @@ Options:
                                   (if (string= (subseq dir (1- (length dir)))
                                                "/")
                                       dir (concatenate 'string dir "/"))))))
+     ("-R" "--rep"       (setf *rep* (intern (string-upcase (arg-pop)))))
      ("-s" "--size"      (setf *size* (arg-pop)))
      ("-T" "--tourny-size" (setf *tournament-size* (parse-integer (arg-pop))))
      ("-t" "--threads"   (setf *threads* (parse-integer (arg-pop))))
@@ -132,8 +142,8 @@ Options:
 
     (unless *model*
       (setf *model* (case (arch)
-                      (:intel 'intel-sandybridge-energy-model)
-                      (:amd   'amd-opteron-energy-model))))
+                      (:intel 'intel-sandybridge-power-model)
+                      (:amd   'amd-opteron-power-model))))
     (when (symbolp *model*) (setf *model* (eval *model*)))
 
     ;; write out version information
@@ -149,15 +159,30 @@ Options:
                     (linker *orig*)
                     (flags *orig*)
                     *threads*
-                    *tournament-size*
+                    *mcmc*
+                    *mut-chance*
+                    *cross-chance*
                     *evals*
+                    *tournament-size*
                     *work-dir*
                     *max-err*
                     *max-population-size*
                     *model*
                     *period*
+                    *rep*
                     *note-level*
                     *res-dir*)))
+
+    ;; Convert the program to the specified representation
+    (case *rep*
+      (light
+       (setf *orig* (to-asm-light *orig*)))
+      (range
+       (setf *rep* (coerce (mapcar {aget :line} (genome *orig*)) 'vector))
+       (setf *orig* (to-asm-range *orig*))
+       (setf (reference *orig*) *rep*))
+      (asm)
+      (t (throw-error "representation ~S is not recognized" *rep*)))
 
     ;; Run optimization
     (unless (fitness *orig*)
@@ -170,23 +195,38 @@ Options:
     (when (= (fitness *orig*) infinity)
       (throw-error "Original program has no fitness!"))
 
-    ;; populate population
-    (unless *population* ;; only if it hasn't already been populated
-      (note 1 "Building the Population")
-      #+ccl (ccl:egc nil)
-      (setf *population* (loop :for n :below *max-population-size*
-                            :collect (copy *orig*)))
-      #+ccl (ccl:egc t))
+    ;; actually perform the optimization
+    (if *mcmc*
+        (progn
+          (when (> *threads* 1)
+            (throw-error "Multi-threaded MCMC is not supported."))
+          (note 1 "Starting MCMC search")
+          (setf *population* (list *orig*))
+          (mcmc *orig* #'test :max-evals *evals*
+                :every-fn
+                (lambda (new)
+                  (when (funcall *fitness-predicate* new (car *population*))
+                    (setf *population* (list new))))
+                :period *period*
+                :period-fn (lambda () (mapc #'funcall *checkpoint-funcs*))))
+        (progn
+          ;; populate population
+          (unless *population* ;; don't re-populate an existing population
+            (note 1 "Building the Population")
+            #+ccl (ccl:egc nil)
+            (setf *population* (loop :for n :below *max-population-size*
+                                  :collect (copy *orig*)))
+            #+ccl (ccl:egc t))
 
-    ;; run optimization
-    (note 1 "Kicking off ~a optimization threads" *threads*)
+          ;; run optimization
+          (note 1 "Kicking off ~a optimization threads" *threads*)
 
-    (let (threads)
-      ;; kick off optimization threads
-      (loop :for n :below *threads* :do
-         (push (make-thread #'do-optimize) threads))
-      ;; wait for all threads to return
-      (mapc #'join-thread threads))
+          (let (threads)
+            ;; kick off optimization threads
+            (loop :for n :below *threads* :do
+               (push (make-thread #'do-evolve) threads))
+            ;; wait for all threads to return
+            (mapc #'join-thread threads))))
 
     #+sbcl (sb-ext:gc :force t)
     (store *population* (make-pathname :directory *res-dir*
@@ -199,6 +239,4 @@ Options:
 
     (note 1 "done after ~a fitness evaluations~%" *fitness-evals*)
     (note 1 "results saved in ~a~%" *res-dir*)
-    (close (pop *note-out*))
-    (quit)))
-
+    (close (pop *note-out*))))

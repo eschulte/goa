@@ -1,0 +1,59 @@
+#!/bin/bash
+#
+# Usage: self-test
+#  test the functionality of this optimization install
+#
+# Options:
+#  -m,--mgmt ------- just check mgmt
+#  -r,--run -------- just check run
+#  -l,--light ------ don't clean existing benchmark directories
+#
+. $(dirname $0)/common
+
+MGMT="YES"
+RUN="YES"
+LIGHT=""
+
+eval set -- $(getopt -o mrl -l mgmt,run,light -- "$@" || help;)
+while [ $# -gt 0 ];do
+    case $1 in
+        -m|--mgmt)  RUN="";;
+        -r|--run)   MGMT="";;
+        -l|--light) LIGHT="YES";;
+        (--) shift; break;;
+        (-*) error "unrecognized option $1";;
+        (*)  break;;
+    esac
+    shift
+done
+
+check(){
+    if $@ >/dev/null;then echo "✓"; else echo "×"; fi; }
+
+msg "Testing mgmt support for all benchmarks"
+mgmt="$BASE"/bin/mgmt
+
+if [ ! -z $MGMT ];then
+    (
+        if [ -z $LIGHT ];then
+            echo "Benchmark clean unpack compile link input output"
+        else
+            echo "Benchmark unpack compile link input output"
+        fi
+        for bench in ${BENCHMARKS[@]};do
+            if [ ! -z $LIGHT ];then
+                clean=$(check $mgmt clean $bench)
+            fi
+            unpack=$(check $mgmt unpack $bench)
+            compile=$(check $mgmt compile $bench)
+            link=$(check $mgmt link $bench)
+            input=$(check $mgmt input $bench)
+            output=$(check $mgmt output $bench)
+            if [ -z $LIGHT ];then
+                echo "$bench $unpack $compile $link $input $output"
+            else
+                echo "$bench $clean $unpack $compile $link $input $output"
+            fi
+        done
+    )|column -t
+fi

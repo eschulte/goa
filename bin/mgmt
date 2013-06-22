@@ -35,20 +35,7 @@ ACTION="$1"
 BENCHMARK="$2"
 FLAGS="all"
 FULL_FLAGS=""
-case $BENCHMARK in
-    blackscholes) SIZE=large;;
-    bodytrack)    SIZE=large;;
-    facesim)      SIZE=medium;;
-    ferret)       SIZE=medium;;
-    fluidanimate) SIZE=large;;
-    freqmine)     SIZE=medium;;
-    swaptions)    SIZE=medium;;
-    vips)         SIZE=medium;;
-    x264)         SIZE=small;;
-    bzip2)        SIZE=large;;
-    h264ref)      SIZE=large;;
-    *)            SIZE=large;;
-esac
+SIZE=$(size_for_benchmark $BENCHMARK)
 LLVM=""
 eval set -- $(getopt -o f:F:s:l -l flags:,Flags:,size:,llvm -- "$@" || help;)
 while [ $# -gt 0 ];do
@@ -132,11 +119,20 @@ unpack(){ # dispatch depending on benchmark suite
                             sed -i 's/\(SUBDIRS =.*\) doc/\1/' Makefile.{in,am}
                             popd
                             ;;
+                        raytrace)
+                            sed -i '22s/^$/#include <unistd.h>/' \
+                                "$BASE"/benchmarks/parsec-3.0/pkgs/apps/raytrace/src/RTTL/common/MapOptions.hxx
+                            ;;
                     esac
                     # build with parsecmgmt
                     env PATH="$BASE"/benchmarks/parsec-3.0/bin:"$PATH" \
                         parsecmgmt -a build -p $bench \
                     || error "parsecmgmt could not build $bench"
+                    case $bench in
+                        ferret|raytrace)
+                            mkdir -p "$bench_dir"
+                            cp -R "$BASE"/benchmarks/parsec-3.0/pkgs/apps/$bench/src/* "$bench_dir" ;;
+                    esac
                     ;;
                 *)
                     # It won't hurt to call "mkdir -p" again later
@@ -197,6 +193,7 @@ compile(){
                 mv TrackingModelTBB.cpp TrackingModelTBB.bkup
                 rm -f bodytrack.cpp
                 cat *.c* > bodytrack.cpp
+                cat ../FlexImageLib/*.c* >> bodytrack.cpp # this makes libflex part of the asm
                 mv TrackingModelTBB.bkup TrackingModelTBB.cpp
 
                 # now we undef USE_TBB to controll the includes and
@@ -227,25 +224,119 @@ compile(){
                 FACE_SOURCE+="LANDMARK_PROXIMITY_OPTIMIZATION.cpp "
                 FACE_SOURCE+="main.cpp"
                 pushd "$BASE"/benchmarks/parsec-3.0/pkgs/apps/$bench/src/Benchmarks/facesim >/dev/null
-                cat $FACE_SOURCE > all.cpp
-                g++ $FULL_FLAGS -S all.cpp -o $tmp \
+                cat $FACE_SOURCE > ../../Public_Library/all.cpp
+                cd ../../Public_Library
+                files=""
+                files+="Arrays/ARRAY_PARALLEL_OPERATIONS.cpp "
+                files+="Collisions_And_Interactions/BOX_HIERARCHY.cpp "
+                files+="Collisions_And_Interactions/COLLISION_BODY_LIST_3D.cpp "
+                files+="Collisions_And_Interactions/TETRAHEDRON_COLLISION_BODY.cpp "
+                files+="Collisions_And_Interactions/TETRAHEDRON_HIERARCHY.cpp "
+                files+="Constitutive_Models/STRAIN_MEASURE_3D.cpp "
+                files+="Data_Structures/SPLAY_TREE.cpp "
+                files+="Deformable_Objects/DEFORMABLE_OBJECT.cpp "
+                files+="Deformable_Objects/DEFORMABLE_OBJECT_3D.cpp "
+                files+="Deformable_Objects/DEFORMABLE_OBJECT_COLLISIONS_3D.cpp "
+                files+="Fracture/EMBEDDED_TETRAHEDRALIZED_VOLUME_BOUNDARY_SURFACE.cpp "
+                files+="Forces_And_Torques/BODY_FORCES_3D.cpp "
+                files+="Forces_And_Torques/DIAGONALIZED_FINITE_VOLUME_3D.cpp "
+                files+="Geometry/BOX_2D.cpp "
+                files+="Geometry/BOX_3D.cpp "
+                files+="Geometry/EMBEDDED_OBJECT.cpp "
+                files+="Geometry/EMBEDDED_TETRAHEDRALIZED_VOLUME.cpp "
+                files+="Geometry/IMPLICIT_SURFACE.cpp "
+                files+="Geometry/IMPLICIT_SURFACE_LIST.cpp "
+                files+="Geometry/PLANE.cpp "
+                files+="Geometry/SEGMENT_2D.cpp "
+                files+="Geometry/SEGMENT_3D.cpp "
+                files+="Geometry/SEGMENTED_CURVE_3D.cpp "
+                files+="Geometry/TETRAHEDRALIZED_VOLUME.cpp "
+                files+="Geometry/TETRAHEDRALIZED_VOLUME_LIST.cpp "
+                files+="Geometry/TETRAHEDRON.cpp "
+                files+="Geometry/TRIANGLE_3D.cpp "
+                files+="Geometry/TRIANGULATED_OBJECT.cpp "
+                files+="Geometry/TRIANGULATED_SURFACE.cpp "
+                files+="Geometry/TRIANGULATED_SURFACE_LIST.cpp "
+                files+="Grids/SEGMENT_MESH.cpp "
+                files+="Grids/TETRAHEDRON_MESH.cpp "
+                files+="Grids/TRIANGLE_MESH.cpp "
+                files+="Level_Sets/LEVELSET.cpp "
+                files+="Level_Sets/LEVELSET_3D.cpp "
+                files+="Matrices_And_Vectors/MATRIX_3X3.cpp "
+                files+="Matrices_And_Vectors/SYMMETRIC_MATRIX_3X3.cpp "
+                files+="Matrices_And_Vectors/VECTOR_ND_PARALLEL.cpp "
+                files+="Particles/PARTICLE.cpp "
+                files+="Particles/SOLIDS_PARTICLE.cpp "
+                files+="Read_Write/FILE_UTILITIES.cpp "
+                files+="Rigid_Bodies/MASS_PROPERTIES_3D.cpp "
+                files+="Rigid_Bodies/RIGID_BODY_3D.cpp "
+                files+="Rigid_Bodies/RIGID_BODY_COLLISIONS_3D.cpp "
+                files+="Rigid_Bodies/RIGID_BODY_EVOLUTION_3D.cpp "
+                files+="Rigid_Bodies/RIGID_BODY_INTERSECTIONS_3D.cpp "
+                files+="Rigid_Bodies/RIGID_BODY_LIST_3D.cpp "
+                files+="Solids_And_Fluids/SOLIDS_EVOLUTION_3D.cpp "
+                files+="Solids_And_Fluids/SOLIDS_FLUIDS_DRIVER.cpp "
+                files+="Solids_And_Fluids/SOLIDS_FLUIDS_DRIVER_3D.cpp "
+                files+="Solids_And_Fluids/SOLIDS_FLUIDS_EXAMPLE_3D.cpp "
+                files+="Solids_And_Fluids/SOLIDS_PARAMETERS_3D.cpp "
+                files+="Thread_Utilities/THREAD_DIVISION_PARAMETERS.cpp "
+                files+="Thread_Utilities/THREAD_POOL_ALAMERE.cpp "
+                files+="Thread_Utilities/THREAD_POOL.cpp "
+                files+="Thread_Utilities/THREAD_POOL_SINGLE.cpp "
+                files+="Thread_Utilities/THREAD_ARRAY_LOCK.cpp "
+                files+="Utilities/DEBUG_UTILITIES.cpp "
+                files+="Utilities/LOG.cpp "
+                files+="Utilities/LOG_ENTRY.cpp "
+                files+="Utilities/PARSE_ARGS.cpp "
+                files+="Utilities/STRING_UTILITIES.cpp "
+                files+="Utilities/TIMER.cpp"
+
+                PL="$BASE"/benchmarks/parsec-3.0/pkgs/apps/$bench/src/Public_Library
+                INCLUDE=" -I $PL/../Benchmarks/facesim/ "
+                INCLUDE+="-I $PL/../TaskQ/include/ "
+                INCLUDE+="-I $PL/Arrays/ "
+                INCLUDE+="-I $PL/Collisions_And_Interactions/ "
+                INCLUDE+="-I $PL/Constitutive_Models/ "
+                INCLUDE+="-I $PL/Data_Structures/ "
+                INCLUDE+="-I $PL/Deformable_Objects/ "
+                INCLUDE+="-I $PL/Fracture/ "
+                INCLUDE+="-I $PL/Forces_And_Torques/ "
+                INCLUDE+="-I $PL/Geometry/ "
+                INCLUDE+="-I $PL/Grids/ "
+                INCLUDE+="-I $PL/Level_Sets/ "
+                INCLUDE+="-I $PL/Matrices_And_Vectors/ "
+                INCLUDE+="-I $PL/Particles/ "
+                INCLUDE+="-I $PL/Read_Write/ "
+                INCLUDE+="-I $PL/Rigid_Bodies/ "
+                INCLUDE+="-I $PL/Solids_And_Fluids/ "
+                INCLUDE+="-I $PL/Thread_Utilities/ "
+                INCLUDE+="-I $PL/Utilities/ "
+
+                cat $files > physbam.cpp
+
+                sed -i '10085i/*' physbam.cpp
+                sed -i '10091a*/' physbam.cpp
+
+                cat physbam.cpp >> all.cpp
+                
+                # echo "g++ $FULL_FLAGS $INCLUDE -S all.cpp -o $tmp"
+                g++ $FULL_FLAGS -fexceptions $INCLUDE -S all.cpp -o $tmp \
                     ||error "compilation failed"
                 popd >/dev/null
                 mv $tmp ${bench}.s
                 ;;
             ferret)
                 set_flags ""
-                tmp=$(mktemp)
-                pushd "$BASE"/benchmarks/parsec-3.0/pkgs >/dev/null
-                gcc -w \
+                sed -i '31s/^/\/* /;31s/$/ *\//' image/image.h
+                gcc-4.4 --combine -S \
+                    -Iinclude/ \
+                    -I"$BASE"/benchmarks/parsec-3.0/pkgs/libs/libjpeg/inst/amd64-linux.gcc/include \
+                    -I"$BASE"/benchmarks/parsec-3.0/pkgs/libs/gsl/inst/amd64-linux.gcc/include \
                     $FULL_FLAGS \
-                    -Iapps/$bench/src/include \
-                    -Ilibs/gsl/inst/amd64-linux.gcc/include \
-                    -Ilibs/libjpeg/inst/amd64-linux.gcc/include \
-                    -S apps/$bench/src/benchmark/ferret-pthreads.c -o $tmp \
-                    || error "compilation failed: build ${bench} with parsecmgt"
-                popd >/dev/null
-                mv $tmp ${bench}.s
+                    src/*.c src/lsh/*.c \
+                    image/{image,extract,edge,srm}.c \
+                    benchmark/ferret-pthreads.c \
+                    -o ${bench}.s|| error "compilation failed"
                 ;;
             fluidanimate)
                 cat pthreads.cpp >  all.cpp
@@ -266,25 +357,20 @@ EOF
                 g++ $FULL_FLAGS -S all.cpp -o ${bench}.s||error "compilation failed"
                 ;;
             raytrace)
-                BASE_FLAGS="-DTHIS_IS_CMAKE -fpermissive -fno-exceptions "
-                BASE_FLAGS+="-fexceptions -fno-strict-aliasing "
-                BASE_FLAGS+="-fno-align-labels -DNDEBUG -D_MM_NO_ALIGN_CHECK"
-                set_flags "$BASE_FLAGS"
-                tmp=$(mktemp)
-                pushd "$BASE"/benchmarks/parsec-3.0/pkgs >/dev/null
-                g++ $FULL_FLAGS \
-                    -Ilibs/mesa/inst/amd64-linux.gcc/include \
-                    -Iapps/raytrace/obj/amd64-linux.gcc \
-                    -Iapps/raytrace/obj/amd64-linux.gcc/RTTL \
-                    -Iapps/raytrace/obj/amd64-linux.gcc/RTTL/common \
-                    -Iapps/raytrace/obj/amd64-linux.gcc/RTTL/BVH \
-                    -Iapps/raytrace/obj/amd64-linux.gcc/SG \
-                    -Iapps/raytrace/obj/amd64-linux.gcc/LRT/include \
-                    -Iapps/raytrace/obj/amd64-linux.gcc/LRT \
-                    -S apps/raytrace/src/MiniView/rtview.cxx -o $tmp \
-                    || error "compilation failed: build ${bench} with parsecmgt"
-                popd >/dev/null
-                mv $tmp ${bench}.s
+                (
+                    cat LRT/render.cxx
+                    find LRT/ -name "*.cxx"|grep -v test|grep -v render.cxx|xargs cat
+                    find RTTL/ -name "*.cxx"|grep -v test|xargs cat
+                    cat MiniView/Camera.hxx|sed 's/Camera/MiniCamera/'
+                    cat MiniView/rtview.cxx|sed 's/^Camera/MiniCamera/'
+                ) > all.cxx
+                CMD="$FULL_FLAGS "
+                CMD+="$(find LRT/ -type d -exec echo {} \+|sed 's/^/-I.\//;s/ / -I.\//g') "
+                CMD+="$(find RTTL/ -type d -exec echo {} \+|sed 's/^/-I.\//;s/ / -I.\//g') "
+                CMD+="$(find MiniView/ -type d -exec echo {} \+|sed 's/^/-I.\//;s/ / -I.\//g') "
+                CMD+="-I./ -I./RTTL -I./RTTL/common -I./RTTL/BVH -I./SG -I./LRT/include -I./LRT "
+                CMD+="all.cxx -S -o ${bench}.s"
+                g++ $CMD ||error "compilation failed"
                 ;;
             swaptions)
                 set_flags "-pthread -DENABLE_THREADS"
@@ -381,7 +467,7 @@ link(){
                 g++ -lpthread ${bench}.s -o $bench||error "linking failed"
                 ;;
             bodytrack)
-                FLAGS="-lflex -lthreads -lpthread"
+                FLAGS="-lthreads -lpthread"
 
                 ldir="$BASE"/benchmarks/parsec-3.0/pkgs/apps/$bench/obj/amd64-linux.gcc
 
@@ -393,7 +479,7 @@ link(){
                     ||error "linking failed"
                 ;;
             facesim)
-                FLAGS="-pthread -lPhysBAM -xW -lm"
+                FLAGS="-pthread -xW -lm"
 
                 ldir="$BASE"/benchmarks/parsec-3.0/pkgs/apps/$bench/obj/amd64-linux.gcc
 
@@ -405,18 +491,14 @@ link(){
                     ||error "linking failed"
                 ;;
             ferret)
-                FLAGS="-lrt -lcass -lgsl -lcassimage -lgslcblas "
-                FLAGS+="-ljpeg -lstdc++ -lpthread -lm"
+                FLAGS="-lrt -lgsl -lgslcblas -ljpeg -lstdc++ -lpthread -lm"
 
                 lbase="$BASE"/benchmarks/parsec-3.0/pkgs
 
                 ldirs="-L${lbase}/libs/libjpeg/inst/amd64-linux.gcc/lib "
                 ldirs+="-L${lbase}/libs/gsl/inst/amd64-linux.gcc/lib "
-                ldirs+="-L${lbase}/apps/ferret/inst/amd64-linux.gcc/lib "
-                ldirs+="-L${lbase}/../lib "
-                ldirs+="-L/usr/lib64 -L/usr/lib "
 
-                g++ $ldirs ${bench}.s -o $bench $FLAGS||error "linking failed"
+                gcc $ldirs ${bench}.s -o $bench $FLAGS||error "linking failed"
                 ;;
             fluidanimate)
                 g++ ${bench}.s -lpthread -o $bench||error "linking failed"
@@ -425,7 +507,6 @@ link(){
                 g++ -Wno-deprecated ${bench}.s -o $bench||error "linking failed"
                 ;;
             raytrace)
-                #error "linking raytrace fails for me (ERIC)"
                 FLAGS="-lglut -lGL -lGL -lGLU -lXmu -lXext -lXau -lX11 "
                 FLAGS+="-ldl -lpthread -lstdc++ -lpthread -lrt -rdynamic "
 
@@ -434,11 +515,8 @@ link(){
                 ldirs="-L/usr/lib64 -L/usr/lib "
                 ldirs+="-L${lbase}/libs/mesa/inst/amd64-linux.gcc/lib "
                 ldirs+="-L${lbase}/libs/mesa/inst/amd64-linux.gcc/lib "
-                ldirs+="-L${lbase}/apps/raytrace/obj/amd64-linux.gcc/lib"
 
                 g++ $ldirs ${bench}.s -o $bench \
-                    ${lbase}/apps/raytrace/obj/amd64-linux.gcc/lib/libLRT.a \
-                    ${lbase}/apps/raytrace/obj/amd64-linux.gcc/lib/libRTTL.a \
                     ${lbase}/libs/mesa/inst/amd64-linux.gcc/lib/libGLU.a \
                     $FLAGS||error "linking failed"
                 ;;
@@ -555,6 +633,14 @@ input(){
                     large)  in=kosarak_990k.dat;;
                 esac
                 mv $in $target;;
+            raytrace)
+                tar xf ${parsec_dir}/inputs/$INPUT
+                case $SIZE  in
+                    test) in=octahedron.obj;;
+                    tiny) in=bunny.obj;;
+                    small|medium|large)  in=happy_buddha.obj;;
+                esac
+                mv $in $target;;
             swaptions)
                 msg "no input needed for $bench"
                 return 0;;
@@ -665,6 +751,14 @@ output(){
                     large)  ./$bench $bench.input 790 $target;;
                 esac
                 ;;
+            raytrace)
+                case $SIZE in
+                    test)   ./$bench $bench.input -automove -nthreads 1 -frames 1 -res 1 1;;
+                    tiny)   ./$bench $bench.input -automove -nthreads 1 -frames 1 -res 16 16;;
+                    small)  ./$bench $bench.input -automove -nthreads 1 -frames 3 -res 480 270;;
+                    medium) ./$bench $bench.input -automove -nthreads 1 -frames 3 -res 960 540;;
+                    large)  ./$bench $bench.input -automove -nthreads 1 -frames 3 -res 1920 1080;;
+                esac >$target;;
             swaptions)
                 case $SIZE in
                     test)   ./$bench -ns 1  -sm 5     -nt 1 2> $target;;

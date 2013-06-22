@@ -3,6 +3,7 @@ optimize
 optimize*
 objread
 calc-energy
+model-variance
 *limit
 *.in
 *.out

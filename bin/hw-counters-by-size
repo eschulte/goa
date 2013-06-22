@@ -1,0 +1,76 @@
+#!/bin/bash
+#
+# Usage: hw-counters-by-size [OPTIONS...]
+#  collect multiple HW counters for every size
+#
+# Options:
+#  -c,--count COUNT --- run benchmark/size pairs COUNT times
+#  -o,--overwrite ----- overwrite pre-existing output
+#  -b,--bench BENCH --- only run on BENCH
+#  -s,--size SIZE ----- only run on SIZE
+#  -C,--collate ------- collate counters by size
+#  -d,--dir DIR ------- results directory
+#
+. $(dirname $0)/common
+
+COUNT=30
+OVER=""
+COLLATE=""
+DIR="$BASE/etc/hw-counters/$ARCH/"
+
+eval set -- $(getopt -o c:ob:s:Cd: -l count:,overwrite,bench:,size:,collate,dir: -- "$@" || help;)
+while [ $# -gt 0 ];do
+    case $1 in
+        -c|--count) COUNT=$2; shift;;
+        -o|--overwrite) OVER="YES"; shift;;
+        -b|--bench) BENCHMARKS=($2); shift;;
+        -s|--size) SIZES=($2); shift;;
+        -C|--collate) COLLATE="YES";;
+        -d|--dir) DIR="$2"; shift;;
+        (--) shift; break;;
+        (-*) error "unrecognized option $1";;
+        (*)  break;;
+    esac
+    shift
+done
+
+mkdir -p "$DIR"
+msg "writing results to $DIR"
+
+for bench in ${BENCHMARKS[@]};do
+    msg "running $bench $COUNT times for each size"
+
+    OUT="$DIR/$bench.csv"
+    if [ ! -f "$OUT" ] || [ ! -z $OVER ];then
+        for size in ${SIZES[@]};do
+            echo -n "$bench $size:" >&2
+            mgmt clean $bench >/dev/null 2>/dev/null
+            mgmt output $bench -s $size >/dev/null \
+                ||error "mgmt output $bench $size failed"
+            echo ""
+            echo $size
+            for i in $(seq 1 $COUNT);do
+                echo -n "." >&2
+                run $bench benchmarks/$bench/$bench -s $size -p
+            done
+            echo "" >&2
+        done > "$OUT"
+    else
+        echo "skipping $bench"
+    fi
+
+    if [ ! -z $COLLATE ];then
+        msg "collating counts for $bench"
+        for size in ${SIZES[@]};do
+            OUT="$DIR/$bench-$size.csv"
+            if [ ! -f "$OUT" ] || [ ! -z $OVER ];then
+                cat "$DIR/$bench.csv" \
+                    |sed -n "/$size/,/^$/p"|grep ","|sed 's/,/ /' \
+                    |awk '{print $2, $1}'|sort \
+                    > "$OUT"
+            else
+                echo "skipping $bench $size"
+            fi
+        done
+    fi
+done

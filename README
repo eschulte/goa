@@ -132,10 +132,10 @@ reduce energy consumption.
 Interactive Optimization at the REPL
 ------------------------------------
 
-See src/example.lisp, which demonstrates how these tools may be run
-interactively from the common lisp REPL.  The evolving population, and
-many important evolutionary parameters are exposed as global variables
-for live analysis and modification during interactive runs.
+See src/repl/example.lisp, which demonstrates how these tools may be
+run interactively from the common lisp REPL.  The evolving population,
+and many important evolutionary parameters are exposed as global
+variables for live analysis and modification during interactive runs.
 
 Footnotes
 =========

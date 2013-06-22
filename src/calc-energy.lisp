@@ -9,6 +9,8 @@ Options:
  -m,--model NAME ------- model name
  -d,--debug ------------ show extra output~%")
           debug)
+      (in-package :optimize)
+      (setf *print-pretty* t)
 
       ;; print help information
       (when (and (stringp (car args))
@@ -23,16 +25,9 @@ Options:
 
       (setf *model* (eval (or *model*
                               (case (arch)
-                                (:intel 'intel-sandybridge-energy-model)
-                                (:amd   'amd-opteron-energy-model)))))
-
-      (when debug
-        (format t "; *model*~%")
-        (mapc (lambda-bind ((count . counters))
-                (format t "~a ~a~%"
-                        count
-                        (mapcar ['string-downcase 'symbol-name] counters)))
-              *model*))
+                                (:intel 'intel-sandybridge-power-model)
+                                (:amd   'amd-opteron-power-model)))))
+      (when debug (format t "~&; model~%~S~%~%" *model*))
 
       ;; parse inputs
       (let ((cs (mapcar
@@ -44,16 +39,9 @@ Options:
                           (lambda (l) (split-sequence "," l :test #'string=))
                           (loop :for line = (read-line *standard-input* nil)
                              :while line :collect line))))))
-
-        (when debug
-          (format t "~&~%; counters~%")
-          (mapc (lambda-bind ((counter . count))
-                  (format t "~a ~a~%"
-                          count
-                          (string-downcase (symbol-name counter))))
-                cs))
+        (when debug (format t "~&; counters~%~S~%~%" cs))
 
         ;; Apply the model to the counters
-        (format t "~S~%" (apply-model *model* cs)))))
-  (quit))
-
+        (multiple-value-bind (value expr) (apply-model *model* cs)
+          (when debug (format t "~&; expression~%~S~%~%" expr))
+          (format t "~S~%" value))))))

@@ -25,7 +25,43 @@ if $(contains "$1" "^\-\?\-h\(elp\|$\)");then help; fi
 
 BASE=$(cd "$(dirname "$SCRIPT")/.."; pwd)
 
-LIMIT="$BASE/limit"
+LIMIT="$(dirname "$SCRIPT")/limit"
+
+declare -a BENCHMARKS
+BENCHMARKS+=(blackscholes)
+BENCHMARKS+=(bodytrack)
+BENCHMARKS+=(facesim)
+BENCHMARKS+=(ferret)
+BENCHMARKS+=(fluidanimate)
+BENCHMARKS+=(freqmine)
+BENCHMARKS+=(raytrace)
+BENCHMARKS+=(swaptions)
+BENCHMARKS+=(vips)
+BENCHMARKS+=(x264)
+
+declare -a SIZES
+SIZES+=(test)
+SIZES+=(tiny)
+SIZES+=(small)
+SIZES+=(medium)
+SIZES+=(large)
+
+size_for_benchmark(){
+    case $BENCHMARK in
+        blackscholes) echo medium;;
+        bodytrack)    echo small;;
+        facesim)      echo medium;;
+        ferret)       echo small;;
+        fluidanimate) echo small;;
+        freqmine)     echo small;;
+        raytrace)     echo small;;
+        swaptions)    echo medium;;
+        vips)         echo medium;;
+        x264)         echo medium;;
+        bzip2)        echo large;;
+        h264ref)      echo large;;
+        *)            echo large;;
+    esac; }
 
 rand_remote(){ echo ${REMOTES[$RANDOM % ${#REMOTES[@]}]}; }
 
@@ -46,6 +82,13 @@ elif [ -f /etc/arch-release ]; then
     OS=Arch
 else
     OS=$(uname -s)
+fi
+
+# Architecture Identification
+if grep -q Intel /proc/cpuinfo; then
+    ARCH=intel
+elif grep -q AMD /proc/cpuinfo; then
+    ARCH=amd
 fi
 
 # OS-specific qemu command

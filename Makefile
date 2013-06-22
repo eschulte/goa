@@ -18,8 +18,9 @@ $(error Please point QUICK_LISP to your quicklisp installation)
 endif
 
 # Compiled lisp executables
-LISP_EXES=optimize objread calc-energy
+LISP_EXES=optimize objread calc-energy model-variance
 LISP_BINS=$(addprefix bin/, $(LISP_EXES))
+LISP_DEPS=src/package.lisp src/optimize.lisp etc/cl-launch.lisp
 
 # Flags to build standalone executables
 CLFLAGS=--no-include --system optimize --lisp $(LISP) --dump '!' -f etc/cl-launch.lisp
@@ -29,19 +30,22 @@ ifneq ($(LISP_STACK),)
 	CLFLAGS+= --wrap 'SBCL_OPTIONS="--dynamic-space-size $(LISP_STACK)"'
 endif
 
-all: bin/no-limit bin/no-stack-limit bin/limit $(LISP_BINS)
+all: bin/limit $(LISP_BINS)
 
 etc/cl-launch.lisp:
 	echo "(load \"$(QUICK_LISP)/setup.lisp\")" >$@
 
-bin/optimize: src/run-optimize.lisp etc/cl-launch.lisp
+bin/optimize: src/run-optimize.lisp $(LISP_DEPS)
 	$(CLC) $(CLFLAGS) --output $@ -r optimize:main
 
-bin/objread: src/objread.lisp etc/cl-launch.lisp
+bin/objread: src/objread.lisp $(LISP_DEPS)
 	$(CLC) $(CLFLAGS) --output $@ -r optimize:objread
 
-bin/calc-energy: src/calc-energy.lisp etc/cl-launch.lisp
+bin/calc-energy: src/calc-energy.lisp $(LISP_DEPS)
 	$(CLC) $(CLFLAGS) --output $@ -r optimize:calc-energy
+
+bin/model-variance: src/model-variance.lisp $(LISP_DEPS)
+	$(CLC) $(CLFLAGS) --output $@ -r optimize:model-variance
 
 clean:
 	rm -f bin/no-limit bin/no-stack-limit bin/limit etc/cl-launch.lisp $(LISP_BINS)

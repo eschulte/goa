@@ -10,7 +10,8 @@
                bordeaux-threads)
   :components
   ((:file "src/package")
-   (:file "src/optimize"     :depends-on ("src/package"))
-   (:file "src/run-optimize" :depends-on ("src/package" "src/optimize"))
-   (:file "src/calc-energy"  :depends-on ("src/package" "src/optimize"))
-   (:file "src/objread"      :depends-on ("src/package" "src/optimize"))))
+   (:file "src/optimize"       :depends-on ("src/package"))
+   (:file "src/run-optimize"   :depends-on ("src/package" "src/optimize"))
+   (:file "src/calc-energy"    :depends-on ("src/package" "src/optimize"))
+   (:file "src/objread"        :depends-on ("src/package" "src/optimize"))
+   (:file "src/model-variance" :depends-on ("src/package" "src/optimize"))))

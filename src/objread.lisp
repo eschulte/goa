@@ -33,5 +33,4 @@ Options:
                (format t "~&~a~%" (software-evolution::genome-string best)))
          ("-E" "--eval"
                (let ((form `(lambda (obj) ,(read-from-string (arg-pop)))))
-                 (format t "~&~S~%" (funcall (eval form) best))))))))
-  (quit))
+                 (format t "~&~S~%" (funcall (eval form) best)))))))))

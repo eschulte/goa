@@ -1,19 +1,6 @@
 Optimization Notes  -*- mode:org; org-attach-directory:"etc/data/" -*-
 #+Options: ^:{}
 
-| Program      | compile | link | input | output | run | opt |
-|--------------+---------+------+-------+--------+-----+-----|
-| blackscholes | a       | a    | a     | a      | a   | a   |
-| bodytrack    | a       | a    | a     | a      | a   |     |
-| facesim      | a       | a    | a     | a      |     |     |
-| ferret       | a       | a    | a     | a      | a   |     |
-| fluidanimate | a       | a    | a     | a      | a   | a   |
-| freqmine     | a       | a    | a     | a      | a   | a   |
-| raytrace     |         |      |       |        |     |     |
-| swaptions    | a       | a    | a     | a      | a   | a   |
-| vips         | a       | a    | a     | a      | a   | a   |
-| x264         | a       | a    | a     | a      | a   |     |
-
 * Work Plan
 :   train energy    memory       benchmarks       baselines       write
 :     models      fitness func       |         (Rinard, O2 O3)      |
@@ -113,7 +100,52 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 | 998.specrand   |
 | 999.specrand   |
 
-* Tasks [26/36]
+* Tasks [27/37]
+** TODO range of GP parameters
+first run
+| mut | cross |
+|-----+-------|
+| 0.2 | 0.2   |
+| 0.5 | 0.5   |
+| 0.8 | 0.8   |
+
+second run
+|   mut | cross |
+|-------+-------|
+|  0.75 | 1/6   |
+| 0.875 | 2/6   |
+| 1.0   | 3/6   |
+|       | 4/6   |
+
+#+begin_src sh
+  for bench in swaptions;do
+      for mut in 0.2 0.5 0.8;do
+          for cross in 0.2 0.5 0.8;do
+              optimize benchmarks/$bench/$bench.s $bench -l g++ -f -lpthread \
+                  -c $cross -m $mut -w sh-runner/work -t 4 \
+                  -r results/mut-cross/$bench-$mut-$cross &
+          done
+      done
+  done
+#+end_src
+
+#+begin_src gnuplot :file etc/data/mut-params.svg
+  set term svg size 600,600
+  set title 'multiple swaptions runs w/varied GP parameters'
+  set ylabel 'energy model'
+  set xlabel 'fitness evaluations'
+  set key outside below
+  plot for [mut in "0.2 0.5 0.8"] for [cross in "0.2 0.5 0.8"] \
+       "results/mut-cross/swaptions-".mut."-".cross."/stats.txt" \
+       using 1:2 with lines title "mut:".mut." cross:".cross, \
+       for [mut in "0.75 0.875 1.0"] for [cross in "0.166 0.333 0.5 0.666"] \
+       "results/mut-cross/swaptions-".mut."-".cross."/stats.txt" \
+       using 1:2 with lines title "mut:".mut." cross:".cross
+#+end_src
+
+#+RESULTS:
+[[file:etc/data/mut-params.svg]]
+
 ** TODO find minimal input sizes for each program
 Need to estimate the variance in our energy predictions, which are
 linear combinations of HW counters, from variance in the HW counters.
@@ -133,18 +165,104 @@ like the following.
 http://wikipedia.org/wiki/Variance#Sum_of_correlated_variables
 
 *** TODO minimum input size for each program
-| Program      | size |
-|--------------+------|
-| blackscholes |      |
-| bodytrack    |      |
-| facesim      |      |
-| ferret       |      |
-| fluidanimate |      |
-| freqmine     |      |
-| raytrace     |      |
-| swaptions    |      |
-| vips         |      |
-| x264         |      |
+| Program      | size   | % variance | runtime |
+|--------------+--------+------------+---------|
+| blackscholes | medium |     3.617% |   0.761 |
+| bodytrack    | small  |    10.618% |   0.522 |
+| facesim      | medium |    12.800% |  12.668 |
+| ferret       | small  |    19.161% |   0.501 |
+| fluidanimate | small  |    35.947% |   0.584 |
+| freqmine     | small  |     71.341 |   2.492 |
+| raytrace     |        |            |         |
+| swaptions    |        |            |         |
+| vips         |        |            |         |
+| x264         | medium |    805.573 |  15.528 |
+
+*** results
+#+name: amd-hw-counter-results
+#+begin_src sh :results scalar :cache yes
+  for csv in etc/hw-counters/amd/*.csv;do
+      echo ""
+      echo $(basename $csv)
+      ./bin/model-variance $csv -m amd-opteron-power-model -c seconds
+  done
+#+end_src
+
+#+RESULTS[3bea911d15560fc7745269bd2a5e4672a077d027]: amd-hw-counter-results
+: 
+: blackscholes.csv
+: size          mean    variance      percent number   seconds
+: test            NA          NA           NA   NA
+: tiny            NA          NA           NA   NA
+: small     346.8987   163.41093    47.10624%   60    0.18951055
+: medium   346.71255   12.541327   3.6172118%   60     0.7617375
+: large    347.29355    5.025036   1.4469131%   60     3.0985744
+: 
+: bodytrack.csv
+: size          mean    variance      percent number   seconds
+: test     317.00403    538.4976   169.87091%   60     0.1501637
+: tiny      320.4772   398.87482   124.46277%   60    0.17488833
+: small    329.38245   34.974712   10.618269%   60    0.52241516
+: medium   330.72498    6.372461   1.9268157%   60     1.6345919
+: large    331.72903   1.3191015  0.39764425%   60      5.708939
+: 
+: facesim.csv
+: size          mean    variance      percent number   seconds
+: test      271.4402   314402.38    115827.5%   59   0.009274179
+: tiny     324.40738    53.40426   16.462097%   60     12.693625
+: small    325.55566    44.18678   13.572725%   60     12.681024
+: medium   325.72247   41.692215    12.79992%   60     12.668328
+: large     326.6099   60.589775   18.551115%   60     12.713568
+: 
+: ferret.csv
+: size          mean    variance      percent number   seconds
+: test     339.91122   59622.754   17540.684%   60   0.017957868
+: tiny      325.0534    2782.593    856.0418%   60   0.046919268
+: small     317.0088   60.743114   19.161335%   60     0.5006953
+: medium   323.84186   159.60916    49.28614%   60     1.4408689
+: large     329.2015   507.27493   154.09253%   60      5.959686
+: 
+: fluidanimate.csv
+: size          mean    variance      percent number   seconds
+: test       312.268   2866.7375   918.03754%   60   0.027157063
+: tiny     330.72684    538.0708   162.69342%   60    0.15264207
+: small     331.9546   119.32736    35.94689%   60     0.5836928
+: medium    325.7775    312.4431   95.906906%   60     1.2899703
+: large    326.60492    411.1607   125.88931%   60     3.9668987
+: 
+: freqmine.csv
+: size          mean    variance      percent number   seconds
+: test      245.8545    653.3362     265.741%   60    0.10334522
+: tiny     285.50375    4741.816   1660.8595%   60   0.028545866
+: small    255.63167    182.3699    71.34089%   60     2.4921725
+: medium   242.78413   246.28793   101.44317%   60     24.001656
+: large    245.74487   2293.6982    933.3656%   60     24.795027
+: 
+: x264.csv
+: size          mean    variance      percent number   seconds
+: test            NA          NA           NA   NA
+: tiny   -127.111305  20463822.0 -16099136.0%   49   .0083309375
+: small    242.09781   2428.7747  1003.22046%   60     2.2106462
+: medium   235.27931   1895.3469    805.5732%   60     15.527754
+: large           NA          NA           NA   NA
+
+#+begin_src sh :var data=amd-hw-counter-results :results scalar
+  echo "$data" > /tmp/to-gnuplot
+#+end_src
+
+#+begin_src gnuplot :file etc/data/variance-by-input-size.svg
+  set title 'power model variance by run time'
+  set xlabel 'runtime in seconds'
+  set ylabel 'percent model variance'
+  set logscale y
+  set logscale x
+  plot for [bench in "blackscholes bodytrack facesim ferret fluidanimate freqmine x264"] \
+       "<(sed -n '/".bench."/,/^ *$/p' /tmp/to-gnuplot|grep '[0-9]')" \
+       u 6:4 title bench
+#+end_src
+
+#+RESULTS:
+[[file:etc/data/variance-by-input-size.svg]]
 
 *** DONE Step by step process for energy minimization
     DEADLINE: <2013-06-11 Tue>
@@ -153,73 +271,15 @@ http://wikipedia.org/wiki/Variance#Sum_of_correlated_variables
     :END:
 
 1. Perform 30 runs collecting counters for each size.
-   #+begin_src sh :tangle stats-by-input
-     bench=$1
-     for size in test tiny small medium large;do
-         mgmt clean $bench >&2
-         mgmt output $bench -s $size >&2
-         echo ""
-         echo $size
-         for i in {1..30};do
-             run $bench benchmarks/$bench/$bench -s $size -p
-         done
-     done > results/counters-by-input-size/$bench.txt
-   #+end_src
+   (see file:bin/hw-counters-by-size)
 
 2. Clean up the stats and organize by size.
-   #+begin_src sh :tangle clean-input-stats
-     bench=$1
-     for size in test tiny small medium large;do
-         cat results/counters-by-input-size/$bench.txt \
-             |sed -n "/$size/,/^$/p"|grep ","|sed 's/,/ /' \
-             |awk '{print $2, $1}'|sort \
-             > results/counters-by-input-size/$bench-$size.txt
-     done
-   #+end_src
+   (see file:bin/hw-counters-by-size)
 
 3. Using the architecture-specific model, calculate the variance of
    the model for each size based on the counter values for that size.
-   Use the technique described in
-   [[http://en.wikipedia.org/wiki/Variance#Weighted_sum_of_variables][wikipedia/Variance#Weighted_sum_of_variables]].
-   #+begin_src lisp :var benchmark="blackscholes"
-     (in-package :optimize)
-
-     (defun counters (bench size)
-       (let* ((base "results/counters-by-input-size")
-              (raw (file-to-string (format nil "~a/~a-~a.txt" base bench size)))
-              vals)
-         (mapc (lambda-bind ((counter count))
-                 (if (assoc counter vals)
-                     (push count (cdr (assoc counter vals)))
-                     (push (list counter count) vals)))
-               (mapcar (lambda (list)
-                         (cons (make-keyword (string-upcase (car list)))
-                               (mapcar #'read-from-string (cdr list))))
-                       (mapcar {split-sequence #\Space}
-                               (split-sequence #\Newline raw
-                                               :remove-empty-subseqs t))))
-         vals))
-
-     (defun covariance (a b)
-       (/ (reduce #'+ (mapcar #'*
-                              (mapcar {- _ (mean a)} a)
-                              (mapcar {- _ (mean b)} b)))
-          (- (length a) 1)))
-
-     ;; http://en.wikipedia.org/wiki/Variance#Weighted_sum_of_variables
-     (defun weighted-sum-of-var (model samples)
-       "Return the weighted variance of MODEL given SAMPLES."
-       (let ((mod (mapcar (lambda-bind ((a b)) (cons b a)) model)))
-         (loop :for i :in (mapcar #'car mod) :summing
-            (loop :for j :in (mapcar #'car mod) :summing
-               (* (aget i mod) (aget j mod)
-                  (covariance (aget i samples) (aget i samples)))))))
-
-     (let ((sizes (list "test" "tiny" "small" "medium" "large"))
-           (model amd-opteron-energy-model))
-       (list sizes
-             (mapcar [{weighted-sum-of-var model} {counters benchmark}] sizes)))
-   #+end_src
+   Use the technique described in [[http://en.wikipedia.org/wiki/Variance#Weighted_sum_of_variables][wiki/Variance#Weighted_sum]].
+   (see file:src/variance-by-input.lisp)
 
    #+RESULTS:
    |          test |          tiny |         small |        medium |         large |
@@ -240,7 +300,7 @@ http://wikipedia.org/wiki/Variance#Sum_of_correlated_variables
   done|tee results/counter-by-size/fluidanimate.txt
 #+end_src
 
-** TODO Build all benchmarks to ASM [10/10]
+** DONE Build all benchmarks to ASM [10/10]
 *** parsec
 **** DONE Blackscholes
 **** DONE bodytrack
@@ -408,8 +468,18 @@ with an "r".
 *** DONE Intel energy model
 : perf stat -e cycles,instructions,r532010,r538010,cache-references,LLC-loads,LLC-stores
 
-** DONE Train Energy Models [7/7]
+** DONE Train Energy Models [7/8]
 Both at UVA on Intel and at UNM on AMD.
+
+*** TODO more inputs runs
+#+begin_src sh
+  for gcc in 44 48;do
+      for flag in O1 O2 O3 Os;do
+          collect_model_data.py --spec-config=cx-$gcc-$flag 1  
+          mv benchmarks.csv benchmarks-$gcc-$flag.csv
+      done
+  done
+#+end_src
 
 *** DONE comparative effectiveness of our three models
 1. original energy
@@ -885,11 +955,9 @@ Modeling kwh
 (ingest "results/energy-final-metrics/swaptions-orig-0.csv")
 #+end_src
 
-** TODO measure runtime of evolved programs
-** TODO Complete test suites for some benchmarks
-Ideally at least one or two from each group of benchmark programs.
-Spec has some open-source programs (e.g., perl, gcc, bzip) which could
-be good candidates.  Eric will look into some better tests for PARSEC
+** TODO Expanded test suites for some benchmarks
+To ensure that our optimizations don't trample all over the non-tested
+functionality, we should include expanded test suites for some
 programs.
 
 ** DONE distributed sub-pop by compiler flags
@@ -1131,7 +1199,49 @@ coefficients for a memory linear model.
 ** TODO Build table results table
 ** TODO Analyze Optimizations
 ** TODO Build optimization Taxonomy
-* Code Tasks [3/4]
+* Code Tasks [6/7]
+** DONE focus mutation operators on hot spots
+- use =perf annotate= to highlight "hot" instructions
+- focus mutations on those instructions
+- maintain annotations over mutations
+
+Process
+1. [X] use the run script to collect perf annotation by memory address
+2. [X] associate each assembly instruction with a memory address
+   1. [X] get the function names in the ASM file
+   2. [X] collect the addresses and the lines of code for each function
+   3. [X] associate addresses with lines of code
+3. [X] map perf percents through addresses to lines of code
+
+** DONE MCMC search strategy
+- top level search driver
+- possibly a fixed with 
+
+Thoughts
+- we want the walk to be ergodic, which will allow us to sample the
+  whole space independent of our 
+
+- no deletion, rather just moving code around between two buckets,
+  one which serializes to disk, and one which is ignored, but keeps
+  the relative instruction mix the same
+
+- the following function of the fitness of a step decides if it is
+  taken or not
+
+  \begin{equation*}
+    keep = \left \{
+    \begin{array}{cl}
+    1 & if  f_{1} > f_{0} \\
+    \frac{f_{1}}{f_{0}} & otherwise
+    \end{array}
+    \right .
+  \end{equation*}
+  (metropolis hasting step)
+  ("gibbs" would be another option using /e/)
+
+** DONE Memory efficient diff-rep for large genomes
+see [[https://github.com/eschulte/software-evolution/blob/master/software/simple.lisp#L161][software-evolution/software/simple.lisp#L161]]
+
 ** DONE add GC flag to optimize executable
 with separate help and default for SBCL and CCL
 
