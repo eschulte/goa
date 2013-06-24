@@ -250,7 +250,9 @@ http://wikipedia.org/wiki/Variance#Sum_of_correlated_variables
   echo "$data" > /tmp/to-gnuplot
 #+end_src
 
-#+begin_src gnuplot :file etc/data/variance-by-input-size.svg
+#+begin_src gnuplot :file /tmp/variance-by-input-size.tex
+  set term tikz size 3in,2.5in
+  set key above
   set title 'power model variance by run time'
   set xlabel 'runtime in seconds'
   set ylabel 'percent model variance'
@@ -262,7 +264,7 @@ http://wikipedia.org/wiki/Variance#Sum_of_correlated_variables
 #+end_src
 
 #+RESULTS:
-[[file:etc/data/variance-by-input-size.svg]]
+[[file:/tmp/variance-by-input-size.tex]]
 
 *** DONE Step by step process for energy minimization
     DEADLINE: <2013-06-11 Tue>
@@ -472,14 +474,60 @@ with an "r".
 Both at UVA on Intel and at UNM on AMD.
 
 *** TODO more inputs runs
-#+begin_src sh
-  for gcc in 44 48;do
-      for flag in O1 O2 O3 Os;do
-          collect_model_data.py --spec-config=cx-$gcc-$flag 1  
-          mv benchmarks.csv benchmarks-$gcc-$flag.csv
+- Running SPEC a few more times
+  #+begin_src sh
+    for gcc in 44 48;do
+        for flag in O1 O2 O3 Os;do
+            collect_model_data.py --spec-config=cx-$gcc-$flag 1  
+            mv benchmarks.csv benchmarks-$gcc-$flag.csv
+        done
+    done
+  #+end_src
+- More sleep benchmarks
+
+#+begin_src sh :results scalar
+  tmp=$(mktemp XXXXXXXX.csv)
+  (
+      head -1 etc/model-data/amd/sleep-benchmarks.csv
+      for f in etc/model-data/amd/sleep-benchmarks.csv etc/model-data/amd/parsec-and-spec.csv;do
+          grep -v time $f
       done
-  done
+  ) > $tmp
+  ./bin/power-model.R $tmp
+  rm -f $tmp
 #+end_src
+
+#+RESULTS:
+: 
+: Call:
+: glm(formula = watts ~ ipc + fpc + cpc + mpc)
+: 
+: Deviance Residuals: 
+:      Min        1Q    Median        3Q       Max  
+: -303.108     5.681     7.890    14.662   119.007  
+: 
+: Coefficients:
+:             Estimate Std. Error t value Pr(>|t|)    
+: (Intercept)   380.84      35.38  10.763   <2e-16 ***
+: ipc           -69.88      40.58  -1.722   0.0878 .  
+: fpc            64.65      36.60   1.767   0.0800 .  
+: cpc           -40.41     146.19  -0.276   0.7827    
+: mpc         -2325.46    2783.39  -0.835   0.4052    
+: ---
+: Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+: 
+: (Dispersion parameter for gaussian family taken to be 4965.242)
+: 
+:     Null deviance: 629548  on 118  degrees of freedom
+: Residual deviance: 566038  on 114  degrees of freedom
+: AIC: 1357.3
+: 
+: Number of Fisher Scoring iterations: 2
+: 
+: performing cross-validation...
+: using RMS error
+: model error:   68.9682418097653 
+: 10x cross-val: 0.988 x
 
 *** DONE comparative effectiveness of our three models
 1. original energy
