@@ -141,6 +141,9 @@ second run
        for [mut in "0.75 0.875 1.0"] for [cross in "0.166 0.333 0.5 0.666"] \
        "results/mut-cross/swaptions-".mut."-".cross."/stats.txt" \
        using 1:2 with lines title "mut:".mut." cross:".cross
+  # plot for [mut in "0.75 0.875 1.0"] for [cross in "0.1666 0.333 0.5 0.666"] \
+  #      "results/mut-cross/freqmine-".mut."-".cross."/stats.txt" \
+  #      using 1:2 with lines title "mut:".mut." cross:".cross
 #+end_src
 
 #+RESULTS:
@@ -435,9 +438,15 @@ latest GCC which supports the =--combine= flag).
 **** 998.specrand
 **** 999.specrand
 ** DONE Select Energy Models [2/2]
-\begin{equation*}
-  kwh = c_{1} + c_{2} \times cyc + c_{3} \times ins + c_{4} \times ops + c_{5} \times tca + c_{6} \times mem
-\end{equation*}
+\begin{align*}
+  &\begin{aligned}
+     power &= C_{const} + C_{ins} \times \frac{ins}{cyc} + C_{flops} \times \frac{flops}{cyc} \\
+           &\qquad + C_{tca} \times \frac{tca}{cyc} + C_{mem} \times \frac{mem}{cyc}
+   \end{aligned}\\
+  &\begin{aligned}
+     energy &= seconds \times power
+   \end{aligned}
+\end{align*}
 
 | metric                 | perf              |
 |------------------------+-------------------|
