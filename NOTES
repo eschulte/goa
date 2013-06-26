@@ -1145,13 +1145,8 @@ For each of the bests, write out their percent makeup.
 
 3. Plot these compositions
    #+headers: :results silent
-   #+begin_src gnuplot :file /tmp/by-flag-sub-pop-comps.svg
-     # data files
-     O0="results/distributed-runs/bzip2/O0.composition"
-     O1="results/distributed-runs/bzip2/O1.composition"
-     O2="results/distributed-runs/bzip2/O2.composition"
-     O3="results/distributed-runs/bzip2/O3.composition"
-     Os="results/distributed-runs/bzip2/OS.composition"
+   #+begin_src gnuplot :file /tmp/by-flag-sub-pop-comps.tex
+     set term tikz
      
      # multiplot layout
      set tmargin 1.5
@@ -1172,18 +1167,17 @@ For each of the bests, write out their percent makeup.
      # plots
      set key above
      set ylabel 'O0'
-     plot O0 u 2 t 'O0', '' u 3 t 'O1', '' u 4 t 'O2', '' u 5 t 'O3', '' u 6 t 'Os'
-     
+     plot "< awk '{if(NR % 4 == 0){ print $0 }}' results/distributed-runs/bzip2/O0.composition" u 2 t 'O0', '' u 3 t 'O1', '' u 4 t 'O2', '' u 5 t 'O3', '' u 6 t 'Os'
      set tmargin 0
      unset key
      set ylabel 'O1'
-     plot O1 u 2, '' u 3, '' u 4, '' u 5, '' u 6
+     plot "< awk '{if(NR % 4 == 0){ print $0 }}' results/distributed-runs/bzip2/O1.composition" u 2, '' u 3, '' u 4, '' u 5, '' u 6
      set ylabel 'O2'
-     plot O2 u 2, '' u 3, '' u 4, '' u 5, '' u 6
+     plot "< awk '{if(NR % 4 == 0){ print $0 }}' results/distributed-runs/bzip2/O2.composition" u 2, '' u 3, '' u 4, '' u 5, '' u 6
      set ylabel 'O3'
-     plot O3 u 2, '' u 3, '' u 4, '' u 5, '' u 6
+     plot "< awk '{if(NR % 4 == 0){ print $0 }}' results/distributed-runs/bzip2/O3.composition" u 2, '' u 3, '' u 4, '' u 5, '' u 6
      set ylabel 'Os'
-     plot Os u 2:xtic(1), '' u 3, '' u 4, '' u 5, '' u 6
+     plot "< awk '{if(NR % 4 == 0){ print $0 }}' results/distributed-runs/bzip2/OS.composition" u 2, '' u 3, '' u 4, '' u 5, '' u 6
      
      unset multiplot
    #+end_src
