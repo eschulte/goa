@@ -1223,12 +1223,6 @@ For each of the bests, write out their percent makeup.
   (mapc #'cmps-for-flag flags)
 #+end_src
 
-** CANCELED Build a Memory Fitness Function
-We could use the "bubble" and the "reporter" from [[#mars2011bubble]].
-Measuring the values of HW counters against the bubble could give us
-coefficients for a memory linear model.
-
-** CANCELED Find Warehouse Compute Benchmark Applications
 ** TODO Run Experiments
 | benchmark    | Energy UVA | Energy UNM | Memory UVA | Memory UNM |
 |--------------+------------+------------+------------+------------|
@@ -1256,6 +1250,12 @@ coefficients for a memory linear model.
 ** TODO Build table results table
 ** TODO Analyze Optimizations
 ** TODO Build optimization Taxonomy
+** CANCELED Find Warehouse Compute Benchmark Applications
+** CANCELED Build a Memory Fitness Function
+We could use the "bubble" and the "reporter" from [[#mars2011bubble]].
+Measuring the values of HW counters against the bubble could give us
+coefficients for a memory linear model.
+
 * Code Tasks [6/7]
 ** DONE focus mutation operators on hot spots
 - use =perf annotate= to highlight "hot" instructions
