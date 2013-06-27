@@ -1377,7 +1377,51 @@ failures at stages.
 
 Run with =make check=.
 
-* Issues [5/5]
+* Issues [5/6]
+** TODO energy by input size
+See how the model calculated energy varies by input size for both
+evolved and original programs.
+
+#+begin_src sh :tangle /tmp/analyze :shebang #!/bin/bash
+  IN="etc/data/blackscholes-multi-stats"
+  
+  output(){
+      cat $IN|sed -n "/size,$size\$/,/task-clock/p"|grep -v size|grep -v "^$" \
+          |cut -d, -f1,$1|awk -F, 'OFS="," {print $2,$1}' \
+          |./bin/calc-energy -m amd-opteron-power-model; }
+  
+  for exp in $(seq 1 7);do
+      size=$(echo "10^$exp"|bc)
+      ORIG=$(output 2)
+      if [ ! $? -eq 0 ];then ORIG="xxxx"; fi
+      EVOL=$(output 3)
+      if [ ! $? -eq 0 ];then EVOL="xxxx"; fi
+      echo "$size $ORIG $EVOL"
+  done|grep -v "UNBOUND-VARIABLE"
+#+end_src
+
+#+RESULTS:
+| input size |  original |  optimized |
+|------------+-----------+------------|
+|      10000 | 154.18698 |  11.584152 |
+|     100000 | 1514.1632 | 104.273964 |
+|    1000000 |  8233.762 |  1053.7292 |
+|   10000000 |  5886.616 |  5864.3687 |
+
+At the largest level of 10000000 input records.
+| counter          |     original |      evolved | coefficients |           orig |           evol |
+|------------------+--------------+--------------+--------------+----------------+----------------|
+| cache-misses     |     50615941 |     73001968 |     -6509.46 | -329482440000. | -329482440000. |
+| cache-references |  25115294137 |  25414452432 |       -18.54 | -465637550000. | -465637550000. |
+| cycles           |  52745678049 |  52749601704 |              |              0 |              0 |
+| error            |            0 |            0 |              |              0 |              0 |
+| exit             |            0 |            0 |              |              0 |              0 |
+| instructions     |  91034776837 |  92382278304 |       -66.72 |  -6.0738403e12 |  -6.0738403e12 |
+| r533f00          |    595473504 |    618398039 |        66.66 |   39694264000. |   39694264000. |
+| seconds          | 24.003063124 | 24.003394088 |              |             0. |             0. |
+| task-clock       | 23977.681791 | 23978.878958 |              |             0. |             0. |
+#+TBLFM: $5=$2*$4::$6=$2*$4
+
 ** DONE Running out of memory
 #+begin_quote
 > As it turns out, after much investigation of how I could be leaking
