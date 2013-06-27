@@ -42,6 +42,8 @@ Options:
         (when debug (format t "~&; counters~%~S~%~%" cs))
 
         ;; Apply the model to the counters
-        (multiple-value-bind (value expr) (apply-model *model* cs)
-          (when debug (format t "~&; expression~%~S~%~%" expr))
-          (format t "~S~%" value))))))
+        (handler-case
+            (multiple-value-bind (value expr) (apply-model *model* cs)
+              (when debug (format t "~&; expression~%~S~%~%" expr))
+              (format t "~S~%" value))
+          (UNBOUND-VARIABLE (e) (format t "~S~%" e)))))))
