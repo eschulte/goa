@@ -15,6 +15,8 @@
 #  -d,--debug ----- print commands before running them
 #  -k,--keep ------ keep output
 #  -K,--keep-perf - keep perf output
+#  -i,--input IN -- specify non-standard input
+#  -o,--output OUT - specify non-standard output
 #
 # Benchmark should be one of
 #  blackscholes
@@ -46,10 +48,12 @@ KEEP=""
 KEEP_PERF=""
 EXIT=""
 ERROR=""
+INPUT="$BASE/benchmarks/$BENCHMARK/$BENCHMARK.input"
+OUTPUT="$BASE/benchmarks/$BENCHMARK/$BENCHMARK.output"
 OUT=$(mktemp)
 eval set -- \
-    $(getopt -o l:pac:wr:rs:dkK \
-    -l limit:,perf,annotate,counters:,wattsup,repeat:,raw,size:,debug,keep,keep-perf \
+    $(getopt -o l:pac:wr:rs:dkKi:o: \
+    -l limit:,perf,annotate,counters:,wattsup,repeat:,raw,size:,debug,keep,keep-perf,input:,output: \
     -- "$@" || help;)
 while [ $# -gt 0 ];do
     case $1 in
@@ -64,6 +68,8 @@ while [ $# -gt 0 ];do
         -d|--debug) DEBUG="yes";;
         -k|--keep) KEEP="yes";;
         -K|--keep-perf) KEEP_PERF="yes";;
+        -i|--input) INPUT="$2"; shift;;
+        -i|--output) OUTPUT="$2"; shift;;
         (--) shift; break;;
         (-*) error "unrecognized option $1";;
         (*)  break;;
@@ -137,9 +143,6 @@ else
         fi; }
 fi
 trap exit_hook EXIT
-
-INPUT="$BASE/benchmarks/$BENCHMARK/$BENCHMARK.input"
-OUTPUT="$BASE/benchmarks/$BENCHMARK/$BENCHMARK.output"
 
 AWK_CMD=''
 AWK_CMD+='function abs(x){return ((x < 0.0) ? -x : x)}'
