@@ -69,7 +69,7 @@ while [ $# -gt 0 ];do
         -k|--keep) KEEP="yes";;
         -K|--keep-perf) KEEP_PERF="yes";;
         -i|--input) INPUT="$2"; shift;;
-        -i|--output) OUTPUT="$2"; shift;;
+        -o|--output) OUTPUT="$2"; shift;;
         (--) shift; break;;
         (-*) error "unrecognized option $1";;
         (*)  break;;
