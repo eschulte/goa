@@ -25,7 +25,9 @@ if $(contains "$1" "^\-\?\-h\(elp\|$\)");then help; fi
 
 BASE=$(cd "$(dirname "$SCRIPT")/.."; pwd)
 
-LIMIT="$(dirname "$SCRIPT")/limit"
+if ! (set -u; : $LIMIT)2>/dev/null;then
+    LIMIT="$(dirname "$SCRIPT")/limit"
+fi
 
 declare -a BENCHMARKS
 BENCHMARKS+=(blackscholes)
