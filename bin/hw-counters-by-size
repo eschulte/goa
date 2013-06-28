@@ -43,17 +43,19 @@ for bench in ${BENCHMARKS[@]};do
     OUT="$DIR/$bench.csv"
     if [ ! -f "$OUT" ] || [ ! -z $OVER ];then
         for size in ${SIZES[@]};do
-            echo -n "$bench $size:" >&2
-            mgmt clean $bench >/dev/null 2>/dev/null
-            mgmt output $bench -s $size >/dev/null \
-                ||error "mgmt output $bench $size failed"
-            echo ""
-            echo $size
-            for i in $(seq 1 $COUNT);do
-                echo -n "." >&2
-                run $bench benchmarks/$bench/$bench -s $size -p
-            done
-            echo "" >&2
+            if [ ! $size == "huge" ];then
+                echo -n "$bench $size:" >&2
+                mgmt clean $bench >/dev/null 2>/dev/null
+                mgmt output $bench -s $size >/dev/null \
+                    ||error "mgmt output $bench $size failed"
+                echo ""
+                echo $size
+                for i in $(seq 1 $COUNT);do
+                    echo -n "." >&2
+                    run $bench benchmarks/$bench/$bench -s $size -p
+                done
+                echo "" >&2
+            fi
         done > "$OUT"
     else
         echo "skipping $bench"
