@@ -48,6 +48,7 @@ SIZES+=(tiny)
 SIZES+=(small)
 SIZES+=(medium)
 SIZES+=(large)
+SIZES+=(huge)
 
 size_for_benchmark(){
     case $BENCHMARK in
