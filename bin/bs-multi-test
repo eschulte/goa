@@ -18,10 +18,10 @@ for exp in $(seq 1 $N);do
     echo ""
     echo "size,$size"
     inputgen $size $ifile
-    O_OUT=$(run blackscholes $ORIG -i $ifile -p -k)
+    O_OUT=$(LIMIT="" run blackscholes $ORIG -i $ifile -p -k)
     tmp=$(echo "$O_OUT"|grep output|sed 's/^.* //')
     mv $tmp $ofile
-    E_OUT=$(run blackscholes $EVOL -i $ifile -o $ofile -p)
+    E_OUT=$(LIMIT="" run blackscholes $EVOL -i $ifile -o $ofile -p)
     join <(echo "$O_OUT"|grep -v output|uniform) <(echo "$E_OUT"|uniform) \
         |sed 's/ /,/g'
     rm -f $ifile $ofile
