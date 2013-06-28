@@ -1,7 +1,7 @@
 benchmark	linker	flags
 blackscholes	g++	-lpthread
 bodytrack	g++	-lthreads -lpthread -L$BASE/benchmarks/parsec-3.0/pkgs/apps/$bench/obj/amd64-linux.gcc/FlexImageLib/.libs -L$BASE/benchmarks/parsec-3.0/pkgs/apps/$bench/obj/amd64-linux.gcc/TrackingBenchmark/threads/.libs
-facesim	????	????
+facesim	g++	-L$BASE/benchmarks/parsec-3.0/pkgs/apps/$bench/obj/amd64-linux.gcc -L$BASE/benchmarks/parsec-3.0/pkgs/apps/$bench/obj/amd64-linux.gcc/TaskQ/lib/taskQ.o
 ferret		-lrt -lgsl -lgslcblas -ljpeg -lstdc++ -lpthread -lm -L$BASE/benchmarks/parsec-3.0/pkgs/libs/gsl/inst/amd64-linux.gcc/lib -L$BASE/benchmarks/parsec-3.0/pkgs/libs/libjpeg/inst/amd64-linux.gcc/lib/
 fluidanimate	g++	-lpthread
 freqmine	g++	
