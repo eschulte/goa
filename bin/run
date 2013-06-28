@@ -185,6 +185,11 @@ case $BENCHMARK in
         fi
         ;;
     bodytrack)
+        # Copy input to tmp directory, and then loop through the
+        # results directory checking each file in turn.
+        # 
+        # diff the ls from each directory, to protect against extra
+        # output files
         case $SIZE in
             test)   run 0 $EXECUTABLE $INPUT 4 1 5    1 0 1;;
             tiny)   run 0 $EXECUTABLE $INPUT 4 1 100  3 0 1;;
@@ -202,6 +207,8 @@ case $BENCHMARK in
         fi
         ;;
     facesim)
+        # diff the ls from each directory, to protect against extra
+        # output files
         tmp=$(mktemp -d)
         base=$(pwd)
         pushd $tmp >/dev/null
@@ -245,6 +252,7 @@ case $BENCHMARK in
         fi
         ;;
     freqmine)
+        # straight-up diff for the output files
         case $SIZE in
             test)   run 0 $EXECUTABLE "$INPUT" 1   $OUT;;
             tiny)   run 0 $EXECUTABLE "$INPUT" 3   $OUT;;
@@ -258,6 +266,8 @@ case $BENCHMARK in
             ERROR=$(num_diff <(cat $OUT|freqclean) <(cat $OUTPUT|freqclean));
         fi
         ;;
+    # Ignoring raytrace, because it does not generate any testable
+    # results (just debug info).
     raytrace)
         case $SIZE in
             test)   run 1 $EXECUTABLE "$INPUT" -automove -nthreads 1 -frames 1 -res 1 1;;
@@ -275,6 +285,7 @@ case $BENCHMARK in
         fi
         ;;
     swaptions)
+        # Full diff for swaptions.
         case $SIZE in
             test)  run 2 $EXECUTABLE -ns 1  -sm 5     -nt 1 > $OUT;;
             tiny)  run 2 $EXECUTABLE -ns 3  -sm 50    -nt 1 > $OUT;;
@@ -314,10 +325,11 @@ case $BENCHMARK in
         run 0 $EXECUTABLE $X264_CMD -o $OUT $tmp
         EXIT=$?
         rm -f $tmp
+        # can just replace these diff if statements with $?
         if diff $OUT $OUTPUT;then
             ERROR=0;
         else
-            ERROR=10;
+            ERROR=1;
         fi
         ;;
 

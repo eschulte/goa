@@ -356,6 +356,8 @@ EOF
                     |grep -v "static int omp_get_max_threads" >> all.cpp
                 g++ $FULL_FLAGS -S all.cpp -o ${bench}.s||error "compilation failed"
                 ;;
+            # Ignoring raytrace, because it does not generate any
+            # testable results (just debug info).
             raytrace)
                 (
                     cat LRT/render.cxx

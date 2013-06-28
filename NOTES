@@ -1250,7 +1250,10 @@ We could use the "bubble" and the "reporter" from [[#mars2011bubble]].
 Measuring the values of HW counters against the bubble could give us
 coefficients for a memory linear model.
 
-* Code Tasks [6/7]
+* Code Tasks [6/8]
+** TODO re-run when we get not-counted
+This means perf ran two quickly.  Use half the counters.
+
 ** DONE focus mutation operators on hot spots
 - use =perf annotate= to highlight "hot" instructions
 - focus mutations on those instructions
@@ -1377,10 +1380,40 @@ failures at stages.
 
 Run with =make check=.
 
-* Issues [5/6]
+* Issues [5/8]
+** TODO do we trust run to measure output
+| benchmark    | status                                           |
+|--------------+--------------------------------------------------|
+| blackscholes | okay                                             |
+| bodytrack    | will improve                                     |
+| facesim      | will improve                                     |
+| ferret       | okay                                             |
+| fluidanimate | okay                                             |
+| freqmine     | will improve                                     |
+| raytrace     | removed from benchmark suite, no testable output |
+| swaptions    | will improve                                     |
+| vips         | okay                                             |
+| x264         | okay                                             |
+
+Tests to be improved
+- bodytrack :: bodytrack writes outputs to the input directory, so we
+               will generate a new temporary input directory for each
+               evaluation, and loop through diffing every file in the
+               input directory against oracle output, and will check
+               to ensure extra files aren't created.
+- facesim :: we will add a check to ensure extra files aren't created.
+- freqmine :: we will perform a more strict diff of the output
+- swaptions :: we will perform a more strict diff of the output
+
 ** TODO energy by input size
 See how the model calculated energy varies by input size for both
 evolved and original programs.
+
+*** Jonathan debug
+| input    | runtime orig |   |
+|----------+--------------+---|
+| 10000000 |          137 |   |
+| large    |           .9 |   |
 
 *** blackscholes powers of ten
 #+headers: :colnames '("input size" "model energy orig." "model energy evolved")
@@ -1392,7 +1425,7 @@ evolved and original programs.
           |cut -d, -f1,$1|awk -F, 'OFS="," {print $2,$1}' \
           |./bin/calc-energy -m amd-opteron-power-model; }
   
-  for exp in $(seq 1 7);do
+  for exp in $(seq 1 8);do
       size=$(echo "10^$exp"|bc)
       ORIG=$(output 2)
       if [ ! $? -eq 0 ];then ORIG="xxxx"; fi
@@ -1416,6 +1449,7 @@ evolved and original programs.
 *** multiple over set inputs
 Running on real with file:bin/many-multi-test.
 
+** TODO we don't correctly catch non-zero returns
 ** DONE Running out of memory
 #+begin_quote
 > As it turns out, after much investigation of how I could be leaking
