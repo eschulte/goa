@@ -47,7 +47,7 @@ DEBUG=""
 KEEP=""
 KEEP_PERF=""
 EXIT=""
-ERROR=""
+ERROR=0
 INPUT="$BASE/benchmarks/$BENCHMARK/$BENCHMARK.input"
 OUTPUT="$BASE/benchmarks/$BENCHMARK/$BENCHMARK.output"
 OUT=$(mktemp)
@@ -159,15 +159,19 @@ run(){ # run, first argument picks an output stream to return
     if [ -z $PERF ] && [ ! -z $REPEAT ];then
         for i in $(seq $(($REPEAT - 1)));do
             $PREFIX $@ 1>/dev/null 2>/dev/null
+            EXIT=$?
         done
     fi
     # then do the run that counts
     if [ $out -eq 1 ];then
         $PREFIX $@ 2>/dev/null
+        EXIT=$?
     elif [ $out -eq 2 ];then
         $PREFIX $@ 3>&1 1>/dev/null 2>&3
+        EXIT=$?
     else
         $PREFIX $@ 1>/dev/null 2>/dev/null
+        EXIT=$?
     fi; }
 
 freqclean(){
@@ -179,51 +183,51 @@ rayclean(){
 case $BENCHMARK in
     blackscholes)
         run 0 $EXECUTABLE 1 "$INPUT" $OUT
-        EXIT=$?
         if [ -z $RAW ];then
             ERROR=$(num_diff $OUT $OUTPUT);
         fi
         ;;
     bodytrack)
-        # Copy input to tmp directory, and then loop through the
-        # results directory checking each file in turn.
-        # 
-        # diff the ls from each directory, to protect against extra
-        # output files
+        tmp=$(mktemp -d)
+        base=$(pwd)
+        pushd $tmp >/dev/null
+        cp -R $INPUT input
         case $SIZE in
-            test)   run 0 $EXECUTABLE $INPUT 4 1 5    1 0 1;;
-            tiny)   run 0 $EXECUTABLE $INPUT 4 1 100  3 0 1;;
-            small)  run 0 $EXECUTABLE $INPUT 4 1 1000 5 0 1;;
-            medium) run 0 $EXECUTABLE $INPUT 4 2 2000 5 0 1;;
-            large)  run 0 $EXECUTABLE $INPUT 4 4 4000 5 0 1;;
-            large)  run 0 $EXECUTABLE $INPUT 4 261 4000 5 0 1;;
+            test)   run 0 $base/$EXECUTABLE input 4 1 5    1 0 1;;
+            tiny)   run 0 $base/$EXECUTABLE input 4 1 100  3 0 1;;
+            small)  run 0 $base/$EXECUTABLE input 4 1 1000 5 0 1;;
+            medium) run 0 $base/$EXECUTABLE input 4 2 2000 5 0 1;;
+            large)  run 0 $base/$EXECUTABLE input 4 4 4000 5 0 1;;
+            huge)   run 0 $base/$EXECUTABLE input 4 261 4000 5 0 1;;
         esac
-        EXIT=$?
-        cat $INPUT/Result000*.bmp > $OUT
-        if diff $OUT $OUTPUT >/dev/null 2>/dev/null;then
-            ERROR=0;
-        else
-            ERROR=1;
-        fi
+        rm $OUT
+        cp -R input $OUT
+        popd >/dev/null
+        for file in $(ls $OUT/Result*);do
+            f=$(basename $file)
+            diff $OUT/$f $OUTPUT/$f
+            ERROR=$(($ERROR + $?))
+        done >/dev/null 2>/dev/null
+        diff <(ls $OUT) <(ls $OUTPUT) >/dev/null 2>/dev/null
+        ERROR=$(($ERROR + $?))
+        rm -rf $tmp
         ;;
     facesim)
-        # diff the ls from each directory, to protect against extra
-        # output files
         tmp=$(mktemp -d)
         base=$(pwd)
         pushd $tmp >/dev/null
         ln -s $INPUT Face_Data
         run 0 $base/$EXECUTABLE -timing -threads 1
-        EXIT=$?
         rm $OUT
         mv Storytelling $OUT
         popd >/dev/null
-        ERROR=0
-        for file in $(ls $OUT/output|grep -v log.txt);do
-            if ! diff $OUT/output/$file $OUTPUT/output/$file >/dev/null 2>/dev/null;then
-                ERROR=$(($ERROR + 1))
-            fi
-        done
+        for f in $(ls $OUT/output|grep -v log.txt);do
+            diff $OUT/output/$f $OUTPUT/output/$f
+            ERROR=$(($ERROR + $?))
+        done >/dev/null 2>/dev/null
+        diff <(ls $OUT/output) <(ls $OUTPUT/output) >/dev/null 2>/dev/null
+        ERROR=$(($ERROR + $?))
+        rm -rf $tmp
         ;;
     ferret)
         case $SIZE in
@@ -234,8 +238,8 @@ case $BENCHMARK in
             large)  run 0 $EXECUTABLE $INPUT/corel lsh $INPUT/queries 10 20 1 $OUT;;
             huge)   run 0 $EXECUTABLE $INPUT/corel lsh $INPUT/queries 50 20 1 $OUT;;
         esac
-        EXIT=$?
-        ERROR=$(diff <(sed 's/^.*ferret.input//' $OUT) <(sed 's/^.*ferret.input//' $OUTPUT)|wc -l)
+        ERROR=$(diff <(sed 's/^.*ferret.input//' $OUT) \
+                     <(sed 's/^.*ferret.input//' $OUTPUT)|wc -l)
         ;;
     fluidanimate)
         case $SIZE in
@@ -244,15 +248,10 @@ case $BENCHMARK in
             small|medium|large) run 0 $EXECUTABLE 1 5 "$INPUT" $OUT;;
             huge)   run 0 $EXECUTABLE 1 500 "$INPUT" $OUT;;
         esac
-        EXIT=$?
-        if diff $OUT $OUTPUT >/dev/null 2>/dev/null;then
-            ERROR=0;
-        else
-            ERROR=1;
-        fi
+        diff $OUT $OUTPUT >/dev/null 2>/dev/null
+        ERROR=$?
         ;;
     freqmine)
-        # straight-up diff for the output files
         case $SIZE in
             test)   run 0 $EXECUTABLE "$INPUT" 1   $OUT;;
             tiny)   run 0 $EXECUTABLE "$INPUT" 3   $OUT;;
@@ -261,10 +260,8 @@ case $BENCHMARK in
             large)  run 0 $EXECUTABLE "$INPUT" 790 $OUT;;
             huge)   run 0 $EXECUTABLE "$INPUT" 11000 $OUT;;
         esac
-        EXIT=$?
-        if [ -z $RAW ];then
-            ERROR=$(num_diff <(cat $OUT|freqclean) <(cat $OUTPUT|freqclean));
-        fi
+        diff $OUT $OUTPUT >/dev/null 2>/dev/null
+        ERROR=$?
         ;;
     # Ignoring raytrace, because it does not generate any testable
     # results (just debug info).
@@ -277,15 +274,10 @@ case $BENCHMARK in
             large)  run 1 $EXECUTABLE "$INPUT" -automove -nthreads 1 -frames 3 -res 1920 1080;;
             huge)   run 1 $EXECUTABLE "$INPUT" -automove -nthreads 1 -frames 200 -res 1920 1080;;
         esac >$OUT
-        EXIT=$?
-        if diff -Bw <(rayclean $OUT) <(rayclean $OUTPUT) >/dev/null 2>/dev/null;then
-            ERROR=0;
-        else
-            ERROR=1;
-        fi
+        diff -Bw <(rayclean $OUT) <(rayclean $OUTPUT) >/dev/null 2>/dev/null
+        ERROR=$?
         ;;
     swaptions)
-        # Full diff for swaptions.
         case $SIZE in
             test)  run 2 $EXECUTABLE -ns 1  -sm 5     -nt 1 > $OUT;;
             tiny)  run 2 $EXECUTABLE -ns 3  -sm 50    -nt 1 > $OUT;;
@@ -294,25 +286,18 @@ case $BENCHMARK in
             large) run 2 $EXECUTABLE -ns 64 -sm 40000 -nt 1 > $OUT;;
             large) run 2 $EXECUTABLE -ns 128 -sm 1000000 -nt 1 > $OUT;;
         esac
-        EXIT=$?
-        left=$(awk '{print $4}' $OUT)
-        right=$(awk '{print $4}' $OUTPUT)
-        if [ -z $RAW ];then
-            ERROR=$(paste <(echo "$left") <(echo "$right")|awk "$AWK_CMD")
-        fi
+        diff $OUT $OUTPUT >/dev/null 2>/dev/null
+        ERROR=$?
         ;;
     vips)
         tmp=$(mktemp /tmp/tmp.XXXXXXXX.v)
         run 0 $EXECUTABLE im_benchmark "$INPUT" $tmp
-        EXIT=$?
         mv $tmp $OUT
-        if diff \
+        diff \
             <(grep --binary-file=text -v im_benchmark $OUT) \
-            <(grep --binary-file=text -v im_benchmark $OUTPUT);then
-            ERROR=0;
-        else
-            ERROR=1;
-        fi
+            <(grep --binary-file=text -v im_benchmark $OUTPUT) \
+            >/dev/null 2>/dev/null
+        ERROR=$?
         ;;
     x264)
         X264_CMD=""
@@ -323,14 +308,9 @@ case $BENCHMARK in
         tmp=$(mktemp XXXXXXXX.y4m)
         cp $INPUT $tmp
         run 0 $EXECUTABLE $X264_CMD -o $OUT $tmp
-        EXIT=$?
         rm -f $tmp
-        # can just replace these diff if statements with $?
-        if diff $OUT $OUTPUT;then
-            ERROR=0;
-        else
-            ERROR=1;
-        fi
+        diff $OUT $OUTPUT >/dev/null 2>/dev/null
+        ERROR=$?
         ;;
 
     # Instruction for running SPEC programs
@@ -373,7 +353,7 @@ case $BENCHMARK in
             -p FramesToBeEncoded=$FRAMES \
             -p InputFile="$INPUT" \
             -p OutputFile="$OUT"
-p        EXIT=$?
+        EXIT=$?
         if ! diff -q $OUTPUT $OUT;then
             ERROR=10
         else

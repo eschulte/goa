@@ -1380,8 +1380,8 @@ failures at stages.
 
 Run with =make check=.
 
-* Issues [5/8]
-** TODO do we trust run to measure output
+* Issues [6/8]
+** DONE do we trust run to measure output [4/4]
 | benchmark    | status                                           |
 |--------------+--------------------------------------------------|
 | blackscholes | okay                                             |
@@ -1396,14 +1396,16 @@ Run with =make check=.
 | x264         | okay                                             |
 
 Tests to be improved
-- bodytrack :: bodytrack writes outputs to the input directory, so we
-               will generate a new temporary input directory for each
-               evaluation, and loop through diffing every file in the
-               input directory against oracle output, and will check
-               to ensure extra files aren't created.
-- facesim :: we will add a check to ensure extra files aren't created.
-- freqmine :: we will perform a more strict diff of the output
-- swaptions :: we will perform a more strict diff of the output
+- [X] bodytrack :: bodytrack writes outputs to the input directory, so
+                   we will generate a new temporary input directory
+                   for each evaluation, and loop through diffing every
+                   file in the input directory against oracle output,
+                   and will check to ensure extra files aren't
+                   created.
+- [X] facesim :: we will add a check to ensure extra files aren't
+                 created.
+- [X] freqmine :: we will perform a more strict diff of the output
+- [X] swaptions :: we will perform a more strict diff of the output
 
 ** TODO energy by input size
 See how the model calculated energy varies by input size for both
