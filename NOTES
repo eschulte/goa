@@ -276,24 +276,47 @@ http://wikipedia.org/wiki/Variance#Sum_of_correlated_variables
     :END:
 
 1. Perform 30 runs collecting counters for each size.
-   (see file:bin/hw-counters-by-size)
+   (use the =hw-counters-by-size= script)
+   
+   #+begin_src sh
+     # no options required for a default run
+     ./bin/hw-counters-by-size
+   #+end_src
 
-2. Clean up the stats and organize by size.
-   (see file:bin/hw-counters-by-size)
-
-3. Using the architecture-specific model, calculate the variance of
+2. Using the architecture-specific model, calculate the variance of
    the model for each size based on the counter values for that size.
-   Use the technique described in [[http://en.wikipedia.org/wiki/Variance#Weighted_sum_of_variables][wiki/Variance#Weighted_sum]].
-   (see file:src/variance-by-input.lisp)
+   (use the =model-variance= executable)
+
+   For example, to look at the variance by run for blackscholes.
+   #+begin_src sh
+     ./bin/model-variance etc/hw-counters/intel/blackscholes.csv -c seconds
+   #+end_src
 
    #+RESULTS:
-   |          test |          tiny |         small |        medium |         large |
-   | 1.9632377e-14 | 1.3618151e-13 | 6.0662375e-13 | 1.6117804e-12 | 2.6060975e-11 |
+   | size   |      mean |  variance |    percent | number |      seconds |
+   | test   | 101.34776 | 5189949.0 | 5120931.0% |     30 |  0.001131961 |
+   | tiny   |  58.55405 |  2629.377 | 4490.5127% |     30 | 0.0013959858 |
+   | small  | 61.804443 | 10.808836 |  17.48877% |     30 |  0.088359706 |
+   | medium | 61.189903 |   1.13793 | 1.8596696% |     30 |   0.35126838 |
+   | large  | 61.117825 |   94.6876 | 154.92633% |     30 |    1.4197656 |
 
-4. Find the mean calculated energy for each run.
+4. For each benchmark, pick the smallest (read: fastest) input size
+   which keeps variance within some fraction of the output.  I'm not
+   100% sure how to do this, and surprisingly some programs have
+   increased variance on the larger input sizes, e.g., swaptions on my
+   laptop.  Maybe 30 runs at each size are not enough?
 
-5. Pick the smallest input size which keeps variance within some
-   fraction of the output (TBD).
+   #+begin_src sh
+     ./bin/model-variance etc/hw-counters/intel/swaptions.csv -c seconds
+   #+end_src
+
+   #+RESULTS:
+   | size   |      mean |  variance |     percent | number |      seconds |
+   | test   | 56.033386 |   79.0847 |  141.13853% |     30 | 0.0012815109 |
+   | tiny   | 61.596092 | 3839.2625 |  6232.9644% |     30 | 0.0017533372 |
+   | small  |  69.04976 | 0.5911108 | 0.85606503% |     30 |   0.38580817 |
+   | medium | 68.728546 | 121.10673 |  176.21022% |     30 |    1.5534309 |
+   | large  |   68.8817 | 41.866997 |  60.781013% |     30 |    6.1797624 |
 
 **** fluidanimate
 #+begin_src sh :results silent
