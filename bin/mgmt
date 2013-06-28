@@ -670,7 +670,7 @@ input(){
                     small)  in=eledream_640x360_8.y4m;;
                     medium) in=eledream_640x360_32.y4m;;
                     large)  in=eledream_640x360_128.y4m;;
-                    huge)   in=eledream_1920x1980_512.y4m;;
+                    huge)   in=eledream_1920x1080_512.y4m;;
                 esac
                 mv $in $target;;
             ## SPEC
