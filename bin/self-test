@@ -28,32 +28,35 @@ while [ $# -gt 0 ];do
 done
 
 check(){
-    if $@ >/dev/null;then echo "✓"; else echo "×"; fi; }
+    if $@ >/dev/null 2>/dev/null;then echo "✓"; else echo "×"; fi; }
 
-msg "Testing mgmt support for all benchmarks"
 mgmt="$BASE"/bin/mgmt
+run="$BASE"/bin/run
 
-if [ ! -z $MGMT ];then
-    (
-        if [ -z $LIGHT ];then
-            echo "Benchmark clean unpack compile link input output"
-        else
-            echo "Benchmark unpack compile link input output"
+(
+    echo -n "Benchmark "
+    if [ -z $LIGHT ];then echo -n "clean "; fi
+    if [ ! -z $MGMT ];then echo -n "unpack compile link input output "; fi
+    if [ ! -z $RUN ];then echo -n "exit error "; fi
+    echo ""
+    for bench in ${BENCHMARKS[@]};do
+        echo -n "$bench "
+        if [ ! -z $LIGHT ];then
+            echo -n "$(check $mgmt clean $bench) "
         fi
-        for bench in ${BENCHMARKS[@]};do
-            if [ ! -z $LIGHT ];then
-                clean=$(check $mgmt clean $bench)
-            fi
+        if [ ! -z $MGMT ];then
             unpack=$(check $mgmt unpack $bench)
             compile=$(check $mgmt compile $bench)
             link=$(check $mgmt link $bench)
             input=$(check $mgmt input $bench)
             output=$(check $mgmt output $bench)
-            if [ -z $LIGHT ];then
-                echo "$bench $unpack $compile $link $input $output"
-            else
-                echo "$bench $clean $unpack $compile $link $input $output"
-            fi
-        done
-    )|column -t
-fi
+            echo -n "$unpack $compile $link $input $output "
+        fi
+        if [ ! -z $RUN ];then
+            ROUT=$($run $bench "$BASE"/benchmarks/$bench/$bench)
+            echo -n "$(echo "$ROUT"|grep error|cut -d, -f1) "
+            echo -n "$(echo "$ROUT"|grep exit|cut -d, -f1) "
+        fi
+        echo ""
+    done
+)|column -t
