@@ -158,19 +158,19 @@ run(){ # run, first argument picks an output stream to return
     # possibly to multiple runs
     if [ -z $PERF ] && [ ! -z $REPEAT ];then
         for i in $(seq $(($REPEAT - 1)));do
-            bash -c "$PREFIX $@" 1>/dev/null 2>/dev/null
+            $PREFIX $@ 1>/dev/null 2>/dev/null
             EXIT=$?
         done
     fi
     # then do the run that counts
     if [ $out -eq 1 ];then
-        bash -c "$PREFIX $@" 2>/dev/null
+        $PREFIX $@ 2>/dev/null
         EXIT=$?
     elif [ $out -eq 2 ];then
-        bash -c "$PREFIX $@" 3>&1 1>/dev/null 2>&3
+        $PREFIX $@ 3>&1 1>/dev/null 2>&3
         EXIT=$?
     else
-        bash -c "$PREFIX $@" >/dev/null 2>/dev/null
+        $PREFIX $@ >/dev/null 2>/dev/null
         EXIT=$?
     fi; }
 
