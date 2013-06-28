@@ -83,10 +83,10 @@ fi
 if [ -z $COUNTER ];then
     case $ARCH in
         intel)
-            COUNTERS="task-clock,cycles,instructions,r532010,r538010,cache-references,cache-misses"
-;;
+            COUNTERS="cycles,instructions,r532010,r538010,cache-references,cache-misses"
+            ;;
         amd)
-            COUNTERS="task-clock,cycles,instructions,r533f00,cache-references,cache-misses"
+            COUNTERS="cycles,instructions,r533f00,cache-references,cache-misses"
             ;;
     esac
 fi
