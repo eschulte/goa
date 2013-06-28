@@ -1382,8 +1382,9 @@ Run with =make check=.
 See how the model calculated energy varies by input size for both
 evolved and original programs.
 
+#+headers: :colnames '("input size" "model energy orig." "model energy evolved")
 #+begin_src sh :tangle /tmp/analyze :shebang #!/bin/bash
-  IN="etc/data/blackscholes-multi-stats"
+  IN="etc/data/bs-multi-inputs.txt"
   
   output(){
       cat $IN|sed -n "/size,$size\$/,/task-clock/p"|grep -v size|grep -v "^$" \
@@ -1401,26 +1402,14 @@ evolved and original programs.
 #+end_src
 
 #+RESULTS:
-| input size |  original |  optimized |
-|------------+-----------+------------|
-|      10000 | 154.18698 |  11.584152 |
-|     100000 | 1514.1632 | 104.273964 |
-|    1000000 |  8233.762 |  1053.7292 |
-|   10000000 |  5886.616 |  5864.3687 |
-
-At the largest level of 10000000 input records.
-| counter          |     original |      evolved | coefficients |           orig |           evol |
-|------------------+--------------+--------------+--------------+----------------+----------------|
-| cache-misses     |     50615941 |     73001968 |     -6509.46 | -329482440000. | -329482440000. |
-| cache-references |  25115294137 |  25414452432 |       -18.54 | -465637550000. | -465637550000. |
-| cycles           |  52745678049 |  52749601704 |              |              0 |              0 |
-| error            |            0 |            0 |              |              0 |              0 |
-| exit             |            0 |            0 |              |              0 |              0 |
-| instructions     |  91034776837 |  92382278304 |       -66.72 |  -6.0738403e12 |  -6.0738403e12 |
-| r533f00          |    595473504 |    618398039 |        66.66 |   39694264000. |   39694264000. |
-| seconds          | 24.003063124 | 24.003394088 |              |             0. |             0. |
-| task-clock       | 23977.681791 | 23978.878958 |              |             0. |             0. |
-#+TBLFM: $5=$2*$4::$6=$2*$4
+| input size | model energy orig. | model energy evolved | % reduction |
+|------------+--------------------+----------------------+-------------|
+|       1000 |          15.932569 |          0.028890664 |   99.818669 |
+|      10000 |          151.78835 |            11.509285 |   92.417544 |
+|     100000 |          1539.6437 |           105.949684 |   93.118558 |
+|    1000000 |          15187.705 |            1031.8695 |   93.205889 |
+|   10000000 |          152615.44 |            10389.495 |   93.192370 |
+#+TBLFM: $4=100*($2-$3)/$2
 
 ** DONE Running out of memory
 #+begin_quote
