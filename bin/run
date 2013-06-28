@@ -80,7 +80,7 @@ if [ ! -z $RAW ] && [ ! -z $PERF ];then
     error "can't print RAW and PERF results simultaneously"
 fi
 
-if [ -z $COUNTER ];then
+if [ -z $COUNTERS ];then
     case $ARCH in
         intel)
             COUNTERS="cycles,instructions,r532010,r538010,cache-references,cache-misses"
