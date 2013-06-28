@@ -80,11 +80,11 @@
   "HW counters and coefficients for the Intel Sandybridge power model.")
 
 (defvar amd-opteron-power-model
-  '(* seconds (+ 371.47
-               (*   -66.72 (/ instructions cycles))
-               (*    66.66 (/ r533f00 cycles))
-               (*   -18.54 (/ cache-references cycles))
-               (* -6509.46 (/ cache-misses cycles))))
+  '(* seconds (+ 401.09
+               (*  -108.41 (/ instructions cycles))
+               (*    78.98 (/ r533f00 cycles))
+               (*    15.09 (/ cache-references cycles))
+               (* -4008.71 (/ cache-misses cycles))))
   "HW counters and coefficients in the AMD Opteron power model.")
 
 (defvar amd-opteron-power-model-plus

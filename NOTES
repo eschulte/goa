@@ -100,7 +100,7 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 | 998.specrand   |
 | 999.specrand   |
 
-* Tasks [27/37]
+* Tasks [28/37]
 ** TODO range of GP parameters
 first run
 | mut | cross |
@@ -479,10 +479,10 @@ with an "r".
 *** DONE Intel energy model
 : perf stat -e cycles,instructions,r532010,r538010,cache-references,LLC-loads,LLC-stores
 
-** DONE Train Energy Models [7/8]
+** DONE Train Energy Models [8/8]
 Both at UVA on Intel and at UNM on AMD.
 
-*** TODO more inputs runs
+*** DONE more inputs runs
 - Running SPEC a few more times
   #+begin_src sh
     for gcc in 44 48;do
@@ -706,32 +706,45 @@ The command lines work out to be roughly
 
 *** DONE AMD power model
 #+begin_src sh :results replace scalar
-  ./bin/power-model.R results/energy-metrics/combined-benchmarks.csv
+  cat \
+      <(
+      cat etc/model-data/amd/parsec-and-spec.csv;
+      cat etc/model-data/amd/sleep-benchmarks.csv \
+          etc/model-data/amd/spec-gcc44-0{3,s}.csv|grep -v time) >/tmp/all.csv
+  ./bin/power-model.R /tmp/all.csv
 #+end_src
 
 #+RESULTS:
 : 
 : Call:
-: lm(formula = metrics$watts ~ ipc + fpc + cpc + mpc)
+: glm(formula = watts ~ ipc + fpc + cpc + mpc)
 : 
-: Residuals:
-:      Min       1Q   Median       3Q      Max 
-: -296.876   -4.442   22.773   53.215  115.186 
+: Deviance Residuals: 
+:      Min        1Q    Median        3Q       Max  
+: -298.577    -2.156    11.593    22.661   160.396  
 : 
 : Coefficients:
 :             Estimate Std. Error t value Pr(>|t|)    
-: (Intercept)   371.47      51.35   7.234 1.56e-09 ***
-: ipc           -66.72      57.72  -1.156    0.253    
-: fpc            66.66      52.18   1.277    0.207    
-: cpc           -18.54     210.05  -0.088    0.930    
-: mpc         -6509.46    4777.01  -1.363    0.179    
+: (Intercept)   401.09      25.72  15.594  < 2e-16 ***
+: ipc          -108.41      30.56  -3.547 0.000504 ***
+: fpc            78.98      27.23   2.901 0.004216 ** 
+: cpc            15.09     109.54   0.138 0.890593    
+: mpc         -4008.71    2136.13  -1.877 0.062283 .  
 : ---
 : Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 : 
-: Residual standard error: 99.3 on 55 degrees of freedom
-: Multiple R-squared:  0.1297,	Adjusted R-squared:  0.06636 
-: F-statistic: 2.048 on 4 and 55 DF,  p-value: 0.1002
+: (Dispersion parameter for gaussian family taken to be 6132.292)
 : 
+:     Null deviance: 1268965  on 174  degrees of freedom
+: Residual deviance: 1042490  on 170  degrees of freedom
+: AIC: 2029.8
+: 
+: Number of Fisher Scoring iterations: 2
+: 
+: performing cross-validation...
+: using RMS error
+: model error:   77.1821479392715 
+: 10x cross-val: 0.931 x
 
 *** DONE AMD Energy Model
 | metric           | perf             | coefficient |
