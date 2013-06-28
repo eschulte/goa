@@ -1,0 +1,29 @@
+#!/bin/bash
+#
+# Usage: many-multi-inputs
+#   Run multiple benchmarks for multiple input sizes
+#
+. $(dirname $0)/common
+outdir=$1
+
+if [ -z "$outdir" ];then error "must specify output directory"; fi
+if [ ! -d $outdir ];then
+    error "output directory $outdir does not exist"
+fi
+
+uniform(){ awk -F, '{print $2,$1}'|sort; }
+
+for size in small medium large huge;do
+    for bench in blackscholes ferret fluidanimate freqmine swaptions x264;do
+        mgmt clean $bench
+        mgmt output $bench -s $size
+        echo "$bench $size"
+        O_OUT=$(LIMIT="" run $bench benchmarks/$bench/$bench -s $size -p -k)
+        tmp=$(echo "$O_OUT"|grep output|sed 's/^.* //')
+        E_OUT=$(LIMIT="" run $bench benchmarks/evolved/$bench -s $size -o $tmp -p)
+        join <(echo "$O_OUT"|grep -v output|uniform) <(echo "$E_OUT"|uniform) \
+            |sed 's/ /,/g' |tee $outdir/$bench-$size.csv
+        rm -f $tmp
+        echo ""
+    done
+done
