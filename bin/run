@@ -158,19 +158,19 @@ run(){ # run, first argument picks an output stream to return
     # possibly to multiple runs
     if [ -z $PERF ] && [ ! -z $REPEAT ];then
         for i in $(seq $(($REPEAT - 1)));do
-            $PREFIX $@ 1>/dev/null 2>/dev/null
+            bash -c "$PREFIX $@" 1>/dev/null 2>/dev/null
             EXIT=$?
         done
     fi
     # then do the run that counts
     if [ $out -eq 1 ];then
-        $PREFIX $@ 2>/dev/null
+        bash -c "$PREFIX $@" 2>/dev/null
         EXIT=$?
     elif [ $out -eq 2 ];then
-        $PREFIX $@ 3>&1 1>/dev/null 2>&3
+        bash -c "$PREFIX $@" 3>&1 1>/dev/null 2>&3
         EXIT=$?
     else
-        $PREFIX $@ 1>/dev/null 2>/dev/null
+        bash -c "$PREFIX $@" >/dev/null 2>/dev/null
         EXIT=$?
     fi; }
 
@@ -192,13 +192,16 @@ case $BENCHMARK in
         base=$(pwd)
         pushd $tmp >/dev/null
         cp -R $INPUT input
+        if ! [[ "$EXECUTABLE" = /* ]];then
+            EXECUTABLE="$base/$EXECUTABLE"
+        fi
         case $SIZE in
-            test)   run 0 $base/$EXECUTABLE input 4 1 5    1 0 1;;
-            tiny)   run 0 $base/$EXECUTABLE input 4 1 100  3 0 1;;
-            small)  run 0 $base/$EXECUTABLE input 4 1 1000 5 0 1;;
-            medium) run 0 $base/$EXECUTABLE input 4 2 2000 5 0 1;;
-            large)  run 0 $base/$EXECUTABLE input 4 4 4000 5 0 1;;
-            huge)   run 0 $base/$EXECUTABLE input 4 261 4000 5 0 1;;
+            test)   run 0 $EXECUTABLE input 4 1 5    1 0 1;;
+            tiny)   run 0 $EXECUTABLE input 4 1 100  3 0 1;;
+            small)  run 0 $EXECUTABLE input 4 1 1000 5 0 1;;
+            medium) run 0 $EXECUTABLE input 4 2 2000 5 0 1;;
+            large)  run 0 $EXECUTABLE input 4 4 4000 5 0 1;;
+            huge)   run 0 $EXECUTABLE input 4 261 4000 5 0 1;;
         esac
         rm $OUT
         cp -R input $OUT
@@ -216,16 +219,19 @@ case $BENCHMARK in
         tmp=$(mktemp -d)
         base=$(pwd)
         pushd $tmp >/dev/null
-        ln -s $INPUT Face_Data
-        run 0 $base/$EXECUTABLE -timing -threads 1
+        cp -R $INPUT Face_Data
+        if ! [[ "$EXECUTABLE" = /* ]];then
+            EXECUTABLE="$base/$EXECUTABLE"
+        fi
+        run 0 $EXECUTABLE -timing -threads 1
         rm $OUT
         mv Storytelling $OUT
         popd >/dev/null
-        for f in $(ls $OUT/output|grep -v log.txt);do
+        for f in $(ls $OUTPUT/output|grep -v log.txt);do
             diff $OUT/output/$f $OUTPUT/output/$f
             ERROR=$(($ERROR + $?))
+            echo "$ERROR diff $OUT/output/$f $OUTPUT/output/$f" >> /tmp/facesim.out
         done >/dev/null 2>/dev/null
-        diff <(ls $OUT/output) <(ls $OUTPUT/output) >/dev/null 2>/dev/null
         ERROR=$(($ERROR + $?))
         rm -rf $tmp
         ;;

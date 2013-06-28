@@ -734,9 +734,10 @@ output(){
                 mv $bench.backup $bench.input
                 ;;
             facesim)
-                ln -s $bench.input Face_Data
+                cp -R $bench.input Face_Data
                 ./$bench -timing -threads 1
                 mv Storytelling $target
+                rm -rf Face_Data
                 ;;
             ferret)
                 case $SIZE in
