@@ -719,6 +719,7 @@ output(){
                 ./$bench 1 $bench.input $target;;
             bodytrack)
                 # run the program
+                cp -R $bench.input $bench.backup
                 case $SIZE in
                     test)   ./$bench $bench.input 4 1 5    1 0 1;;
                     tiny)   ./$bench $bench.input 4 1 100  3 0 1;;
@@ -728,7 +729,9 @@ output(){
                     huge)   ./$bench $bench,input 4 261 4000 5 0 1;;
                 esac
                 # collect the output
-                cat $bench.input/Result000*.bmp > $target
+                mv $bench.input $target
+                # replace the input
+                mv $bench.backup $bench.input
                 ;;
             facesim)
                 ln -s $bench.input Face_Data
