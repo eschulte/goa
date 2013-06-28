@@ -568,6 +568,7 @@ input(){
                 small) INPUT="input_simsmall.tar";;
                 medium) INPUT="input_simmedium.tar";;
                 large) INPUT="input_simlarge.tar";;
+                huge) INPUT="input_simnative.tar";;
                 *) error "input SIZE '$SIZE' is not recognized";;
             esac
         fi
@@ -583,6 +584,7 @@ input(){
                     small)  in=in_4K.txt;;
                     medium) in=in_16K.txt;;
                     large)  in=in_64K.txt;;
+                    huge)   in=in_10M.txt;;
                 esac
                 mv $in $target;;
             bodytrack)
@@ -593,6 +595,7 @@ input(){
                     small)  in=sequenceB_1;;
                     medium) in=sequenceB_2;;
                     large)  in=sequenceB_4;;
+                    huge)   in=sequenceB_261;;
                 esac
 
                 mv $in $target;;
@@ -621,6 +624,7 @@ input(){
                     small)  in=in_35K.fluid;;
                     medium) in=in_100K.fluid;;
                     large)  in=in_300K.fluid;;
+                    huge)   in=in_500K.fluid;;
                 esac
                 mv $in $target;;
             freqmine)
@@ -631,6 +635,7 @@ input(){
                     small)  in=kosarak_250k.dat;;
                     medium) in=kosarak_500k.dat;;
                     large)  in=kosarak_990k.dat;;
+                    huge)   in=webdocs_250k.dat;;
                 esac
                 mv $in $target;;
             raytrace)
@@ -639,6 +644,7 @@ input(){
                     test) in=octahedron.obj;;
                     tiny) in=bunny.obj;;
                     small|medium|large)  in=happy_buddha.obj;;
+                    huge) in=thai_statue.obj;;
                 esac
                 mv $in $target;;
             swaptions)
@@ -651,6 +657,7 @@ input(){
                     small)     in=pomegranate_1600x1200.v;;
                     medium)    in=vulture_2336x2336.v;;
                     large)     in=bigben_2662x5500.v;;
+                    huge)      error "vips needs support for huge inputs";;
                 esac
                 mv $in $target;;
             x264)
@@ -661,6 +668,7 @@ input(){
                     small)  in=eledream_640x360_8.y4m;;
                     medium) in=eledream_640x360_32.y4m;;
                     large)  in=eledream_640x360_128.y4m;;
+                    huge)   in=eledream_1920x1980_512.y4m;;
                 esac
                 mv $in $target;;
             ## SPEC
@@ -715,6 +723,7 @@ output(){
                     small)  ./$bench $bench.input 4 1 1000 5 0 1;;
                     medium) ./$bench $bench.input 4 2 2000 5 0 1;;
                     large)  ./$bench $bench.input 4 4 4000 5 0 1;;
+                    huge)   ./$bench $bench,input 4 261 4000 5 0 1;;
                 esac
                 # collect the output
                 cat $bench.input/Result000*.bmp > $target
@@ -731,6 +740,7 @@ output(){
                     small)  ./$bench $bench.input/corel lsh $bench.input/queries 10 20 1 $target;;
                     medium) ./$bench $bench.input/corel lsh $bench.input/queries 10 20 1 $target;;
                     large)  ./$bench $bench.input/corel lsh $bench.input/queries 10 20 1 $target;;
+                    huge)   ./$bench $bench.input/corel lsh $bench.input/queries 50 20 1 $target;;
                 esac >/dev/null 2>/dev/null ||error "output failed"
                 ;;
             fluidanimate)
@@ -740,6 +750,7 @@ output(){
                     small)  ./$bench 1 5 $bench.input $target;;
                     medium) ./$bench 1 5 $bench.input $target;;
                     large)  ./$bench 1 5 $bench.input $target;;
+                    huge)   ./$bench 1 500 $bench.input $target;;
                 esac
                 ;;
             freqmine)
@@ -749,6 +760,7 @@ output(){
                     small)  ./$bench $bench.input 220 $target;;
                     medium) ./$bench $bench.input 410 $target;;
                     large)  ./$bench $bench.input 790 $target;;
+                    huge)   ./$bench $bench.input 11000 $target;;
                 esac
                 ;;
             raytrace)
@@ -758,6 +770,7 @@ output(){
                     small)  ./$bench $bench.input -automove -nthreads 1 -frames 3 -res 480 270;;
                     medium) ./$bench $bench.input -automove -nthreads 1 -frames 3 -res 960 540;;
                     large)  ./$bench $bench.input -automove -nthreads 1 -frames 3 -res 1920 1080;;
+                    huge)   ./$bench $bench.input -automove -nthreads 1 -frames 200 -res 1920 1080;;
                 esac >$target;;
             swaptions)
                 case $SIZE in
@@ -766,6 +779,7 @@ output(){
                     small)  ./$bench -ns 16 -sm 10000 -nt 1 2> $target;;
                     medium) ./$bench -ns 32 -sm 20000 -nt 1 2> $target;;
                     large)  ./$bench -ns 64 -sm 40000 -nt 1 2> $target;;
+                    huge)   ./$bench -ns 128 -sm 1000000 -nt 1 2> $target;;
                 esac
                 ;;
             vips)
