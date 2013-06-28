@@ -34,6 +34,7 @@
 
 ## Parse Options
 if [ $# -lt 2 ];then help; fi
+ARGS="$@"
 BENCHMARK="$1"
 SIZE=$(size_for_benchmark $BENCHMARK)
 EXECUTABLE="$2"
@@ -123,9 +124,19 @@ else
         if [ -z $ANNOTATE ];then
             echo "$EXIT,exit"
             echo "$ERROR,error"
+            # collect missed counters
             cat $PERF_OUT \
                 |grep "^ *[0-9,.]\+ [a-z]\+" \
                 |sed 's/^ *//;s/,//g;s/ \([^ ]\+\)[^(]*/,\1/;s/([^0-9]*\([0-9.]\+\).*$/,\1%/';
+            # comma separated list of missed counters
+            MISSED=$(grep "not counted" $PERF_OUT \
+                |sed 's/^.*counted> //;s/ *$//' \
+                |tr '\n' ',' \
+                |sed 's/,$//')
+            # re-run only reporting the missed counters
+            if [ ! -z $MISSED ];then
+                $0 $ARGS -c $MISSED|grep $(echo "$MISSED"|sed 's/,/\\|/')
+            fi
         else
             perf annotate -i $PERF_OUT
             # |grep ": \+[a-fA-F0-9]\+" \
