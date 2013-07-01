@@ -97,6 +97,28 @@
             (variance model-results)
             (length model-results)))))
 
+(defun by-parts (runs size &aux by-parts)
+  ;; group the statistics into an alist
+  (mapcar (lambda (group)
+            (mapcar (lambda-bind ((counter . count))
+                      (unless (assoc counter by-parts)
+                        (push (list counter) by-parts))
+                      (push count (cdr (assoc counter by-parts))))
+                    (remove-if [{eql 'size} #'car] group)))
+          (remove-if-not [{eq size} {aget 'size}] runs))
+  ;; print the stats of these pieces
+  (format t "~&counter,mean,variance,percent~%~{~{~f~^,~}~^~%~}~%"
+          (mapcar (lambda-bind ((counter . counts))
+                    (let ((mean (mean counts))
+                          (variance (variance counts)))
+                      (list counter mean variance
+                            (if (zerop mean)
+                                "NA"
+                                (* 100 (/ variance mean))))))
+           by-parts))
+  ;; quit early
+  (quit))
+
 (defun model-variance (&optional (args *arguments*))
   (in-package :optimize)
   (flet ((arg-pop () (pop args))
@@ -114,11 +136,12 @@ Options:
  -m,--model NAME --- set model to NAME
  -e,--energy ------- variance of energy, not power 
  -c,--counter C ---- also print values of counter C
+ -p,--by-parts ----- print variance of each part
  -t,--total -------- don't calculate model variance from
                      variance of inputs, instead run model
                      on each input set and return variance
                      of model outputs~%")
-          runs counter energy total)
+          runs counter energy parts total)
       (when (or (not args)
                 (string= (subseq (car args) 0 2) "-h")
                 (string= (subseq (car args) 0 3) "--h"))
@@ -130,10 +153,12 @@ Options:
        ("-m" "--model" (setf *model* (eval (to-sym (arg-pop)))))
        ("-c" "--counter" (setf counter (to-sym (arg-pop))))
        ("-e" "--energy" (setf energy t))
+       ("-p" "--by-parts" (setf parts t))
        ("-t" "--total" (setf total t)))
 
-      (format t "size          mean    variance      percent number   ~a~%"
-              (string-downcase (or counter "")))
+      (unless parts
+        (format t "size          mean    variance      percent number   ~a~%"
+                (string-downcase (or counter ""))))
       (mapc (lambda (size stats counter)
               (let ((mean (first stats))
                     (variance (second stats))
@@ -154,9 +179,14 @@ Options:
             (mapcar
              (lambda (size)
                (handler-case
-                   (funcall (cond (total #'total-stats)
-                                  (energy #'energy-stats)
-                                  (t #'power-stats))
+                   (funcall
+                    (cond (parts
+                           (when (> (length sizes) 1)
+                             (throw-error "must specify a size"))
+                           #'by-parts)
+                          (total #'total-stats)
+                          (energy #'energy-stats)
+                          (t #'power-stats))
                             runs size)
                  (error () (list nil nil 0))))
              sizes)
