@@ -107,15 +107,14 @@
                     (remove-if [{eql 'size} #'car] group)))
           (remove-if-not [{eq size} {aget 'size}] runs))
   ;; print the stats of these pieces
-  (format t "~&counter,mean,variance,percent~%~{~{~f~^,~}~^~%~}~%"
+  (format t "~&counter,mean,variance,stdev,percent~%~{~{~f~^,~}~^~%~}~%"
           (mapcar (lambda-bind ((counter . counts))
                     (let ((mean (mean counts))
-                          (variance (variance counts)))
-                      (list counter mean variance
-                            (if (zerop mean)
-                                "NA"
-                                (* 100 (/ variance mean))))))
-           by-parts))
+                          (variance (variance counts))
+                          (stdev (standard-deviation counts)))
+                      (list counter mean variance stdev
+                            (if (zerop mean) "NA" (* 100 (/ stdev mean))))))
+                  by-parts))
   ;; quit early
   (quit))
 
@@ -136,7 +135,7 @@ Options:
  -m,--model NAME --- set model to NAME
  -e,--energy ------- variance of energy, not power 
  -c,--counter C ---- also print values of counter C
- -p,--by-parts ----- print variance of each part
+ -p,--by-parts ----- print stdev of each component
  -t,--total -------- don't calculate model variance from
                      variance of inputs, instead run model
                      on each input set and return variance
@@ -157,7 +156,7 @@ Options:
        ("-t" "--total" (setf total t)))
 
       (unless parts
-        (format t "size          mean    variance      percent number   ~a~%"
+        (format t "size          mean    variance      stdev      percent number   ~a~%"
                 (string-downcase (or counter ""))))
       (mapc (lambda (size stats counter)
               (let ((mean (first stats))
@@ -169,10 +168,10 @@ Options:
                     (apply #'format t
                            (format
                             nil
-                            "~~6,a ~~11F ~~11F ~~11F% ~~4d  ~a~~%"
+                            "~~6,a ~~11F ~~11F ~~11F ~~11F% ~~4d  ~a~~%"
                             (if counter " ~11F" ""))
-                           size mean variance
-                           (* 100 (/ variance mean))
+                           size mean variance (sqrt variance)
+                           (* 100 (/ (sqrt variance) mean))
                            number
                            (list counter)))))
             (mapcar [#'string-downcase #'symbol-name] sizes)
