@@ -318,11 +318,23 @@ http://wikipedia.org/wiki/Variance#Sum_of_correlated_variables
    | medium | 68.728546 | 121.10673 |  176.21022% |     30 |    1.5534309 |
    | large  |   68.8817 | 41.866997 |  60.781013% |     30 |    6.1797624 |
 
-*** Specifics
+*** Specific benchmarks
 why do some benchmarks always show high variance
 
 **** more runs -- fluidanimate
 Performing *more* runs at each size of fluidanimate on real.
+#+begin_src sh
+  ./bin/model-variance etc/hw-counters/amd/fluidanimate.csv -c seconds -m amd-opteron-power-model
+#+end_src
+
+#+RESULTS:
+| size   |      mean |  variance |    percent | number |    seconds |
+|--------+-----------+-----------+------------+--------+------------|
+| test   | 311.58096 | 24747.328 | 7942.5034% |    120 | 0.02404317 |
+| tiny   | 324.05124 |  64.66636 | 19.955597% |    120 |  0.1448967 |
+| small  | 331.38202 | 155.08363 |  46.79905% |    120 | 0.56723106 |
+| medium | 326.06815 |  143.6615 | 44.058735% |    120 |  1.2891381 |
+| large  |  326.5521 | 147.55011 |  45.18425% |    120 |  3.9543471 |
 
 **** by counter -- swaptions large
 
