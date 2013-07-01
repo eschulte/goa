@@ -1508,7 +1508,7 @@ Parse results
   done
 #+end_src
 
-#+RESULTS:
+#+name: energy-comparison
 | benchmark    |     small |           |    medium |           |     large |           | huge      |           |
 |--------------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------|
 | blackscholes | 99.155624 |  5.425802 |  395.2934 | 18.692339 | 1585.2568 |  71.38846 | 231688.66 | 10410.998 |
@@ -1517,6 +1517,45 @@ Parse results
 | freqmine     | 611.05194 | 1140.3716 | 10542.969 | 13230.151 | 28245.262 | 937.87164 | NA        |        NA |
 | swaptions    | 226.94939 | 131.23346 |  904.5098 | 521.67206 | 3575.4478 | 2086.3838 | NA        |        NA |
 | x264         | 436.18347 | 371.79916 |  3177.057 | 2720.3052 | 10114.562 |  8756.569 | NA        |        NA |
+
+#+name: collated-energy-comparison
+#+begin_src lisp :var data=energy-comparison
+  (defun odds (list &aux (counter 0))
+    (loop :for i :in list :do (incf counter) :when (oddp counter) :collect i))
+  
+  (defun evens (list &aux (counter 0))
+    (loop :for i :in list :do (incf counter) :when (evenp counter) :collect i))
+  
+  (defun trans (list) (apply #'mapcar #'list list))
+  
+  (let* ((it (trans data))
+         (collated
+          (mapcar #'append
+                  (cons (mapcar (lambda (b) (format nil "~a-Orig" b)) (car it))
+                        (odds (cdr it)))
+                  (cons (mapcar (lambda (b) (format nil "~a-evo" b)) (car it))
+                        (evens (cdr it))))))
+    (trans (cons '(size small medium large huge) (sort (trans collated) #'string< :key #'car))))
+#+end_src
+
+#+RESULTS: collated-energy-comparison
+| SIZE   | blackscholes-Orig | blackscholes-evo | ferret-Orig | ferret-evo | fluidanimate-Orig | fluidanimate-evo | freqmine-Orig | freqmine-evo | swaptions-Orig | swaptions-evo | x264-Orig |  x264-evo |
+| SMALL  |         99.155624 |         5.425802 |   158.10641 |  154.93687 |         193.58382 |        172.91133 |     611.05194 |    1140.3716 |      226.94939 |     131.23346 | 436.18347 | 371.79916 |
+| MEDIUM |          395.2934 |        18.692339 |   473.47177 |  444.42612 |         388.48483 |        391.62772 |     10542.969 |    13230.151 |       904.5098 |     521.67206 |  3177.057 | 2720.3052 |
+| LARGE  |         1585.2568 |         71.38846 |    2020.137 |  2336.8032 |         1311.6603 |         1172.975 |     28245.262 |    937.87164 |      3575.4478 |     2086.3838 | 10114.562 |  8756.569 |
+| HUGE   |         231688.66 |        10410.998 |   175053.72 |  164695.94 |         215615.97 |        27823.836 |            NA |           NA |             NA |            NA |        NA |        NA |
+
+#+begin_src gnuplot :var data=collated-energy-comparison :results silent
+  set key left
+  set style data histograms
+  set logscale y
+  set auto x
+  set style histogram cluster gap 1
+  set style fill solid border -1
+  set boxwidth 0.9
+  set xtic rotate by -45
+  plot for [n=2:7] data u n:xtic(1) ti col
+#+end_src
 
 ** TODO we don't correctly catch non-zero returns
 ** DONE Running out of memory
