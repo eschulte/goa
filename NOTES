@@ -1379,7 +1379,35 @@ We could use the "bubble" and the "reporter" from [[#mars2011bubble]].
 Measuring the values of HW counters against the bubble could give us
 coefficients for a memory linear model.
 
-* Code Tasks [7/7]
+* Code Tasks [7/9]
+** TODO inefficient mgmt generated executables
+| benchmark    | Intel | AMD |
+|--------------+-------+-----|
+| blackscholes |     7 |   1 |
+| bodytrack    |    33 |   1 |
+| facesim      |   1.1 | 1.1 |
+| ferret       |   0.9 | 0.9 |
+| fluidanimate |     1 |   1 |
+| freqmine     |     1 | 3.1 |
+| swaptions    |   0.9 | 0.9 |
+| vips         |       | 0.7 |
+| x264         |     7 |   \dagger |
+
+\dagger x264 built with parsec includes hand-written ASM, while the version
+  built by mgmt is uses the alternate C source code.  On our AMD
+  machine the parsecmgmt version segfaults
+
+We need to figure out why blackscholes and bodytrack are bad on Intel,
+and why freqmine is bad on AMD.
+
+** TODO freqmine execution takes too long in the run script
+#+begin_quote
+I should mention that I ran all benchmarks using bin/run *except*
+freqmine. I ran freqmine using parsecmgmt since bin/run took over 10
+minutes before I killed it; parsecmgmt took about 5 seconds to run
+that benchmark.
+#+end_quote
+
 ** DONE re-run when we get not-counted
 This means perf ran two quickly.  Use half the counters.
 
