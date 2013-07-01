@@ -1484,9 +1484,10 @@ evolved and original programs.
 |  100000000 |          1528770.8 |            103024.76 |   93.260941 |
 #+TBLFM: $4=100*($2-$3)/$2
 
-*** multiple over set inputs
+*** over multiple set inputs
 Running on real with file:bin/many-multi-test.
 
+**** collect results
 Parse results
 #+begin_src sh
   power(){
@@ -1518,6 +1519,605 @@ Parse results
 | swaptions    | 226.94939 | 131.23346 |  904.5098 | 521.67206 | 3575.4478 | 2086.3838 | NA        |        NA |
 | x264         | 436.18347 | 371.79916 |  3177.057 | 2720.3052 | 10114.562 |  8756.569 | NA        |        NA |
 
+**** collect results (multi)
+#+name: energy-comparison-multi
+#+begin_src sh :cache yes
+  power(){
+      cut -d, -f1,$1|awk -F, 'OFS="," {print $2,$1}' \
+          |./bin/calc-energy -m amd-opteron-power-model; }
+  
+  base=results/ec/
+  for bench in blackscholes ferret fluidanimate freqmine swaptions x264;do
+      for size in small medium large huge;do
+          for i in $(seq 32);do
+              file=$base/$i/$bench-$size.csv
+              if [ -f $file ];then
+                  echo "$bench $size $(cat $file|power 2) $(cat $file|power 3)"
+              fi
+          done
+      done
+  done
+#+end_src
+
+#+RESULTS[7452904802f2d5f0d02042cfe2bf176973b76bd0]: energy-comparison-multi
+| blackscholes | small  |   98.73123 | 5.4139996 |
+| blackscholes | small  |   98.36346 | 5.3923726 |
+| blackscholes | small  |   97.97418 | 5.4015512 |
+| blackscholes | small  |   98.26045 | 5.3790565 |
+| blackscholes | small  |   98.29432 |   5.38921 |
+| blackscholes | small  |  99.695625 |  5.311503 |
+| blackscholes | small  |   97.55468 | 5.4060774 |
+| blackscholes | small  |   98.40551 | 5.2983603 |
+| blackscholes | small  |  100.31643 |   5.30083 |
+| blackscholes | small  |   97.79155 | 5.3943124 |
+| blackscholes | small  |  99.387726 |  5.266558 |
+| blackscholes | small  |   98.22094 |  5.401001 |
+| blackscholes | small  |  97.975685 | 5.2462564 |
+| blackscholes | small  |  99.146614 |  5.316925 |
+| blackscholes | small  |   99.15594 |  5.377637 |
+| blackscholes | small  |  97.894394 |  5.397094 |
+| blackscholes | small  |   98.48609 | 5.3577456 |
+| blackscholes | small  |   97.79452 | 5.3396673 |
+| blackscholes | small  |  98.990135 | 5.4514966 |
+| blackscholes | small  |   97.42051 | 5.4378405 |
+| blackscholes | small  |   98.94063 |  5.361724 |
+| blackscholes | small  |  99.991066 | 5.3280516 |
+| blackscholes | small  |   97.63368 | 5.3440323 |
+| blackscholes | small  |  98.547035 | 5.3154783 |
+| blackscholes | small  |  99.436775 |  5.269492 |
+| blackscholes | small  |   97.54253 |  5.441793 |
+| blackscholes | small  |   97.83122 |   5.29932 |
+| blackscholes | small  |  98.046974 |  5.441579 |
+| blackscholes | small  |   98.20942 |  5.371854 |
+| blackscholes | small  |   97.50828 | 5.4732885 |
+| blackscholes | small  |   98.86828 |  5.041191 |
+| blackscholes | small  |  98.322266 | 5.3559504 |
+| blackscholes | medium |  399.32907 | 18.249355 |
+| blackscholes | medium |    395.899 |  17.96803 |
+| blackscholes | medium |  395.56473 |  18.14397 |
+| blackscholes | medium |  397.75552 | 18.325745 |
+| blackscholes | medium |   399.3298 | 18.108711 |
+| blackscholes | medium |  397.89957 | 18.184267 |
+| blackscholes | medium |   397.5732 | 18.317476 |
+| blackscholes | medium |  396.35013 | 18.145727 |
+| blackscholes | medium |  397.72064 | 18.333813 |
+| blackscholes | medium |  397.78876 | 17.899082 |
+| blackscholes | medium |  395.83417 |  18.08101 |
+| blackscholes | medium |  398.35373 | 18.054548 |
+| blackscholes | medium |  398.45462 |  17.78092 |
+| blackscholes | medium |  395.69897 | 19.004095 |
+| blackscholes | medium |   400.1819 | 18.224386 |
+| blackscholes | medium |   397.2672 | 18.070036 |
+| blackscholes | medium |  393.44803 | 18.211504 |
+| blackscholes | medium |   397.6376 | 18.095827 |
+| blackscholes | medium |  399.17816 | 18.251171 |
+| blackscholes | medium |     396.73 | 18.102594 |
+| blackscholes | medium |  397.13943 | 18.028952 |
+| blackscholes | medium |   396.6208 | 18.025036 |
+| blackscholes | medium |   394.5756 | 18.266176 |
+| blackscholes | medium |  394.87735 | 18.107412 |
+| blackscholes | medium |  399.40903 | 17.891724 |
+| blackscholes | medium |   397.6136 | 17.992058 |
+| blackscholes | medium |  397.56766 | 18.293919 |
+| blackscholes | medium |   399.0504 | 18.340557 |
+| blackscholes | medium |   396.3258 | 18.364939 |
+| blackscholes | medium |   394.5142 | 18.036366 |
+| blackscholes | medium |  398.80313 | 18.558672 |
+| blackscholes | medium |  399.06998 |  18.03994 |
+| blackscholes | large  |  1569.4138 |   70.0522 |
+| blackscholes | large  |  1567.2766 |  70.43564 |
+| blackscholes | large  |  1583.8491 |   71.3664 |
+| blackscholes | large  |  1570.1947 |  70.79705 |
+| blackscholes | large  |  1587.1378 |  70.90939 |
+| blackscholes | large  |  1586.9807 | 70.653755 |
+| blackscholes | large  |  1587.6707 |  71.00508 |
+| blackscholes | large  |  1586.7894 | 70.925705 |
+| blackscholes | large  |  1591.8447 |  70.72624 |
+| blackscholes | large  |   1570.592 |  70.75529 |
+| blackscholes | large  |  1567.1039 | 71.073074 |
+| blackscholes | large  |  1589.2334 | 71.581276 |
+| blackscholes | large  |  1588.7598 |   71.0794 |
+| blackscholes | large  |  1569.2922 |  71.59838 |
+| blackscholes | large  |  1588.8182 | 70.843994 |
+| blackscholes | large  |  1582.7675 |  71.90673 |
+| blackscholes | large  |  1578.6166 |  70.55168 |
+| blackscholes | large  |  1585.2386 | 71.293915 |
+| blackscholes | large  |  1572.3889 |  71.01209 |
+| blackscholes | large  |  1571.5261 |   70.6747 |
+| blackscholes | large  |  1587.9152 |  71.51353 |
+| blackscholes | large  |  1582.8583 |  71.29055 |
+| blackscholes | large  |  1590.9497 |  71.57436 |
+| blackscholes | large  |   1581.065 |  72.97306 |
+| blackscholes | large  |  1576.1456 |  70.63173 |
+| blackscholes | large  |   1585.661 |  71.40653 |
+| blackscholes | large  |  1580.8734 | 71.347755 |
+| blackscholes | large  |  1594.1722 | 70.887474 |
+| blackscholes | large  |   1574.261 |  70.48086 |
+| blackscholes | large  |  1572.8829 |  71.84436 |
+| blackscholes | large  |  1581.0896 |   70.6264 |
+| blackscholes | large  |  1583.6351 | 70.383644 |
+| ferret       | small  |  156.75328 | 150.55357 |
+| ferret       | small  |  157.07153 | 149.58943 |
+| ferret       | small  |  158.05403 | 150.18388 |
+| ferret       | small  |  157.79216 | 149.78674 |
+| ferret       | small  |   157.7291 | 150.27031 |
+| ferret       | small  |  157.42912 | 150.88382 |
+| ferret       | small  |  157.61705 | 149.92946 |
+| ferret       | small  |  156.49377 | 149.67639 |
+| ferret       | small  |   157.7843 | 149.98518 |
+| ferret       | small  |  157.72089 | 150.47702 |
+| ferret       | small  |  157.32222 | 152.99207 |
+| ferret       | small  |   156.7603 | 150.44325 |
+| ferret       | small  |   156.9914 | 149.72499 |
+| ferret       | small  |  157.56686 | 154.13734 |
+| ferret       | small  |   157.5302 | 149.66676 |
+| ferret       | small  |  156.60544 | 150.51758 |
+| ferret       | small  |  157.96031 | 149.55095 |
+| ferret       | small  |  157.12231 | 149.04205 |
+| ferret       | small  |  157.08237 | 150.77922 |
+| ferret       | small  |  156.07178 | 150.09622 |
+| ferret       | small  |  156.42307 | 150.31683 |
+| ferret       | small  |  156.90788 | 149.32764 |
+| ferret       | small  |  158.05042 | 149.80951 |
+| ferret       | small  |  157.52858 | 149.46013 |
+| ferret       | small  |  157.49458 | 150.16692 |
+| ferret       | small  |  157.28516 |  150.2063 |
+| ferret       | small  |  157.17682 | 150.87201 |
+| ferret       | small  |  156.07541 | 150.65613 |
+| ferret       | small  |   156.2486 | 150.25554 |
+| ferret       | small  |  157.27321 | 150.56311 |
+| ferret       | small  |  157.63019 | 149.62775 |
+| ferret       | small  |  157.65582 | 149.38377 |
+| ferret       | medium |  471.82584 | 437.67624 |
+| ferret       | medium |   464.9706 | 442.62527 |
+| ferret       | medium |  470.12885 | 438.41373 |
+| ferret       | medium |   465.3628 | 443.87274 |
+| ferret       | medium |   465.5715 |  436.9009 |
+| ferret       | medium |  465.10724 |  437.0628 |
+| ferret       | medium |   469.2024 | 436.54422 |
+| ferret       | medium |   463.6176 | 437.63248 |
+| ferret       | medium |  466.35593 |  443.1504 |
+| ferret       | medium |   465.5164 | 439.10022 |
+| ferret       | medium |     460.86 |  443.7231 |
+| ferret       | medium |   466.7365 | 443.68576 |
+| ferret       | medium |  464.60568 | 440.07208 |
+| ferret       | medium |  465.15967 | 437.87772 |
+| ferret       | medium |   469.0159 |  443.7476 |
+| ferret       | medium |  466.53073 |  436.9348 |
+| ferret       | medium |   467.6047 | 437.26138 |
+| ferret       | medium |  469.94925 |  437.1805 |
+| ferret       | medium |   460.8026 | 451.20343 |
+| ferret       | medium |   470.0361 |  441.4158 |
+| ferret       | medium |   472.0063 | 437.70944 |
+| ferret       | medium |  467.75494 |  438.9951 |
+| ferret       | medium |  470.46362 | 436.69992 |
+| ferret       | medium |  466.74698 |  440.8747 |
+| ferret       | medium |  463.17578 | 437.14786 |
+| ferret       | medium |   463.6615 |  437.5782 |
+| ferret       | medium |   460.9387 |  438.5342 |
+| ferret       | medium |  466.73444 | 445.47528 |
+| ferret       | medium |  466.70712 | 440.18997 |
+| ferret       | medium |  465.76578 | 437.37213 |
+| ferret       | medium |  467.25943 |  438.8375 |
+| ferret       | medium |  461.77225 | 439.04156 |
+| ferret       | large  |    1991.63 | 1898.2466 |
+| ferret       | large  |  2062.7495 |  2081.656 |
+| ferret       | large  |  2002.2172 | 1804.7847 |
+| ferret       | large  |   1910.497 | 1845.7133 |
+| ferret       | large  |  1916.1259 | 1837.2684 |
+| ferret       | large  |   1904.102 | 1996.4153 |
+| ferret       | large  |  1899.2518 | 2131.8398 |
+| ferret       | large  |  2005.6536 | 1956.3876 |
+| ferret       | large  |  1989.9579 | 1866.6029 |
+| ferret       | large  |  1917.7825 | 1965.9404 |
+| ferret       | large  |  2147.3938 | 2027.3854 |
+| ferret       | large  |  1927.2404 | 1834.5507 |
+| ferret       | large  |  2007.9473 | 2035.7725 |
+| ferret       | large  |  1908.3314 | 1969.0088 |
+| ferret       | large  |  1948.7916 |  2081.543 |
+| ferret       | large  |  1980.7617 |  2128.822 |
+| ferret       | large  |   1907.414 | 2037.8939 |
+| ferret       | large  |  1909.5172 | 1916.1544 |
+| ferret       | large  |  1929.6938 | 1862.8967 |
+| ferret       | large  |  1906.9371 | 1878.9633 |
+| ferret       | large  |  2012.3472 | 1943.5724 |
+| ferret       | large  |    1930.69 | 1837.1487 |
+| ferret       | large  |  2031.3931 | 1955.3486 |
+| ferret       | large  |  1913.2471 | 1912.8993 |
+| ferret       | large  |  2014.6981 | 1852.5043 |
+| ferret       | large  |  1902.0258 | 2015.0413 |
+| ferret       | large  |  2447.6604 | 1920.6198 |
+| ferret       | large  |  1922.9011 | 1963.4528 |
+| ferret       | large  |  1917.0867 | 1874.7269 |
+| ferret       | large  |   1994.588 |  1971.863 |
+| ferret       | large  |  1905.6158 | 1841.6917 |
+| ferret       | large  |  1906.0615 | 1851.3538 |
+| fluidanimate | small  |  185.89592 | 168.27675 |
+| fluidanimate | small  |  183.78926 |   170.354 |
+| fluidanimate | small  |  185.50703 | 167.86821 |
+| fluidanimate | small  |  189.36897 | 167.14769 |
+| fluidanimate | small  |  186.94658 | 166.83252 |
+| fluidanimate | small  |   185.6067 | 167.85667 |
+| fluidanimate | small  |  188.27554 |   167.362 |
+| fluidanimate | small  |  186.10239 | 168.92926 |
+| fluidanimate | small  |  187.10402 | 171.62218 |
+| fluidanimate | small  |  185.97299 |  167.7673 |
+| fluidanimate | small  |  184.78285 | 167.83975 |
+| fluidanimate | small  |  185.86917 | 168.48842 |
+| fluidanimate | small  |  183.41066 | 167.60591 |
+| fluidanimate | small  |  187.40297 | 167.21573 |
+| fluidanimate | small  |  188.66844 | 169.07512 |
+| fluidanimate | small  |  186.53224 | 168.06406 |
+| fluidanimate | small  |  186.88277 | 169.12914 |
+| fluidanimate | small  |  183.66887 | 167.41185 |
+| fluidanimate | small  |  190.08122 | 171.95508 |
+| fluidanimate | small  |  187.21628 | 168.89146 |
+| fluidanimate | small  |   184.3626 |   169.787 |
+| fluidanimate | small  |  188.02281 |  167.7446 |
+| fluidanimate | small  |  186.40318 |  168.9414 |
+| fluidanimate | small  |  186.65395 | 168.16597 |
+| fluidanimate | small  |  185.89717 | 170.39429 |
+| fluidanimate | small  |  186.09985 | 167.28368 |
+| fluidanimate | small  |  186.07701 | 167.83725 |
+| fluidanimate | small  |  186.96771 | 168.12807 |
+| fluidanimate | small  |   184.3615 | 167.33301 |
+| fluidanimate | small  |  187.14381 | 168.30426 |
+| fluidanimate | small  |   185.3336 | 169.37277 |
+| fluidanimate | small  |  187.97093 | 167.48103 |
+| fluidanimate | medium |   435.2874 |  383.6932 |
+| fluidanimate | medium |  415.67267 |  382.0485 |
+| fluidanimate | medium |    418.663 | 382.61404 |
+| fluidanimate | medium |  416.59302 | 381.79684 |
+| fluidanimate | medium |  416.78226 | 400.28806 |
+| fluidanimate | medium |   416.9441 | 382.62488 |
+| fluidanimate | medium |  419.37122 |  385.1355 |
+| fluidanimate | medium |  414.37576 | 382.16788 |
+| fluidanimate | medium |   413.1726 |  379.7008 |
+| fluidanimate | medium |   415.6798 | 381.79453 |
+| fluidanimate | medium |  415.57156 | 381.95602 |
+| fluidanimate | medium |  416.08865 |  381.1738 |
+| fluidanimate | medium |  415.90842 | 384.08948 |
+| fluidanimate | medium |     415.08 | 385.96368 |
+| fluidanimate | medium |    417.438 | 382.31754 |
+| fluidanimate | medium |   416.7021 | 382.16208 |
+| fluidanimate | medium |  415.46768 |  383.3661 |
+| fluidanimate | medium |  415.83093 | 383.05344 |
+| fluidanimate | medium |  433.78644 |  381.6713 |
+| fluidanimate | medium |   416.5828 | 381.70422 |
+| fluidanimate | medium |  415.71033 | 382.35266 |
+| fluidanimate | medium |   420.1074 | 385.10068 |
+| fluidanimate | medium |   434.6555 | 383.00806 |
+| fluidanimate | medium |  415.30762 |  382.2407 |
+| fluidanimate | medium |  414.60037 | 381.92087 |
+| fluidanimate | medium |  415.54224 | 380.81696 |
+| fluidanimate | medium |  418.90472 | 384.74857 |
+| fluidanimate | medium |  416.61252 | 379.99164 |
+| fluidanimate | medium |  415.90543 |  381.9348 |
+| fluidanimate | medium |   416.1601 |   382.438 |
+| fluidanimate | medium |  414.84155 | 382.16754 |
+| fluidanimate | medium |  417.13736 |  383.6303 |
+| fluidanimate | large  |  1286.0742 |  1221.007 |
+| fluidanimate | large  |  1281.6257 | 1174.9045 |
+| fluidanimate | large  |  1332.2018 | 1164.7969 |
+| fluidanimate | large  |  1277.1802 | 1164.1954 |
+| fluidanimate | large  |   1272.447 | 1170.4408 |
+| fluidanimate | large  |  1274.7815 | 1158.7076 |
+| fluidanimate | large  |  1279.4978 | 1161.2167 |
+| fluidanimate | large  |   1276.311 | 1158.1383 |
+| fluidanimate | large  |  1337.8003 | 1169.1545 |
+| fluidanimate | large  |  1336.3566 | 1160.1055 |
+| fluidanimate | large  |  1274.8641 | 1160.2584 |
+| fluidanimate | large  |  1279.0054 | 1161.1632 |
+| fluidanimate | large  |  1282.2247 | 1163.2772 |
+| fluidanimate | large  |  1289.1215 | 1207.3833 |
+| fluidanimate | large  |  1277.2047 | 1164.8813 |
+| fluidanimate | large  |  1285.0673 | 1175.7887 |
+| fluidanimate | large  |  1286.7268 |  1157.287 |
+| fluidanimate | large  |  1191.9257 | 1165.1406 |
+| fluidanimate | large  |  1275.0985 | 1163.4149 |
+| fluidanimate | large  |  1276.4089 | 1162.8351 |
+| fluidanimate | large  |  1277.0183 | 1171.6543 |
+| fluidanimate | large  |  1270.1263 | 1176.4822 |
+| fluidanimate | large  |  1290.0555 | 1163.4667 |
+| fluidanimate | large  |  1276.6224 |  1164.825 |
+| fluidanimate | large  |  1282.2388 | 1163.8887 |
+| fluidanimate | large  |  1278.6438 | 1174.2031 |
+| fluidanimate | large  |   1276.417 | 1161.2852 |
+| fluidanimate | large  |  1278.2883 | 1164.3313 |
+| fluidanimate | large  |  1340.5161 | 1210.9879 |
+| fluidanimate | large  |  1271.4995 | 1153.6779 |
+| fluidanimate | large  |  1277.6376 | 1162.9656 |
+| fluidanimate | large  |  1273.9684 | 1161.2297 |
+| freqmine     | small  |  613.84705 | 1106.8915 |
+| freqmine     | small  |   616.8913 | 1136.6859 |
+| freqmine     | small  |  636.90137 |  1105.853 |
+| freqmine     | small  |  613.41156 | 1129.5046 |
+| freqmine     | small  |   608.5413 | 1107.2557 |
+| freqmine     | small  |  607.41125 | 1093.6533 |
+| freqmine     | small  |   607.8516 | 1096.3424 |
+| freqmine     | small  |   604.5667 | 1127.2163 |
+| freqmine     | small  |   612.1416 | 1174.6758 |
+| freqmine     | small  |  617.53644 | 1097.4738 |
+| freqmine     | small  |  609.49384 | 1134.9836 |
+| freqmine     | small  |   633.5415 | 1127.0367 |
+| freqmine     | small  |   612.1157 | 1104.7185 |
+| freqmine     | small  |   613.2483 | 1097.0758 |
+| freqmine     | small  |  617.89124 | 1153.8535 |
+| freqmine     | small  |   608.2923 | 1101.2378 |
+| freqmine     | small  |  602.25745 | 1092.1249 |
+| freqmine     | small  |  608.85516 | 1134.6194 |
+| freqmine     | small  |  616.07245 | 1139.0457 |
+| freqmine     | small  |  612.66614 | 1109.2147 |
+| freqmine     | small  |   608.4742 | 1134.3787 |
+| freqmine     | small  |  607.03033 | 1139.7365 |
+| freqmine     | small  |   612.3989 |   1102.66 |
+| freqmine     | small  |    610.985 | 1109.3502 |
+| freqmine     | small  |   607.6965 | 1137.8074 |
+| freqmine     | small  |  608.80255 | 1135.3981 |
+| freqmine     | small  |    609.026 | 1150.0991 |
+| freqmine     | small  |  613.68445 | 1095.0094 |
+| freqmine     | small  |   609.4488 | 1104.6492 |
+| freqmine     | small  |  611.96045 | 1132.8712 |
+| freqmine     | small  |    607.625 | 1126.6616 |
+| freqmine     | small  |   608.3191 | 1175.1455 |
+| freqmine     | medium |  10633.198 | 13298.518 |
+| freqmine     | medium |  10484.347 | 13241.568 |
+| freqmine     | medium |  10572.527 | 13409.448 |
+| freqmine     | medium |  10563.918 | 14256.296 |
+| freqmine     | medium |  10533.091 | 13216.336 |
+| freqmine     | medium |  10572.709 | 13021.063 |
+| freqmine     | medium |   10565.56 | 13361.957 |
+| freqmine     | medium |  10745.339 | 13290.135 |
+| freqmine     | medium |  11138.168 | 13190.326 |
+| freqmine     | medium |  10601.548 | 13278.456 |
+| freqmine     | medium |  10571.191 | 13263.402 |
+| freqmine     | medium |  10535.364 | 13267.192 |
+| freqmine     | medium |  10511.581 | 14257.157 |
+| freqmine     | medium |  10583.057 | 13298.796 |
+| freqmine     | medium |  10498.323 | 13246.067 |
+| freqmine     | medium |  10598.734 | 13703.375 |
+| freqmine     | medium |  10512.201 |   13199.6 |
+| freqmine     | medium |   10564.88 | 14155.739 |
+| freqmine     | medium |  10815.198 | 13232.252 |
+| freqmine     | medium |  10789.247 | 13239.173 |
+| freqmine     | medium |  10586.038 | 13269.583 |
+| freqmine     | medium |  10644.294 | 13316.964 |
+| freqmine     | medium |  10508.154 | 13299.909 |
+| freqmine     | medium |  10578.523 | 13070.895 |
+| freqmine     | medium |  11191.835 | 13299.687 |
+| freqmine     | medium |  10637.946 | 13026.437 |
+| freqmine     | medium |  10860.938 | 13031.462 |
+| freqmine     | medium |  10489.499 | 13316.118 |
+| freqmine     | medium |  11190.778 | 13274.462 |
+| freqmine     | medium |  10580.306 | 14164.106 |
+| freqmine     | medium |  10730.978 | 13255.444 |
+| freqmine     | medium |  10651.982 |  13286.45 |
+| freqmine     | large  |   28717.45 |  930.1519 |
+| freqmine     | large  |  28193.154 |  914.4153 |
+| freqmine     | large  |  30724.932 |   917.977 |
+| freqmine     | large  |   29277.37 | 953.25256 |
+| freqmine     | large  |  28347.805 |  918.3546 |
+| freqmine     | large  |  29540.984 | 934.40094 |
+| freqmine     | large  |   28566.92 | 913.43164 |
+| freqmine     | large  |  29622.264 |  918.4373 |
+| freqmine     | large  |  28403.777 | 934.30066 |
+| freqmine     | large  |  28538.229 |  916.2069 |
+| freqmine     | large  |  28530.365 |  916.4562 |
+| freqmine     | large  |  28486.504 |  934.1557 |
+| freqmine     | large  |  28181.018 |  915.5692 |
+| freqmine     | large  |  28524.781 | 914.07416 |
+| freqmine     | large  |  28932.797 |  912.9333 |
+| freqmine     | large  |   28507.39 |  921.9342 |
+| freqmine     | large  |  28885.479 |  917.7144 |
+| freqmine     | large  |   28331.44 |  919.2515 |
+| freqmine     | large  |   28372.37 | 914.81354 |
+| freqmine     | large  |  28277.654 |  921.6668 |
+| freqmine     | large  |   27911.38 | 934.78467 |
+| freqmine     | large  |  28812.506 |  918.0396 |
+| freqmine     | large  |  28254.178 |  918.4334 |
+| freqmine     | large  |  28078.814 | 919.42615 |
+| freqmine     | large  |  29255.398 | 914.03595 |
+| freqmine     | large  |    28373.1 | 914.34717 |
+| freqmine     | large  |  29020.432 |  914.6869 |
+| freqmine     | large  |   28087.82 | 913.31287 |
+| freqmine     | large  |  28212.113 |  919.8376 |
+| freqmine     | large  |  29449.307 | 921.66284 |
+| freqmine     | large  |  28684.592 |  910.8103 |
+| freqmine     | large  |  28260.053 | 918.76526 |
+| swaptions    | small  |  224.08177 |  131.3236 |
+| swaptions    | small  |   224.0082 | 131.84174 |
+| swaptions    | small  |  223.66241 | 131.77771 |
+| swaptions    | small  |  223.88885 | 131.84631 |
+| swaptions    | small  |   224.2032 | 131.62473 |
+| swaptions    | small  |  223.90996 |  131.6057 |
+| swaptions    | small  |  224.04834 | 131.95468 |
+| swaptions    | small  |  224.15804 | 132.11089 |
+| swaptions    | small  |  224.24922 | 131.89569 |
+| swaptions    | small  |   223.8009 | 132.83656 |
+| swaptions    | small  |  223.72969 | 131.41681 |
+| swaptions    | small  |  224.23955 | 131.85101 |
+| swaptions    | small  |  223.91455 | 131.89816 |
+| swaptions    | small  |  224.00122 | 131.03806 |
+| swaptions    | small  |   223.9387 | 131.56049 |
+| swaptions    | small  |  223.98706 | 132.48404 |
+| swaptions    | small  |   224.2228 | 131.32957 |
+| swaptions    | small  |  224.04613 | 131.59782 |
+| swaptions    | small  |  223.91666 | 131.28477 |
+| swaptions    | small  |  223.92036 | 131.75623 |
+| swaptions    | small  |  223.64601 | 131.03722 |
+| swaptions    | small  |  223.65112 | 131.78697 |
+| swaptions    | small  |  223.98802 | 131.28261 |
+| swaptions    | small  |  224.14182 | 131.68803 |
+| swaptions    | small  |  223.55591 | 131.83337 |
+| swaptions    | small  |  224.09682 | 131.49147 |
+| swaptions    | small  |  223.89833 | 131.73245 |
+| swaptions    | small  |  224.01923 | 130.51509 |
+| swaptions    | small  |  224.20247 |  131.2118 |
+| swaptions    | small  |  223.86977 | 131.38701 |
+| swaptions    | small  |  224.30144 |  134.9011 |
+| swaptions    | small  |  223.96976 | 132.20726 |
+| swaptions    | medium |  891.92664 |  525.8253 |
+| swaptions    | medium |  891.42395 |  522.6254 |
+| swaptions    | medium |   891.1238 | 524.18304 |
+| swaptions    | medium |  892.06726 |  523.4257 |
+| swaptions    | medium |   890.7431 |  524.9425 |
+| swaptions    | medium |   892.4222 |  524.3027 |
+| swaptions    | medium |   891.8384 | 526.70966 |
+| swaptions    | medium |   891.9415 | 528.05554 |
+| swaptions    | medium |    891.451 |  522.9436 |
+| swaptions    | medium |   891.9772 |  524.0087 |
+| swaptions    | medium |  891.21277 |  524.6134 |
+| swaptions    | medium |  890.52496 |  520.9713 |
+| swaptions    | medium |   891.9021 |  523.1974 |
+| swaptions    | medium |   891.0858 | 527.45734 |
+| swaptions    | medium |  890.83704 |  523.5888 |
+| swaptions    | medium |  891.61053 |  522.2158 |
+| swaptions    | medium |  891.24963 | 522.27386 |
+| swaptions    | medium |   891.8604 |    521.31 |
+| swaptions    | medium |   891.6459 | 523.12195 |
+| swaptions    | medium |  890.86487 |   522.687 |
+| swaptions    | medium |   892.5302 | 526.84796 |
+| swaptions    | medium |   890.8918 | 525.40393 |
+| swaptions    | medium |  890.91736 | 533.00323 |
+| swaptions    | medium |   890.5513 |  524.3388 |
+| swaptions    | medium |   890.8551 |  527.0433 |
+| swaptions    | medium |  891.07764 |  521.9451 |
+| swaptions    | medium |  891.19025 | 522.84894 |
+| swaptions    | medium |  891.43195 |  525.5492 |
+| swaptions    | medium |   891.0826 |   526.647 |
+| swaptions    | medium |  892.15515 |    522.69 |
+| swaptions    | medium |  890.30896 |  523.2314 |
+| swaptions    | medium |   891.5162 | 526.59955 |
+| swaptions    | large  |  3559.4722 | 2094.5352 |
+| swaptions    | large  |  3556.8281 | 2081.8367 |
+| swaptions    | large  |  3576.0356 | 2082.9136 |
+| swaptions    | large  |  3556.3027 | 2072.7378 |
+| swaptions    | large  |   3556.536 | 2084.0981 |
+| swaptions    | large  |  3561.8516 |  2087.841 |
+| swaptions    | large  |   3553.701 | 2082.1658 |
+| swaptions    | large  |  3556.6128 |  2101.906 |
+| swaptions    | large  |   3557.421 | 2088.8032 |
+| swaptions    | large  |  3555.2778 | 2089.8308 |
+| swaptions    | large  |  3555.2688 | 2073.4333 |
+| swaptions    | large  |  3553.9968 | 2090.9219 |
+| swaptions    | large  |  3554.6414 | 2076.8433 |
+| swaptions    | large  |   3558.279 | 2070.9995 |
+| swaptions    | large  |  3555.6697 | 2083.7607 |
+| swaptions    | large  |  3556.6123 | 2084.6797 |
+| swaptions    | large  |   3562.547 | 2085.8628 |
+| swaptions    | large  |  3556.5417 | 2083.0542 |
+| swaptions    | large  |  3562.3806 | 2080.5437 |
+| swaptions    | large  |   3559.545 |  2090.545 |
+| swaptions    | large  |  3559.5735 | 2086.1138 |
+| swaptions    | large  |  3558.7568 | 2095.8364 |
+| swaptions    | large  |   3560.523 |  2085.362 |
+| swaptions    | large  |  3556.5103 | 2078.3157 |
+| swaptions    | large  |  3556.4224 | 2082.5232 |
+| swaptions    | large  |  3555.5693 | 2090.4436 |
+| swaptions    | large  |  3555.3044 | 2084.1458 |
+| swaptions    | large  |   3561.986 |  2115.084 |
+| swaptions    | large  |  3556.8447 | 2094.6482 |
+| swaptions    | large  |  3554.6924 | 2078.0803 |
+| swaptions    | large  |  3555.5398 | 2077.5042 |
+| swaptions    | large  |  3561.2417 | 2078.8867 |
+| x264         | small  |  429.60425 | 363.98767 |
+| x264         | small  |  431.02203 | 380.12836 |
+| x264         | small  |  430.57257 | 371.44162 |
+| x264         | small  |  430.42432 | 363.94327 |
+| x264         | small  |   430.1512 | 365.88385 |
+| x264         | small  |  430.83652 | 371.24518 |
+| x264         | small  |  431.01108 |  371.4519 |
+| x264         | small  |  432.06726 | 373.81134 |
+| x264         | small  |   430.6655 |  368.9432 |
+| x264         | small  |  431.71774 | 366.29858 |
+| x264         | small  |  431.57785 |  369.5562 |
+| x264         | small  |   430.3552 | 375.37897 |
+| x264         | small  |  431.33252 |  371.9033 |
+| x264         | small  |  429.96634 |  366.5756 |
+| x264         | small  |  430.71136 |  373.2242 |
+| x264         | small  |  434.04413 |  365.9042 |
+| x264         | small  |  430.88525 | 367.80453 |
+| x264         | small  |  430.29144 |  386.6337 |
+| x264         | small  |  430.29517 | 376.39978 |
+| x264         | small  |  432.05338 |  366.1671 |
+| x264         | small  |   429.5876 |  373.1011 |
+| x264         | small  |   431.8044 | 365.48962 |
+| x264         | small  |  430.82745 | 371.99127 |
+| x264         | small  |   431.6456 | 366.14835 |
+| x264         | small  |   430.9953 | 377.91772 |
+| x264         | small  |  430.57626 |  367.3606 |
+| x264         | small  |   432.0992 | 366.30893 |
+| x264         | small  |  431.11823 | 366.63678 |
+| x264         | small  |   430.7004 | 373.08008 |
+| x264         | small  |  431.46188 | 365.41995 |
+| x264         | small  |   430.9093 | 366.58966 |
+| x264         | small  |   431.8857 | 369.06342 |
+| x264         | medium |  3164.1587 | 2734.4802 |
+| x264         | medium |   3168.435 | 2741.8618 |
+| x264         | medium |  3170.9297 | 2716.1628 |
+| x264         | medium |  3168.8953 | 2748.7437 |
+| x264         | medium |   3171.948 | 2704.1902 |
+| x264         | medium |  3161.9055 |  2705.189 |
+| x264         | medium |  3160.2974 | 2711.5464 |
+| x264         | medium |   3162.207 | 2708.7378 |
+| x264         | medium |  3161.3538 | 2738.5745 |
+| x264         | medium |  3162.9294 | 2708.0837 |
+| x264         | medium |  3161.0293 | 2741.6758 |
+| x264         | medium |  3163.5278 |  2752.723 |
+| x264         | medium |  3162.3015 |  2740.569 |
+| x264         | medium |  3173.9426 | 2723.3145 |
+| x264         | medium |  3173.8804 | 2721.2085 |
+| x264         | medium |  3164.8674 | 2757.7268 |
+| x264         | medium |  3171.0159 |  2725.443 |
+| x264         | medium |  3163.5352 |  2710.552 |
+| x264         | medium |  3160.3362 | 2753.4973 |
+| x264         | medium |  3170.0803 | 2771.6448 |
+| x264         | medium |   3164.959 | 2749.6062 |
+| x264         | medium |  3159.9795 | 2739.9436 |
+| x264         | medium |  3168.5166 | 2743.4146 |
+| x264         | medium |  3163.6643 | 2726.2073 |
+| x264         | medium |  3161.5999 | 2710.6099 |
+| x264         | medium |  3160.8137 | 2701.1646 |
+| x264         | medium |  3161.6729 | 2719.5754 |
+| x264         | medium |  3170.0308 | 2787.4648 |
+| x264         | medium |  3167.7437 | 2775.9592 |
+| x264         | medium |  3166.5276 | 2738.7793 |
+| x264         | medium |  3162.9705 |  2783.952 |
+| x264         | medium |  3158.9773 |  2719.952 |
+| x264         | large  |  10084.298 |  8779.713 |
+| x264         | large  |   10066.98 |  8766.926 |
+| x264         | large  | 10070.3955 |  8708.013 |
+| x264         | large  |  10084.179 |  8666.395 |
+| x264         | large  |   10085.11 |  8755.384 |
+| x264         | large  |  10066.913 |  8717.777 |
+| x264         | large  |  10117.564 |  8779.722 |
+| x264         | large  |  10100.207 |  8782.867 |
+| x264         | large  |   10068.12 |  8806.859 |
+| x264         | large  |  10098.262 |  8761.595 |
+| x264         | large  |  10084.521 |  8806.794 |
+| x264         | large  |  10073.824 |  8797.947 |
+| x264         | large  |  10076.585 |  8886.227 |
+| x264         | large  |  10073.451 |   8842.29 |
+| x264         | large  |  10059.163 |  8745.217 |
+| x264         | large  |  10076.286 |   8766.78 |
+| x264         | large  |  10067.111 |   8667.03 |
+| x264         | large  |  10073.085 |  8769.327 |
+| x264         | large  |  10064.561 |  8715.661 |
+| x264         | large  |   10088.02 |  8781.553 |
+| x264         | large  |  10075.413 |  8777.254 |
+| x264         | large  |  10079.708 |  8694.865 |
+| x264         | large  |  10069.814 |  8718.283 |
+| x264         | large  |  10106.101 |  8667.747 |
+| x264         | large  |  10063.371 |   8844.04 |
+| x264         | large  |  10124.588 |  8712.225 |
+| x264         | large  |  10077.043 |  8758.498 |
+| x264         | large  |  10061.947 |  8813.337 |
+| x264         | large  |   10071.04 |  8785.934 |
+| x264         | large  |  10063.597 |  8755.234 |
+| x264         | large  |  10065.809 |  8795.806 |
+| x264         | large  |  10081.466 |  8774.927 |
+
+**** collate results
 #+name: collated-energy-comparison
 #+begin_src lisp :var data=energy-comparison
   (defun odds (list &aux (counter 0))
@@ -1543,7 +2143,61 @@ Parse results
 | LARGE  |    1585.2568 |     71.38846 |  2020.137 | 2336.8032 |    1311.6603 |     1172.975 | 28245.262 | 937.87164 | 3575.4478 | 2086.3838 | 10114.562 |  8756.569 |
 | HUGE   |    231688.66 |    10410.998 | 175053.72 | 164695.94 |    215615.97 |    27823.836 |        NA |        NA |        NA |        NA |        NA |        NA |
 
-#+begin_src gnuplot :var data=collated-energy-comparison :results silent
+**** collate results (multi)
+#+name: collated-energy-comparison-multi
+#+begin_src lisp :var data=energy-comparison-multi :cache yes
+  (in-package :optimize)
+  (defvar *data* nil)
+  (defvar *benches* '(blackscholes ferret fluidanimate freqmine swaptions x264))
+  (setf *data* (mapcar (lambda-bind ((bench size orig evo))
+                         (list (intern (string-upcase bench))
+                               (intern (string-upcase size))
+                               orig evo))
+                       data))
+  
+  (let (results)
+    ;; build up an alist of results keyed by size
+    (loop :for b :in *benches* :do
+       (loop :for s :in '(small medium large) :do
+          (let ((sample (remove-if-not (lambda (d) (and (equal (first d) b)
+                                                   (equal (second d) s)))
+                                       ,*data*)))
+  
+            (unless (assoc s results) (push (list s) results))
+            
+            (push (cons b 
+                        (if sample
+                            (list ;; orig
+                             (mean (mapcar #'third sample))
+                             (standard-deviation (mapcar #'third sample))
+                             ;; evolved
+                             (mean (mapcar #'fourth sample))
+                             (standard-deviation (mapcar #'fourth sample)))
+                            (list "NA" "NA" "NA" "NA")))
+                  (cdr (assoc s results))))))
+    ;; return the alist 
+    (cons (cons 'size (mapcan (lambda (b) (list b "" "" "")) *benches*))
+          (mapcar (lambda-bind ((s . res)) (cons s (reverse (mapcan [#'reverse #'cdr] res))))
+                  results)))
+#+end_src
+
+For each benchmark/size combo we have the following four fields in
+order.
+1. original modeled energy mean
+2. original modeled energy stdev
+3. evolved modeled energy mean
+4. evolved modeled energy stdev
+
+#+RESULTS[d749e33222dae636442bc91c1be9d65ac9faf92e]: collated-energy-comparison-multi
+| SIZE   | BLACKSCHOLES |            |           |            |    FERRET |            |           |           | FLUIDANIMATE |           |           |           |  FREQMINE |           |           |           | SWAPTIONS |            |           |            |      X264 |            |           |           |
+| SMALL  |     98.46056 | 0.74253434 | 5.3538513 | 0.07974607 | 157.22527 | 0.55328697 | 150.27913 | 0.9803058 |    186.38684 | 1.5585806 | 168.45207 | 1.2381357 |  612.1558 |  6.948262 | 1122.2883 |  22.44512 | 223.97711 | 0.18840124 |  131.7534 | 0.71024346 | 431.03738 | 0.86454284 | 370.18094 | 5.0667844 |
+| MEDIUM |     397.2988 |  1.6297947 | 18.171812 | 0.21862951 | 466.31082 |  2.9914005 | 439.82935 | 3.2930076 |     418.0151 | 5.5140305 | 383.11478 |  3.374078 | 10657.546 | 189.94824 | 13376.199 | 336.83215 |  891.3818 | 0.55874485 |   524.519 |  2.4082901 |  3165.157 |  4.3027463 | 2734.7673 |  23.34662 |
+| LARGE  |     1580.844 |    7.94782 | 71.068825 |  0.5580099 |   1971.01 |  103.30591 | 1940.5648 |  89.91183 |    1283.2798 | 25.647589 | 1169.1593 | 15.220832 | 28667.572 | 572.75824 |  920.5513 |  8.874489 | 3558.0776 |   4.089785 | 2085.4458 |    8.69186 | 10078.702 | 15.5837965 |   8762.57 |  51.09658 |
+
+**** graph results
+#+headers: :file etc/evolved-improvement-by-input.svg
+#+begin_src gnuplot :var data=collated-energy-comparison
+  set title 'evolved improvement in modeled energy by input size'
   set key above
   set style data histograms
   set auto x
@@ -1557,6 +2211,12 @@ Parse results
   # plot for [n=2:7] data u ($n - $(n - 1))/$n:xtic(1) ti col
   plot for [n=2:12:2] data u (100 * ((column(n) - column(n + 1)) / column(n))):xtic(1) ti col
 #+end_src
+
+#+RESULTS:
+[[file:etc/evolved-improvement-by-input.svg]]
+
+**** graph results (multi)
+Not worth the effort to really graph this well, just look at the table
 
 ** TODO we don't correctly catch non-zero returns
 ** DONE Running out of memory
