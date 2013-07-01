@@ -296,12 +296,12 @@ case $BENCHMARK in
         ;;
     swaptions)
         case $SIZE in
-            test)  run 2 $EXECUTABLE -ns 1  -sm 5     -nt 1 > $OUT;;
-            tiny)  run 2 $EXECUTABLE -ns 3  -sm 50    -nt 1 > $OUT;;
-            small) run 2 $EXECUTABLE -ns 16 -sm 10000 -nt 1 > $OUT;;
-            medium)run 2 $EXECUTABLE -ns 32 -sm 20000 -nt 1 > $OUT;;
-            large) run 2 $EXECUTABLE -ns 64 -sm 40000 -nt 1 > $OUT;;
-            large) run 2 $EXECUTABLE -ns 128 -sm 1000000 -nt 1 > $OUT;;
+            test)  run 2 $EXECUTABLE -ns 1   -sm 5       -nt 1 > $OUT;;
+            tiny)  run 2 $EXECUTABLE -ns 3   -sm 50      -nt 1 > $OUT;;
+            small) run 2 $EXECUTABLE -ns 16  -sm 10000   -nt 1 > $OUT;;
+            medium)run 2 $EXECUTABLE -ns 32  -sm 20000   -nt 1 > $OUT;;
+            large) run 2 $EXECUTABLE -ns 64  -sm 40000   -nt 1 > $OUT;;
+            huge)  run 2 $EXECUTABLE -ns 128 -sm 1000000 -nt 1 > $OUT;;
         esac
         diff $OUT $OUTPUT >/dev/null 2>/dev/null
         ERROR=$?
