@@ -1487,6 +1487,37 @@ evolved and original programs.
 *** multiple over set inputs
 Running on real with file:bin/many-multi-test.
 
+Parse results
+#+begin_src sh
+  power(){
+      cut -d, -f1,$1|awk -F, 'OFS="," {print $2,$1}' \
+          |./bin/calc-energy -m amd-opteron-power-model; }
+  base=results/evo-cmp/
+  echo "benchmark,small,,medium,,large,,huge,,"
+  for bench in blackscholes ferret fluidanimate freqmine swaptions x264;do
+      echo -n "$bench,"
+      for size in small medium large huge;do
+          file=$base/$bench-$size.csv
+          if [ -f $file ];then
+              echo -n "$(cat $file|power 2),$(cat $file|power 3),"
+          else
+              echo -n "NA,NA,"
+          fi
+      done
+      echo ""
+  done
+#+end_src
+
+#+RESULTS:
+| benchmark    |     small |           |    medium |           |     large |           | huge      |           |
+|--------------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------|
+| blackscholes | 99.155624 |  5.425802 |  395.2934 | 18.692339 | 1585.2568 |  71.38846 | 231688.66 | 10410.998 |
+| ferret       | 158.10641 | 154.93687 | 473.47177 | 444.42612 |  2020.137 | 2336.8032 | 175053.72 | 164695.94 |
+| fluidanimate | 193.58382 | 172.91133 | 388.48483 | 391.62772 | 1311.6603 |  1172.975 | 215615.97 | 27823.836 |
+| freqmine     | 611.05194 | 1140.3716 | 10542.969 | 13230.151 | 28245.262 | 937.87164 | NA        |        NA |
+| swaptions    | 226.94939 | 131.23346 |  904.5098 | 521.67206 | 3575.4478 | 2086.3838 | NA        |        NA |
+| x264         | 436.18347 | 371.79916 |  3177.057 | 2720.3052 | 10114.562 |  8756.569 | NA        |        NA |
+
 ** TODO we don't correctly catch non-zero returns
 ** DONE Running out of memory
 #+begin_quote
