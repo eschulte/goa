@@ -1286,9 +1286,11 @@ We could use the "bubble" and the "reporter" from [[#mars2011bubble]].
 Measuring the values of HW counters against the bubble could give us
 coefficients for a memory linear model.
 
-* Code Tasks [6/8]
-** TODO re-run when we get not-counted
+* Code Tasks [7/8]
+** DONE re-run when we get not-counted
 This means perf ran two quickly.  Use half the counters.
+
+This is now implemented in the file:bin/run script.
 
 ** DONE focus mutation operators on hot spots
 - use =perf annotate= to highlight "hot" instructions
@@ -1416,7 +1418,7 @@ failures at stages.
 
 Run with =make check=.
 
-* Issues [6/8]
+* Issues [8/8]
 ** DONE do we trust run to measure output [4/4]
 | benchmark    | status                                           |
 |--------------+--------------------------------------------------|
@@ -1443,7 +1445,7 @@ Tests to be improved
 - [X] freqmine :: we will perform a more strict diff of the output
 - [X] swaptions :: we will perform a more strict diff of the output
 
-** TODO energy by input size
+** DONE energy by input size
 See how the model calculated energy varies by input size for both
 evolved and original programs.
 
@@ -2218,7 +2220,7 @@ order.
 **** graph results (multi)
 Not worth the effort to really graph this well, just look at the table
 
-** TODO we don't correctly catch non-zero returns
+** DONE we don't correctly catch non-zero returns
 ** DONE Running out of memory
 #+begin_quote
 > As it turns out, after much investigation of how I could be leaking
