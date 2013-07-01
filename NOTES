@@ -100,8 +100,8 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 | 998.specrand   |
 | 999.specrand   |
 
-* Tasks [28/35]
-** TODO select GP parameters
+* Tasks [29/35]
+** DONE select GP parameters
 first run
 | mut | cross |
 |-----+-------|
@@ -168,6 +168,10 @@ like the following.
 http://wikipedia.org/wiki/Variance#Sum_of_correlated_variables
 
 *** TODO minimum input size for each program
+By % stdev.
+
+By runtime.
+
 | Program      | size   | % variance | runtime |
 |--------------+--------+------------+---------|
 | blackscholes | medium |     3.617% |   0.761 |
@@ -182,6 +186,66 @@ http://wikipedia.org/wiki/Variance#Sum_of_correlated_variables
 | x264         | medium |    805.573 |  15.528 |
 
 *** results
+**** runtime
+#+begin_src sh
+  mean(){
+      awk '{for (i=1; i<=NF; i++)
+        {
+            if($i ~ /[0-9.]/){sum[i] += $i; count[i]++}
+                if(i == 1){ line = sum[i]/count[i] }
+                else{ line = line " " sum[i]/count[i]}
+        }
+        print line
+    }'; }
+  
+  runtime(){
+      cat etc/hw-counters/amd/$1|sed -n "/$2/,/^$/p" \
+          |grep seconds|cut -d, -f1|mean|tail -1; }
+  
+  echo "benchmark tiny small medium large"  
+  for file in $(ls etc/hw-counters/amd/);do
+      echo -n "$(basename $file .csv) "
+      for size in tiny small medium large;do
+          echo -n "$(runtime $file $size) "
+      done
+      echo ""
+  done
+#+end_src
+
+#+RESULTS:
+| benchmark    |       tiny |    small |   medium |   large |
+|--------------+------------+----------+----------+---------|
+| blackscholes | 0.00352846 | 0.189511 | 0.761738 | 3.09857 |
+| bodytrack    |   0.174888 | 0.522415 |  1.63459 | 5.70894 |
+| facesim      |    12.6936 |   12.681 |  12.6683 | 12.7136 |
+| ferret       |  0.0458039 | 0.537712 |  1.61332 | 6.40102 |
+| fluidanimate |   0.144897 | 0.567231 |  1.28914 | 3.95435 |
+| freqmine     |  0.0285459 |  2.49217 |  24.0017 |  24.795 |
+| x264         | 0.00833094 |  2.21065 |  15.5278 | 24.1012 |
+
+**** % stdev
+#+begin_src sh :var data=amd-hw-counter-results
+  echo "bench test tiny small medium large"
+  for file in $(ls etc/hw-counters/amd/);do
+      bench=$(basename $file .csv)
+      echo -n "$bench "
+      echo "$data"|sed -n "/$bench/,/^ *$/p"|tail -n +3|awk '{print $5}'|tr '\n' ' '
+      echo ""
+  done
+#+end_src
+
+#+RESULTS:
+| bench        |        tiny |      small |      medium |       large |
+|--------------+-------------+------------+-------------+-------------|
+| blackscholes |          NA | 3.6077793% |  1.0085185% |  0.6235825% |
+| bodytrack    |  6.6038585% | 1.8731365% | 0.79246277% | 0.36703333% |
+| facesim      |  2.0346885% | 1.7943326% |  1.6388873% |  2.2005231% |
+| ferret       |  15.474045% | 3.1627514% |  4.2882867% |   6.599503% |
+| fluidanimate |   2.767907% |  3.991133% |  3.7424817% |    3.79219% |
+| freqmine     |  24.301325% |  5.685626% |   7.238976% |  20.959188% |
+| x264         | -2777.5918% | 22.787048% |   21.29686% |          NA |
+
+**** orig
 #+name: amd-hw-counter-results
 #+begin_src sh :results scalar :cache yes
   for csv in etc/hw-counters/amd/*.csv;do
@@ -194,59 +258,59 @@ http://wikipedia.org/wiki/Variance#Sum_of_correlated_variables
 #+RESULTS[3bea911d15560fc7745269bd2a5e4672a077d027]: amd-hw-counter-results
 : 
 : blackscholes.csv
-: size          mean    variance      percent number   seconds
+: size          mean    variance      stdev      percent number   seconds
 : test            NA          NA           NA   NA
 : tiny            NA          NA           NA   NA
-: small     346.8987   163.41093    47.10624%   60    0.18951055
-: medium   346.71255   12.541327   3.6172118%   60     0.7617375
-: large    347.29355    5.025036   1.4469131%   60     3.0985744
+: small     357.0362    165.9222   12.881079   3.6077793%   60    0.18951055
+: medium   356.22357   12.906636   3.5925808   1.0085185%   60     0.7617375
+: large    357.14096   4.9598336   2.2270684   0.6235825%   60     3.0985744
 : 
 : bodytrack.csv
-: size          mean    variance      percent number   seconds
-: test     317.00403    538.4976   169.87091%   60     0.1501637
-: tiny      320.4772   398.87482   124.46277%   60    0.17488833
-: small    329.38245   34.974712   10.618269%   60    0.52241516
-: medium   330.72498    6.372461   1.9268157%   60     1.6345919
-: large    331.72903   1.3191015  0.39764425%   60      5.708939
+: size          mean    variance      stdev      percent number   seconds
+: test     309.27975    596.6946   24.427332   7.8981347%   60     0.1501637
+: tiny     315.05032   432.86795    20.80548   6.6038585%   60    0.17488833
+: small     327.8489   37.712585   6.1410575   1.8731365%   60    0.52241516
+: medium    329.5972   6.8222046   2.6119351  0.79246277%   60     1.6345919
+: large    331.02692   1.4761741    1.214979  0.36703333%   60      5.708939
 : 
 : facesim.csv
-: size          mean    variance      percent number   seconds
-: test      271.4402   314402.38    115827.5%   59   0.009274179
-: tiny     324.40738    53.40426   16.462097%   60     12.693625
-: small    325.55566    44.18678   13.572725%   60     12.681024
-: medium   325.72247   41.692215    12.79992%   60     12.668328
-: large     326.6099   60.589775   18.551115%   60     12.713568
+: size          mean    variance      stdev      percent number   seconds
+: test     291.57385   283853.75    532.7793   182.72534%   59   0.009274179
+: tiny     329.34906    44.90644   6.7012267   2.0346885%   60     12.693625
+: small     330.0119   35.064297    5.921511   1.7943326%   60     12.681024
+: medium   330.07697   29.263657   5.4095893   1.6388873%   60     12.668328
+: large    330.79834    52.98813   7.2792945   2.2005231%   60     12.713568
 : 
 : ferret.csv
-: size          mean    variance      percent number   seconds
-: test     339.91122   59622.754   17540.684%   60   0.017957868
-: tiny      325.0534    2782.593    856.0418%   60   0.046919268
-: small     317.0088   60.743114   19.161335%   60     0.5006953
-: medium   323.84186   159.60916    49.28614%   60     1.4408689
-: large     329.2015   507.27493   154.09253%   60      5.959686
+: size          mean    variance      stdev      percent number   seconds
+: test     340.60904   61361.477    247.7125    72.72634%  120   0.017328184
+: tiny     329.80637   2604.5085   51.034386   15.474045%  120     0.0458039
+: small     320.4449  102.715706   10.134875   3.1627514%  120    0.53771156
+: medium   330.07324   200.34949   14.154487   4.2882867%  120      1.613321
+: large     336.8951   494.32428   22.233404    6.599503%  120     6.4010215
 : 
 : fluidanimate.csv
-: size          mean    variance      percent number   seconds
-: test       312.268   2866.7375   918.03754%   60   0.027157063
-: tiny     330.72684    538.0708   162.69342%   60    0.15264207
-: small     331.9546   119.32736    35.94689%   60     0.5836928
-: medium    325.7775    312.4431   95.906906%   60     1.2899703
-: large    326.60492    411.1607   125.88931%   60     3.9668987
+: size          mean    variance      stdev      percent number   seconds
+: test      309.9557   25271.879   158.97131   51.288403%  120    0.02404317
+: tiny     323.55173    80.20296     8.95561    2.767907%  120     0.1448967
+: small    333.66986     177.348   13.317207    3.991133%  120    0.56723106
+: medium   326.40076   149.21817   12.215489   3.7424817%  120     1.2891381
+: large    327.16507   153.92673   12.406721     3.79219%  120     3.9543471
 : 
 : freqmine.csv
-: size          mean    variance      percent number   seconds
-: test      245.8545    653.3362     265.741%   60    0.10334522
-: tiny     285.50375    4741.816   1660.8595%   60   0.028545866
-: small    255.63167    182.3699    71.34089%   60     2.4921725
-: medium   242.78413   246.28793   101.44317%   60     24.001656
-: large    245.74487   2293.6982    933.3656%   60     24.795027
+: size          mean    variance      stdev      percent number   seconds
+: test     217.23047   632.64526   25.152441    11.57869%   60    0.10334522
+: tiny     280.90414    4659.896    68.26343   24.301325%   60   0.028545866
+: small    236.09837   180.19493   13.423671    5.685626%   60     2.4921725
+: medium   215.25912   242.81606   15.582556    7.238976%   60     24.001656
+: large     225.5313   2234.4082   47.269527   20.959188%   60     24.795027
 : 
 : x264.csv
-: size          mean    variance      percent number   seconds
+: size          mean    variance      stdev      percent number   seconds
 : test            NA          NA           NA   NA
-: tiny   -127.111305  20463822.0 -16099136.0%   49   .0083309375
-: small    242.09781   2428.7747  1003.22046%   60     2.2106462
-: medium   235.27931   1895.3469    805.5732%   60     15.527754
+: tiny    -150.84175  17554156.0    4189.768  -2777.5918%   49   .0083309375
+: small    214.00151   2377.9888   48.764626   22.787048%   60     2.2106462
+: medium   202.39847   1857.9993   43.104515    21.29686%   60     15.527754
 : large           NA          NA           NA   NA
 
 #+begin_src sh :var data=amd-hw-counter-results :results scalar
@@ -321,6 +385,38 @@ http://wikipedia.org/wiki/Variance#Sum_of_correlated_variables
 *** Specific benchmarks
 why do some benchmarks always show high variance
 
+**** ferret
+***** with 120 runs
+#+begin_src sh
+  ./bin/model-variance etc/hw-counters/amd/ferret.csv -c seconds -m amd-opteron-power-model
+#+end_src
+
+#+RESULTS:
+| size   |      mean |   variance |     stdev |    percent | number |     seconds |
+|--------+-----------+------------+-----------+------------+--------+-------------|
+| test   | 340.60904 |  61361.477 |  247.7125 |  72.72634% |    120 | 0.017328184 |
+| tiny   | 329.80637 |  2604.5085 | 51.034386 | 15.474045% |    120 |   0.0458039 |
+| small  |  320.4449 | 102.715706 | 10.134875 | 3.1627514% |    120 |  0.53771156 |
+| medium | 330.07324 |  200.34949 | 14.154487 | 4.2882867% |    120 |    1.613321 |
+| large  |  336.8951 |  494.32428 | 22.233404 |  6.599503% |    120 |   6.4010215 |
+
+***** looking at particular counters
+#+begin_src sh
+  ./bin/model-variance etc/hw-counters/amd/ferret.csv -p -c seconds -m amd-opteron-power-model -s medium
+#+end_src
+
+#+RESULTS:
+| counter          |         mean |          variance |       stdev |    percent |
+| EXIT             |          0.0 |               0.0 |         0.0 |         NA |
+| ERROR            |          0.0 |               0.0 |         0.0 |         NA |
+| CYCLES           | 6054498000.0 |     2.2756214e+16 | 150851630.0 |   2.491563 |
+| INSTRUCTIONS     | 5482641000.0 | 375754470000000.0 |  19384388.0 | 0.35355932 |
+| R533F00          | 1780987600.0 |  97827350000000.0 |   9890771.0 | 0.55535316 |
+| CACHE-REFERENCES | 1860805500.0 |  63416836000000.0 |   7963469.0 |  0.4279582 |
+| CACHE-MISSES     |   1018128.44 |     14369304000.0 |   119872.03 |  11.773763 |
+| SECONDS          |     1.613321 |        0.40135768 |  0.63352793 |  39.268562 |
+
+**** more runs -- vips (should build on real)
 **** more runs -- fluidanimate
 Performing *more* runs at each size of fluidanimate on real.
 #+begin_src sh
@@ -328,16 +424,15 @@ Performing *more* runs at each size of fluidanimate on real.
 #+end_src
 
 #+RESULTS:
-| size   |      mean |  variance |    percent | number |    seconds |
-|--------+-----------+-----------+------------+--------+------------|
-| test   | 311.58096 | 24747.328 | 7942.5034% |    120 | 0.02404317 |
-| tiny   | 324.05124 |  64.66636 | 19.955597% |    120 |  0.1448967 |
-| small  | 331.38202 | 155.08363 |  46.79905% |    120 | 0.56723106 |
-| medium | 326.06815 |  143.6615 | 44.058735% |    120 |  1.2891381 |
-| large  |  326.5521 | 147.55011 |  45.18425% |    120 |  3.9543471 |
+| size   |      mean |  variance |     stdev |    percent | number |    seconds |
+|--------+-----------+-----------+-----------+------------+--------+------------|
+| test   |  309.9557 | 25271.879 | 158.97131 | 51.288403% |    120 | 0.02404317 |
+| tiny   | 323.55173 |  80.20296 |   8.95561 |  2.767907% |    120 |  0.1448967 |
+| small  | 333.66986 |   177.348 | 13.317207 |  3.991133% |    120 | 0.56723106 |
+| medium | 326.40076 | 149.21817 | 12.215489 | 3.7424817% |    120 |  1.2891381 |
+| large  | 327.16507 | 153.92673 | 12.406721 |   3.79219% |    120 |  3.9543471 |
 
 **** by counter -- swaptions large
-
 ** DONE Build all benchmarks to ASM [10/10]
 *** parsec
 **** DONE Blackscholes
