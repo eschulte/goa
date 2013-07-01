@@ -82,6 +82,21 @@
         (* pwr-var sec-var))
      (length valid))))
 
+(defun total-stats (runs size)
+  ;; stat groups of the correct size
+  (flet ((keyword (it) (make-keyword (string-upcase (symbol-name it)))))
+    (let ((model-results
+           (mapcar
+            (lambda (group)
+              (apply-model *model*
+                           (mapcar (lambda-bind ((counter . count))
+                                     (cons (keyword counter) count))
+                                   (remove-if [{eql 'size} #'car] group))))
+            (remove-if-not [{eq size} {aget 'size}] runs))))
+      (list (mean model-results)
+            (variance model-results)
+            (length model-results)))))
+
 (defun model-variance (&optional (args *arguments*))
   (in-package :optimize)
   (flet ((arg-pop () (pop args))
@@ -98,8 +113,12 @@ Options:
  -s,--size --------- only for size
  -m,--model NAME --- set model to NAME
  -e,--energy ------- variance of energy, not power 
- -c,--counter C ---- also print values of counter C~%")
-          runs counter energy)
+ -c,--counter C ---- also print values of counter C
+ -t,--total -------- don't calculate model variance from
+                     variance of inputs, instead run model
+                     on each input set and return variance
+                     of model outputs~%")
+          runs counter energy total)
       (when (or (not args)
                 (string= (subseq (car args) 0 2) "-h")
                 (string= (subseq (car args) 0 3) "--h"))
@@ -110,7 +129,8 @@ Options:
        ("-s" "--size" (setf sizes (list (to-sym (arg-pop)))))
        ("-m" "--model" (setf *model* (eval (to-sym (arg-pop)))))
        ("-c" "--counter" (setf counter (to-sym (arg-pop))))
-       ("-e" "--energy" (setf energy t)))
+       ("-e" "--energy" (setf energy t))
+       ("-t" "--total" (setf total t)))
 
       (format t "size          mean    variance      percent number   ~a~%"
               (string-downcase (or counter "")))
@@ -134,7 +154,10 @@ Options:
             (mapcar
              (lambda (size)
                (handler-case
-                   (funcall (if energy #'energy-stats #'power-stats) runs size)
+                   (funcall (cond (total #'total-stats)
+                                  (energy #'energy-stats)
+                                  (t #'power-stats))
+                            runs size)
                  (error () (list nil nil 0))))
              sizes)
             (mapcar
