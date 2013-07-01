@@ -148,6 +148,9 @@ unpack(){ # dispatch depending on benchmark suite
         else
             error "benchmark '$1' is not known"
         fi
+        # clean out any old executables or source
+        rm -f "$bench_dir/$bench" "$bench_dir/$bench.s" \
+            "$bench_dir/$bench.input" "$bench_dir/$bench.output"
         msg "$bench/ created"
     fi; }
 
