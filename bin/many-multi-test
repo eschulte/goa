@@ -33,7 +33,7 @@ uniform(){ awk -F, '{print $2,$1}'|sort; }
 for size in ${SIZES[@]};do
     for bench in ${BENCHMARKS[@]};do
         if [ ! -f benchmarks/evolved/$bench ];then
-            error "benchmarks/evolved/$bench does not exist"
+            msg "benchmarks/evolved/$bench does not exist"
         fi
         mgmt clean $bench
         mgmt output $bench -s $size
