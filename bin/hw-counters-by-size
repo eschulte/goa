@@ -22,7 +22,7 @@ eval set -- $(getopt -o c:ob:s:Cd: -l count:,overwrite,bench:,size:,collate,dir:
 while [ $# -gt 0 ];do
     case $1 in
         -c|--count) COUNT=$2; shift;;
-        -o|--overwrite) OVER="YES"; shift;;
+        -o|--overwrite) OVER="YES";;
         -b|--bench) BENCHMARKS=($2); shift;;
         -s|--size) SIZES=($2); shift;;
         -C|--collate) COLLATE="YES";;
