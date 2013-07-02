@@ -350,10 +350,9 @@ compile(){
                 ;;
             freqmine)
                 set_flags "-fopenmp -Wno-deprecated"
-                cat <<EOF > all.cpp
-#include "common.h"
-EOF
-                cat *.cpp|grep -v "common.h" >> all.cpp
+                cat {fpmax,data,fp_tree,buffer,fsout,fp_node,wtime}.cpp > all.cpp
+                # only keep the first occurrence of '#include "common.h"'
+                sed -i '60,$s/\#include "common.h"//' all.cpp
                 g++ $FULL_FLAGS -S all.cpp -o ${bench}.s||error "compilation failed"
                 ;;
             # Ignoring raytrace, because it does not generate any
