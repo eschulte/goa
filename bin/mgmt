@@ -760,12 +760,12 @@ output(){
                 ;;
             freqmine)
                 case $SIZE in
-                    test)   ./$bench $bench.input 1   $target;;
-                    tiny)   ./$bench $bench.input 3   $target;;
-                    small)  ./$bench $bench.input 220 $target;;
-                    medium) ./$bench $bench.input 410 $target;;
-                    large)  ./$bench $bench.input 790 $target;;
-                    huge)   ./$bench $bench.input 11000 $target;;
+                    test)   env OMP_NUM_THREADS=1 ./$bench $bench.input 1   $target;;
+                    tiny)   env OMP_NUM_THREADS=1 ./$bench $bench.input 3   $target;;
+                    small)  env OMP_NUM_THREADS=1 ./$bench $bench.input 220 $target;;
+                    medium) env OMP_NUM_THREADS=1 ./$bench $bench.input 410 $target;;
+                    large)  env OMP_NUM_THREADS=1 ./$bench $bench.input 790 $target;;
+                    huge)   env OMP_NUM_THREADS=1 ./$bench $bench.input 11000 $target;;
                 esac
                 ;;
             raytrace)

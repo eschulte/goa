@@ -270,12 +270,12 @@ case $BENCHMARK in
         ;;
     freqmine)
         case $SIZE in
-            test)   run 0 $EXECUTABLE "$INPUT" 1   $OUT;;
-            tiny)   run 0 $EXECUTABLE "$INPUT" 3   $OUT;;
-            small)  run 0 $EXECUTABLE "$INPUT" 220 $OUT;;
-            medium) run 0 $EXECUTABLE "$INPUT" 410 $OUT;;
-            large)  run 0 $EXECUTABLE "$INPUT" 790 $OUT;;
-            huge)   run 0 $EXECUTABLE "$INPUT" 11000 $OUT;;
+            test)   run 0 env OMP_NUM_THREADS=1 $EXECUTABLE "$INPUT" 1   $OUT;;
+            tiny)   run 0 env OMP_NUM_THREADS=1 $EXECUTABLE "$INPUT" 3   $OUT;;
+            small)  run 0 env OMP_NUM_THREADS=1 $EXECUTABLE "$INPUT" 220 $OUT;;
+            medium) run 0 env OMP_NUM_THREADS=1 $EXECUTABLE "$INPUT" 410 $OUT;;
+            large)  run 0 env OMP_NUM_THREADS=1 $EXECUTABLE "$INPUT" 790 $OUT;;
+            huge)   run 0 env OMP_NUM_THREADS=1 $EXECUTABLE "$INPUT" 11000 $OUT;;
         esac
         diff $OUT $OUTPUT >/dev/null 2>/dev/null
         ERROR=$?
