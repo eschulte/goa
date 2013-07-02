@@ -349,14 +349,11 @@ compile(){
                 g++ $FULL_FLAGS -S all.cpp -o ${bench}.s||error "compilation failed"
                 ;;
             freqmine)
-                set_flags "-Wno-deprecated"
+                set_flags "-fopenmp -Wno-deprecated"
                 cat <<EOF > all.cpp
 #include "common.h"
-static int omp_get_max_threads() {return 1;}
 EOF
-                cat *.cpp \
-                    |grep -v "common.h" \
-                    |grep -v "static int omp_get_max_threads" >> all.cpp
+                cat *.cpp|grep -v "common.h" >> all.cpp
                 g++ $FULL_FLAGS -S all.cpp -o ${bench}.s||error "compilation failed"
                 ;;
             # Ignoring raytrace, because it does not generate any
@@ -509,7 +506,7 @@ link(){
                 g++ ${bench}.s -lpthread -o $bench||error "linking failed"
                 ;;
             freqmine)
-                g++ -Wno-deprecated ${bench}.s -o $bench||error "linking failed"
+                g++ -fopenmp -Wno-deprecated ${bench}.s -o $bench||error "linking failed"
                 ;;
             raytrace)
                 FLAGS="-lglut -lGL -lGL -lGLU -lXmu -lXext -lXau -lX11 "
