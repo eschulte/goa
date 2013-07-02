@@ -2367,14 +2367,13 @@ Not worth the effort to really graph this well, just look at the table
 #+end_src
 
 #+RESULTS[60cb11fa4c2bb04447401327aa6b5c55e1f312a4]: evolved-error-by-size
-| bench        | small |   | medium |    | large |              | huge |    |
-|--------------+-------+---+--------+----+-------+--------------+------+----|
-| blackscholes |     0 | 0 |      0 |  0 |     0 |            0 | 0    |  0 |
-| ferret       |     0 | 0 |      0 |  0 |     0 |            0 | 16   | 16 |
-| fluidanimate |     0 | 1 |      0 |  0 |     0 |            0 | 1    |  1 |
-| freqmine     |     0 | 0 |      0 |  0 |     0 | 903515060783 | NA   | NA |
-| swaptions    |     0 | 0 |      0 |  0 |     0 |            0 | NA   | NA |
-| x264         |     0 | 0 |      0 | 10 |     0 |           10 | NA   | NA |
+| bench        | small |   | medium |   | large |   | huge |    |
+|--------------+-------+---+--------+---+-------+---+------+----|
+| blackscholes |     0 | 0 |      0 | 0 |     0 | 0 |    0 |  0 |
+| ferret       |     0 | 0 |      0 | 0 |     0 | 0 |   16 | 16 |
+| fluidanimate |     0 | 1 |      0 | 0 |     0 | 0 |    1 |  1 |
+| swaptions    |     0 | 0 |      0 | 0 |     0 | 0 |    0 |  0 |
+| x264         |     0 | 0 |      0 | 2 |     0 | 2 |    0 |  2 |
 
 ** DONE we don't correctly catch non-zero returns
 ** DONE Running out of memory
