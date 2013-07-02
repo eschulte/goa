@@ -1410,6 +1410,10 @@ minutes before I killed it; parsecmgmt took about 5 seconds to run
 that benchmark.
 #+end_quote
 
+Freqmine compiled with mgmt kicks off *many* threads, somehow the one
+compiled with parsecmgmt doesn't do that.  Doesn't matter on input
+size of small, but does for all larger input sizes.
+
 ** DONE re-run when we get not-counted
 This means perf ran two quickly.  Use half the counters.
 
@@ -1620,7 +1624,7 @@ Parse results
           |./bin/calc-energy -m amd-opteron-power-model; }
   base=results/evo-cmp/
   echo "benchmark,small,,medium,,large,,huge,,"
-  for bench in blackscholes ferret fluidanimate freqmine swaptions x264;do
+  for bench in blackscholes ferret fluidanimate swaptions x264;do
       echo -n "$bench,"
       for size in small medium large huge;do
           file=$base/$bench-$size.csv
@@ -1635,14 +1639,13 @@ Parse results
 #+end_src
 
 #+name: energy-comparison
-| benchmark    |     small |           |    medium |           |     large |           | huge      |           |
-|--------------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------|
-| blackscholes | 99.155624 |  5.425802 |  395.2934 | 18.692339 | 1585.2568 |  71.38846 | 231688.66 | 10410.998 |
-| ferret       | 158.10641 | 154.93687 | 473.47177 | 444.42612 |  2020.137 | 2336.8032 | 175053.72 | 164695.94 |
-| fluidanimate | 193.58382 | 172.91133 | 388.48483 | 391.62772 | 1311.6603 |  1172.975 | 215615.97 | 27823.836 |
-| freqmine     | 611.05194 | 1140.3716 | 10542.969 | 13230.151 | 28245.262 | 937.87164 | NA        |        NA |
-| swaptions    | 226.94939 | 131.23346 |  904.5098 | 521.67206 | 3575.4478 | 2086.3838 | NA        |        NA |
-| x264         | 436.18347 | 371.79916 |  3177.057 | 2720.3052 | 10114.562 |  8756.569 | NA        |        NA |
+| benchmark    |     small |           |    medium |           |     large |           |      huge |           |   |
+|--------------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+---|
+| blackscholes | 102.40074 |  5.359917 | 407.50146 |   17.8124 | 1634.3947 |  67.56911 | 238324.58 |  9805.747 |   |
+| ferret       | 160.08018 | 156.10066 | 484.27823 |  451.4411 | 2069.3865 | 2395.8394 | 176511.75 | 164797.53 |   |
+| fluidanimate |  195.3625 | 173.90326 | 386.38293 | 389.14505 | 1315.4622 | 1165.0105 | 216816.61 | 25841.145 |   |
+| swaptions    | 225.79857 | 130.91309 |  900.8441 |  519.4902 | 3552.3733 |  2079.516 | 176558.14 | 103784.79 |   |
+| x264         | 366.21185 | 301.24615 | 2629.5469 | 2148.8633 |  8361.798 |  6917.794 | 287555.34 | 245182.39 |   |
 
 **** collect results (multi)
 #+name: energy-comparison-multi
@@ -2262,11 +2265,11 @@ Parse results
 #+end_src
 
 #+RESULTS: collated-energy-comparison
-| SIZE   | blackscholes | blackscholes |    ferret |    ferret | fluidanimate | fluidanimate |  freqmine |  freqmine | swaptions | swaptions |      x264 |      x264 |
-| SMALL  |    99.155624 |     5.425802 | 158.10641 | 154.93687 |    193.58382 |    172.91133 | 611.05194 | 1140.3716 | 226.94939 | 131.23346 | 436.18347 | 371.79916 |
-| MEDIUM |     395.2934 |    18.692339 | 473.47177 | 444.42612 |    388.48483 |    391.62772 | 10542.969 | 13230.151 |  904.5098 | 521.67206 |  3177.057 | 2720.3052 |
-| LARGE  |    1585.2568 |     71.38846 |  2020.137 | 2336.8032 |    1311.6603 |     1172.975 | 28245.262 | 937.87164 | 3575.4478 | 2086.3838 | 10114.562 |  8756.569 |
-| HUGE   |    231688.66 |    10410.998 | 175053.72 | 164695.94 |    215615.97 |    27823.836 |        NA |        NA |        NA |        NA |        NA |        NA |
+| SIZE   | blackscholes | blackscholes |    ferret |    ferret | fluidanimate | fluidanimate | swaptions | swaptions |      x264 |      x264 |
+| SMALL  |    102.40074 |     5.359917 | 160.08018 | 156.10066 |     195.3625 |    173.90326 | 225.79857 | 130.91309 | 366.21185 | 301.24615 |
+| MEDIUM |    407.50146 |      17.8124 | 484.27823 |  451.4411 |    386.38293 |    389.14505 |  900.8441 |  519.4902 | 2629.5469 | 2148.8633 |
+| LARGE  |    1634.3947 |     67.56911 | 2069.3865 | 2395.8394 |    1315.4622 |    1165.0105 | 3552.3733 |  2079.516 |  8361.798 |  6917.794 |
+| HUGE   |    238324.58 |     9805.747 | 176511.75 | 164797.53 |    216816.61 |    25841.145 | 176558.14 | 103784.79 | 287555.34 | 245182.39 |
 
 **** collate results (multi)
 #+name: collated-energy-comparison-multi
@@ -2332,9 +2335,7 @@ order.
   set xtic rotate by -45
   set ylabel "percent energy reduction"
   set xlabel "input size"
-  # plot for [n=2:7] data u n:xtic(1) ti col
-  # plot for [n=2:7] data u ($n - $(n - 1))/$n:xtic(1) ti col
-  plot for [n=2:12:2] data u (100 * ((column(n) - column(n + 1)) / column(n))):xtic(1) ti col
+  plot for [n=2:10:2] data u (100 * ((column(n) - column(n + 1)) / column(n))):xtic(1) ti col
 #+end_src
 
 #+RESULTS:
