@@ -354,9 +354,8 @@ case $BENCHMARK in
             ERROR=$(($ERROR + 1))
         fi
         # then un-compress and compare to the original
-        if ! diff -q "$INPUT" <(bunzip2 -c $OUT);then
-            ERROR=$(($ERROR + 10))
-        fi
+        diff "$INPUT" <(bunzip2 -c $OUT) >/dev/null 2>/dev/null
+        ERROR=$(($ERROR + $?))
         ;;
     h264ref)
         case $SIZE in
@@ -371,11 +370,8 @@ case $BENCHMARK in
             -p InputFile="$INPUT" \
             -p OutputFile="$OUT"
         EXIT=$?
-        if ! diff -q $OUTPUT $OUT;then
-            ERROR=10
-        else
-            ERROR=0
-        fi
+        diff $OUTPUT $OUT >/dev/null 2>/dev/null
+        ERROR=$?
         ;;
     *) error "no test implemented for '$BENCHMARK'";;
 esac
