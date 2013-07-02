@@ -1379,8 +1379,8 @@ We could use the "bubble" and the "reporter" from [[#mars2011bubble]].
 Measuring the values of HW counters against the bubble could give us
 coefficients for a memory linear model.
 
-* Code Tasks [7/9]
-** TODO inefficient mgmt generated executables
+* Code Tasks [8/9]
+** DONE inefficient mgmt generated executables
 | benchmark    | Intel | AMD |
 |--------------+-------+-----|
 | blackscholes |     7 |   1 |
@@ -1388,12 +1388,14 @@ coefficients for a memory linear model.
 | facesim      |   1.1 | 1.1 |
 | ferret       |   0.9 | 0.9 |
 | fluidanimate |     1 |   1 |
-| freqmine     |     1 | 3.1 |
+| freqmine     |     1 |  1\dagger |
 | swaptions    |   0.9 | 0.9 |
 | vips         |       | 0.7 |
-| x264         |     7 |   \dagger |
+| x264         |     7 |   \Dagger |
 
-\dagger x264 built with parsec includes hand-written ASM, while the version
+\dagger was 3.1, but fix by including -fopenmp in the mgmt build
+
+\Dagger x264 built with parsec includes hand-written ASM, while the version
   built by mgmt is uses the alternate C source code.  On our AMD
   machine the parsecmgmt version segfaults
 
