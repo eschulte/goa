@@ -1379,7 +1379,7 @@ We could use the "bubble" and the "reporter" from [[#mars2011bubble]].
 Measuring the values of HW counters against the bubble could give us
 coefficients for a memory linear model.
 
-* Code Tasks [8/9]
+* Code Tasks [8/8]
 ** DONE inefficient mgmt generated executables
 | benchmark    | Intel | AMD |
 |--------------+-------+-----|
@@ -1401,18 +1401,6 @@ coefficients for a memory linear model.
 
 We need to figure out why blackscholes and bodytrack are bad on Intel,
 and why freqmine is bad on AMD.
-
-** TODO freqmine execution takes too long in the run script
-#+begin_quote
-I should mention that I ran all benchmarks using bin/run *except*
-freqmine. I ran freqmine using parsecmgmt since bin/run took over 10
-minutes before I killed it; parsecmgmt took about 5 seconds to run
-that benchmark.
-#+end_quote
-
-Freqmine compiled with mgmt kicks off *many* threads, somehow the one
-compiled with parsecmgmt doesn't do that.  Doesn't matter on input
-size of small, but does for all larger input sizes.
 
 ** DONE re-run when we get not-counted
 This means perf ran two quickly.  Use half the counters.
@@ -1545,7 +1533,20 @@ failures at stages.
 
 Run with =make check=.
 
-* Issues [8/8]
+* Issues [9/9]
+** DONE freqmine compiled w/mgmt takes too long
+#+begin_quote
+I should mention that I ran all benchmarks using bin/run *except*
+freqmine. I ran freqmine using parsecmgmt since bin/run took over 10
+minutes before I killed it; parsecmgmt took about 5 seconds to run
+that benchmark.
+#+end_quote
+
+Freqmine takes *very* long whenever it writes output.  The only reason
+it goes quickly in parsec runs is because no output file is created.
+
+: OMP_NUM_THREADS=1
+
 ** DONE do we trust run to measure output [4/4]
 | benchmark    | status                                           |
 |--------------+--------------------------------------------------|
