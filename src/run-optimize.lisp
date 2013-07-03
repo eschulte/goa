@@ -10,7 +10,7 @@
 
 Options:
  -C,--config FILE ------ read configuration from FILE
- -c,--cross-p ---------- crossover chance
+ -c,--cross-chance NUM - crossover chance (default 1/3)
  -E,--max-error NUM ---- maximum allowed error
  -e,--eval SEXP -------- evaluate S-expression SEXP
  -F,--fit-evals NUM ---- max number of fitness evals
@@ -20,7 +20,7 @@ Options:
                          default: ~:d
  -l,--linker LINKER ---- linker to use
  -M,--mcmc ------------- run MCMC search instead of GP
- -m,--mut-p NUM -------- mutation chance
+ -m,--mut-chance NUM --- mutation chance (default 1)
  -o,--model NAME ------- model name
  -P,--period NUM ------- period (in evals) of checkpoints
                          default: max-evals/(2^10)
@@ -30,9 +30,11 @@ Options:
                          asm, light, or range (default)
  -r,--res-dir DIR ------ save results to dir
                          default: program.opt/
+ -S,--evict-size NUM --- eviction tournament size
+                         default: 2
  -s,--size SIZE -------- input size test,tiny,small,medium,large
- -T,--tourny-size NUM -- tournament size
-                         default: 4
+ -T,--tourny-size NUM -- selection tournament size
+                         default: 1 (i.e., random selection)
  -t,--threads NUM ------ number of threads
  -V,--version ---------- print version and exit
  -v,--verbose NUM ------ verbosity level 0-4
@@ -95,7 +97,7 @@ Options:
     ;; process command line options
     (getopts
      ("-C" "--config"    (load (arg-pop)))
-     ("-c" "--cross-p"   (setf *cross-chance* (parse-number (arg-pop))))
+     ("-c" "--cross-chance" (setf *cross-chance* (parse-number (arg-pop))))
      ("-E" "--max-err"   (setf *max-err* (read-from-string (arg-pop))))
      ("-e" "--eval"      (eval (read-from-string (arg-pop))))
      ("-F" "--fit-evals" (setf *evals* (parse-integer (arg-pop))))
@@ -106,7 +108,7 @@ Options:
                         (parse-integer (arg-pop))))
      ("-l" "--linker"    (setf (linker *orig*) (arg-pop)))
      ("-M" "--mcmc"      (setf *mcmc* t))
-     ("-m" "--mut-p"     (setf *mut-chance* (parse-number (arg-pop))))
+     ("-m" "--mut-chance" (setf *mut-chance* (parse-number (arg-pop))))
      ("-o" "--model"     (setf *model* (intern (string-upcase (arg-pop)))))
      ("-P" "--period"    (setf *period* (parse-integer (arg-pop))))
      ("-p" "--pop-size"  (setf *max-population-size*
@@ -120,6 +122,8 @@ Options:
      ("-R" "--rep"       (setf *rep* (intern (string-upcase (arg-pop)))))
      ("-s" "--size"      (setf *size* (arg-pop)))
      ("-T" "--tourny-size" (setf *tournament-size* (parse-integer (arg-pop))))
+     ("-S" "--evict-size" (setf *tournament-eviction-size*
+                                (parse-integer (arg-pop))))
      ("-t" "--threads"   (setf *threads* (parse-integer (arg-pop))))
      ("-v" "--verbose"   (let ((lvl (parse-integer (arg-pop))))
                            (when (>= lvl 4) (setf *shell-debug* t))
