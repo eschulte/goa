@@ -1,0 +1,316 @@
+** Using the Graphite Virtual Machine
+*** Virtual Machine Setup
+
+1. We will create a Qemu virtual machine and install the Debian 5.0.9
+   specifically =debian-5010-i386-netinst.iso= from
+   http://cdimage.debian.org/debian-cd/6.0.6/amd64/iso-cd/debian-6.0.6-amd64-netinst.iso
+   #+begin_src sh
+     # create the disk
+     qemu-img create -f qcow2 tune.qcow 24G
+     # install the operating system
+     qemu-system-x86_64 tune.qcow -cdrom debian-5010-i386-netinst.iso -boot d
+   #+end_src
+
+2. Walk through the instillation dialog, we'll set the following
+   values.
+   | hostname            | tune          |
+   | version             | stable        |
+   | root password       | password      |
+   | new user full name  | Francis Bacon |
+   | new user login name | bacon         |
+   | new user password   | password      |
+
+   When it comes time to select which packages to install, deselect
+   "Graphical desktop environment" and do select "SSH server".
+
+   After the setup completes reboot and log in as root.
+
+4. Now install the Graphite and Parsec dependencies,
+   #+begin_src sh
+     # Graphite dependencies
+     apt-get update
+     apt-get install build-essential libtool automake autoconf autotools-dev
+     apt-get install libboost1.42-dev libboost-filesystem1.42-dev libboost-system1.42-dev
+     apt-get install git-core
+     # Parsec dependencies
+     apt-get install gettext yasm
+     # So the bacon user can have sudo
+     apt-get install sudo
+   #+end_src
+   give the =bacon= user =sudo= permissions,
+   #+begin_src sh
+     echo "bacon   ALL=(ALL) ALL" >> /etc/sudoers
+   #+end_src
+   and shutdown the machine.
+   #+begin_src sh
+     shutdown -h now
+   #+end_src
+
+5. Start up the virtual machine with network access so we can connect
+   with ssh -- allowing copy-paste from the local machine, use of a
+   normal terminal, and other niceties.
+   #+begin_src sh
+     qemu-kvm -hda tune.qcow -nographic -cdrom data/debian-5010-amd64-netinst.iso \
+         -m 1G -net nic -net user,hostfwd=tcp:127.0.0.1:2222-:22 -daemonize
+   #+end_src
+
+*** Running Graphite
+1. Log into =tune= as =bacon=.
+   #+begin_src sh
+     ssh -p 2222 bacon@localhost
+   #+end_src
+   and install Graphite following these instructions from
+   https://github.com/mit-carbon/Graphite/wiki/Getting-Started, after
+   getting version 53271 of pin from [[http://www.pintool.org/downloads.html][PIN|downloads]] decompress it to
+   =~/pin=.  Then set this location into =~/graphite/Makefile.config=.
+   #+begin_src sh
+     cat <<EOF > ~/graphite/Makefile.config
+     # where Pin is uzipped to
+     PIN_HOME = /home/bacon/pin
+     EOF
+   #+end_src
+   Run =make= to build Graphite.
+
+2. Confirm that the build was successful by running the following
+   which should exit successfully.
+   #+begin_src sh
+     make ping_pong_app_test CORES=16 PROCS=2
+   #+end_src
+
+3. At this point the virtual machine is usable for running
+   applications through Graphite and collecting metrics.  If modeling
+   power consumption then one more dependency must be installed.
+   McPAT is available at http://www.hpl.hp.com/research/mcpat/.  The
+   tarball should be downloaded to the virtual machine and unpacked
+   into the home directory.
+   #+begin_src sh
+     cd ~/archives/
+     wget http://www.hpl.hp.com/research/mcpat/mcpat0.8_r274.tar.gz
+     cd ~
+     tar xzf archives/mcpat0.8_r274.tar.g
+     sudo apt-get install g++-multilib libc6-dev-i386
+     mv mcpat0.8_r274/ mcpat/
+     cd mcpat/
+     make
+   #+end_src
+
+   To enable power modeling, in =~/graphite/carbon_sim.cfg= set
+   =enable_power_modeling= to =true=.
+   #+begin_src sh
+     sed 's/enable_power_modeling = false/enable_power_modeling = true/' \
+         -i ~/graphite/carbon_sim.cfg
+   #+end_src
+
+*** Running the PARSEC benchmark with Graphite
+Much of these instructions are adopted from [[https://github.com/mit-carbon/Graphite/wiki/Adding-and-Running-Applications#Running an application from the PARSEC benchmark suite][Running an application
+from the PARSEC benchmark suite]].
+
+1. To install Parsec in the virtual machine for use with Graphite,
+   download and unpack the tarball from
+   http://parsec.cs.princeton.edu/download/3.0/parsec-3.0.tar.gz.
+   #+begin_src sh
+     cd ~/archives/
+     wget http://parsec.cs.princeton.edu/download/3.0/parsec-3.0.tar.gz
+     cd ~/graphite/tests/
+     # this may take some time...
+     tar xzf archives/parsec-3.0.tar.gz
+   #+end_src
+
+2. Add Parsec and Graphite environment variables to =~/.profile=.
+   #+begin_src sh
+     cat <<EOF >> ~/.profile
+     export PIN_HOME=$HOME/pin
+     export GRAPHITE_HOME=$HOME/graphite
+     export PARSEC_HOME=$GRAPHITE_HOME/tests/parsec-2.1
+     export PARSECDIR=$PARSEC_HOME
+     export xxPARSECDIRxx=$PARSECDIR
+     source $PARSEC_HOME/env.sh
+     EOF
+   #+end_src
+
+3. We can largely just follow the instructions on the [[https://github.com/mit-carbon/Graphite/wiki/Adding-and-Running-Applications#Running%20an%20application%20from%20the%20PARSEC%20benchmark%20suite][graphite wiki]].
+
+4. Then from the Graphite home directory, set the =PARSEC_HOME=
+   variable in the file =tests/Makefile.parsec= to point to the source
+   of the PARSEC source tree.
+   #+begin_src sh
+     cd ${GRAPHITE_HOME}
+     sed -i "s/^PARSEC_HOME \?= \?.*$/PARSEC_HOME=$(echo $PARSEC_HOME|sed 's/\//\\\//g')/" \
+         tests/Makefile.parsec
+   #+end_src
+
+   Run =make parsec_setup= and =make [app]_parsec= to simulate the
+   =[app]= with Graphite using the parameters specified in
+   =tests/Makefile.parsec=. E.g.,
+   #+begin_src sh
+     make blackscholes_parsec
+   #+end_src
+
+*** Running a Simple Fast Fourier Transform (FFT)
+The FFT benchmark has higher memory requirements than the simple
+ping-pong test, so for this we'll have to increase the memory of the
+VM by passing the =-m 1G= flag to the call to =qemu-kvm=.
+#+begin_src sh
+  ./src/run-vm tune.qcow 2222
+#+end_src
+
+This should run for a while and complete with output that looks like
+the following.
+: FFT with Blocking Transpose
+:    65536 Complex Doubles
+:    64 Processors
+:    65536 Cache lines
+:    16 Byte line size
+:    4096 Bytes per page
+:
+:
+:                  PROCESS STATISTICS
+:             Computation      Transpose     Transpose
+:  Proc          Time            Time        Fraction
+:     0          79869664       27878043       0.34904
+:
+:                  TIMING INFORMATION
+: Start time                        : 1333389980838004
+: Initialization finish time        : 1333390099558235
+: Overall finish time               : 1333390179427899
+: Total time with initialization    :        198589895
+: Total time without initialization :         79869664
+: Overall transpose time            :         27878043
+: Overall transpose fraction        :          0.34904
+
+*** Evolving a Population of Variants
+This experimental setup is held in a git directory available from
+http://gitweb.adaptive.cs.unm.edu/optimization.git for anonymous git
+access with the following.
+: git clone http://gitweb.adaptive.cs.unm.edu/optimization.git
+
+Using the scripts in file:src/host-test and file:src/guest-test,
+the experimental harness in file:src/optimize.lisp and the [[http://gitweb.adaptive.cs.unm.edu/software-evolution.git][software
+evolution]] framework it is possible to evolve populations of variants
+of the original FFT program to optimize for certain execution
+properties.  The following instructions describe how to evolve a
+population of variant programs using multiple VM back ends for
+parallel fitness evaluation.
+
+1. Copy the file:src/guest-test script into the =/home/bacon/bin/=
+   on the virtual machine.  Power off the virtual machine before
+   performing the next step.
+   #+begin_src sh
+     scp src/guest-test -P 2222 bacon@localhost:bin/
+     ssh -p 2222 root@localhost poweroff
+   #+end_src
+
+2. We will use the file:src/limit.c test harness to protect our
+   evolutionary process from the sometimes aberrant behavior of the
+   test execution shell scripts and the evolved variants which they
+   execute.  Compile both host and guest versions of this script and
+   place them for use by the host and guest test scripts.
+   #+begin_src sh
+     # host limit harness
+     gcc -o src/limit src/limit.c
+     # guest limit harness
+     scp src/limit.c -P 2222 bacon@localhost:bin/
+     ssh -p 2222 bacon@localhost gcc -o bin/limit bin/limit.c
+     ssh -p 2222 root@localhost poweroff
+   #+end_src
+
+3. The current version of file:src/host-test assumes that all
+   virtual machines are running on =localhost= and that they are
+   placed behind different port numbers.  To setup multiple VMs on
+   your local machine saving their port numbers to the
+   file:src/REMOTES file (as required by file:src/host-test) follow
+   the steps in [[#running-overlays][Running overlays]].
+
+4. Since ssh is apparently /very/ sensitive to widely readable public
+   keys, be sure to fix access permission for file:data/id_rsa which
+   may not be preserved by git.
+   #+begin_src sh
+     chmod 700 data/id_rsa
+   #+end_src
+
+5. Change into the =src/= directory and fire up a Common Lisp
+   interpreter (SBCL version 1.0.55 was used to prepare these
+   instructions).  Ensure that the [[http://gitweb.adaptive.cs.unm.edu/software-evolution.git][software evolution]] framework is
+   installed and load the file:src/optimize.lisp file into your lisp
+   session.  To test that things your test scripts, virtual machines,
+   and lisp install are all working correctly evaluate the original
+   FFT program and ensure that it's fitness is equal to 1.
+   #+begin_src lisp
+     (require 'software-evolution)
+     (in-package 'software-evolution)
+     (load "optimize.lisp")
+     (unless (neutral-p (evaluate *orig*))
+       (error "Something is wrong, debug your script/lisp setup."))
+   #+end_src
+
+6. If everything appears to be working as expected, then a population
+   of 100 variants can be evolved to minimize execution time by
+   running the following.  See file:src/optimize.lisp to change the
+   default configuration of things like population size, tournament
+   size, and the features optimized for.
+
+*** Running overlays
+  :PROPERTIES:
+  :shebang:  #!/bin/sh
+  :CUSTOM_ID: running-overlays
+  :END:
+Qemu overlays create lightweight disk images based off of a starting
+disk image which can be used to store diffs from the original, and to
+run multiple instances of an original.
+
+We'll use overlays to parallelize the fitness evaluation in our
+genetic algorithm.
+
+To create some number of overlay images run;
+#+begin_src sh :tangle src/create-vms
+  pushd overlays/
+  for i in $(seq 46);do
+      j=$(printf "%0.2d" i);
+      if [ ! -f "$j.qcow" ];then
+          qemu-img create -b ../tune.qcow -f qcow2 "$j.qcow"
+      fi
+  done
+  popd
+#+end_src
+
+To run all overlays daemonized;
+#+begin_src sh :tangle src/startup-vms
+  remotes=""
+  pushd overlays/
+  for i in $(seq 46);do
+      I=$(printf "%0.2d" i);
+      ../src/run-vm "$I.qcow" "30$I"
+      remotes="$remotes \"30$I\""
+  done
+  popd
+  cat <<EOF > src/REMOTES
+  #!/bin/sh
+  REMOTES=($remotes)
+  EOF
+#+end_src
+
+*** Running LLVM/Clang and clang-mutate
+1. Log into =tune= as =root=
+
+2. Install subversion.
+   #+begin_src sh
+     apt-get install subversion
+   #+end_src
+
+3. Install the llvm/clang from SVN.
+   #+begin_src sh
+     cd /usr/local/src/
+     svn co http://llvm.org/svn/llvm-project/llvm/trunk llvm
+     cd llvm/tools/
+     svn co http://llvm.org/svn/llvm-project/cfe/trunk clang
+     cd ../
+     ./configure && make install && make clean
+   #+end_src
+
+4. Install [[https://github.com/eschulte/clang-mutate][clang-mutate]] from git.
+   #+begin_src sh
+     cd /usr/local/src/
+     git clone git://github.com/eschulte/clang-mutate.git
+     cd clang-mutate
+     make install && make clean
+   #+end_src

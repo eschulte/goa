@@ -100,7 +100,7 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 | 998.specrand   |
 | 999.specrand   |
 
-* Tasks [29/35]
+* Tasks [29/34]
 ** DONE select GP parameters
 first run
 | mut | cross |
@@ -160,34 +160,40 @@ to accurately guide our GP process.
 The goal is to balance faster running time with fitness function
 accuracy.
 
-For every benchmark program, test a range of input sizes until we find
-the smallest input which results in stable HW counters.
+Best.
+| Program      | size   |  stdev | runtime(s) |
+|--------------+--------+--------+------------|
+| blackscholes | medium |     1% |      0.761 |
+| bodytrack    | small  |   1.8% |      0.522 |
+| facesim      | NA     |     2% |       12.6 |
+| ferret       | small  |  3.16% |      0.537 |
+| fluidanimate | small  |   3.9% |      0.567 |
+| freqmine     | small  |  5.68% |      2.492 |
+| swaptions    | small  |  1.11% |      0.386 |
+| vips         |        |        |            |
+| x264         | small  | 22.78% |      2.210 |
 
-The HW counters are definitely correlated, so we should use something
-like the following.
-http://wikipedia.org/wiki/Variance#Sum_of_correlated_variables
+Suggested Starting.
+| Program      | size   |  stdev | runtime(s) |
+|--------------+--------+--------+------------|
+| blackscholes | large  |  0.62% |        3.1 |
+| bodytrack    | medium |  0.79% |        1.6 |
+| facesim      | NA ‡   |  1.63% |       12.7 |
+| ferret       | medium |  4.28% |        1.6 |
+| fluidanimate | medium |  3.74% |        1.3 |
+| freqmine     | medium |  7.24% |       24.0 |
+| swaptions †  | medium | 16.01% |        1.6 |
+| vips         |        |        |            |
+| x264         | medium | 21.29% |       15.5 |
 
-*** TODO minimum input size for each program
-By % stdev.
+† This one recorded on my laptop using the Intel power model, *not* on
+  the AMD machine (because they're busy w/other runs).
 
-By runtime.
-
-| Program      | size   | % variance | runtime |
-|--------------+--------+------------+---------|
-| blackscholes | medium |     3.617% |   0.761 |
-| bodytrack    | small  |    10.618% |   0.522 |
-| facesim      | medium |    12.800% |  12.668 |
-| ferret       | small  |    19.161% |   0.501 |
-| fluidanimate | small  |    35.947% |   0.584 |
-| freqmine     | small  |     71.341 |   2.492 |
-| raytrace     |        |            |         |
-| swaptions    |        |            |         |
-| vips         |        |            |         |
-| x264         | medium |    805.573 |  15.528 |
+‡ Every input for facesim is the same.
 
 *** results
 **** runtime
-#+begin_src sh
+#+begin_src sh :var dir="etc/hw-counters/amd"
   mean(){
       awk '{for (i=1; i<=NF; i++)
         {
@@ -199,11 +205,11 @@ By runtime.
     }'; }
   
   runtime(){
-      cat etc/hw-counters/amd/$1|sed -n "/$2/,/^$/p" \
+      cat $dir/$1|sed -n "/$2/,/^$/p" \
           |grep seconds|cut -d, -f1|mean|tail -1; }
   
   echo "benchmark tiny small medium large"  
-  for file in $(ls etc/hw-counters/amd/);do
+  for file in $(ls $dir);do
       echo -n "$(basename $file .csv) "
       for size in tiny small medium large;do
           echo -n "$(runtime $file $size) "
@@ -212,7 +218,14 @@ By runtime.
   done
 #+end_src
 
-#+RESULTS:
+#+name: bagel-seconds
+| benchmark    |       tiny |     small |   medium |   large |
+|--------------+------------+-----------+----------+---------|
+| blackscholes | 0.00139599 | 0.0883597 | 0.351268 | 1.41977 |
+| swaptions    | 0.00175334 |  0.385808 |  1.55343 | 6.17976 |
+| x264         | 0.00305646 |   1.09651 |  8.38398 | 23.9957 |
+
+#+name: amd-seconds
 | benchmark    |       tiny |    small |   medium |   large |
 |--------------+------------+----------+----------+---------|
 | blackscholes | 0.00352846 | 0.189511 | 0.761738 | 3.09857 |
@@ -224,9 +237,9 @@ By runtime.
 | x264         | 0.00833094 |  2.21065 |  15.5278 | 24.1012 |
 
 **** % stdev
-#+begin_src sh :var data=amd-hw-counter-results
+#+begin_src sh :var data=amd-hw-counter-results :var dir="etc/hw-counters/bagel"
   echo "bench test tiny small medium large"
-  for file in $(ls etc/hw-counters/amd/);do
+  for file in $(ls $dir);do
       bench=$(basename $file .csv)
       echo -n "$bench "
       echo "$data"|sed -n "/$bench/,/^ *$/p"|tail -n +3|awk '{print $5}'|tr '\n' ' '
@@ -235,6 +248,11 @@ By runtime.
 #+end_src
 
 #+RESULTS:
+| bench     |      test |     tiny |      small |     medium |      large |
+|-----------+-----------+----------+------------+------------+------------|
+| swaptions | 15.87082% | 100.593% | 1.1134541% | 16.012053% | 9.3935995% |
+
+#+name: amd-stdev
 | bench        |        tiny |      small |      medium |       large |
 |--------------+-------------+------------+-------------+-------------|
 | blackscholes |          NA | 3.6077793% |  1.0085185% |  0.6235825% |
@@ -246,16 +264,42 @@ By runtime.
 | x264         | -2777.5918% | 22.787048% |   21.29686% |          NA |
 
 **** orig
-#+name: amd-hw-counter-results
+#+name: bagel-hw-counter-results
 #+begin_src sh :results scalar :cache yes
-  for csv in etc/hw-counters/amd/*.csv;do
+  for csv in etc/hw-counters/bagel/*.csv;do
       echo ""
       echo $(basename $csv)
-      ./bin/model-variance $csv -m amd-opteron-power-model -c seconds
+      ./bin/model-variance $csv -m intel-sandybridge-power-model -c seconds
   done
 #+end_src
 
-#+RESULTS[3bea911d15560fc7745269bd2a5e4672a077d027]: amd-hw-counter-results
+#+RESULTS[b7edce96d073074cd1caf43f0eddafe702e9a55e]: bagel-hw-counter-results
+: 
+: blackscholes.csv
+: size          mean    variance      stdev      percent number   seconds
+: test     101.34776   5189949.0    2278.146   2247.8503%   30   0.001131961
+: tiny      58.55405    2629.377    51.27745   87.572845%   30   .0013959858
+: small    61.804443   10.808836   3.2876794    5.319487%   30   0.088359706
+: medium   61.189903     1.13793    1.066738   1.7433236%   30    0.35126838
+: large    61.117825     94.6876    9.730755   15.921304%   30     1.4197656
+: 
+: swaptions.csv
+: size          mean    variance      stdev      percent number   seconds
+: test     56.033386     79.0847    8.892958    15.87082%   30   .0012815109
+: tiny     61.596092   3839.2625    61.96178   100.59369%   30   .0017533372
+: small     69.04976   0.5911108  0.76883733   1.1134541%   30    0.38580817
+: medium   68.728546   121.10673    11.00485   16.012053%   30     1.5534309
+: large      68.8817   41.866997    6.470471   9.3935995%   30     6.1797624
+: 
+: x264.csv
+: size          mean    variance      stdev      percent number   seconds
+: test    106.706635   1417427.9   1190.5577   1115.7299%   30   .0011979803
+: tiny      81.34485   131861.45   363.12732    446.4048%   30   .0030564559
+: small     89.97716   50.139324   7.0809126    7.869678%   30     1.0965112
+: medium     91.9157   38.264412   6.1858234   6.7298875%   30      8.383977
+: large     91.98692   88.095535    9.385922    10.20354%   30     23.995699
+
+#+name: amd-hw-counter-results
 : 
 : blackscholes.csv
 : size          mean    variance      stdev      percent number   seconds
@@ -338,6 +382,12 @@ By runtime.
     :PROPERTIES:
     :shebang:  #!/bin/bash
     :END:
+For every benchmark program, test a range of input sizes until we find
+the smallest input which results in stable HW counters.
+
+The HW counters are definitely correlated, so we should use something
+like the following.
+http://wikipedia.org/wiki/Variance#Sum_of_correlated_variables
 
 1. Perform 30 runs collecting counters for each size.
    (use the =hw-counters-by-size= script)
@@ -621,18 +671,17 @@ Both at UVA on Intel and at UNM on AMD.
     done
   #+end_src
 - More sleep benchmarks
-
-#+begin_src sh :results scalar
-  tmp=$(mktemp XXXXXXXX.csv)
-  (
-      head -1 etc/model-data/amd/sleep-benchmarks.csv
-      for f in etc/model-data/amd/sleep-benchmarks.csv etc/model-data/amd/parsec-and-spec.csv;do
-          grep -v time $f
-      done
-  ) > $tmp
-  ./bin/power-model.R $tmp
-  rm -f $tmp
-#+end_src
+  #+begin_src sh :results scalar
+    tmp=$(mktemp XXXXXXXX.csv)
+    (
+        head -1 etc/model-data/amd/sleep-benchmarks.csv
+        for f in sleep-benchmarks parsec-and-spec spec-gcc44-03 spec-gcc44-0s;do
+            grep -v time etc/model-data/amd/$f.csv
+        done
+    ) > $tmp
+    ./bin/power-model.R $tmp
+    rm -f $tmp
+  #+end_src
 
 #+RESULTS:
 : 
@@ -641,30 +690,30 @@ Both at UVA on Intel and at UNM on AMD.
 : 
 : Deviance Residuals: 
 :      Min        1Q    Median        3Q       Max  
-: -303.108     5.681     7.890    14.662   119.007  
+: -302.560    -0.957    12.061    25.842   127.359  
 : 
 : Coefficients:
 :             Estimate Std. Error t value Pr(>|t|)    
-: (Intercept)   380.84      35.38  10.763   <2e-16 ***
-: ipc           -69.88      40.58  -1.722   0.0878 .  
-: fpc            64.65      36.60   1.767   0.0800 .  
-: cpc           -40.41     146.19  -0.276   0.7827    
-: mpc         -2325.46    2783.39  -0.835   0.4052    
+: (Intercept)   394.74      25.67  15.379  < 2e-16 ***
+: ipc           -83.68      28.81  -2.904  0.00419 ** 
+: fpc            60.23      26.21   2.298  0.02282 *  
+: cpc           -16.38     108.64  -0.151  0.88035    
+: mpc         -4209.09    2168.56  -1.941  0.05398 .  
 : ---
 : Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 : 
-: (Dispersion parameter for gaussian family taken to be 4965.242)
+: (Dispersion parameter for gaussian family taken to be 6046.141)
 : 
-:     Null deviance: 629548  on 118  degrees of freedom
-: Residual deviance: 566038  on 114  degrees of freedom
-: AIC: 1357.3
+:     Null deviance: 1171514  on 168  degrees of freedom
+: Residual deviance:  991567  on 164  degrees of freedom
+: AIC: 1958
 : 
 : Number of Fisher Scoring iterations: 2
 : 
 : performing cross-validation...
 : using RMS error
-: model error:   68.9682418097653 
-: 10x cross-val: 0.988 x
+: model error:   76.5980479663483 
+: 10x cross-val: 0.964 x
 
 *** DONE comparative effectiveness of our three models
 1. original energy
@@ -2324,7 +2373,7 @@ order.
 | LARGE  |     1580.844 |    7.94782 | 71.068825 |  0.5580099 |   1971.01 |  103.30591 | 1940.5648 |  89.91183 |    1283.2798 | 25.647589 | 1169.1593 | 15.220832 | 28667.572 | 572.75824 |  920.5513 |  8.874489 | 3558.0776 |   4.089785 | 2085.4458 |    8.69186 | 10078.702 | 15.5837965 |   8762.57 |  51.09658 |
 
 **** graph results
-#+headers: :file etc/evolved-improvement-by-input.svg
+#+headers: :file etc/data/evolved-improvement-by-input.svg
 #+begin_src gnuplot :var data=collated-energy-comparison
   set title 'evolved improvement in modeled energy by input size'
   set key above
@@ -2340,7 +2389,7 @@ order.
 #+end_src
 
 #+RESULTS:
-[[file:etc/evolved-improvement-by-input.svg]]
+[[file:etc/data/evolved-improvement-by-input.svg]]
 
 **** graph results (multi)
 Not worth the effort to really graph this well, just look at the table
@@ -2633,330 +2682,4 @@ Reverted use of =delete= in the eviction function.
 : See also:
 :   The ANSI Standard, Glossary entry for "bounding index designator"
 :   The ANSI Standard, writeup for Issue SUBSEQ-OUT-OF-BOUNDS:IS-AN-ERROR
-
-* Setup and Reproduction Instructions
-The following instructions may be used to reproduce and expand upon
-these results.
-
-** Installing PARSEC
-The PARSEC homepage is at http://parsec.cs.princeton.edu/.  Download
-the [[http://parsec.cs.princeton.edu/download/3.0/parsec-3.0.tar.gz][PARSEC tarball]], and unpack it into the benchmarks sub-directory of
-this repository.
-
-** Using the Graphite Virtual Machine
-*** Virtual Machine Setup
-
-1. We will create a Qemu virtual machine and install the Debian 5.0.9
-   specifically =debian-5010-i386-netinst.iso= from
-   http://cdimage.debian.org/debian-cd/6.0.6/amd64/iso-cd/debian-6.0.6-amd64-netinst.iso
-   #+begin_src sh
-     # create the disk
-     qemu-img create -f qcow2 tune.qcow 24G
-     # install the operating system
-     qemu-system-x86_64 tune.qcow -cdrom debian-5010-i386-netinst.iso -boot d
-   #+end_src
-
-2. Walk through the instillation dialog, we'll set the following
-   values.
-   | hostname            | tune          |
-   | version             | stable        |
-   | root password       | password      |
-   | new user full name  | Francis Bacon |
-   | new user login name | bacon         |
-   | new user password   | password      |
-
-   When it comes time to select which packages to install, deselect
-   "Graphical desktop environment" and do select "SSH server".
-
-   After the setup completes reboot and log in as root.
-
-4. Now install the Graphite and Parsec dependencies,
-   #+begin_src sh
-     # Graphite dependencies
-     apt-get update
-     apt-get install build-essential libtool automake autoconf autotools-dev
-     apt-get install libboost1.42-dev libboost-filesystem1.42-dev libboost-system1.42-dev
-     apt-get install git-core
-     # Parsec dependencies
-     apt-get install gettext yasm
-     # So the bacon user can have sudo
-     apt-get install sudo
-   #+end_src
-   give the =bacon= user =sudo= permissions,
-   #+begin_src sh
-     echo "bacon   ALL=(ALL) ALL" >> /etc/sudoers
-   #+end_src
-   and shutdown the machine.
-   #+begin_src sh
-     shutdown -h now
-   #+end_src
-
-5. Start up the virtual machine with network access so we can connect
-   with ssh -- allowing copy-paste from the local machine, use of a
-   normal terminal, and other niceties.
-   #+begin_src sh
-     qemu-kvm -hda tune.qcow -nographic -cdrom data/debian-5010-amd64-netinst.iso \
-         -m 1G -net nic -net user,hostfwd=tcp:127.0.0.1:2222-:22 -daemonize
-   #+end_src
-
-*** Running Graphite
-1. Log into =tune= as =bacon=.
-   #+begin_src sh
-     ssh -p 2222 bacon@localhost
-   #+end_src
-   and install Graphite following these instructions from
-   https://github.com/mit-carbon/Graphite/wiki/Getting-Started, after
-   getting version 53271 of pin from [[http://www.pintool.org/downloads.html][PIN|downloads]] decompress it to
-   =~/pin=.  Then set this location into =~/graphite/Makefile.config=.
-   #+begin_src sh
-     cat <<EOF > ~/graphite/Makefile.config
-     # where Pin is uzipped to
-     PIN_HOME = /home/bacon/pin
-     EOF
-   #+end_src
-   Run =make= to build Graphite.
-
-2. Confirm that the build was successful by running the following
-   which should exit successfully.
-   #+begin_src sh
-     make ping_pong_app_test CORES=16 PROCS=2
-   #+end_src
-
-3. At this point the virtual machine is usable for running
-   applications through Graphite and collecting metrics.  If modeling
-   power consumption then one more dependency must be installed.
-   McPAT is available at http://www.hpl.hp.com/research/mcpat/.  The
-   tarball should be downloaded to the virtual machine and unpacked
-   into the home directory.
-   #+begin_src sh
-     cd ~/archives/
-     wget http://www.hpl.hp.com/research/mcpat/mcpat0.8_r274.tar.gz
-     cd ~
-     tar xzf archives/mcpat0.8_r274.tar.g
-     sudo apt-get install g++-multilib libc6-dev-i386
-     mv mcpat0.8_r274/ mcpat/
-     cd mcpat/
-     make
-   #+end_src
-
-   To enable power modeling, in =~/graphite/carbon_sim.cfg= set
-   =enable_power_modeling= to =true=.
-   #+begin_src sh
-     sed 's/enable_power_modeling = false/enable_power_modeling = true/' \
-         -i ~/graphite/carbon_sim.cfg
-   #+end_src
-
-*** Running the PARSEC benchmark with Graphite
-Much of these instructions are adopted from [[https://github.com/mit-carbon/Graphite/wiki/Adding-and-Running-Applications#Running an application from the PARSEC benchmark suite][Running an application
-from the PARSEC benchmark suite]].
-
-1. To install Parsec in the virtual machine for use with Graphite,
-   download and unpack the tarball from
-   http://parsec.cs.princeton.edu/download/3.0/parsec-3.0.tar.gz.
-   #+begin_src sh
-     cd ~/archives/
-     wget http://parsec.cs.princeton.edu/download/3.0/parsec-3.0.tar.gz
-     cd ~/graphite/tests/
-     # this may take some time...
-     tar xzf archives/parsec-3.0.tar.gz
-   #+end_src
-
-2. Add Parsec and Graphite environment variables to =~/.profile=.
-   #+begin_src sh
-     cat <<EOF >> ~/.profile
-     export PIN_HOME=$HOME/pin
-     export GRAPHITE_HOME=$HOME/graphite
-     export PARSEC_HOME=$GRAPHITE_HOME/tests/parsec-2.1
-     export PARSECDIR=$PARSEC_HOME
-     export xxPARSECDIRxx=$PARSECDIR
-     source $PARSEC_HOME/env.sh
-     EOF
-   #+end_src
-
-3. We can largely just follow the instructions on the [[https://github.com/mit-carbon/Graphite/wiki/Adding-and-Running-Applications#Running%20an%20application%20from%20the%20PARSEC%20benchmark%20suite][graphite wiki]].
-
-4. Then from the Graphite home directory, set the =PARSEC_HOME=
-   variable in the file =tests/Makefile.parsec= to point to the source
-   of the PARSEC source tree.
-   #+begin_src sh
-     cd ${GRAPHITE_HOME}
-     sed -i "s/^PARSEC_HOME \?= \?.*$/PARSEC_HOME=$(echo $PARSEC_HOME|sed 's/\//\\\//g')/" \
-         tests/Makefile.parsec
-   #+end_src
-
-   Run =make parsec_setup= and =make [app]_parsec= to simulate the
-   =[app]= with Graphite using the parameters specified in
-   =tests/Makefile.parsec=. E.g.,
-   #+begin_src sh
-     make blackscholes_parsec
-   #+end_src
-
-*** Running a Simple Fast Fourier Transform (FFT)
-The FFT benchmark has higher memory requirements than the simple
-ping-pong test, so for this we'll have to increase the memory of the
-VM by passing the =-m 1G= flag to the call to =qemu-kvm=.
-#+begin_src sh
-  ./src/run-vm tune.qcow 2222
-#+end_src
-
-This should run for a while and complete with output that looks like
-the following.
-: FFT with Blocking Transpose
-:    65536 Complex Doubles
-:    64 Processors
-:    65536 Cache lines
-:    16 Byte line size
-:    4096 Bytes per page
-:
-:
-:                  PROCESS STATISTICS
-:             Computation      Transpose     Transpose
-:  Proc          Time            Time        Fraction
-:     0          79869664       27878043       0.34904
-:
-:                  TIMING INFORMATION
-: Start time                        : 1333389980838004
-: Initialization finish time        : 1333390099558235
-: Overall finish time               : 1333390179427899
-: Total time with initialization    :        198589895
-: Total time without initialization :         79869664
-: Overall transpose time            :         27878043
-: Overall transpose fraction        :          0.34904
-
-*** Evolving a Population of Variants
-This experimental setup is held in a git directory available from
-http://gitweb.adaptive.cs.unm.edu/optimization.git for anonymous git
-access with the following.
-: git clone http://gitweb.adaptive.cs.unm.edu/optimization.git
-
-Using the scripts in file:src/host-test and file:src/guest-test,
-the experimental harness in file:src/optimize.lisp and the [[http://gitweb.adaptive.cs.unm.edu/software-evolution.git][software
-evolution]] framework it is possible to evolve populations of variants
-of the original FFT program to optimize for certain execution
-properties.  The following instructions describe how to evolve a
-population of variant programs using multiple VM back ends for
-parallel fitness evaluation.
-
-1. Copy the file:src/guest-test script into the =/home/bacon/bin/=
-   on the virtual machine.  Power off the virtual machine before
-   performing the next step.
-   #+begin_src sh
-     scp src/guest-test -P 2222 bacon@localhost:bin/
-     ssh -p 2222 root@localhost poweroff
-   #+end_src
-
-2. We will use the file:src/limit.c test harness to protect our
-   evolutionary process from the sometimes aberrant behavior of the
-   test execution shell scripts and the evolved variants which they
-   execute.  Compile both host and guest versions of this script and
-   place them for use by the host and guest test scripts.
-   #+begin_src sh
-     # host limit harness
-     gcc -o src/limit src/limit.c
-     # guest limit harness
-     scp src/limit.c -P 2222 bacon@localhost:bin/
-     ssh -p 2222 bacon@localhost gcc -o bin/limit bin/limit.c
-     ssh -p 2222 root@localhost poweroff
-   #+end_src
-
-3. The current version of file:src/host-test assumes that all
-   virtual machines are running on =localhost= and that they are
-   placed behind different port numbers.  To setup multiple VMs on
-   your local machine saving their port numbers to the
-   file:src/REMOTES file (as required by file:src/host-test) follow
-   the steps in [[#running-overlays][Running overlays]].
-
-4. Since ssh is apparently /very/ sensitive to widely readable public
-   keys, be sure to fix access permission for file:data/id_rsa which
-   may not be preserved by git.
-   #+begin_src sh
-     chmod 700 data/id_rsa
-   #+end_src
-
-5. Change into the =src/= directory and fire up a Common Lisp
-   interpreter (SBCL version 1.0.55 was used to prepare these
-   instructions).  Ensure that the [[http://gitweb.adaptive.cs.unm.edu/software-evolution.git][software evolution]] framework is
-   installed and load the file:src/optimize.lisp file into your lisp
-   session.  To test that things your test scripts, virtual machines,
-   and lisp install are all working correctly evaluate the original
-   FFT program and ensure that it's fitness is equal to 1.
-   #+begin_src lisp
-     (require 'software-evolution)
-     (in-package 'software-evolution)
-     (load "optimize.lisp")
-     (unless (neutral-p (evaluate *orig*))
-       (error "Something is wrong, debug your script/lisp setup."))
-   #+end_src
-
-6. If everything appears to be working as expected, then a population
-   of 100 variants can be evolved to minimize execution time by
-   running the following.  See file:src/optimize.lisp to change the
-   default configuration of things like population size, tournament
-   size, and the features optimized for.
-
-*** Running overlays
-  :PROPERTIES:
-  :shebang:  #!/bin/sh
-  :CUSTOM_ID: running-overlays
-  :END:
-Qemu overlays create lightweight disk images based off of a starting
-disk image which can be used to store diffs from the original, and to
-run multiple instances of an original.
-
-We'll use overlays to parallelize the fitness evaluation in our
-genetic algorithm.
-
-To create some number of overlay images run;
-#+begin_src sh :tangle src/create-vms
-  pushd overlays/
-  for i in $(seq 46);do
-      j=$(printf "%0.2d" i);
-      if [ ! -f "$j.qcow" ];then
-          qemu-img create -b ../tune.qcow -f qcow2 "$j.qcow"
-      fi
-  done
-  popd
-#+end_src
-
-To run all overlays daemonized;
-#+begin_src sh :tangle src/startup-vms
-  remotes=""
-  pushd overlays/
-  for i in $(seq 46);do
-      I=$(printf "%0.2d" i);
-      ../src/run-vm "$I.qcow" "30$I"
-      remotes="$remotes \"30$I\""
-  done
-  popd
-  cat <<EOF > src/REMOTES
-  #!/bin/sh
-  REMOTES=($remotes)
-  EOF
-#+end_src
-
-*** Running LLVM/Clang and clang-mutate
-1. Log into =tune= as =root=
-
-2. Install subversion.
-   #+begin_src sh
-     apt-get install subversion
-   #+end_src
-
-3. Install the llvm/clang from SVN.
-   #+begin_src sh
-     cd /usr/local/src/
-     svn co http://llvm.org/svn/llvm-project/llvm/trunk llvm
-     cd llvm/tools/
-     svn co http://llvm.org/svn/llvm-project/cfe/trunk clang
-     cd ../
-     ./configure && make install && make clean
-   #+end_src
-
-4. Install [[https://github.com/eschulte/clang-mutate][clang-mutate]] from git.
-   #+begin_src sh
-     cd /usr/local/src/
-     git clone git://github.com/eschulte/clang-mutate.git
-     cd clang-mutate
-     make install && make clean
-   #+end_src
 
