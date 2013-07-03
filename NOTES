@@ -100,7 +100,7 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 | 998.specrand   |
 | 999.specrand   |
 
-* Tasks [29/35]
+* Tasks [29/34]
 ** DONE select GP parameters
 first run
 | mut | cross |
@@ -160,34 +160,40 @@ to accurately guide our GP process.
 The goal is to balance faster running time with fitness function
 accuracy.
 
-For every benchmark program, test a range of input sizes until we find
-the smallest input which results in stable HW counters.
+Best.
+| Program      | size   |  stdev | runtime(s) |
+|--------------+--------+--------+------------|
+| blackscholes | medium |     1% |      0.761 |
+| bodytrack    | small  |   1.8% |      0.522 |
+| facesim      | NA     |     2% |       12.6 |
+| ferret       | small  |  3.16% |      0.537 |
+| fluidanimate | small  |   3.9% |      0.567 |
+| freqmine     | small  |  5.68% |      2.492 |
+| swaptions    | small  |  1.11% |      0.386 |
+| vips         |        |        |            |
+| x264         | small  | 22.78% |      2.210 |
 
-The HW counters are definitely correlated, so we should use something
-like the following.
-http://wikipedia.org/wiki/Variance#Sum_of_correlated_variables
+Suggested Starting.
+| Program      | size   |  stdev | runtime(s) |
+|--------------+--------+--------+------------|
+| blackscholes | large  |  0.62% |        3.1 |
+| bodytrack    | medium |  0.79% |        1.6 |
+| facesim      | NA ‡   |  1.63% |       12.7 |
+| ferret       | medium |  4.28% |        1.6 |
+| fluidanimate | medium |  3.74% |        1.3 |
+| freqmine     | medium |  7.24% |       24.0 |
+| swaptions †  | medium | 16.01% |        1.6 |
+| vips         |        |        |            |
+| x264         | medium | 21.29% |       15.5 |
 
-*** TODO minimum input size for each program
-By % stdev.
+† This one recorded on my laptop using the Intel power model, *not* on
+  the AMD machine (because they're busy w/other runs).
 
-By runtime.
-
-| Program      | size   | % variance | runtime |
-|--------------+--------+------------+---------|
-| blackscholes | medium |     3.617% |   0.761 |
-| bodytrack    | small  |    10.618% |   0.522 |
-| facesim      | medium |    12.800% |  12.668 |
-| ferret       | small  |    19.161% |   0.501 |
-| fluidanimate | small  |    35.947% |   0.584 |
-| freqmine     | small  |     71.341 |   2.492 |
-| raytrace     |        |            |         |
-| swaptions    |        |            |         |
-| vips         |        |            |         |
-| x264         | medium |    805.573 |  15.528 |
+‡ Every input for facesim is the same.
 
 *** results
 **** runtime
-#+begin_src sh
+#+begin_src sh :var dir="etc/hw-counters/amd"
   mean(){
       awk '{for (i=1; i<=NF; i++)
         {
@@ -199,11 +205,11 @@ By runtime.
     }'; }
   
   runtime(){
-      cat etc/hw-counters/amd/$1|sed -n "/$2/,/^$/p" \
+      cat $dir/$1|sed -n "/$2/,/^$/p" \
           |grep seconds|cut -d, -f1|mean|tail -1; }
   
   echo "benchmark tiny small medium large"  
-  for file in $(ls etc/hw-counters/amd/);do
+  for file in $(ls $dir);do
       echo -n "$(basename $file .csv) "
       for size in tiny small medium large;do
           echo -n "$(runtime $file $size) "
@@ -212,7 +218,14 @@ By runtime.
   done
 #+end_src
 
-#+RESULTS:
+#+name: bagel-seconds
+| benchmark    |       tiny |     small |   medium |   large |
+|--------------+------------+-----------+----------+---------|
+| blackscholes | 0.00139599 | 0.0883597 | 0.351268 | 1.41977 |
+| swaptions    | 0.00175334 |  0.385808 |  1.55343 | 6.17976 |
+| x264         | 0.00305646 |   1.09651 |  8.38398 | 23.9957 |
+
+#+name: amd-seconds
 | benchmark    |       tiny |    small |   medium |   large |
 |--------------+------------+----------+----------+---------|
 | blackscholes | 0.00352846 | 0.189511 | 0.761738 | 3.09857 |
@@ -224,9 +237,9 @@ By runtime.
 | x264         | 0.00833094 |  2.21065 |  15.5278 | 24.1012 |
 
 **** % stdev
-#+begin_src sh :var data=amd-hw-counter-results
+#+begin_src sh :var data=amd-hw-counter-results :var dir="etc/hw-counters/bagel"
   echo "bench test tiny small medium large"
-  for file in $(ls etc/hw-counters/amd/);do
+  for file in $(ls $dir);do
       bench=$(basename $file .csv)
       echo -n "$bench "
       echo "$data"|sed -n "/$bench/,/^ *$/p"|tail -n +3|awk '{print $5}'|tr '\n' ' '
@@ -235,6 +248,11 @@ By runtime.
 #+end_src
 
 #+RESULTS:
+| bench     |      test |     tiny |      small |     medium |      large |
+|-----------+-----------+----------+------------+------------+------------|
+| swaptions | 15.87082% | 100.593% | 1.1134541% | 16.012053% | 9.3935995% |
+
+#+name: amd-stdev
 | bench        |        tiny |      small |      medium |       large |
 |--------------+-------------+------------+-------------+-------------|
 | blackscholes |          NA | 3.6077793% |  1.0085185% |  0.6235825% |
@@ -246,16 +264,42 @@ By runtime.
 | x264         | -2777.5918% | 22.787048% |   21.29686% |          NA |
 
 **** orig
-#+name: amd-hw-counter-results
+#+name: bagel-hw-counter-results
 #+begin_src sh :results scalar :cache yes
-  for csv in etc/hw-counters/amd/*.csv;do
+  for csv in etc/hw-counters/bagel/*.csv;do
       echo ""
       echo $(basename $csv)
-      ./bin/model-variance $csv -m amd-opteron-power-model -c seconds
+      ./bin/model-variance $csv -m intel-sandybridge-power-model -c seconds
   done
 #+end_src
 
-#+RESULTS[3bea911d15560fc7745269bd2a5e4672a077d027]: amd-hw-counter-results
+#+RESULTS[b7edce96d073074cd1caf43f0eddafe702e9a55e]: bagel-hw-counter-results
+: 
+: blackscholes.csv
+: size          mean    variance      stdev      percent number   seconds
+: test     101.34776   5189949.0    2278.146   2247.8503%   30   0.001131961
+: tiny      58.55405    2629.377    51.27745   87.572845%   30   .0013959858
+: small    61.804443   10.808836   3.2876794    5.319487%   30   0.088359706
+: medium   61.189903     1.13793    1.066738   1.7433236%   30    0.35126838
+: large    61.117825     94.6876    9.730755   15.921304%   30     1.4197656
+: 
+: swaptions.csv
+: size          mean    variance      stdev      percent number   seconds
+: test     56.033386     79.0847    8.892958    15.87082%   30   .0012815109
+: tiny     61.596092   3839.2625    61.96178   100.59369%   30   .0017533372
+: small     69.04976   0.5911108  0.76883733   1.1134541%   30    0.38580817
+: medium   68.728546   121.10673    11.00485   16.012053%   30     1.5534309
+: large      68.8817   41.866997    6.470471   9.3935995%   30     6.1797624
+: 
+: x264.csv
+: size          mean    variance      stdev      percent number   seconds
+: test    106.706635   1417427.9   1190.5577   1115.7299%   30   .0011979803
+: tiny      81.34485   131861.45   363.12732    446.4048%   30   .0030564559
+: small     89.97716   50.139324   7.0809126    7.869678%   30     1.0965112
+: medium     91.9157   38.264412   6.1858234   6.7298875%   30      8.383977
+: large     91.98692   88.095535    9.385922    10.20354%   30     23.995699
+
+#+name: amd-hw-counter-results
 : 
 : blackscholes.csv
 : size          mean    variance      stdev      percent number   seconds
@@ -338,6 +382,12 @@ By runtime.
     :PROPERTIES:
     :shebang:  #!/bin/bash
     :END:
+For every benchmark program, test a range of input sizes until we find
+the smallest input which results in stable HW counters.
+
+The HW counters are definitely correlated, so we should use something
+like the following.
+http://wikipedia.org/wiki/Variance#Sum_of_correlated_variables
 
 1. Perform 30 runs collecting counters for each size.
    (use the =hw-counters-by-size= script)
