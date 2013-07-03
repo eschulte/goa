@@ -123,6 +123,10 @@ unpack(){ # dispatch depending on benchmark suite
                             sed -i '22s/^$/#include <unistd.h>/' \
                                 "$BASE"/benchmarks/parsec-3.0/pkgs/apps/raytrace/src/RTTL/common/MapOptions.hxx
                             ;;
+                        vips)
+                            cp "$BASE/etc/vips-configure" \
+                               "$BASE/benchmarks/parsec-3.0/pkgs/apps/vips/src/configure"
+                            ;;
                     esac
                     # build with parsecmgmt
                     env PATH="$BASE"/benchmarks/parsec-3.0/bin:"$PATH" \
@@ -383,7 +387,7 @@ compile(){
                     warning "$bench does not support special flags"
                 fi
                 VBASE="$BASE"/benchmarks/parsec-3.0/pkgs/apps/vips/
-                "$BASE"/bin/libvips.sh $VBASE
+                "$BASE"/bin/libvips.sh $VBASE || error "compilation failed"
                 cp "$VBASE"/src/tools/iofuncs/some_libvips.s $bench.s
                 ;;
             x264)
