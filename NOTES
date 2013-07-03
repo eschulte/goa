@@ -2374,7 +2374,7 @@ order.
 | LARGE  |     1580.844 |    7.94782 | 71.068825 |  0.5580099 |   1971.01 |  103.30591 | 1940.5648 |  89.91183 |    1283.2798 | 25.647589 | 1169.1593 | 15.220832 | 28667.572 | 572.75824 |  920.5513 |  8.874489 | 3558.0776 |   4.089785 | 2085.4458 |    8.69186 | 10078.702 | 15.5837965 |   8762.57 |  51.09658 |
 
 **** graph results
-#+headers: :file etc/evolved-improvement-by-input.svg
+#+headers: :file etc/data/evolved-improvement-by-input.svg
 #+begin_src gnuplot :var data=collated-energy-comparison
   set title 'evolved improvement in modeled energy by input size'
   set key above
@@ -2390,7 +2390,7 @@ order.
 #+end_src
 
 #+RESULTS:
-[[file:etc/evolved-improvement-by-input.svg]]
+[[file:etc/data/evolved-improvement-by-input.svg]]
 
 **** graph results (multi)
 Not worth the effort to really graph this well, just look at the table
