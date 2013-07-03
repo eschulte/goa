@@ -671,18 +671,17 @@ Both at UVA on Intel and at UNM on AMD.
     done
   #+end_src
 - More sleep benchmarks
-
-#+begin_src sh :results scalar
-  tmp=$(mktemp XXXXXXXX.csv)
-  (
-      head -1 etc/model-data/amd/sleep-benchmarks.csv
-      for f in etc/model-data/amd/sleep-benchmarks.csv etc/model-data/amd/parsec-and-spec.csv;do
-          grep -v time $f
-      done
-  ) > $tmp
-  ./bin/power-model.R $tmp
-  rm -f $tmp
-#+end_src
+  #+begin_src sh :results scalar
+    tmp=$(mktemp XXXXXXXX.csv)
+    (
+        head -1 etc/model-data/amd/sleep-benchmarks.csv
+        for f in sleep-benchmarks parsec-and-spec spec-gcc44-03 spec-gcc44-0s;do
+            grep -v time etc/model-data/amd/$f.csv
+        done
+    ) > $tmp
+    ./bin/power-model.R $tmp
+    rm -f $tmp
+  #+end_src
 
 #+RESULTS:
 : 
@@ -691,30 +690,30 @@ Both at UVA on Intel and at UNM on AMD.
 : 
 : Deviance Residuals: 
 :      Min        1Q    Median        3Q       Max  
-: -303.108     5.681     7.890    14.662   119.007  
+: -302.560    -0.957    12.061    25.842   127.359  
 : 
 : Coefficients:
 :             Estimate Std. Error t value Pr(>|t|)    
-: (Intercept)   380.84      35.38  10.763   <2e-16 ***
-: ipc           -69.88      40.58  -1.722   0.0878 .  
-: fpc            64.65      36.60   1.767   0.0800 .  
-: cpc           -40.41     146.19  -0.276   0.7827    
-: mpc         -2325.46    2783.39  -0.835   0.4052    
+: (Intercept)   394.74      25.67  15.379  < 2e-16 ***
+: ipc           -83.68      28.81  -2.904  0.00419 ** 
+: fpc            60.23      26.21   2.298  0.02282 *  
+: cpc           -16.38     108.64  -0.151  0.88035    
+: mpc         -4209.09    2168.56  -1.941  0.05398 .  
 : ---
 : Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 : 
-: (Dispersion parameter for gaussian family taken to be 4965.242)
+: (Dispersion parameter for gaussian family taken to be 6046.141)
 : 
-:     Null deviance: 629548  on 118  degrees of freedom
-: Residual deviance: 566038  on 114  degrees of freedom
-: AIC: 1357.3
+:     Null deviance: 1171514  on 168  degrees of freedom
+: Residual deviance:  991567  on 164  degrees of freedom
+: AIC: 1958
 : 
 : Number of Fisher Scoring iterations: 2
 : 
 : performing cross-validation...
 : using RMS error
-: model error:   68.9682418097653 
-: 10x cross-val: 0.988 x
+: model error:   76.5980479663483 
+: 10x cross-val: 0.964 x
 
 *** DONE comparative effectiveness of our three models
 1. original energy
