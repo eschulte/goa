@@ -67,6 +67,48 @@ size_for_benchmark(){
         *)            echo large;;
     esac; }
 
+## HOSTOSTYPE taken from parsecmgmt
+#
+# Determine OS name to use for automatically determined PARSECPLAT
+case "${OSTYPE}" in
+    *linux*)   ostype="linux";;
+    *solaris*) ostype="solaris";;
+    *bsd*)     ostype="bsd";;
+    *aix*)     ostype="aix";;
+    *hpux*)    ostype="hpux";;
+    *irix*)    ostype="irix";;
+    *amigaos*) ostype="amigaos";;
+    *beos*)    ostype="beos";;
+    *bsdi*)    ostype="bsdi";;
+    *cygwin*)  ostype="windows";;
+    *darwin*)  ostype="darwin";;
+    *interix*) ostype="interix";;
+    *os2*)     ostype="os2";;
+    *osf*)     ostype="osf";;
+    *sunos*)   ostype="sunos";;
+    *sysv*)    ostype="sysv";;
+    *sco*)     ostype="sco";;
+    *)         ostype="${OSTYPE}";;
+esac
+# Determine HOST name to use for automatically determined PARSECPLAT
+case "${HOSTTYPE}" in
+    *i386*)    hosttype="i386";;
+    *x86_64*)  hosttype="amd64";;
+    *amd64*)   hosttype="amd64";;
+    *i486*)    hosttype="amd64";;
+    *sparc*)   hosttype="sparc";;
+    *sun*)     hosttype="sparc";;
+    *ia64*)    hosttype="ia64";;
+    *itanium*) hosttype="ia64";;
+    *powerpc*) hosttype="powerpc";;
+    *ppc*)     hosttype="powerpc";;
+    *alpha*)   hosttype="alpha";;
+    *mips*)    hosttype="mips";;
+    *arm*)     hosttype="arm";;
+    *)         hosttype="${HOSTTYPE}";;
+esac
+HOSTOSTYPE="${hosttype}-${ostype}"
+
 rand_remote(){ echo ${REMOTES[$RANDOM % ${#REMOTES[@]}]}; }
 
 my_remote(){ echo ${REMOTES[$(expr $$ % ${#REMOTES[@]})]}; }
