@@ -7,6 +7,7 @@
 #  -m,--mgmt ------- just check mgmt
 #  -r,--run -------- just check run
 #  -l,--light ------ don't clean existing benchmark directories
+#  -b,--bench B ---- only run for benchmark B
 #
 . $(dirname $0)/common
 
@@ -14,12 +15,13 @@ MGMT="YES"
 RUN="YES"
 LIGHT=""
 
-eval set -- $(getopt -o mrl -l mgmt,run,light -- "$@" || help;)
+eval set -- $(getopt -o mrlb: -l mgmt,run,light,bench: -- "$@" || help;)
 while [ $# -gt 0 ];do
     case $1 in
         -m|--mgmt)  RUN="";;
         -r|--run)   MGMT="";;
         -l|--light) LIGHT="YES";;
+        -b|--bench) BENCHMARKS=($2); shift;;
         (--) shift; break;;
         (-*) error "unrecognized option $1";;
         (*)  break;;
