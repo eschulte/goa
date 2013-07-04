@@ -45,13 +45,13 @@ run="$BASE"/bin/run
 
 (
     echo -n "Benchmark "
-    if [ ! -z $LIGHT ];then echo -n "clean "; fi
+    if [ -z $LIGHT ];then echo -n "clean "; fi
     if [ ! -z $MGMT ];then echo -n "${ACTIONS[@]} "; fi
     if [ ! -z $RUN ];then echo -n "exit error "; fi
     echo ""
     for bench in ${BENCHMARKS[@]};do
         echo -n "$bench "
-        if [ ! -z $LIGHT ];then
+        if [ -z $LIGHT ];then
             echo -n "$(check $mgmt clean $bench) "
         fi
         if [ ! -z $MGMT ];then
