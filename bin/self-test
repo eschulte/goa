@@ -30,6 +30,14 @@ done
 check(){
     if $@ >/dev/null 2>/dev/null;then echo "✓"; else echo "×"; fi; }
 
+declare -a ACTIONS
+ACTIONS+=(unpack)
+ACTIONS+=(compile)
+ACTIONS+=(link)
+ACTIONS+=(input)
+ACTIONS+=(output)
+ACTIONS+=(orig)
+
 mgmt="$BASE"/bin/mgmt
 run="$BASE"/bin/run
 
@@ -45,12 +53,9 @@ run="$BASE"/bin/run
             echo -n "$(check $mgmt clean $bench) "
         fi
         if [ ! -z $MGMT ];then
-            unpack=$(check $mgmt unpack $bench)
-            compile=$(check $mgmt compile $bench)
-            link=$(check $mgmt link $bench)
-            input=$(check $mgmt input $bench)
-            output=$(check $mgmt output $bench)
-            echo -n "$unpack $compile $link $input $output "
+            for act in ${ACTIONS[@]};do
+                echo -n "$(check $mgmt $act $bench) "
+            done
         fi
         if [ ! -z $RUN ];then
             ROUT=$($run $bench "$BASE"/benchmarks/$bench/$bench)
