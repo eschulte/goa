@@ -44,7 +44,7 @@ run="$BASE"/bin/run
 (
     echo -n "Benchmark "
     if [ ! -z $LIGHT ];then echo -n "clean "; fi
-    if [ ! -z $MGMT ];then echo -n "unpack compile link input output "; fi
+    if [ ! -z $MGMT ];then echo -n "${ACTIONS[@]} "; fi
     if [ ! -z $RUN ];then echo -n "exit error "; fi
     echo ""
     for bench in ${BENCHMARKS[@]};do
