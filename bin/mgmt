@@ -10,6 +10,7 @@
 #  link ------------ link the assembly benchmark to an executable
 #  input ----------- generate test input for benchmark
 #  output ---------- generate correct test output for benchmark
+#  orig ------------ generate the original parsec executable
 #
 # Options:
 #  -f,--flags ------ preset flags, `all' or `min' (default `all')
@@ -103,6 +104,25 @@ PARSEC_BASE_FLAGS_ALL+="-fpermissive -fno-exceptions -static-libgcc "
 PARSEC_BASE_FLAGS_ALL+="-Wl,--hash-style=both,--as-needed "
 
 ## Functions
+orig(){
+    local bench=$1;
+    local bench_dir="$BASE/benchmarks/$bench";
+    if [ -f "$bench_dir/$bench.orig" ];then
+        msg "$bench_dir/$bench.orig exists"
+    else
+        # build with parsecmgmt
+        env PATH="$BASE"/benchmarks/parsec-3.0/bin:"$PATH" \
+            parsecmgmt -a build -p $bench \
+            || error "parsecmgmt could not build $bench"
+        exe="$BASE"/benchmarks/parsec-3.0/pkgs/apps/$bench/inst/$HOSTOSTYPE.gcc/bin/$bench
+        if [ -f "$exe" ];then
+            cp "$exe" "$bench_dir/$bench.orig"
+        else
+            error "can't find $exe"
+        fi
+        msg "$bench/$bench.orig created"
+    fi; }
+
 unpack(){ # dispatch depending on benchmark suite
     local bench=$1;
     local bench_dir="$BASE/benchmarks/$bench";
@@ -873,6 +893,8 @@ case $ACTION in
         output $BENCHMARK
         [[ $ACTION == "output" ]] && exit 0;
         ;;
+
+    orig) unpack $BENCHMARK && orig $BENCHMARK;;
 
     *) error "'$ACTION' is not a valid action\n";;
 esac
