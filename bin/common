@@ -52,19 +52,19 @@ SIZES+=(huge)
 
 size_for_benchmark(){
     case $BENCHMARK in
-        blackscholes) echo medium;;
-        bodytrack)    echo small;;
-        facesim)      echo medium;;
-        ferret)       echo small;;
-        fluidanimate) echo small;;
+        blackscholes) echo large;;
+        bodytrack)    echo medium;;
+        facesim)      echo small;;
+        ferret)       echo medium;;
+        fluidanimate) echo medium;;
         freqmine)     echo small;;
-        raytrace)     echo small;;
+        raytrace)     warning "raytrace has been removed"; echo large;;
         swaptions)    echo medium;;
-        vips)         echo medium;;
-        x264)         echo medium;;
-        bzip2)        echo large;;
-        h264ref)      echo large;;
-        *)            echo large;;
+        vips)         warning "need to measure runtime for vips"; echo medium;;
+        x264)         echo small;;
+        bzip2)        warning "no longer using SPEC benchmarks"; echo large;;
+        h264ref)      warning "no longer using SPEC benchmarks"; echo large;;
+        *)            warning "large for unknown benchmark"; echo large;;
     esac; }
 
 ## HOSTOSTYPE taken from parsecmgmt
