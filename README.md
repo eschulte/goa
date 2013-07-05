@@ -34,15 +34,15 @@ compiler", and a collection of warehouse compute applications.
 Repository Layout
 =================
 
-     README | this file
-      NOTES | working notes and reproduction instructions
-    COPYING | standard GPLV3 License applying to the whole repository
- benchmarks | holds the benchmark programs
-        bin | shell scripts to run experiments and collect results
-        etc | misc. support files
-   overlays | VM overlays used to run Graphite
-    results | experimental results
-        src | programs used to run optimization
+        README | this file
+         NOTES | working notes and reproduction instructions
+       COPYING | standard GPLV3 License
+    benchmarks | holds the benchmark programs
+           bin | shell scripts to run experiments and collect results
+           etc | misc. support files
+      overlays | VM overlays used to run Graphite
+       results | experimental results
+           src | programs used to run optimization
 
 Instillation and Usage
 ======================
