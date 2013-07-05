@@ -118,6 +118,7 @@ else
     else
         PREFIX+=" perf record -e $COUNTERS -o $PERF_OUT"
     fi
+    PREFIX+=" --"
     if [ ! -z "$REPEAT" ];then PREFIX+=" -r $REPEAT"; fi
     # handle perf output on exit
     function exit_hook (){
@@ -127,7 +128,12 @@ else
             # collect missed counters
             cat $PERF_OUT \
                 |grep "^ *[0-9,.]\+ [a-z]\+" \
-                |sed 's/^ *//;s/,//g;s/ \([^ ]\+\)[^(]*/,\1/;s/([^0-9]*\([0-9.]\+\).*$/,\1%/';
+                |sed -e 's/^ *//' \
+                     -e 's/,//g' \
+                     -e 's/ raw / /' \
+                     -e 's/ \([^ ]\+\)[^(]*/,\1/' \
+                     -e 's/,0[Xx]/,r/' \
+                     -e 's/([^0-9]*\([0-9.]\+\).*$/,\1%/';
             # comma separated list of missed counters
             MISSED=$(grep "not counted" $PERF_OUT \
                 |sed 's/^.*counted> //;s/ *$//' \
@@ -307,9 +313,12 @@ case $BENCHMARK in
         ERROR=$?
         ;;
     vips)
+        tmpd=$(mktemp -d)
         tmp=$(mktemp /tmp/tmp.XXXXXXXX.v)
-        run 0 $EXECUTABLE im_benchmark "$INPUT" $tmp
+        cp $EXECUTABLE $tmpd/vips
+        run 0 $tmpd/vips im_benchmark "$INPUT" $tmp
         mv $tmp $OUT
+        rm -rf $tmpd
         diff \
             <(grep --binary-file=text -v im_benchmark $OUT) \
             <(grep --binary-file=text -v im_benchmark $OUTPUT) \

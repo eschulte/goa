@@ -26,15 +26,17 @@ LDIRS+=" -L $PKGS/libs/glib/inst/amd64-linux.gcc/lib"
 LDIRS+=" -L $PKGS/libs/zlib/inst/amd64-linux.gcc/lib"
 LDIRS+=" -L $PKGS/libs/libxml2/inst/amd64-linux.gcc/lib"
 
-FLAGS+=" -ldl"
-FLAGS+=" -lglib-2.0"
 FLAGS+=" -lgmodule-2.0"
+FLAGS+=" -ldl"
 FLAGS+=" -lgobject-2.0"
+FLAGS+=" -lglib-2.0"
 FLAGS+=" -lgthread-2.0"
 FLAGS+=" -lm"
 FLAGS+=" -lstdc++"
 FLAGS+=" -lxml2"
 FLAGS+=" -pthread"
+FLAGS+=" -lrt"
+FLAGS+=" -lz"
 
 cp $ASM $DIR/some_libvips.s
 cp "$PKGS"/apps/vips/src/tools/iofuncs/libvips.o $DIR
