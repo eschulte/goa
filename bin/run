@@ -118,8 +118,8 @@ else
     else
         PREFIX+=" perf record -e $COUNTERS -o $PERF_OUT"
     fi
-    PREFIX+=" --"
     if [ ! -z "$REPEAT" ];then PREFIX+=" -r $REPEAT"; fi
+    PREFIX+=" --"
     # handle perf output on exit
     function exit_hook (){
         if [ -z $ANNOTATE ];then
