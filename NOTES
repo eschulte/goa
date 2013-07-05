@@ -100,8 +100,57 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 | 998.specrand   |
 | 999.specrand   |
 
-* Tasks [29/34]
-** DONE select GP parameters
+* Tasks [28/34]
+** TODO select GP parameters
+| selection tournament | 2 |
+| eviction tournament  | 2 |
+| crossover            |   |
+
+*** Table
+Need two tables of the improvement as a percent at a given number of
+fitness evaluations, by crossover, tourny, and eviction.
+
+We *do* want tournaments of size two both on eviction and selection.
+
+#+begin_src sh
+  base=results/gp-params
+  for bench in swaptions x264;do
+      for cross in 0.2 0.5 0.8;do
+          for rep in 0 1;do
+              for file in $base/$bench-c$cross-t1-$rep \
+                  $base/$bench-c$cross-t2-$rep \
+                  $base/$bench-c$cross-t2-e1-$rep \
+                  $base/$bench-c$cross-t2-e2-$rep;do
+                  if [ -f $file/stats.txt ];then
+                      start=$(grep ORIG-FITNESS $file/optimize.log \
+                          |sed 's/^.*\. //;s/)).*$//')
+                      end=$(head -87 $file/stats.txt|tail -1|cut -d' ' -f2)
+                      echo "$file $(echo "(($start - $end)/$start)*100"|bc -l)"
+                  fi
+              done
+          done
+      done
+  done
+#+end_src
+
+*** Graphs
+#+begin_src gnuplot
+  set title 'multiple swaptions runs w/varied GP parameters'
+  set ylabel 'energy model'
+  set xlabel 'fitness evaluations'
+  set key outside below
+  plot for [tourny in "1 2"] for [rep in "0 1"] for [cross in "0.2 0.5 0.8"] \
+       "results/gp-params/x264-c".cross."-t".tourny."-".rep."/stats.txt" \
+       using 1:2 with lines title "c:".cross." t:".tourny
+#+end_src
+
+#+RESULTS:
+
+- first GP parameterization run
+  [[file:etc/data/mut-params.svg]]
+
+*** runs
+**** first run
 first run
 | mut | cross |
 |-----+-------|
@@ -129,25 +178,16 @@ second run
   done
 #+end_src
 
-#+begin_src gnuplot :file etc/data/mut-params.svg
-  set term svg size 600,600
-  set title 'multiple swaptions runs w/varied GP parameters'
-  set ylabel 'energy model'
-  set xlabel 'fitness evaluations'
-  set key outside below
-  plot for [mut in "0.2 0.5 0.8"] for [cross in "0.2 0.5 0.8"] \
-       "results/mut-cross/swaptions-".mut."-".cross."/stats.txt" \
-       using 1:2 with lines title "mut:".mut." cross:".cross, \
-       for [mut in "0.75 0.875 1.0"] for [cross in "0.166 0.333 0.5 0.666"] \
-       "results/mut-cross/swaptions-".mut."-".cross."/stats.txt" \
-       using 1:2 with lines title "mut:".mut." cross:".cross
-  # plot for [mut in "0.75 0.875 1.0"] for [cross in "0.1666 0.333 0.5 0.666"] \
-  #      "results/mut-cross/freqmine-".mut."-".cross."/stats.txt" \
-  #      using 1:2 with lines title "mut:".mut." cross:".cross
+**** third run
+Started <2013-07-05 Fri 09:50> on real and complex.
+#+begin_src sh
+  for cross in 0.2 0.4 0.6 0.8;do
+      for rep in 0 1 2 3;do
+          optimize benchmarks/x264/x264.s x264 -f "-lm -lpthread" -c $cross -T 2 -w sh-runner/work -t 2 -r results/gp-params/x264-c$cross-r$rep&
+          optimize benchmarks/swaptions/swaptions.s swaptions -l g++ -f -lpthread -c $cross -T 2 -w sh-runner/work -t 2 -r results/gp-params/swaptions-c$cross-r$rep&
+      done
+  done
 #+end_src
-
-#+RESULTS:
-[[file:etc/data/mut-params.svg]]
 
 ** TODO find minimal input sizes for each program
 Need to estimate the variance in our energy predictions, which are

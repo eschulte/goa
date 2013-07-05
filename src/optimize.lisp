@@ -112,7 +112,7 @@ This includes evolved individuals in the training set.")
 (setf *max-population-size* (expt 2 9)
       *fitness-predicate* #'<
       *cross-chance* 1/3
-      *tournament-size* 1
+      *tournament-size* 2
       *tournament-eviction-size* 2)
 
 (defun arch ()
