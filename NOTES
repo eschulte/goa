@@ -100,7 +100,7 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 | 998.specrand   |
 | 999.specrand   |
 
-* Tasks [28/34]
+* Tasks [29/34]
 ** TODO select GP parameters
 | selection tournament | 2 |
 | eviction tournament  | 2 |
@@ -189,7 +189,7 @@ Started <2013-07-05 Fri 09:50> on real and complex.
   done
 #+end_src
 
-** TODO find minimal input sizes for each program
+** DONE find minimal input sizes for each program
 Need to estimate the variance in our energy predictions, which are
 linear combinations of HW counters, from variance in the HW counters.
 
@@ -210,7 +210,7 @@ Best.
 | fluidanimate | small  |   3.9% |      0.567 |
 | freqmine     | small  |  5.68% |      2.492 |
 | swaptions    | small  |  1.11% |      0.386 |
-| vips         |        |        |            |
+| vips         | small  |        |      0.643 |
 | x264         | small  | 22.78% |      2.210 |
 
 Suggested Starting.
@@ -223,7 +223,7 @@ Suggested Starting.
 | fluidanimate | medium |  3.74% |        1.3 |
 | freqmine     | medium |  7.24% |       24.0 |
 | swaptions †  | medium | 16.01% |        1.6 |
-| vips         |        |        |            |
+| vips         | medium |        |      1.960 |
 | x264         | medium | 21.29% |       15.5 |
 
 † This one recorded on my laptop using the Intel power model, *not* on

@@ -316,7 +316,7 @@ case $BENCHMARK in
         tmpd=$(mktemp -d)
         tmp=$(mktemp /tmp/tmp.XXXXXXXX.v)
         cp $EXECUTABLE $tmpd/vips
-        run 0 $tmpd/vips im_benchmark "$INPUT" $tmp
+        run 0 $tmpd/vips im_benchmark --vips-concurrency=1 "$INPUT" $tmp
         mv $tmp $OUT
         rm -rf $tmpd
         diff \

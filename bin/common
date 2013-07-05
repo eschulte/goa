@@ -60,7 +60,7 @@ size_for_benchmark(){
         freqmine)     echo small;;
         raytrace)     warning "raytrace has been removed"; echo large;;
         swaptions)    echo medium;;
-        vips)         warning "need to measure runtime for vips"; echo medium;;
+        vips)         echo medium;;
         x264)         echo small;;
         bzip2)        warning "no longer using SPEC benchmarks"; echo large;;
         h264ref)      warning "no longer using SPEC benchmarks"; echo large;;
