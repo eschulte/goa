@@ -2,10 +2,10 @@ benchmark	linker	flags
 blackscholes	g++	-lpthread
 bodytrack	g++	-lthreads -lpthread -L$BASE/benchmarks/parsec-3.0/pkgs/apps/$bench/obj/amd64-linux.gcc/FlexImageLib/.libs -L$BASE/benchmarks/parsec-3.0/pkgs/apps/$bench/obj/amd64-linux.gcc/TrackingBenchmark/threads/.libs
 facesim	g++	-L$BASE/benchmarks/parsec-3.0/pkgs/apps/$bench/obj/amd64-linux.gcc -L$BASE/benchmarks/parsec-3.0/pkgs/apps/$bench/obj/amd64-linux.gcc/TaskQ/lib/taskQ.o
-ferret		-lrt -lgsl -lgslcblas -ljpeg -lstdc++ -lpthread -lm -L$BASE/benchmarks/parsec-3.0/pkgs/libs/gsl/inst/amd64-linux.gcc/lib -L$BASE/benchmarks/parsec-3.0/pkgs/libs/libjpeg/inst/amd64-linux.gcc/lib/
+ferret	gcc	-lrt -lgsl -lgslcblas -ljpeg -lstdc++ -lpthread -lm -L$BASE/benchmarks/parsec-3.0/pkgs/libs/gsl/inst/amd64-linux.gcc/lib -L$BASE/benchmarks/parsec-3.0/pkgs/libs/libjpeg/inst/amd64-linux.gcc/lib/
 fluidanimate	g++	-lpthread
 freqmine	g++	
 raytrace	g++	-lglut -lGL -lGL -lGLU -lXmu -lXext -lXau -lX11 -ldl -lpthread -lstdc++ -lpthread -lrt -rdynamic
 swaptions	g++	-lpthread
 vips	link-vips	
-x264		-lm -lpthread
+x264	gcc	-lm -lpthread
