@@ -1448,16 +1448,18 @@ For each of the bests, write out their percent makeup.
 #+end_src
 
 ** TODO Run Experiments
-*** Preparation [3/7]
+*** Preparation [5/7]
 First we need
 - [X] finalize power models (in file:src/optimize.lisp)
 - [X] =optimize= arguments (in file:doc/optimize-args.txt)
 - [X] file:bin/run works to check functionality
-- [ ] file:bin/mgmt compiles optimal baseline programs
-- [ ] select appropriate input sizes for each benchmark program
+- [X] file:bin/mgmt compiles optimal baseline programs
+- [X] select appropriate input sizes for each benchmark program
 - [ ] select appropriate GP parameters, (ask Steph if do both)
-      | mutation  | 100% |
-      | crossover |  20% |
+      | selection tournament |    2 |
+      | eviction tournament  |    2 |
+      | mutation             | 100% |
+      | crossover            |   ?? |
 - [ ] tag the version of the repo which we'll use
 
 ** TODO Analyze Optimizations

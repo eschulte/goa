@@ -37,12 +37,11 @@ Repository Layout
         README | this file
          NOTES | working notes and reproduction instructions
        COPYING | standard GPLV3 License
-    benchmarks | holds the benchmark programs
+    benchmarks | holds benchmark programs, input and output
            bin | shell scripts to run experiments and collect results
-           etc | misc. support files
-      overlays | VM overlays used to run Graphite
+           etc | miscellaneous support files
        results | experimental results
-           src | programs used to run optimization
+           src | lisp source for main optimization programs
 
 Instillation and Usage
 ======================
