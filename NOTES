@@ -1481,7 +1481,7 @@ coefficients for a memory linear model.
 | fluidanimate |     1 |   1 |
 | freqmine     |     1 |  1\dagger |
 | swaptions    |   0.9 | 0.9 |
-| vips         |       | 0.7 |
+| vips         |       |   1 |
 | x264         |     7 |   \Dagger |
 
 \dagger was 3.1, but fix by including -fopenmp in the mgmt build
@@ -1492,6 +1492,34 @@ coefficients for a memory linear model.
 
 We need to figure out why blackscholes and bodytrack are bad on Intel,
 and why freqmine is bad on AMD.
+
+*** looking more closely at vips (close enough)
+: 11:32 bagel:optimization run vips benchmarks/vips/vips -p -r 30
+: 0,exit
+: 0,error
+: 5413108972,cycles,0.16%
+: 11737336469,instructions,0.02%
+: 205986621,r532010,0.14%
+: 807222342,r538010,0.07%
+: 12496268,cache-references,0.47%
+: 695815,cache-misses,2.49%
+: 2.004006300,seconds,0.16%
+: 11:33 bagel:optimization run vips benchmarks/vips/vips.orig -p -r 30
+: 0,exit
+: 0,error
+: 5323433291,cycles,0.23%
+: 11852050777,instructions,0.01%
+: 206823948,r532010,0.14%
+: 802740885,r538010,0.07%
+: 12271097,cache-references,0.53%
+: 640607,cache-misses,3.23%
+: 1.967453561,seconds,0.23%
+
+|  2.004006300 | 0.16 |
+|  1.967453561 | 0.23 |
+|--------------+------|
+| -0.018578705 |      |
+#+TBLFM: @3$1=(@2-@1)/@2
 
 ** DONE re-run when we get not-counted
 This means perf ran two quickly.  Use half the counters.
