@@ -139,30 +139,42 @@ variables for live analysis and modification during interactive runs.
 Experimental Reproduction
 =========================
 
-Use SBCL (not CCL) lisp to build `optimize` for these experiments.
-Add the `bin/` directory of this repository to your path.
+The following steps perform the optimizations of the PARSEC benchmark
+applications for reduced energy consumption.
 
 1. First run the `self-test` script to ensure that the benchmark
-   programs are available and are successfully built and evaluated.
-   After some minutes (should be less than an hour, much less if many
-   of the PARSEC programs have already been built) you should see a
-   table of results printed.  If the table is all ✓'s and 0's then
-   move on, otherwise you'll need to debug here, or skip any benchmark
-   programs with ×'s or positive numbers in their row.
+   applications are available and can be successfully built and
+   evaluated.  After some minutes (should be less than an hour, much
+   less if much PARSEC has already been built) you should see a table
+   of results printed.  If the table is all ✓'s and 0's then move on,
+   otherwise you'll need to debug here, or skip any benchmark programs
+   with ×'s or positive numbers in their row.
 
 2. The system on which optimization runs will be performed should
-   match the target environment.  For these runs we ensure the system
-   is below full load and we do not use NFS or other data stores which
-   may become easily overloaded.  Anything else here which could
-   affect the run time?
+   match the target environment.  For these runs we need to ensure the
+   system is below full load and we do not use NFS or other data
+   stores which may become easily overloaded.  Anything else here
+   which could affect the run time?
 
 3. An energy model should be trained for your system, the process of
    training an energy model is not covered here [10].  In our case the
-   models included in `src/optimize.lisp` are used.
+   models included in `src/optimize.lisp` are used
+   (`amd-opteron-power-model` and `intel-sandybridge-power-model` for
+   our AMD and Intel systems respectively).
 
 4. The `self-test` script should have populated all of the required
    assembler, test input and oracle output files needed by the
-   optimization runs.  Each benchmark requires a linker and flags
+   optimization runs.
+
+   The only other requirements are the `bin/limit` script which should
+   have been built my running `make` above, and the `foreman` script
+   running in the `sh-runner` directory (also described above).  Run
+   the foreman script with a 30 second timeout as below from the
+   sh-runner directory.
+
+        ./foreman 30
+
+   Each benchmark requires that the linker and flags be specified
    (`-l` and `-f` options to the `optimize` executable).  The values
    of these flags are stored in `etc/optimize-args`.
 
@@ -175,7 +187,7 @@ Add the `bin/` directory of this repository to your path.
    Aside from these flags, all benchmarks will use the same arguments
    to `optimize`.  The correct GP parameters for these runs are
    already set as defaults in `optimize`.  The only other flags which
-   must be set are given below.
+   should be used are given below.
 
         -w # path to the sh-runner working directory
         -t # number of threads to be used
