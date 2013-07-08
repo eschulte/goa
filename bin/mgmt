@@ -360,6 +360,7 @@ compile(){
                     -I"$BASE"/benchmarks/parsec-3.0/pkgs/libs/libjpeg/inst/amd64-linux.gcc/include \
                     -I"$BASE"/benchmarks/parsec-3.0/pkgs/libs/gsl/inst/amd64-linux.gcc/include \
                     $FULL_FLAGS \
+                    -fno-inline \
                     src/*.c src/lsh/*.c \
                     image/{image,extract,edge,srm}.c \
                     benchmark/ferret-pthreads.c \
@@ -437,7 +438,7 @@ compile(){
                 X264_SOURCE+=" encoder/cavlc.c"
                 X264_SOURCE+=" encoder/encoder.c"
                 ./configure --disable-asm
-                gcc-4.4 $FULL_FLAGS --combine -S -I. -Icommon \
+                gcc-4.4 $FULL_FLAGS -fno-inline --combine -S -I. -Icommon \
                     $X264_SOURCE -o $bench.s ||error "compilation failed"
                 ;;
             ## SPEC

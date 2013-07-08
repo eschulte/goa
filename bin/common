@@ -26,7 +26,7 @@ if $(contains "$1" "^\-\?\-h\(elp\|$\)");then help; fi
 BASE=$(cd "$(dirname "$SCRIPT")/.."; pwd)
 
 if ! (set -u; : $LIMIT)2>/dev/null;then
-    LIMIT="$(dirname "$SCRIPT")/limit"
+    LIMIT="${BASE}/bin/limit"
 fi
 
 declare -a BENCHMARKS
