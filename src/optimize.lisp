@@ -111,7 +111,7 @@ This includes evolved individuals in the training set.")
 (defvar *model*     nil        "HW counter model to optimized.")
 (setf *max-population-size* (expt 2 9)
       *fitness-predicate* #'<
-      *cross-chance* 1/3
+      *cross-chance* 2/3
       *tournament-size* 2
       *tournament-eviction-size* 2)
 

@@ -100,11 +100,11 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 | 998.specrand   |
 | 999.specrand   |
 
-* Tasks [29/34]
-** TODO select GP parameters
-| selection tournament | 2 |
-| eviction tournament  | 2 |
-| crossover            |   |
+* Tasks [30/34]
+** DONE select GP parameters
+| selection tournament |   2 |
+| eviction tournament  |   2 |
+| crossover            | 3/5 |
 
 *** Table
 Need two tables of the improvement as a percent at a given number of
@@ -114,24 +114,57 @@ We *do* want tournaments of size two both on eviction and selection.
 
 #+begin_src sh
   base=results/gp-params
-  for bench in swaptions x264;do
-      for cross in 0.2 0.5 0.8;do
-          for rep in 0 1;do
-              for file in $base/$bench-c$cross-t1-$rep \
-                  $base/$bench-c$cross-t2-$rep \
-                  $base/$bench-c$cross-t2-e1-$rep \
-                  $base/$bench-c$cross-t2-e2-$rep;do
-                  if [ -f $file/stats.txt ];then
-                      start=$(grep ORIG-FITNESS $file/optimize.log \
-                          |sed 's/^.*\. //;s/)).*$//')
-                      end=$(head -87 $file/stats.txt|tail -1|cut -d' ' -f2)
-                      echo "$file $(echo "(($start - $end)/$start)*100"|bc -l)"
-                  fi
-              done
+  for bench in x264;do
+      for cross in 0.2 0.4 0.6 0.8;do
+          for rep in 0 1 2 3;do
+              file=$base/$bench-c$cross-r$rep
+              if [ -f $file/stats.txt ];then
+                  start=$(grep ORIG-FITNESS $file/optimize.log \
+                      |sed 's/^.*\. //;s/)).*$//')
+                  end=$(head -61 $file/stats.txt|tail -1|cut -d' ' -f2)
+                  echo "$file $(echo "(($start - $end)/$start)*100"|bc -l)"
+                  # echo "$file $(tail -1 $file/stats.txt|cut -d' ' -f1)"
+              fi
           done
       done
   done
 #+end_src
+
+#+RESULTS:
+| results/gp-params/x264-c0.6-r3 | 15.055468005597977 |
+| results/gp-params/x264-c0.2-r3 | 15.095939171673221 |
+| results/gp-params/x264-c0.8-r3 |  15.23522967271784 |
+| results/gp-params/x264-c0.2-r2 | 15.245963612659393 |
+| results/gp-params/x264-c0.6-r2 |  15.28315001478055 |
+| results/gp-params/x264-c0.4-r3 | 15.284961789633671 |
+| results/gp-params/x264-c0.8-r2 | 15.305170053447231 |
+| results/gp-params/x264-c0.4-r2 | 15.578787461510336 |
+| results/gp-params/x264-c0.4-r1 |   16.8862646075101 |
+| results/gp-params/x264-c0.2-r0 | 17.149267976059324 |
+| results/gp-params/x264-c0.8-r1 | 17.172081138982314 |
+| results/gp-params/x264-c0.6-r1 | 17.182486717773283 |
+| results/gp-params/x264-c0.4-r0 | 17.274885933561873 |
+| results/gp-params/x264-c0.6-r0 | 17.452098002102243 |
+| results/gp-params/x264-c0.2-r1 | 18.086150187927704 |
+| results/gp-params/x264-c0.8-r0 | 18.425964590022513 |
+
+swaptions
+| results/gp-params/swaptions-c0.2-r2 |                    |
+| results/gp-params/swaptions-c0.6-r2 |                    |
+| results/gp-params/swaptions-c0.4-r3 | 11.969286152016883 |
+| results/gp-params/swaptions-c0.4-r2 | 12.847726517149553 |
+| results/gp-params/swaptions-c0.4-r0 | 14.291349092674388 |
+| results/gp-params/swaptions-c0.6-r3 | 15.035733608146852 |
+| results/gp-params/swaptions-c0.2-r3 |  16.05657201981774 |
+| results/gp-params/swaptions-c0.8-r2 | 16.383240996762535 |
+| results/gp-params/swaptions-c0.4-r1 | 16.818833092694163 |
+| results/gp-params/swaptions-c0.2-r0 | 19.288385568704324 |
+| results/gp-params/swaptions-c0.2-r1 | 20.153073881194803 |
+| results/gp-params/swaptions-c0.6-r1 | 22.155126850713373 |
+| results/gp-params/swaptions-c0.8-r3 |  22.31364741334099 |
+| results/gp-params/swaptions-c0.8-r1 |  23.91813876744032 |
+| results/gp-params/swaptions-c0.8-r0 | 24.111429642036452 |
+| results/gp-params/swaptions-c0.6-r0 | 34.707868447016494 |
 
 *** Graphs
 #+begin_src gnuplot

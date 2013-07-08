@@ -10,7 +10,7 @@
 
 Options:
  -C,--config FILE ------ read configuration from FILE
- -c,--cross-chance NUM - crossover chance (default 1/3)
+ -c,--cross-chance NUM - crossover chance (default 2/3)
  -E,--max-error NUM ---- maximum allowed error
  -e,--eval SEXP -------- evaluate S-expression SEXP
  -F,--fit-evals NUM ---- max number of fitness evals
