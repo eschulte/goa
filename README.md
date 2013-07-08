@@ -43,7 +43,7 @@ Repository Layout
        results | experimental results
            src | lisp source for main optimization programs
 
-Instillation and Usage
+Installation and Usage
 ======================
 
 The evolution toolkit which we'll use to evolve programs is written in
@@ -167,7 +167,7 @@ applications for reduced energy consumption.
    optimization runs.
 
    The only other requirements are the `bin/limit` script which should
-   have been built my running `make` above, and the `foreman` script
+   have been built by running `make` above, and the `foreman` script
    running in the `sh-runner` directory (also described above).  Run
    the foreman script with a 30 second timeout as below from the
    sh-runner directory.
