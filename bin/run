@@ -106,7 +106,9 @@ if [ -z $PERF ];then
             cat $OUT
         fi
         if [ -z $KEEP ];then
-            rm -rf $OUT;
+            rm -rf $OUT
+            if [ ! -z "$tmp" ];then rm -f $tmp; fi
+            if [ ! -z "$tmpd" ];then rm -rf $tmpd; fi
         else
             echo "output keep at $OUT";
         fi; }
