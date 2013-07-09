@@ -142,7 +142,11 @@ Experimental Reproduction
 The following steps perform the optimizations of the PARSEC benchmark
 applications for reduced energy consumption.
 
-1. First run the `self-test` script to ensure that the benchmark
+1. Check out the `main-experiment` tag of this repository and checkout
+   commit `8193d14f` of the software-evolution repository.  Then
+   re-build the executables with `make clean && make`.
+
+2. Run the `self-test` script to ensure that the benchmark
    applications are available and can be successfully built and
    evaluated.  After some minutes (should be less than an hour, much
    less if much PARSEC has already been built) you should see a table
@@ -150,19 +154,18 @@ applications for reduced energy consumption.
    otherwise you'll need to debug here, or skip any benchmark programs
    with ×'s or positive numbers in their row.
 
-2. The system on which optimization runs will be performed should
+3. The system on which optimization runs will be performed should
    match the target environment.  For these runs we need to ensure the
    system is below full load and we do not use NFS or other data
-   stores which may become easily overloaded.  Anything else here
-   which could affect the run time?
+   stores which may become easily overloaded.
 
-3. An energy model should be trained for your system, the process of
+4. An energy model should be trained for your system, the process of
    training an energy model is not covered here [10].  In our case the
    models included in `src/optimize.lisp` are used
    (`amd-opteron-power-model` and `intel-sandybridge-power-model` for
    our AMD and Intel systems respectively).
 
-4. The `self-test` script should have populated all of the required
+5. The `self-test` script should have populated all of the required
    assembler, test input and oracle output files needed by the
    optimization runs.
 
@@ -192,6 +195,10 @@ applications for reduced energy consumption.
         -w # path to the sh-runner working directory
         -t # number of threads to be used
         -r # path to the results directory
+
+   Note that *only* these five flags to `optimize` (namely, `-l`,
+   `-f`, `-w`, `-r`, `-t`) should be used in the main experimental
+   runs.
 
 Footnotes
 =========
