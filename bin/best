@@ -1,0 +1,40 @@
+#!/bin/bash
+#
+# Usage: best DIRECTORY [OPTIONS...]
+#  Return the best individuals from DIRECTORY by fitness
+#
+# Options:
+#  -c,--counter C -- sort by HW counter C instead of fitness
+#
+. $(dirname $0)/common
+
+DIRECTORY="$1"
+COUNTER=""
+READER="$BASE"/bin/objread
+
+eval set -- $(getopt -o c: -l counter: -- "$@" || help;)
+while [ $# -gt 0 ];do
+    case $1 in
+        -c|--counter) COUNTER="$2"; shift;;
+        (--) shift; break;;
+        (-*) error "unrecognized option $1";;
+        (*)  break;;
+    esac
+    shift
+done
+
+parse(){
+    local store="$1"
+    local tmp=$(mktemp)
+    local lisp=""
+    if [ -z $COUNTER ];then lisp='(fitness obj)'
+    else                    lisp="(cdr (assoc :$COUNTER (stats obj)))"; fi
+    $READER "$store" -E "$lisp"; }
+
+get_hash(){
+    local store="$1"
+    $READER "$store" -G|sha1sum|cut -d' ' -f1; }
+
+for best in $(ls "$DIRECTORY"/best*store);do
+    echo -e "$(parse "$best")\t$(get_hash "$best")\t$(basename "$best")"
+done

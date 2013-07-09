@@ -1,6 +1,7 @@
 (in-package :optimize)
 
 (defun objread (&optional (args *arguments*))
+  (in-package :optimize)
   (flet ((arg-pop () (pop args)))
     (let ((help "Usage: objread object.store [OPTIONS...]
  manipulate a stored software object
@@ -30,7 +31,7 @@ Options:
                      (stats best)))
          ("-g" "--genome" (format t "~&~S~%" (genome best)))
          ("-G" "--genome-string"
-               (format t "~&~a~%" (software-evolution::genome-string best)))
+               (format t "~&~a~%" (genome-string best)))
          ("-E" "--eval"
                (let ((form `(lambda (obj) ,(read-from-string (arg-pop)))))
-                 (format t "~&~S~%" (funcall (eval form) best)))))))))
+                 (format t "~&~a~%" (funcall (eval form) best)))))))))
