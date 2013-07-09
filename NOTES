@@ -100,7 +100,7 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 | 998.specrand   |
 | 999.specrand   |
 
-* Tasks [30/34]
+* Tasks [30/33]
 ** DONE select GP parameters
 | selection tournament |   2 |
 | eviction tournament  |   2 |
@@ -1481,22 +1481,24 @@ For each of the bests, write out their percent makeup.
 #+end_src
 
 ** TODO Run Experiments
-*** Preparation [5/7]
+*** Preparation [7/7]
 First we need
 - [X] finalize power models (in file:src/optimize.lisp)
 - [X] =optimize= arguments (in file:doc/optimize-args.txt)
 - [X] file:bin/run works to check functionality
 - [X] file:bin/mgmt compiles optimal baseline programs
 - [X] select appropriate input sizes for each benchmark program
-- [ ] select appropriate GP parameters, (ask Steph if do both)
+- [X] select appropriate GP parameters, (ask Steph if do both)
       | selection tournament |    2 |
       | eviction tournament  |    2 |
       | mutation             | 100% |
       | crossover            |   ?? |
-- [ ] tag the version of the repo which we'll use
+- [X] tag the version of the repo which we'll use
 
 ** TODO Analyze Optimizations
-** TODO Build optimization Taxonomy
+** Build optimization Taxonomy
+This might be too optimistic.
+
 ** CANCELED Find Warehouse Compute Benchmark Applications
 ** CANCELED Build a Memory Fitness Function
 We could use the "bubble" and the "reporter" from [[#mars2011bubble]].
