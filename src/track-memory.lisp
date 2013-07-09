@@ -18,6 +18,7 @@
             (list *fitness-evals*
                   (sb-vm::DYNAMIC-USAGE)
                   (sb-vm::type-breakdown :dynamic)))
+    #+nil ;; this is too much for most cases
     (handler-case
         (let ((*standard-output* out))
           (format *standard-output* "~&#|~%")
