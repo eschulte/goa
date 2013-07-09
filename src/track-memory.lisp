@@ -2,7 +2,7 @@
 
 ;;; Commentary:
 
-;; Load this file with the -c option to optimize to add memory usage
+;; Load this file with the -C option to optimize to add memory usage
 ;; debug information to the checkpoint function.
 
 ;;; Code:
