@@ -244,6 +244,7 @@ compile(){
             facesim)
                 set_flags "-DENABLE_PTHREADS -DUSE_ALAMERE_TASKQ -DNDEBUG"
                 tmp=$(mktemp)
+                tmp2=$(mktemp)
                 FACE_SOURCE=""
                 FACE_SOURCE+="FACE_DRIVER.cpp "
                 FACE_SOURCE+="FACE_LANDMARK_OPTIMIZATION_GOAL.cpp "
@@ -253,70 +254,43 @@ compile(){
                 pushd "$BASE"/benchmarks/parsec-3.0/pkgs/apps/$bench/src/Benchmarks/facesim >/dev/null
                 cat $FACE_SOURCE > ../../Public_Library/all.cpp
                 cd ../../Public_Library
+
                 files=""
-                files+="Arrays/ARRAY_PARALLEL_OPERATIONS.cpp "
-                files+="Collisions_And_Interactions/BOX_HIERARCHY.cpp "
+                files+="Arrays/ARRAY.h "
+                files+="Arrays/ARRAY_PARALLEL_OPERATIONS.h "
+                files+="Arrays/LIST_ARRAY.h "
+                files+="Arrays/LIST_ARRAYS.h "
                 files+="Collisions_And_Interactions/COLLISION_BODY_LIST_3D.cpp "
+                files+="Collisions_And_Interactions/COLLISION_PENALTY_FORCES.h "
                 files+="Collisions_And_Interactions/TETRAHEDRON_COLLISION_BODY.cpp "
-                files+="Collisions_And_Interactions/TETRAHEDRON_HIERARCHY.cpp "
+                files+="Constitutive_Models/CONSTITUTIVE_MODEL_3D.h "
+                files+="Constitutive_Models/DIAGONALIZED_FACE_3D.h "
+                files+="Constitutive_Models/DIAGONALIZED_ISOTROPIC_STRESS_DERIVATIVE_3D.h "
                 files+="Constitutive_Models/STRAIN_MEASURE_3D.cpp "
-                files+="Data_Structures/SPLAY_TREE.cpp "
-                files+="Deformable_Objects/DEFORMABLE_OBJECT.cpp "
                 files+="Deformable_Objects/DEFORMABLE_OBJECT_3D.cpp "
-                files+="Deformable_Objects/DEFORMABLE_OBJECT_COLLISIONS_3D.cpp "
-                files+="Fracture/EMBEDDED_TETRAHEDRALIZED_VOLUME_BOUNDARY_SURFACE.cpp "
                 files+="Forces_And_Torques/BODY_FORCES_3D.cpp "
                 files+="Forces_And_Torques/DIAGONALIZED_FINITE_VOLUME_3D.cpp "
-                files+="Geometry/BOX_2D.cpp "
-                files+="Geometry/BOX_3D.cpp "
-                files+="Geometry/EMBEDDED_OBJECT.cpp "
-                files+="Geometry/EMBEDDED_TETRAHEDRALIZED_VOLUME.cpp "
-                files+="Geometry/IMPLICIT_SURFACE.cpp "
-                files+="Geometry/IMPLICIT_SURFACE_LIST.cpp "
-                files+="Geometry/PLANE.cpp "
-                files+="Geometry/SEGMENT_2D.cpp "
-                files+="Geometry/SEGMENT_3D.cpp "
-                files+="Geometry/SEGMENTED_CURVE_3D.cpp "
-                files+="Geometry/TETRAHEDRALIZED_VOLUME.cpp "
-                files+="Geometry/TETRAHEDRALIZED_VOLUME_LIST.cpp "
-                files+="Geometry/TETRAHEDRON.cpp "
-                files+="Geometry/TRIANGLE_3D.cpp "
-                files+="Geometry/TRIANGULATED_OBJECT.cpp "
-                files+="Geometry/TRIANGULATED_SURFACE.cpp "
-                files+="Geometry/TRIANGULATED_SURFACE_LIST.cpp "
+                files+="Forces_And_Torques/SOLIDS_FORCES.h "
                 files+="Grids/SEGMENT_MESH.cpp "
                 files+="Grids/TETRAHEDRON_MESH.cpp "
                 files+="Grids/TRIANGLE_MESH.cpp "
-                files+="Level_Sets/LEVELSET.cpp "
-                files+="Level_Sets/LEVELSET_3D.cpp "
+                files+="Math_Tools/constants.h "
+                files+="Math_Tools/exchange.h "
+                files+="Math_Tools/maxabs.h "
+                files+="Math_Tools/max.h "
+                files+="Math_Tools/maxmag.h "
+                files+="Math_Tools/min.h "
+                files+="Math_Tools/minmag.h "
+                files+="Math_Tools/sqr.h "
                 files+="Matrices_And_Vectors/MATRIX_3X3.cpp "
+                files+="Matrices_And_Vectors/MATRIX_NXN.h "
                 files+="Matrices_And_Vectors/SYMMETRIC_MATRIX_3X3.cpp "
-                files+="Matrices_And_Vectors/VECTOR_ND_PARALLEL.cpp "
-                files+="Particles/PARTICLE.cpp "
-                files+="Particles/SOLIDS_PARTICLE.cpp "
-                files+="Read_Write/FILE_UTILITIES.cpp "
-                files+="Rigid_Bodies/MASS_PROPERTIES_3D.cpp "
-                files+="Rigid_Bodies/RIGID_BODY_3D.cpp "
-                files+="Rigid_Bodies/RIGID_BODY_COLLISIONS_3D.cpp "
-                files+="Rigid_Bodies/RIGID_BODY_EVOLUTION_3D.cpp "
-                files+="Rigid_Bodies/RIGID_BODY_INTERSECTIONS_3D.cpp "
-                files+="Rigid_Bodies/RIGID_BODY_LIST_3D.cpp "
-                files+="Solids_And_Fluids/SOLIDS_EVOLUTION_3D.cpp "
-                files+="Solids_And_Fluids/SOLIDS_FLUIDS_DRIVER.cpp "
-                files+="Solids_And_Fluids/SOLIDS_FLUIDS_DRIVER_3D.cpp "
-                files+="Solids_And_Fluids/SOLIDS_FLUIDS_EXAMPLE_3D.cpp "
-                files+="Solids_And_Fluids/SOLIDS_PARAMETERS_3D.cpp "
-                files+="Thread_Utilities/THREAD_DIVISION_PARAMETERS.cpp "
-                files+="Thread_Utilities/THREAD_POOL_ALAMERE.cpp "
-                files+="Thread_Utilities/THREAD_POOL.cpp "
-                files+="Thread_Utilities/THREAD_POOL_SINGLE.cpp "
-                files+="Thread_Utilities/THREAD_ARRAY_LOCK.cpp "
-                files+="Utilities/DEBUG_UTILITIES.cpp "
-                files+="Utilities/LOG.cpp "
-                files+="Utilities/LOG_ENTRY.cpp "
-                files+="Utilities/PARSE_ARGS.cpp "
-                files+="Utilities/STRING_UTILITIES.cpp "
-                files+="Utilities/TIMER.cpp"
+                files+="Matrices_And_Vectors/VECTOR_2D.h "
+                files+="Matrices_And_Vectors/VECTOR_3D.h "
+                files+="Matrices_And_Vectors/VECTOR_ND.h "
+                files+="Solids_And_Fluids/SOLIDS_EVOLUTION_CALLBACKS.h "
+
+                cat $files >> all.cpp
 
                 PL="$BASE"/benchmarks/parsec-3.0/pkgs/apps/$bench/src/Public_Library
                 INCLUDE=" -I $PL/../Benchmarks/facesim/ "
@@ -339,18 +313,71 @@ compile(){
                 INCLUDE+="-I $PL/Thread_Utilities/ "
                 INCLUDE+="-I $PL/Utilities/ "
 
-                cat $files > physbam.cpp
-
-                sed -i '10085i/*' physbam.cpp
-                sed -i '10091a*/' physbam.cpp
-
-                cat physbam.cpp >> all.cpp
-                
-                # echo "g++ $FULL_FLAGS $INCLUDE -S all.cpp -o $tmp"
                 g++ $FULL_FLAGS -fexceptions $INCLUDE -S all.cpp -o $tmp \
                     ||error "compilation failed"
+
+                # Other files not compiled into facesim.s
+                others=""
+                others+="Arrays/ARRAY_PARALLEL_OPERATIONS.cpp "
+                others+="Collisions_And_Interactions/BOX_HIERARCHY.cpp "
+                others+="Collisions_And_Interactions/TETRAHEDRON_HIERARCHY.cpp "
+                others+="Data_Structures/SPLAY_TREE.cpp "
+                others+="Deformable_Objects/DEFORMABLE_OBJECT.cpp "
+                others+="Deformable_Objects/DEFORMABLE_OBJECT_COLLISIONS_3D.cpp "
+                others+="Fracture/EMBEDDED_TETRAHEDRALIZED_VOLUME_BOUNDARY_SURFACE.cpp "
+                others+="Geometry/BOX_2D.cpp "
+                others+="Geometry/BOX_3D.cpp "
+                others+="Geometry/EMBEDDED_OBJECT.cpp "
+                others+="Geometry/EMBEDDED_TETRAHEDRALIZED_VOLUME.cpp "
+                others+="Geometry/IMPLICIT_SURFACE.cpp "
+                others+="Geometry/IMPLICIT_SURFACE_LIST.cpp "
+                others+="Geometry/PLANE.cpp "
+                others+="Geometry/SEGMENT_2D.cpp "
+                others+="Geometry/SEGMENT_3D.cpp "
+                others+="Geometry/SEGMENTED_CURVE_3D.cpp "
+                others+="Geometry/TETRAHEDRALIZED_VOLUME.cpp "
+                others+="Geometry/TETRAHEDRALIZED_VOLUME_LIST.cpp "
+                others+="Geometry/TETRAHEDRON.cpp "
+                others+="Geometry/TRIANGLE_3D.cpp "
+                others+="Geometry/TRIANGULATED_OBJECT.cpp "
+                others+="Geometry/TRIANGULATED_SURFACE.cpp "
+                others+="Geometry/TRIANGULATED_SURFACE_LIST.cpp "
+                others+="Level_Sets/LEVELSET.cpp "
+                others+="Level_Sets/LEVELSET_3D.cpp "
+                others+="Matrices_And_Vectors/VECTOR_ND_PARALLEL.cpp "
+                others+="Particles/PARTICLE.cpp "
+                others+="Particles/SOLIDS_PARTICLE.cpp "
+                others+="Read_Write/FILE_UTILITIES.cpp "
+                others+="Rigid_Bodies/MASS_PROPERTIES_3D.cpp "
+                others+="Rigid_Bodies/RIGID_BODY_3D.cpp "
+                others+="Rigid_Bodies/RIGID_BODY_COLLISIONS_3D.cpp "
+                others+="Rigid_Bodies/RIGID_BODY_EVOLUTION_3D.cpp "
+                others+="Rigid_Bodies/RIGID_BODY_INTERSECTIONS_3D.cpp "
+                others+="Rigid_Bodies/RIGID_BODY_LIST_3D.cpp "
+                others+="Solids_And_Fluids/SOLIDS_EVOLUTION_3D.cpp "
+                others+="Solids_And_Fluids/SOLIDS_FLUIDS_DRIVER.cpp "
+                others+="Solids_And_Fluids/SOLIDS_FLUIDS_DRIVER_3D.cpp "
+                others+="Solids_And_Fluids/SOLIDS_FLUIDS_EXAMPLE_3D.cpp "
+                others+="Solids_And_Fluids/SOLIDS_PARAMETERS_3D.cpp "
+                others+="Thread_Utilities/THREAD_DIVISION_PARAMETERS.cpp "
+                others+="Thread_Utilities/THREAD_POOL_ALAMERE.cpp "
+                others+="Thread_Utilities/THREAD_POOL.cpp "
+                others+="Thread_Utilities/THREAD_POOL_SINGLE.cpp "
+                others+="Thread_Utilities/THREAD_ARRAY_LOCK.cpp "
+                others+="Utilities/DEBUG_UTILITIES.cpp "
+                others+="Utilities/LOG.cpp "
+                others+="Utilities/LOG_ENTRY.cpp "
+                others+="Utilities/PARSE_ARGS.cpp "
+                others+="Utilities/STRING_UTILITIES.cpp "
+                others+="Utilities/TIMER.cpp"
+                cat $others > others.cpp
+
+                g++ $FULL_FLAGS -fexceptions $INCLUDE -c others.cpp -o $tmp2 \
+                    ||error "compilation of others failed"
+
                 popd >/dev/null
                 mv $tmp ${bench}.s
+                mv $tmp2 ${bench}_others.o
                 ;;
             ferret)
                 set_flags ""
@@ -511,7 +538,8 @@ link(){
 
                 link_dirs="-L/usr/lib64 -L/usr/lib "
                 link_dirs+="-L${ldir}/lib "
-                link_dirs+="${ldir}/TaskQ/lib/taskQ.o"
+                link_dirs+="${ldir}/TaskQ/lib/taskQ.o "
+                link_dirs+="$BASE/benchmarks/facesim/facesim_others.o"
 
                 g++ $link_dirs ${bench}.s -o $bench $FLAGS \
                     ||error "linking failed"
