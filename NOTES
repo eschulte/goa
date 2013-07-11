@@ -1512,12 +1512,13 @@ First we need
 
 ** TODO Analyze Optimizations
 *** Overall energy reduction
+#+name: overall-energy-reduction
 #+begin_src sh
   . bin/common
   
   # have to protect against weird inf values... something broke w/ferret
   final(){
-      cat $1|cut -d' ' -f2|grep -v inf|tail -1; }
+      cat $1|cut -d' ' -f2|grep -v inf|sort -n|head -1; }
   
   for arch in amd intel;do
       for bench in ${BENCHMARKS[@]};do
@@ -1526,13 +1527,36 @@ First we need
           if [ -f $log ];then
               initial=$(grep ":ORIG-FITNESS" $log|sed 's/^.*\. //;s/))$//')
               final=$(final $stats)
-              echo "$arch $bench $initial $final"
+          else
+              initial="NA"
+              final="NA"
           fi
+          echo "$arch $bench $initial $final"
       done
   done
 #+end_src
 
-#+name: overall-energy-reduction
+#+RESULTS: overall-energy-reduction
+| amd   | blackscholes | 1079.9546 |    64.8971 |
+| amd   | bodytrack    | 568.41156 |   540.5206 |
+| amd   | facesim      | 3714.0596 |   3538.525 |
+| amd   | ferret       | 472.13297 |  421.91614 |
+| amd   | fluidanimate | 416.33728 |    339.564 |
+| amd   | freqmine     |  668.3218 |  601.47565 |
+| amd   | swaptions    |  909.4299 |  518.23346 |
+| amd   | vips         | 1148.3849 | 1018.41425 |
+| amd   | x264         | 349.83527 |    293.697 |
+| intel | blackscholes |        NA |         NA |
+| intel | bodytrack    |        NA |         NA |
+| intel | facesim      |        NA |         NA |
+| intel | ferret       |        NA |         NA |
+| intel | fluidanimate |        NA |         NA |
+| intel | freqmine     |        NA |         NA |
+| intel | swaptions    |        NA |         NA |
+| intel | vips         |        NA |         NA |
+| intel | x264         |        NA |         NA |
+
+#+name: manicured-overall-energy-reduction
 | arch | benchmark    | initial energy | final energy | % reduction |
 |------+--------------+----------------+--------------+-------------|
 | amd  | blackscholes |      1079.9546 |      64.8971 |   93.990757 |
