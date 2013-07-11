@@ -1,5 +1,6 @@
 Optimization Notes  -*- mode:org; org-attach-directory:"etc/data/" -*-
 #+Options: ^:{}
+#+Property: header-args:gnuplot :results silent
 
 * Work Plan
 :   train energy    memory       benchmarks       baselines       write
@@ -1349,7 +1350,6 @@ Collate all of the results files into one large text file.
 #+end_src
 
 Graph the improvement over time.
-#+headers: :results silent
 #+headers: :file etc/data/by-flag-fitness-by-time.svg
 #+begin_src gnuplot :var data="results/distributed-runs/bzip2/all-stats.txt"
   # set logscale x
@@ -1407,7 +1407,6 @@ For each of the bests, write out their percent makeup.
    #+end_src
 
 3. Plot these compositions
-   #+headers: :results silent
    #+begin_src gnuplot :file /tmp/by-flag-sub-pop-comps.tex
      set term tikz
      
@@ -1481,6 +1480,22 @@ For each of the bests, write out their percent makeup.
 #+end_src
 
 ** TODO Run Experiments
+AMD Runs
+| benchmark    | machine | start                  | finish                 |   runtime |
+|--------------+---------+------------------------+------------------------+-----------|
+| fluidanimate | real    | <2013-07-09 Tue 09:27> | <2013-07-09 Tue 20:45> |     11.30 |
+| swaptions    | real    | <2013-07-09 Tue 09:29> | <2013-07-10 Wed 00:50> |     15.35 |
+| freqmine     | complex | <2013-07-09 Tue 09:43> | <2013-07-10 Wed 03:50> |     18.12 |
+| bodytrack    | complex | <2013-07-09 Tue 12:58> |                        |           |
+| blackscholes | complex | <2013-07-10 Wed 06:18> | <2013-07-10 Wed 15:39> |      9.35 |
+| x264         | real    | <2013-07-10 Wed 14:17> | <2013-07-11 Thu 06:30> |     16.22 |
+| ferret       | real    | <2013-07-10 Wed 14:14> | <2013-07-11 Thu 04:36> |     14.37 |
+| facesim      | complex | <2013-07-10 Wed 20:20> |                        |           |
+| vips         | real    | <2013-07-11 Thu 07:28> |                        |           |
+|--------------+---------+------------------------+------------------------+-----------|
+|              |         |                        |                        | 14.118333 |
+#+TBLFM: $5=($4-$3)*24;%0.2f::@11$5=vmean(@2..@-1)
+
 *** Preparation [7/7]
 First we need
 - [X] finalize power models (in file:src/optimize.lisp)
@@ -1496,6 +1511,70 @@ First we need
 - [X] tag the version of the repo which we'll use
 
 ** TODO Analyze Optimizations
+*** Overall energy reduction
+#+begin_src sh
+  . bin/common
+  
+  # have to protect against weird inf values... something broke w/ferret
+  final(){
+      cat $1|cut -d' ' -f2|grep -v inf|tail -1; }
+  
+  for arch in amd intel;do
+      for bench in ${BENCHMARKS[@]};do
+          log=results/$arch/$bench/optimize.log
+          stats=results/$arch/$bench/stats.txt
+          if [ -f $log ];then
+              initial=$(grep ":ORIG-FITNESS" $log|sed 's/^.*\. //;s/))$//')
+              final=$(final $stats)
+              echo "$arch $bench $initial $final"
+          fi
+      done
+  done
+#+end_src
+
+#+name: overall-energy-reduction
+| arch | benchmark    | initial energy | final energy | % reduction |
+|------+--------------+----------------+--------------+-------------|
+| amd  | blackscholes |      1079.9546 |      64.8971 |   93.990757 |
+| amd  | ferret       |      472.13297 |    421.91614 |   10.636163 |
+| amd  | fluidanimate |      416.33728 |      339.564 |   18.440165 |
+| amd  | freqmine     |       668.3218 |    601.47565 |   10.002090 |
+| amd  | swaptions    |       909.4299 |    518.23346 |   43.015568 |
+| amd  | x264         |      349.83527 |      293.697 |   16.047058 |
+|------+--------------+----------------+--------------+-------------|
+|      |              |      3896.0118 |    2239.7834 |   32.021967 |
+#+TBLFM: $5=100 * ($3 - $4)/$3::@8$3=vsum(@2..@-1)::@8$4=vsum(@2..@-1)::@8$5=vmean(@2..@-1)
+
+*** Histograms of improvement
+#+begin_src gnuplot :var data=overall-energy-reduction
+  set title 'Energy Optimization Results'
+  unset key
+  set style data histograms
+  set style histogram cluster gap 1
+  set style fill solid border -1
+  set boxwidth 0.9
+  set auto x
+  set xtic rotate by -45
+  set yrange [0:100]
+  set ylabel "Percent Energy Reduction"
+  set xlabel "Benchmark"
+  plot data u (100 * ((column(3) - column(4)) / column(3))):xtic(2) ti col
+#+end_src
+
+*** Graphs of improvement by evaluations by benchmarks
+#+begin_src gnuplot :file etc/data/improvement-by-evals-by-benchmarks.svg
+  set term svg size 1200,800
+  set multiplot layout 3,3 title 'Energy Reduction by Fitness Evaluations'
+  do for [bench in "blackscholes ferret fluidanimate freqmine swaptions x264"] {
+    set title bench
+    plot "results/amd/".bench."/stats.txt" u 1:2 w lines notitle
+  }
+  unset multiplot
+#+end_src
+
+#+RESULTS:
+[[file:etc/data/improvement-by-evals-by-benchmarks.svg]]
+
 ** Build optimization Taxonomy
 This might be too optimistic.
 
@@ -1687,7 +1766,35 @@ failures at stages.
 
 Run with =make check=.
 
-* Issues [9/9]
+* Issues [9/10]
+** TODO facesim is running really slowly on AMD
+|                5.700 |  6400 |
+|                 6.00 |  6656 |
+|  6.36666666666666664 |  6912 |
+|                6.700 |  7168 |
+|  7.33333333333333335 |  7424 |
+|  7.36666666666666664 |  7680 |
+|   7.7333333333333333 |  7936 |
+|   8.6666666666666667 |  8192 |
+|  8.46666666666666664 |  8448 |
+|   8.7666666666666667 |  8704 |
+|  9.11666666666666666 |  8960 |
+|                9.450 |  9216 |
+|   9.8333333333333334 |  9472 |
+| 10.16666666666666664 |  9728 |
+|               10.500 |  9984 |
+|  10.8333333333333334 | 10240 |
+| 11.16666666666666664 | 10496 |
+|  11.5166666666666667 | 10752 |
+|               11.850 | 11008 |
+
+- slope :: 4608 / 6.1499999999999995 =
+  - 749.2682926829269 evals an hour
+
+- runtime :: 262144 / 749.2682926829269 =
+  - 349.8666666666666 hours
+  - 14.577777777777776 days
+
 ** DONE freqmine compiled w/mgmt takes too long
 #+begin_quote
 I should mention that I ran all benchmarks using bin/run *except*
