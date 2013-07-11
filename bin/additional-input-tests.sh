@@ -1,34 +1,19 @@
 #!/bin/bash
- 
+#
+# Usage: additional-input-tests BENCHMARK EXECUTABLE
+#
 # This script must live in optimization/bin so that the script can
-# find the path to parsec. PARSEC 3.0 must be installed in 
+# find the path to parsec. PARSEC 3.0 must be installed in
 # optimization/benchmarks/parsec-3.0
 #
 # The benchmark must have been previously built with parsecmgmt so
 # that the original build can be used as an oracle
- 
-BIN_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-PARSEC_DIR=$BIN_DIR/../benchmarks/parsec-3.0/
-BASE=$BIN_DIR/../
+#
+. $(dirname $0)/common
+BIN_DIR=$BASE/bin
+PARSEC_DIR=$BASE/benchmarks/parsec-3.0/
 INPUT_DIR=$BASE/etc/additional-inputs/
-. $BIN_DIR/common
- 
-function usage()
-{
-  printf "USAGE:\n"
-  printf "$0 <benchmark name> <path to executable to test>\n"
-  printf "where <benchmark name> is one of:\n"
-  for b in ${BENCHMARKS[@]}
-  do
-    echo -e "  $b"
-  done 
-}
- 
-if [[ $# -le 1 ]]; then
-  usage
-  exit 1
-fi
- 
+if [[ $# -le 1 ]]; then help; fi
 BENCHMARK=$1
 EXECUTABLE=$2
 
@@ -73,13 +58,13 @@ case $BENCHMARK in
       mkdir $INPUT_DIR/x264
       curl http://media.xiph.org/video/derf/y4m/claire_qcif-5.994Hz.y4m -o $INPUT_DIR/x264/x264.input.0.y4m
       curl http://media.xiph.org/video/derf/y4m/bus_qcif_7.5fps.y4m     -o $INPUT_DIR/x264/x264.input.1.y4m
-      curl http://media.xiph.org/video/derf/y4m/foreman_qcif_7.5fps.y4m -o $INPUT_DIR/x264/x264.input.2.y4m  
+      curl http://media.xiph.org/video/derf/y4m/foreman_qcif_7.5fps.y4m -o $INPUT_DIR/x264/x264.input.2.y4m
       curl http://media.xiph.org/video/derf/y4m/soccer_qcif_15fps.y4m   -o $INPUT_DIR/x264/x264.input.3.y4m
       curl http://media.xiph.org/video/derf/y4m/bus_cif_15fps.y4m       -o $INPUT_DIR/x264/x264.input.4.y4m
       for n in {0..4}; do
         echo "Making gold standard output $INPUT_DIR/x264/x264.golden.$n"
-        $BASE/benchmarks/x264/x264 $X264_FLAGS $INPUT_DIR/x264/x264.input.$n.y4m -o $INPUT_DIR/x264/x264.golden.$n >/dev/null 2>&1        
-      done 
+        $BASE/benchmarks/x264/x264 $X264_FLAGS $INPUT_DIR/x264/x264.input.$n.y4m -o $INPUT_DIR/x264/x264.golden.$n >/dev/null 2>&1
+      done
     fi
     for n in {0..4}; do
       printf "Test $n: "
@@ -95,7 +80,7 @@ case $BENCHMARK in
     rm $INPUT_DIR/x264/*tstout*
   ;;
   *)
-    usage
-    error "Invalid benchmark \"$1\"!"
+    warning "Invalid benchmark \"$1\"!"
+    help
     ;;
 esac
