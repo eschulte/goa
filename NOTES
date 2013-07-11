@@ -1,5 +1,6 @@
 Optimization Notes  -*- mode:org; org-attach-directory:"etc/data/" -*-
 #+Options: ^:{}
+#+Property: header-args:gnuplot :results silent
 
 * Work Plan
 :   train energy    memory       benchmarks       baselines       write
@@ -1349,7 +1350,6 @@ Collate all of the results files into one large text file.
 #+end_src
 
 Graph the improvement over time.
-#+headers: :results silent
 #+headers: :file etc/data/by-flag-fitness-by-time.svg
 #+begin_src gnuplot :var data="results/distributed-runs/bzip2/all-stats.txt"
   # set logscale x
@@ -1407,7 +1407,6 @@ For each of the bests, write out their percent makeup.
    #+end_src
 
 3. Plot these compositions
-   #+headers: :results silent
    #+begin_src gnuplot :file /tmp/by-flag-sub-pop-comps.tex
      set term tikz
      
@@ -1533,7 +1532,7 @@ First we need
   done
 #+end_src
 
-#+RESULTS:
+#+name: overall-energy-reduction
 | arch | benchmark    | initial energy | final energy | % reduction |
 |------+--------------+----------------+--------------+-------------|
 | amd  | blackscholes |      1079.9546 |      64.8971 |   93.990757 |
@@ -1547,8 +1546,20 @@ First we need
 #+TBLFM: $5=100 * ($3 - $4)/$3::@8$3=vsum(@2..@-1)::@8$4=vsum(@2..@-1)::@8$5=vmean(@2..@-1)
 
 *** Histograms of improvement
-
-
+#+begin_src gnuplot :var data=overall-energy-reduction
+  set title 'Energy Optimization Results'
+  unset key
+  set style data histograms
+  set style histogram cluster gap 1
+  set style fill solid border -1
+  set boxwidth 0.9
+  set auto x
+  set xtic rotate by -45
+  set yrange [0:100]
+  set ylabel "Percent Energy Reduction"
+  set xlabel "Benchmark"
+  plot data u (100 * ((column(3) - column(4)) / column(3))):xtic(2) ti col
+#+end_src
 
 *** Graphs of improvement by evaluations by benchmarks
 #+begin_src gnuplot :file etc/data/improvement-by-evals-by-benchmarks.svg
