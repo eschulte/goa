@@ -750,7 +750,7 @@ output(){
                     small)  ./$bench $bench.input 4 1 1000 5 0 1;;
                     medium) ./$bench $bench.input 4 2 2000 5 0 1;;
                     large)  ./$bench $bench.input 4 4 4000 5 0 1;;
-                    huge)   ./$bench $bench,input 4 261 4000 5 0 1;;
+                    huge)   ./$bench $bench.input 4 261 4000 5 0 1;;
                 esac
                 # collect the output
                 mv $bench.input $target
