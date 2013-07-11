@@ -1482,17 +1482,20 @@ For each of the bests, write out their percent makeup.
 
 ** TODO Run Experiments
 AMD Runs
-| benchmark    | machine | start                  | finish                 |
-|--------------+---------+------------------------+------------------------|
-| fluidanimate | real    | <2013-07-09 Tue 09:27> | <2013-07-09 Tue 20:45> |
-| swaptions    | real    | <2013-07-09 Tue 09:29> | <2013-07-10 Wed 00:50> |
-| freqmine     | complex | <2013-07-09 Tue 09:43> | <2013-07-10 Wed 03:50> |
-| bodytrack    | complex | <2013-07-09 Tue 12:58> |                        |
-| blackscholes | complex | <2013-07-10 Wed 06:18> | <2013-07-10 Wed 15:39> |
-| x264         | real    | <2013-07-10 Wed 14:17> | <2013-07-11 Thu 06:30> |
-| ferret       | real    | <2013-07-10 Wed 14:14> | <2013-07-11 Thu 04:36> |
-| facesim      | complex | <2013-07-10 Wed 20:20> |                        |
-| vips         | real    | <2013-07-11 Thu 07:28> |                        |
+| benchmark    | machine | start                  | finish                 |   runtime |
+|--------------+---------+------------------------+------------------------+-----------|
+| fluidanimate | real    | <2013-07-09 Tue 09:27> | <2013-07-09 Tue 20:45> |     11.30 |
+| swaptions    | real    | <2013-07-09 Tue 09:29> | <2013-07-10 Wed 00:50> |     15.35 |
+| freqmine     | complex | <2013-07-09 Tue 09:43> | <2013-07-10 Wed 03:50> |     18.12 |
+| bodytrack    | complex | <2013-07-09 Tue 12:58> |                        |           |
+| blackscholes | complex | <2013-07-10 Wed 06:18> | <2013-07-10 Wed 15:39> |      9.35 |
+| x264         | real    | <2013-07-10 Wed 14:17> | <2013-07-11 Thu 06:30> |     16.22 |
+| ferret       | real    | <2013-07-10 Wed 14:14> | <2013-07-11 Thu 04:36> |     14.37 |
+| facesim      | complex | <2013-07-10 Wed 20:20> |                        |           |
+| vips         | real    | <2013-07-11 Thu 07:28> |                        |           |
+|--------------+---------+------------------------+------------------------+-----------|
+|              |         |                        |                        | 14.118333 |
+#+TBLFM: $5=($4-$3)*24;%0.2f::@11$5=vmean(@2..@-1)
 
 *** Preparation [7/7]
 First we need
@@ -1542,6 +1545,10 @@ First we need
 |------+--------------+----------------+--------------+-------------|
 |      |              |      3896.0118 |    2239.7834 |   32.021967 |
 #+TBLFM: $5=100 * ($3 - $4)/$3::@8$3=vsum(@2..@-1)::@8$4=vsum(@2..@-1)::@8$5=vmean(@2..@-1)
+
+*** Histograms of improvement
+
+
 
 *** Graphs of improvement by evaluations by benchmarks
 #+begin_src gnuplot :file etc/data/improvement-by-evals-by-benchmarks.svg
