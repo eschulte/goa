@@ -101,7 +101,7 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 | 998.specrand   |
 | 999.specrand   |
 
-* Tasks [30/33]
+* Tasks [31/38]
 ** DONE select GP parameters
 | selection tournament |   2 |
 | eviction tournament  |   2 |
@@ -1479,8 +1479,8 @@ For each of the bests, write out their percent makeup.
   (mapc #'cmps-for-flag flags)
 #+end_src
 
-** TODO Run Experiments
-*** Preparation [7/7]
+** TODO Run Experiments [1/5]
+*** DONE Preparation [7/7]
 First we need
 - [X] finalize power models (in file:src/optimize.lisp)
 - [X] =optimize= arguments (in file:doc/optimize-args.txt)
@@ -1494,7 +1494,7 @@ First we need
       | crossover            |   ?? |
 - [X] tag the version of the repo which we'll use
 
-*** Main Experiment
+*** TODO Main Experiment
 AMD Runs
 | benchmark    | machine | start                  | finish                 |   runtime |
 |--------------+---------+------------------------+------------------------+-----------|
@@ -1511,7 +1511,9 @@ AMD Runs
 |              |         |                        |                        | 19.111429 |
 #+TBLFM: $5=($4-$3)*24;%0.2f::@11$5=vmean(@2..@-1)
 
-*** Extended Tests
+*** TODO Different Input Size Tests
+*** TODO Different Input Tests
+*** TODO Extended Tests
 | benchmark    | orig  | opt   |
 |--------------+-------+-------|
 | blackscholes | 10/10 | 10/10 |
@@ -1634,6 +1636,9 @@ AMD Runs
 
 #+RESULTS:
 [[file:etc/data/improvement-by-evals-by-benchmarks.svg]]
+
+*** Histogram of improvement by input size
+see [[*all%20benchmarks%20(we%20have)%20over%20all%20inputs][all benchmarks (we have) over all inputs]]
 
 ** Build optimization Taxonomy
 This might be too optimistic.
@@ -1936,6 +1941,9 @@ evolved and original programs.
 #+TBLFM: $4=100*($2-$3)/$2
 
 *** all benchmarks (we have) over all inputs
+    :PROPERTIES:
+    :ID:       a21a79d2-39f3-4eb4-916e-f63983e7cdf7
+    :END:
 Running on real with file:bin/many-multi-test.
 
 **** collect results
