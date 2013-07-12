@@ -5,7 +5,10 @@
 #
 # Options:
 #  -b,--bench B ---- limit to benchmark B
+#  -B,--no-bench B - skip benchmark B
 #  -s,--size S ----- limit to size S
+#  -S,--no-size S -- skip size S
+#  -d,--debug ------ print debug info
 #
 . $(dirname $0)/common
 outdir=$1
@@ -14,11 +17,18 @@ if [ ! -d $outdir ];then
     error "output directory $outdir does not exist"
 fi
 
-eval set -- $(getopt -o b:s: -l bench:,size: -- "$@" || help;)
+DEBUG=""
+NO_SIZE=""
+NO_BENCH=""
+
+eval set -- $(getopt -o b:B:s:S:d -l bench:,no-bench:,size:,no-size:,debug -- "$@" || help;)
 while [ $# -gt 0 ];do
     case $1 in
         -b|--bench) BENCHMARKS=($2); shift;;
+        -B|--no-bench) NO_BENCH=$2; shift;;
         -s|--size) SIZES=($2); shift;;
+        -S|--no-size) NO_SIZE=$2; shift;;
+        -d|--debug) DEBUG="yes";;
         (--) shift; break;;
         (-*) error "unrecognized option $1";;
         (*)  break;;
@@ -30,24 +40,32 @@ run="$BASE/bin/run"
 
 uniform(){ awk -F, '{print $2,$1}'|sort; }
 
-for size in ${SIZES[@]};do
-    for bench in ${BENCHMARKS[@]};do
+for size in ${SIZES[@]/$NO_SIZE/};do
+    for bench in ${BENCHMARKS[@]/$NO_BENCH/};do
         opt=benchmarks/$bench/$bench.opt
         holder=$(mktemp)
-        if [ ! -f $opt ];then warning "$opt does not exist"; fi
-        mv $opt $holder
-        mgmt clean $bench
-        mgmt output $bench -s $size
-        mv $holder $opt
-        echo "$bench $size"
-        orig=$(mktemp)
-        evol=$(mktemp)
-        $run $bench benchmarks/$bench/$bench -l "" -s $size -p -k > $orig
-        tmp=$(cat $orig|grep output|sed 's/^.* //')
-        $run $bench $otp -l "" -s $size -o $tmp -p |tee $evol
-        join <(cat $orig|grep -v output|uniform) <(cat $evol|uniform) \
-            |sed 's/ /,/g' |tee $outdir/$bench-$size.csv
-        rm -f $tmp $orig $evol
-        echo ""
+        if [ ! -f $opt ];then warning "$opt does not exist";
+        else
+            mv $opt $holder
+            mgmt clean $bench
+            mgmt output $bench -s $size
+            mv $holder $opt
+            msg "$bench $size"
+            orig=$(mktemp)
+            evol=$(mktemp)
+            if [ ! -z $DEBUG ];then
+                msg "$run $bench benchmarks/$bench/$bench -l \"\" -s $size -p -k > $orig"
+            fi
+            $run $bench benchmarks/$bench/$bench -l "" -s $size -p -k > $orig
+            tmp=$(cat $orig|grep output|sed 's/^.* //')
+            if [ ! -z $DEBUG ];then
+                msg "$run $bench $opt -l \"\" -s $size -o $tmp -p |tee $evol"
+            fi
+            $run $bench $opt -l "" -s $size -o $tmp -p |tee $evol
+            join <(cat $orig|grep -v output|uniform) <(cat $evol|uniform) \
+                |sed 's/ /,/g' |tee $outdir/$bench-$size.csv
+            rm -f $tmp $orig $evol
+            echo ""
+        fi
     done
 done
