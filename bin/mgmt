@@ -109,6 +109,10 @@ orig(){
     local bench_dir="$BASE/benchmarks/$bench";
     if [ -f "$bench_dir/$bench.orig" ];then
         msg "$bench_dir/$bench.orig exists"
+    elif [ $bench == x264 ];then
+        compile $bench \
+            && link $bench \
+            && cp "$bench_dir/$bench" "$bench_dir/$bench.orig"
     else
         # build with parsecmgmt
         env PATH="$BASE"/benchmarks/parsec-3.0/bin:"$PATH" \
