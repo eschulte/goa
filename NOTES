@@ -1480,22 +1480,6 @@ For each of the bests, write out their percent makeup.
 #+end_src
 
 ** TODO Run Experiments
-AMD Runs
-| benchmark    | machine | start                  | finish                 |   runtime |
-|--------------+---------+------------------------+------------------------+-----------|
-| fluidanimate | real    | <2013-07-09 Tue 09:27> | <2013-07-09 Tue 20:45> |     11.30 |
-| swaptions    | real    | <2013-07-09 Tue 09:29> | <2013-07-10 Wed 00:50> |     15.35 |
-| freqmine     | complex | <2013-07-09 Tue 09:43> | <2013-07-10 Wed 03:50> |     18.12 |
-| bodytrack    | complex | <2013-07-09 Tue 12:58> |                        |           |
-| blackscholes | complex | <2013-07-10 Wed 06:18> | <2013-07-10 Wed 15:39> |      9.35 |
-| x264         | real    | <2013-07-10 Wed 14:17> | <2013-07-11 Thu 06:30> |     16.22 |
-| ferret       | real    | <2013-07-10 Wed 14:14> | <2013-07-11 Thu 04:36> |     14.37 |
-| facesim      | complex | <2013-07-10 Wed 20:20> |                        |           |
-| vips         | real    | <2013-07-11 Thu 07:28> |                        |           |
-|--------------+---------+------------------------+------------------------+-----------|
-|              |         |                        |                        | 14.118333 |
-#+TBLFM: $5=($4-$3)*24;%0.2f::@11$5=vmean(@2..@-1)
-
 *** Preparation [7/7]
 First we need
 - [X] finalize power models (in file:src/optimize.lisp)
@@ -1509,6 +1493,58 @@ First we need
       | mutation             | 100% |
       | crossover            |   ?? |
 - [X] tag the version of the repo which we'll use
+
+*** Main Experiment
+AMD Runs
+| benchmark    | machine | start                  | finish                 |   runtime |
+|--------------+---------+------------------------+------------------------+-----------|
+| blackscholes | complex | <2013-07-10 Wed 06:18> | <2013-07-10 Wed 15:39> |      9.35 |
+| bodytrack    | complex | <2013-07-09 Tue 12:58> | <2013-07-11 Thu 14:02> |     49.07 |
+| facesim      | complex | <2013-07-11 Thu 18:43> |                        |           |
+| ferret       | real    | <2013-07-10 Wed 14:14> | <2013-07-11 Thu 04:36> |     14.37 |
+| fluidanimate | real    | <2013-07-09 Tue 09:27> | <2013-07-09 Tue 20:45> |     11.30 |
+| freqmine     | complex | <2013-07-09 Tue 09:43> | <2013-07-10 Wed 03:50> |     18.12 |
+| swaptions    | real    | <2013-07-09 Tue 09:29> | <2013-07-10 Wed 00:50> |     15.35 |
+| vips         | real    | <2013-07-12 Fri 09:58> |                        |           |
+| x264         | real    | <2013-07-10 Wed 14:17> | <2013-07-11 Thu 06:30> |     16.22 |
+|--------------+---------+------------------------+------------------------+-----------|
+|              |         |                        |                        | 19.111429 |
+#+TBLFM: $5=($4-$3)*24;%0.2f::@11$5=vmean(@2..@-1)
+
+*** Extended Tests
+| benchmark    | orig  | opt   |
+|--------------+-------+-------|
+| blackscholes | 10/10 | 10/10 |
+| bodytrack    | 10/10 | 6/10  |
+| facesim      |       |       |
+| ferret       | 10/10 | 5/10  |
+| fluidanimate | 10/10 | 0/10  |
+| freqmine     | 10/10 | 3/10  |
+| swaptions    | 10/10 | 10/10 |
+| vips         |       |       |
+| x264         |       |       |
+
+**** Full results
+| benchmark    | vsn  | 0    | 1    | 2    | 3    | 4    | 5    | 6    | 7    | 8    | 9    |
+|--------------+------+------+------+------+------+------+------+------+------+------+------|
+| blackscholes | orig | pass | pass | pass | pass | pass | pass | pass | pass | pass | pass |
+| blackscholes | opt  | pass | pass | pass | pass | pass | pass | pass | pass | pass | pass |
+| bodytrack    | orig | pass | pass | pass | pass | pass | pass | pass | pass | pass | pass |
+| bodytrack    | opt  | pass | pass | FAIL | pass | FAIL | pass | FAIL | FAIL | pass | pass |
+| facesim      | orig |      |      |      |      |      |      |      |      |      |      |
+| facesim      | opt  |      |      |      |      |      |      |      |      |      |      |
+| ferret       | orig | pass | pass | pass | pass | pass | pass | pass | pass | pass | pass |
+| ferret       | opt  | pass | pass | FAIL | FAIL | pass | FAIL | FAIL | pass | FAIL | pass |
+| fluidanimate | orig | pass | pass | pass | pass | pass | pass | pass | pass | pass | pass |
+| fluidanimate | opt  | FAIL | FAIL | FAIL | FAIL | FAIL | FAIL | FAIL | FAIL | FAIL | FAIL |
+| freqmine     | orig | pass | pass | pass | pass | pass | pass | pass | pass | pass | pass |
+| freqmine     | opt  | pass | FAIL | FAIL | FAIL | pass | FAIL | FAIL | FAIL | FAIL | pass |
+| swaptions    | orig | pass | pass | pass | pass | pass | pass | pass | pass | pass | pass |
+| swaptions    | opt  | pass | pass | pass | pass | pass | pass | pass | pass | pass | pass |
+| vips         | orig |      |      |      |      |      |      |      |      |      |      |
+| vips         | opt  |      |      |      |      |      |      |      |      |      |      |
+| x264         | orig |      |      |      |      |      |      |      |      |      |      |
+| x264         | opt  |      |      |      |      |      |      |      |      |      |      |
 
 ** TODO Analyze Optimizations
 *** Overall energy reduction
