@@ -7,13 +7,14 @@ import os
 import random
 import re
 import shutil
-from subprocess import call, check_call, PIPE, Popen
+from subprocess import CalledProcessError, call, check_call, PIPE, Popen
 import sys
 import tarfile
 import tempfile
+import threading
 import time
 
-parser = OptionParser( usage = "%prog [options] benchmark executable" )
+parser = OptionParser( usage = "%prog [options] benchmark executable [testid]" )
 parser.add_option(
     "-g", "--generate", metavar = "N", type = int,
     help = "generate N additional tests"
@@ -32,14 +33,20 @@ parser.add_option(
 )
 options, args = parser.parse_args()
 
-if len( args ) != 2:
+if len( args ) < 2 or len( args ) > 3:
     parser.print_help()
     exit( 1 )
 
 benchmark  = args[ 0 ]
 executable = args[ 1 ]
+if len( args ) > 2:
+    testid = int( args[ 2 ] )
+else:
+    testid = None
 
 root = os.path.dirname( os.path.dirname( os.path.abspath( sys.argv[ 0 ] ) ) )
+
+# Set up handles for verbose vs quiet running.
 
 if options.verbose:
     stdout = sys.stdout
@@ -48,6 +55,59 @@ else:
     devnull = open( "/dev/null" )
     stdout = devnull
     stderr = devnull
+
+# Implement timeouts via convenience wrappers around subprocess methods
+
+if options.timeout is not None:
+    def timeout( p ):
+        try:
+            p.kill()
+        except Exception as e:
+            print e
+
+    def run( cmd, *args, **kargs ):
+        if not "stdout" in kargs:
+            kargs[ "stdout" ] = stdout
+        if not "stderr" in kargs:
+            kargs[ "stderr" ] = stderr
+        p = Popen( cmd, *args, **kargs )
+        t = threading.Timer( float( options.timeout ), timeout, [ p ] )
+        t.start()
+        try:
+            status = p.wait()
+        except KeyboardInterrupt as e:
+            try:
+                p.kill()
+            except: pass
+            raise e
+        finally:
+            t.cancel()
+        return status
+
+    def check_run( cmd, *args, **kargs ):
+        returncode = run( cmd, *args, **kargs )
+        if returncode != 0:
+            raise CalledProcessError(
+                returncode = returncode,
+                cmd = cmd,
+                output = None
+            )
+else:
+    def run( cmd, *args, **kargs ):
+        if not "stdout" in kargs:
+            kargs[ "stdout" ] = stdout
+        if not "stderr" in kargs:
+            kargs[ "stderr" ] = stderr
+        return call( cmd, *args, **kargs )
+
+    def check_run( cmd, *args, **kargs ):
+        if not "stdout" in kargs:
+            kargs[ "stdout" ] = stdout
+        if not "stderr" in kargs:
+            kargs[ "stderr" ] = stderr
+        check_call( cmd, *args, **kargs )
+
+# Some simple utility functions
 
 def mktemp( suffix = "" ):
     tmp = tempfile.NamedTemporaryFile( delete = False, suffix = suffix )
@@ -111,7 +171,10 @@ class Benchmark:
 
         input_dir = os.path.join( root, "etc", "additional-inputs", bmark )
         for fname in glob( os.path.join( input_dir, bmark + ".input.*" ) ):
-            num = int( os.path.splitext( fname )[ 1 ][ 1: ] )
+            try:
+                num = int( os.path.splitext( fname )[ 1 ][ 1: ] )
+            except:
+                continue
             while len( self.inputs ) <= num:
                 self.inputs.append( None )
             self.inputs[ num ] = fname
@@ -220,10 +283,7 @@ class Blackscholes( TarballsMixin, Benchmark ):
                         print >>out, lines[ int( line.strip() ) ]
             out = mktemp()
             try:
-                check_call(
-                    [ self.executable, "1", input_file, out ],
-                    stdout = stdout, stderr = stderr
-                )
+                check_run( [ self.executable, "1", input_file, out ] )
             except Exception as e:
                 os.remove( out )
                 raise e
@@ -237,7 +297,7 @@ class Blackscholes( TarballsMixin, Benchmark ):
             cmd = [ "diff", self.outputs[ i ], testfile ]
             return call( cmd, stdout = stdout, stderr = stderr ) == 0
         finally:
-            os.remove( tmpfile )
+            os.remove( testfile )
 
 class Bodytrack( TarballsMixin, Benchmark ):
     def __init__( self, executable ):
@@ -282,7 +342,7 @@ class Bodytrack( TarballsMixin, Benchmark ):
                     n_particles, n_layers,
                     thd_model, n_threads, "1"
             ]
-            check_call( cmd, stdout = stdout, stderr = stderr )
+            check_run( cmd )
 
             cwd = os.getcwd()
             try:
@@ -294,8 +354,12 @@ class Bodytrack( TarballsMixin, Benchmark ):
                             tarball.add( "poses.txt" )
                         for fname in glob( "Result*.bmp" ):
                             tarball.add( fname )
-                finally:
                     tar.close()
+                except Exception as e:
+                    try:
+                        tar.close()
+                    except: pass
+                    os.remove( tar.name )
             finally:
                 os.chdir( cwd )
         finally:
@@ -372,7 +436,7 @@ class Ferret( TarballsMixin, Benchmark ):
         tmp = mktemp()
         cmd = [ self.executable, metadir, algorithm, imagedir ] + args + [ tmp ]
         try:
-            check_call( cmd, stdout = stdout, stderr = stderr )
+            check_run( cmd )
             
             out = mktemp()
             try:
@@ -430,7 +494,7 @@ class Fluidanimate( TarballsMixin, Benchmark ):
         tmp = mktemp()
         cmd = [ self.executable, nthreads, arg, input_file, tmp ]
         try:
-            check_call( cmd, stdout = stdout, stderr = stderr )
+            check_run( cmd )
         except Exception as e:
             os.remove( tmp )
             raise e
@@ -480,7 +544,7 @@ class Freqmine( TarballsMixin, Benchmark ):
             cmd = [ self.executable, input_file, arg, tmp ]
             env = dict( os.environ )
             env[ "OMP_NUM_THREADS" ] = "1"
-            check_call( cmd, env = env, stdout = stdout, stderr = stderr )
+            check_run( cmd, env = env )
         except Exception as e:
             os.remove( tmp )
             raise e
@@ -536,7 +600,7 @@ class Swaptions( Benchmark ):
         tmp = mktemp()
         try:
             with open( tmp, 'w' ) as out:
-                check_call( cmd, stdout = stdout, stderr = out )
+                check_run( cmd, stderr = out )
         except Exception as e:
             os.remove( tmp )
             raise e
@@ -621,13 +685,13 @@ class Vips( TarballsMixin, Benchmark ):
         try:
             if channel == "1":
                 with open( tmp, 'w' ) as out:
-                    check_call( cmd, stdout = out, stderr = stderr )
+                    check_run( cmd, stdout = out )
             elif channel == "2":
                 with open( tmp, 'w' ) as out:
-                    check_call( cmd, stdout = stdout, stderr = out )
+                    check_run( cmd, stderr = out )
             if channel == "0":
                 cmd.append( tmp )
-                check_call( cmd, stdout = stdout, stderr = stderr )
+                check_run( cmd )
                 tmp2 = mktemp()
                 try:
                     with open( tmp2, 'w' ) as out:
@@ -660,7 +724,12 @@ class X264( TarballsMixin, Benchmark ):
         self.executable = executable
 
     def generate( self, num_inputs ):
-        tars = self._get_tars()
+        extras = glob( os.path.join(
+            root, "etc", "additional-inputs", self.bmark, "*.y4m" )
+        )
+        inputs = self._get_tars()
+        for fname in extras:
+            inputs.append( fname[ len( root ) + 1: ] )
         for i in range( num_inputs ):
             args = [
                 ( [ "-I", "--keyint" ], random.randrange( 250 ) + 1 ),
@@ -695,7 +764,7 @@ class X264( TarballsMixin, Benchmark ):
 
             fname = self._get_next_input_name()
             with open( fname, 'w' ) as fh:
-                print >>fh, random.choice( tars )
+                print >>fh, random.choice( inputs )
                 print >>fh, random.choice( [ ".264", ".mkv" ] )
                 for row in args:
                     if coin( 8.0 / len( args ) ):
@@ -725,9 +794,11 @@ class X264( TarballsMixin, Benchmark ):
                         cmd.extend( [ "--stats", statfile ] )
                         cleanup.append( statfile )
 
-            tardir = self._unpack( self.basedir, tarname )
-            input_file = find_input( tardir, ".y4m" )
-            res = re.search( "_(\d+x\d+)_", os.path.basename( input_file ) )
+            if len( os.path.dirname( tarname ) ) > 0:
+                input_file = os.path.join( root, tarname )
+            else:
+                tardir = self._unpack( self.basedir, tarname )
+                input_file = find_input( tardir, ".y4m" )
 
             tmp = mktemp( suffix )
             try:
@@ -735,9 +806,9 @@ class X264( TarballsMixin, Benchmark ):
                 if passes[ 0 ] > 0:
                     for i in range( passes[ 0 ] ):
                         cmd[ passes[ 1 ] ] = str( i + 1 )
-                        check_call( cmd, stdout = stdout, stderr = stderr )
+                        check_run( cmd )
                 else:
-                    check_call( cmd, stdout = stdout, stderr = stderr )
+                    check_run( cmd )
             except Exception as e:
                 os.remove( tmp )
                 raise e
@@ -780,9 +851,13 @@ if options.generate is not None:
             try:
                 with golden:
                     start = time.time()
-                    tmp = golden.run( n )
-                    delta = time.time() - start
-                    os.remove( tmp )
+                    success = golden.check( n )
+                    delta = ( time.time() - start ) / 2
+                    if not success:
+                        print "original program cannot reproduce results"
+                        raise Exception(
+                            "original program cannot reproduce results"
+                        )
                     if options.timeout is not None and delta > options.timeout:
                         print "execution exceeded timeout (%f)" % delta
                         raise Exception(
@@ -793,9 +868,15 @@ if options.generate is not None:
                 if options.verbose:
                     print e
                 os.remove( golden.inputs[ -1 ] )
+                if golden.outputs[ -1 ] is not None and \
+                        os.path.exists( golden.outputs[ -1 ] ):
+                    os.remove( golden.outputs[ -1 ] )
                 failures += 1
                 if failures % 10 == 0:
                     print "found %d, rejected %d" % ( generated, failures )
+            except KeyboardInterrupt as e:
+                os.remove( golden.inputs[ -1 ] )
+                exit( 1 )
         else:
             generated += 1
     print "Generated %d test inputs (%d skipped)" % ( generated, failures )
@@ -806,7 +887,8 @@ if bmark.getNumInputs() == 0:
     print "no inputs defined for", benchmark
 exitcode = 0
 with bmark:
-    for i in range( bmark.getNumInputs() ):
+    def runtest( i ):
+        global exitcode
         try:
             status = bmark.check( i )
         except GoldenFailure as e:
@@ -820,5 +902,10 @@ with bmark:
         else:
             print "%d: FAIL" % i
             exitcode = 1
+    if testid is None:
+        for i in range( bmark.getNumInputs() ):
+            runtest( i )
+    else:
+        runtest( testid )
     exit( exitcode )
 
