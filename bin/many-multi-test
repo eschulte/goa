@@ -32,17 +32,19 @@ uniform(){ awk -F, '{print $2,$1}'|sort; }
 
 for size in ${SIZES[@]};do
     for bench in ${BENCHMARKS[@]};do
-        if [ ! -f benchmarks/evolved/$bench ];then
-            msg "benchmarks/evolved/$bench does not exist"
-        fi
+        opt=benchmarks/$bench/opt
+        holder=$(mktemp)
+        if [ ! -f $opt ];then warning "$opt does not exist"; fi
+        mv $opt $holder
         mgmt clean $bench
         mgmt output $bench -s $size
+        mv $holder $opt
         echo "$bench $size"
         orig=$(mktemp)
         evol=$(mktemp)
         $run $bench benchmarks/$bench/$bench -l "" -s $size -p -k > $orig
         tmp=$(cat $orig|grep output|sed 's/^.* //')
-        $run $bench benchmarks/evolved/$bench -l "" -s $size -o $tmp -p |tee $evol
+        $run $bench $otp -l "" -s $size -o $tmp -p |tee $evol
         join <(cat $orig|grep -v output|uniform) <(cat $evol|uniform) \
             |sed 's/ /,/g' |tee $outdir/$bench-$size.csv
         rm -f $tmp $orig $evol
