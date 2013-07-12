@@ -32,7 +32,7 @@ uniform(){ awk -F, '{print $2,$1}'|sort; }
 
 for size in ${SIZES[@]};do
     for bench in ${BENCHMARKS[@]};do
-        opt=benchmarks/$bench/opt
+        opt=benchmarks/$bench/$bench.opt
         holder=$(mktemp)
         if [ ! -f $opt ];then warning "$opt does not exist"; fi
         mv $opt $holder
