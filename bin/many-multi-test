@@ -64,7 +64,7 @@ for size in ${SIZES[@]/$NO_SIZE/};do
             $run $bench $opt -l "" -s $size -o $tmp -p |tee $evol
             join <(cat $orig|grep -v output|uniform) <(cat $evol|uniform) \
                 |sed 's/ /,/g' |tee $outdir/$bench-$size.csv
-            rm -f $tmp $orig $evol
+            rm -rf $tmp $orig $evol
             echo ""
         fi
     done
