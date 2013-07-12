@@ -1,0 +1,29 @@
+#!/bin/bash
+#
+# Usage: run-all-extended-tests
+#  compile the final version of all benchmarks
+#
+. $(dirname $0)/common
+
+et=$BASE/bin/extended-tests.py
+
+for bench in ${BENCHMARKS[@]};do
+    # compile the best
+    store=/nfs/adaptive/data/opt/results/amd/$bench/final-best.store
+    opt=$BASE/benchmarks/$bench/opt
+    orig=$BASE/benchmarks/$bench/$bench
+    if [ -f $store ];then
+        objread $store -E "(phenome obj :bin \"$opt\")"
+    fi
+    # test the original and the optimized
+    if [ -f $opt ];then
+        if [ -f $orig ];then
+            msg "$orig"
+            $et $bench $orig
+        else
+            warning "$orig does not exist"
+        fi
+        msg "$opt"
+        $et $bench $opt
+    fi
+done
