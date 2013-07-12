@@ -49,7 +49,7 @@ case $BENCHMARK in
       $BODYTRACK_MASTER $INPUT 4 1   1000 5 0 1; mv $INPUT/Result0000.bmp $OUTPUTS/bodytrack.golden.2 1>/dev/null 2>&1
       $BODYTRACK_MASTER $INPUT 4 2   2000 5 0 1; mv $INPUT/Result0000.bmp $OUTPUTS/bodytrack.golden.3 1>/dev/null 2>&1
       $BODYTRACK_MASTER $INPUT 4 4   4000 5 0 1; mv $INPUT/Result0000.bmp $OUTPUTS/bodytrack.golden.4 1>/dev/null 2>&1
-      $BODYTRACK_MASTER $INPUT 4 261 4000 5 0 1; mv $INPUT/Result0000.bmp $OUTPUTS/bodytrack.golden.5 1>/dev/null 2>&1
+      # $BODYTRACK_MASTER $INPUT 4 261 4000 5 0 1; mv $INPUT/Result0000.bmp $OUTPUTS/bodytrack.golden.5 1>/dev/null 2>&1
     fi
 
     echo "Testing $2:"
@@ -83,11 +83,11 @@ case $BENCHMARK in
     if [[ $? = 0 ]]; then printf "Pass\n"; else printf "Fail\n"; fi
     rm $INPUT/Result0000.bmp
 
-    printf "Test 5: "
-    $EXECUTABLE $INPUT 4 261 4000 5 0 1 1>/dev/null 2>&1
-    diff $INPUT/Result0000.bmp $OUTPUTS/bodytrack.golden.5
-    if [[ $? = 0 ]]; then printf "Pass\n"; else printf "Fail\n"; fi
-    rm $INPUT/Result0000.bmp
+    # printf "Test 5: "
+    # $EXECUTABLE $INPUT 4 261 4000 5 0 1 1>/dev/null 2>&1
+    # diff $INPUT/Result0000.bmp $OUTPUTS/bodytrack.golden.5
+    # if [[ $? = 0 ]]; then printf "Pass\n"; else printf "Fail\n"; fi
+    # rm $INPUT/Result0000.bmp
   ;;
   facesim)
   error "Test for $BENCHMARK not implemented yet!"
