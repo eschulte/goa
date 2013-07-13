@@ -1524,11 +1524,11 @@ The facesim run should take ~3.5 more days, so by Tuesday morning.
 | blackscholes | x    | x    | x     | x      | x     |      |
 | bodytrack    | x    | x    | x     | x      | x     |      |
 | facesim      |      |      |       |        |       |      |
-| ferret       |      |      |       |        |       |      |
+| ferret       | x    | x    | x     | x      | x     | x    |
 | fluidanimate | x    | x    | x     | x      | x     |      |
 | freqmine     | x    | x    | x     | x      | x     |      |
 | swaptions    | x    | x    | x     | x      | x     |      |
-| vips         |      |      |       |        |       |      |
+| vips         | x    | x    | x     | x      | x     |      |
 | x264         | x    | x    | x     | x      | x     |      |
 
 *** TODO Different Input Tests
