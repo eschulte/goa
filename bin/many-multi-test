@@ -47,7 +47,7 @@ for size in ${SIZES[@]/$NO_SIZE/};do
         if [ ! -f $opt ];then warning "$opt does not exist";
         else
             mv $opt $holder
-            rm benchmarks/$bench/$bench.{input,output}
+            rm -f benchmarks/$bench/$bench.{input,output}
             mgmt output $bench -s $size
             mv $holder $opt
             msg "$bench $size"
