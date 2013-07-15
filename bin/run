@@ -94,7 +94,14 @@ fi
 
 PREFIX="$LIMIT"
 if [ ! -z $WATTSUP ];then
-    error "haven't implemented watts-up support."
+    if [ ! -z $PERF ];then error "WattsUp and perf are incompatible options"; fi
+    if [ ! -z $RAW  ];then error "WattsUp and raw are incompatible options"; fi
+    # default to 60 repeats if not specified
+    if [ -z $REPEATS ];then REPEATS=60; fi
+    # setup output file for wu.py
+    WU_OUT=$(mktemp wu.XXXXXXXX.csv)
+    # add wu.py to the prefix
+    PREFIX+=" $BASE/bin/wu.py -o $WU_OUT ttyUSB0 --"
 fi
 if [ -z $PERF ];then
     # maybe print out RAW and clean up OUT
@@ -102,13 +109,18 @@ if [ -z $PERF ];then
         if [ -z $RAW ];then
             echo "$EXIT,exit"
             echo "$ERROR,error"
+            if [ ! -z $WATTSUP ];then
+                cat $WU_OUT|sed 's/,/ /g'|transpose \
+                    |awk '{print $2,$1}'|sed 's/ /,/g'
+            fi
         else
             cat $OUT
         fi
         if [ -z $KEEP ];then
             rm -rf $OUT
-            if [ ! -z "$tmp" ];then rm -f $tmp; fi
-            if [ ! -z "$tmpd" ];then rm -rf $tmpd; fi
+            if [ ! -z $WATTSUP ];then rm -f $WU_OUT; fi
+            if [ ! -z "$tmp"   ];then rm -f $tmp;    fi
+            if [ ! -z "$tmpd"  ];then rm -rf $tmpd;  fi
         else
             echo "output keep at $OUT";
         fi; }
