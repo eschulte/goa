@@ -31,6 +31,10 @@ parser.add_option(
     "-v", "--verbose", action = "store_true",
     help = "show diagnostic information for failed tests"
 )
+parser.add_option(
+    "-s", "--skip", metavar = "SKIP", type = int,
+    help = "skip test number SKIP"
+)
 options, args = parser.parse_args()
 
 if len( args ) < 2 or len( args ) > 3:
@@ -902,7 +906,8 @@ with bmark:
             exitcode = 1
     if testid is None:
         for i in range( bmark.getNumInputs() ):
-            runtest( i )
+            if options.skip is None or (not options.skip == i):
+                runtest( i ) 
     else:
         runtest( testid )
     exit( exitcode )
