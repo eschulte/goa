@@ -108,7 +108,45 @@ case $BENCHMARK in
   error "Test for $BENCHMARK not implemented yet!"
   ;;
   vips)
-  error "Test for $BENCHMARK not implemented yet!"
+    VIPS_ADDL=$BASE/benchmarks/vips/addl
+    VIPS_MASTER=$BASE/benchmarks/vips/vips.orig
+    INPUT=$VIPS_ADDL/alternate_vips_input/
+    OUTPUTS=$VIPS_ADDL/outputs
+    
+    # set up the directory structure and populate with alternate inputs 
+    # and known good outputs
+    if [[ ! -d $VIPS_ADDL ]]; then
+      mkdir $VIPS_ADDL
+      echo "Downloading the additional test inputs:"
+      curl http://cs.unm.edu/~stharding/alternate_vips_input.tar.gz \
+           -o $VIPS_ADDL/alternate_vips_input.tar.gz
+      cd $VIPS_ADDL
+      tar zxvf alternate_vips_input.tar.gz >/dev/null 2>&1
+      mkdir $OUTPUTS
+      if [[ ! -e $VIPS_MASTER ]]; then
+        $BIN_DIR/mgmt orig vips
+      fi
+      
+      echo "Generating known good output:"
+      for i in {0..3}; do
+        $VIPS_MASTER im_benchmark --vips-concurrency=1 $INPUT/vips.input.$i.v $OUTPUTS/vips.golden.$i.v
+      done
+      cd -
+    fi
+
+    for i in {0..3}; do
+      printf "Test $i: "
+      $EXECUTABLE im_benchmark --vips-concurrency=1 $INPUT/vips.input.$i.v $VIPS_ADDL/vips.tstout.$i.v
+      # diff $OUTPUTS/vips.golden.$i.v $VIPS_ADDL/vips.tstout.$i.v
+      
+      diff \
+        <(grep --binary-file=text -v im_benchmark $OUTPUTS/vips.golden.$i.v) \
+        <(grep --binary-file=text -v im_benchmark $VIPS_ADDL/vips.tstout.$i.v) \
+        >/dev/null 2>/dev/null
+
+      if [[ $? = 0 ]]; then printf "Pass\n"; else printf "Fail\n"; fi
+      # rm $VIPS_ADDL/vips.tstout.$i.v
+    done
   ;;
   x264)
     X264_FLAGS=""
