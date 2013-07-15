@@ -315,7 +315,7 @@ case $BENCHMARK in
         ;;
     vips)
         tmpd=$(mktemp -d)
-        tmp=$(mktemp /tmp/tmp.XXXXXXXX.v)
+        tmp=$(mktemp vips-XXXXXXXX.v)
         cp $EXECUTABLE $tmpd/vips
         run 0 $tmpd/vips im_benchmark --vips-concurrency=1 "$INPUT" $tmp
         mv $tmp $OUT
@@ -332,7 +332,7 @@ case $BENCHMARK in
         X264_CMD+=" --direct auto --b-pyramid --weightb --mixed-refs"
         X264_CMD+=" --no-fast-pskip --me umh --subme 7"
         X264_CMD+=" --analyse b8x8,i4x4 --threads 1"
-        tmp=$(mktemp XXXXXXXX.y4m)
+        tmp=$(mktemp x264-XXXXXXXX.y4m)
         cp $INPUT $tmp
         run 0 $EXECUTABLE $X264_CMD -o $OUT $tmp
         rm -f $tmp
