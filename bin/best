@@ -35,6 +35,6 @@ get_hash(){
     local store="$1"
     $READER "$store" -G|sha1sum|cut -d' ' -f1; }
 
-for best in $(ls "$DIRECTORY"/best*store);do
+for best in $(ls "$DIRECTORY"/*best*store);do
     echo -e "$(parse "$best")\t$(get_hash "$best")\t$(basename "$best")"
 done|sort -k2,2 -u|sort -n
