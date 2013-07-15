@@ -53,7 +53,7 @@ INPUT="$BASE/benchmarks/$BENCHMARK/$BENCHMARK.input"
 OUTPUT="$BASE/benchmarks/$BENCHMARK/$BENCHMARK.output"
 OUT=$(mktemp)
 eval set -- \
-    $(getopt -o l:pac:wr:rs:dkKi:o: \
+    $(getopt -o l:pac:wr:Rs:dkKi:o: \
     -l limit:,perf,annotate,counters:,wattsup,repeat:,raw,size:,debug,keep,keep-perf,input:,output: \
     -- "$@" || help;)
 while [ $# -gt 0 ];do
