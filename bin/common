@@ -113,6 +113,16 @@ rand_remote(){ echo ${REMOTES[$RANDOM % ${#REMOTES[@]}]}; }
 
 my_remote(){ echo ${REMOTES[$(expr $$ % ${#REMOTES[@]})]}; }
 
+## Utility functions
+transpose(){
+    # transpose a file,
+    # from http://www.commandlinefu.com/commands/view/1427/transpose-a-file
+    awk '{ for (f=1; f<=NF; f++) a[NR, f] = $f }
+         NF > nf { nf = NF }
+         END { for (f=1; f<= nf; f++)
+                 for (r=1; r<=NR; r++)
+                     printf a[r,f] (r==NR ? RS : FS); }'; }
+
 ## Math Functions
 mean(){ awk '{sum += $1;} END {print sum/NR}'; }
 min(){ awk '{if((min == "") || ($1 < min)){ min = $1}} END {print min}'; }
