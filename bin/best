@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Usage: best DIRECTORY [OPTIONS...]
-#  Return the best individuals from DIRECTORY by fitness
+#  Return the best unique individuals from DIRECTORY by fitness
 #
 # Options:
 #  -c,--counter C -- sort by HW counter C instead of fitness
@@ -37,4 +37,4 @@ get_hash(){
 
 for best in $(ls "$DIRECTORY"/best*store);do
     echo -e "$(parse "$best")\t$(get_hash "$best")\t$(basename "$best")"
-done
+done|sort -k2,2 -u|sort -n
