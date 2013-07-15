@@ -2,17 +2,11 @@
 #
 # Usage: additional-input-tests BENCHMARK EXECUTABLE
 #
-# This script must live in optimization/bin so that the script can
-# find the path to parsec. PARSEC 3.0 must be installed in
-# optimization/benchmarks/parsec-3.0
-#
-# The benchmark must have been previously built with parsecmgmt so
-# that the original build can be used as an oracle
+# This script must live in optimization/bin so that it can
+# infer the directory structure of the optimization project
 #
 . $(dirname $0)/common
 BIN_DIR=$BASE/bin
-# PARSEC_DIR=$BASE/benchmarks/parsec-3.0/
-# INPUT_DIR=$BASE/etc/additional-inputs/
 INPUT_DIR=$BASE/benchmarks/
 
 if [[ $# -le 1 ]]; then help; fi
@@ -49,7 +43,6 @@ case $BENCHMARK in
       $BODYTRACK_MASTER $INPUT 4 1   1000 5 0 1; mv $INPUT/Result0000.bmp $OUTPUTS/bodytrack.golden.2 1>/dev/null 2>&1
       $BODYTRACK_MASTER $INPUT 4 2   2000 5 0 1; mv $INPUT/Result0000.bmp $OUTPUTS/bodytrack.golden.3 1>/dev/null 2>&1
       $BODYTRACK_MASTER $INPUT 4 4   4000 5 0 1; mv $INPUT/Result0000.bmp $OUTPUTS/bodytrack.golden.4 1>/dev/null 2>&1
-      # $BODYTRACK_MASTER $INPUT 4 261 4000 5 0 1; mv $INPUT/Result0000.bmp $OUTPUTS/bodytrack.golden.5 1>/dev/null 2>&1
     fi
 
     echo "Testing $2:"
@@ -82,12 +75,6 @@ case $BENCHMARK in
     diff $INPUT/Result0000.bmp $OUTPUTS/bodytrack.golden.4
     if [[ $? = 0 ]]; then printf "Pass\n"; else printf "Fail\n"; fi
     rm $INPUT/Result0000.bmp
-
-    # printf "Test 5: "
-    # $EXECUTABLE $INPUT 4 261 4000 5 0 1 1>/dev/null 2>&1
-    # diff $INPUT/Result0000.bmp $OUTPUTS/bodytrack.golden.5
-    # if [[ $? = 0 ]]; then printf "Pass\n"; else printf "Fail\n"; fi
-    # rm $INPUT/Result0000.bmp
   ;;
   facesim)
   error "Test for $BENCHMARK not implemented yet!"
