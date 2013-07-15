@@ -1519,17 +1519,18 @@ The facesim run should take ~3.5 more days, so by Tuesday morning.
 #+end_src
 
 *** TODO Different Input Size Tests
+AMD
 | benchmark    | test | tiny | small | medium | large | huge |
 |--------------+------+------+-------+--------+-------+------|
-| blackscholes | x    | x    | x     | x      | x     |      |
+| blackscholes | x    | x    | x     | x      | x     | x    |
 | bodytrack    | x    | x    | x     | x      | x     |      |
 | facesim      |      |      |       |        |       |      |
 | ferret       | x    | x    | x     | x      | x     | x    |
-| fluidanimate | x    | x    | x     | x      | x     |      |
+| fluidanimate | x    | x    | x     | x      | x     | x    |
 | freqmine     | x    | x    | x     | x      | x     |      |
-| swaptions    | x    | x    | x     | x      | x     |      |
-| vips         | x    | x    | x     | x      | x     |      |
-| x264         | x    | x    | x     | x      | x     |      |
+| swaptions    | x    | x    | x     | x      | x     | x    |
+| vips         | x    | x    | x     | x      | x     | x    |
+| x264         | x    | x    | x     | x      | x     | x    |
 
 *** TODO Different Input Tests
 *** TODO Extended Tests
@@ -1658,6 +1659,88 @@ The facesim run should take ~3.5 more days, so by Tuesday morning.
 
 *** Histogram of improvement by input size
 see [[*all%20benchmarks%20(we%20have)%20over%20all%20inputs][all benchmarks (we have) over all inputs]]
+
+1. collect results
+   #+name: energy-comparison
+   #+begin_src sh :cache yes
+     . bin/common
+
+     power(){
+         cut -d, -f1,$1|awk -F, 'OFS="," {print $2,$1}' \
+             |./bin/calc-energy -m amd-opteron-power-model; }
+
+     base=results/amd-opt-by-size
+
+     echo "benchmark,small,,medium,,large,,huge,"
+     for bench in ${BENCHMARKS[@]};do
+         echo -n "$bench,"
+         for size in small medium large huge;do
+             file=$base/$bench-$size.csv
+             if [ -f $file ];then
+                 echo -n "$(cat $file|power 2),$(cat $file|power 3),"
+             else
+                 echo -n "NA,NA,"
+             fi
+         done
+         echo ""
+     done|sed 's/,$//'
+   #+end_src
+
+   #+RESULTS[7fa25c01e1805fb1359385d3f6bf7c4f3101a465]: energy-comparison
+   | benchmark    |     small |           |    medium |           |     large |           | huge        |           |
+   | blackscholes |  66.60791 |   4.83037 | 271.33185 | 16.524755 | 1082.9415 |  65.79707 | NA          | NA        |
+   | bodytrack    | 165.79736 | 160.81306 | 535.19275 |  521.2339 | 1905.3456 |  1858.862 | NA          | NA        |
+   | ferret       |  161.1923 | 146.59804 | 477.73395 | 429.60913 | 2113.6077 | 1830.0222 | 181551.03   | 161716.45 |
+   | fluidanimate |  193.1168 | 3.7036355 | 421.42395 |  357.1908 | 1398.9271 | 1141.8993 | NA          | NA        |
+   | freqmine     |  706.8656 |  607.6356 | 11939.437 | 155.58197 | 46834.918 |  327.1728 | NA          | NA        |
+   | swaptions    | 226.42577 | 132.70084 |   903.955 |  534.5128 | 3638.7085 | 2128.7698 | NA          | NA        |
+   | x264         | 401.76398 | 349.53668 |  2874.418 | 2509.6873 |  9448.305 |  7828.587 | 298431.2    | 262761.16 |
+
+2. correlate results
+   #+name: collated-energy-comparison
+   #+begin_src lisp :var data=energy-comparison
+     (defun odds (list &aux (counter 0))
+       (loop :for i :in list :do (incf counter) :when (oddp counter) :collect i))
+
+     (defun evens (list &aux (counter 0))
+       (loop :for i :in list :do (incf counter) :when (evenp counter) :collect i))
+
+     (defun trans (list) (apply #'mapcar #'list list))
+
+     (let* ((it (trans data))
+            (collated
+             (mapcar #'append
+                     (cons (car it) (odds (cdr it)))
+                     (cons (car it) (evens (cdr it))))))
+       (trans (cons '(size small medium large huge)
+                    (cddr (sort (trans collated) #'string< :key #'car)))))
+   #+end_src
+
+   #+RESULTS: collated-energy-comparison
+   | SIZE   | blackscholes | blackscholes | bodytrack | bodytrack |    ferret |    ferret | fluidanimate | fluidanimate |  freqmine |  freqmine | swaptions | swaptions |      x264 |      x264 |
+   | SMALL  |     66.60791 |      4.83037 | 165.79736 | 160.81306 |  161.1923 | 146.59804 |     193.1168 |    3.7036355 |  706.8656 |  607.6356 | 226.42577 | 132.70084 | 401.76398 | 349.53668 |
+   | MEDIUM |    271.33185 |    16.524755 | 535.19275 |  521.2339 | 477.73395 | 429.60913 |    421.42395 |     357.1908 | 11939.437 | 155.58197 |   903.955 |  534.5128 |  2874.418 | 2509.6873 |
+   | LARGE  |    1082.9415 |     65.79707 | 1905.3456 |  1858.862 | 2113.6077 | 1830.0222 |    1398.9271 |    1141.8993 | 46834.918 |  327.1728 | 3638.7085 | 2128.7698 |  9448.305 |  7828.587 |
+   | HUGE   |           NA |           NA |        NA |        NA | 181551.03 | 161716.45 |           NA |           NA |        NA |        NA |        NA |        NA |  298431.2 | 262761.16 |
+
+3. display results
+   #+begin_src gnuplot :var data=collated-energy-comparison
+     set title 'evolved improvement in modeled energy by input size'
+     set datafile missing "NA"
+     set key above
+     set style data histograms
+     set auto x
+     set style histogram cluster gap 1
+     set style fill solid border -1
+     set boxwidth 0.9
+     set xtic rotate by -45
+     set ylabel "percent energy reduction"
+     set xlabel "input size"
+     plot for [n=2:14:2] data u (100 * ((column(n) - column(n + 1)) / column(n))):xtic(1) ti col
+   #+end_src
+
+   #+RESULTS:
+   [[file:etc/data/evolved-improvement-by-input.svg]]
 
 ** Build optimization Taxonomy
 This might be too optimistic.
@@ -1850,7 +1933,14 @@ failures at stages.
 
 Run with =make check=.
 
-* Issues [9/10]
+* Issues [9/11]
+** TODO unexpected non-functional issues during large runs
+Leftover Files
+- facesim requires removal of compilation files from TMPDIR
+
+Large Data
+- freqmine on huge input can us 86G in the benchmark and tmp directories
+
 ** TODO facesim is running really slowly on AMD
 |                5.700 |  6400 |
 |                 6.00 |  6656 |
@@ -1991,16 +2081,14 @@ Parse results
 #+end_src
 
 #+RESULTS[7fa25c01e1805fb1359385d3f6bf7c4f3101a465]: energy-comparison
-| benchmark    |     small |           |    medium |           |     large |           | huge |    |
-| blackscholes |  66.60791 |   4.83037 | 271.33185 | 16.524755 | 1082.9415 |  65.79707 | NA   | NA |
-| bodytrack    | 165.79736 | 160.81306 | 535.19275 |  521.2339 | 1905.3456 |  1858.862 | NA   | NA |
-| facesim      |        NA |        NA |        NA |        NA |        NA |        NA | NA   | NA |
-| ferret       |        NA |        NA |        NA |        NA |        NA |        NA | NA   | NA |
-| fluidanimate |  193.1168 | 3.7036355 | 421.42395 |  357.1908 | 1398.9271 | 1141.8993 | NA   | NA |
-| freqmine     |        NA |        NA |        NA |        NA |        NA |        NA | NA   | NA |
-| swaptions    | 226.42577 | 132.70084 |   903.955 |  534.5128 | 3638.7085 | 2128.7698 | NA   | NA |
-| vips         |        NA |        NA |        NA |        NA |        NA |        NA | NA   | NA |
-| x264         | 401.76398 | 349.53668 |  2874.418 | 2509.6873 |  9448.305 |  7828.587 | NA   | NA |
+| benchmark    |     small |           |    medium |           |     large |           | huge        |           |
+| blackscholes |  66.60791 |   4.83037 | 271.33185 | 16.524755 | 1082.9415 |  65.79707 | NA          | NA        |
+| bodytrack    | 165.79736 | 160.81306 | 535.19275 |  521.2339 | 1905.3456 |  1858.862 | NA          | NA        |
+| ferret       |  161.1923 | 146.59804 | 477.73395 | 429.60913 | 2113.6077 | 1830.0222 | 181551.03   | 161716.45 |
+| fluidanimate |  193.1168 | 3.7036355 | 421.42395 |  357.1908 | 1398.9271 | 1141.8993 | NA          | NA        |
+| freqmine     |  706.8656 |  607.6356 | 11939.437 | 155.58197 | 46834.918 |  327.1728 | NA          | NA        |
+| swaptions    | 226.42577 | 132.70084 |   903.955 |  534.5128 | 3638.7085 | 2128.7698 | NA          | NA        |
+| x264         | 401.76398 | 349.53668 |  2874.418 | 2509.6873 |  9448.305 |  7828.587 | 298431.2    | 262761.16 |
 
 **** collate results
 #+name: collated-energy-comparison
@@ -2018,20 +2106,22 @@ Parse results
           (mapcar #'append
                   (cons (car it) (odds (cdr it)))
                   (cons (car it) (evens (cdr it))))))
-    (trans (cons '(size small medium large huge) (sort (trans collated) #'string< :key #'car))))
+    (trans (cons '(size small medium large huge)
+                 (cddr (sort (trans collated) #'string< :key #'car)))))
 #+end_src
 
 #+RESULTS: collated-energy-comparison
-| SIZE   | blackscholes | blackscholes |    ferret |    ferret | fluidanimate | fluidanimate | swaptions | swaptions |      x264 |      x264 |
-| SMALL  |    102.40074 |     5.359917 | 160.08018 | 156.10066 |     195.3625 |    173.90326 | 225.79857 | 130.91309 | 366.21185 | 301.24615 |
-| MEDIUM |    407.50146 |      17.8124 | 484.27823 |  451.4411 |    386.38293 |    389.14505 |  900.8441 |  519.4902 | 2629.5469 | 2148.8633 |
-| LARGE  |    1634.3947 |     67.56911 | 2069.3865 | 2395.8394 |    1315.4622 |    1165.0105 | 3552.3733 |  2079.516 |  8361.798 |  6917.794 |
-| HUGE   |    238324.58 |     9805.747 | 176511.75 | 164797.53 |    216816.61 |    25841.145 | 176558.14 | 103784.79 | 287555.34 | 245182.39 |
+| SIZE   | blackscholes | blackscholes | bodytrack | bodytrack |    ferret |    ferret | fluidanimate | fluidanimate |  freqmine |  freqmine | swaptions | swaptions |      x264 |      x264 |
+| SMALL  |     66.60791 |      4.83037 | 165.79736 | 160.81306 |  161.1923 | 146.59804 |     193.1168 |    3.7036355 |  706.8656 |  607.6356 | 226.42577 | 132.70084 | 401.76398 | 349.53668 |
+| MEDIUM |    271.33185 |    16.524755 | 535.19275 |  521.2339 | 477.73395 | 429.60913 |    421.42395 |     357.1908 | 11939.437 | 155.58197 |   903.955 |  534.5128 |  2874.418 | 2509.6873 |
+| LARGE  |    1082.9415 |     65.79707 | 1905.3456 |  1858.862 | 2113.6077 | 1830.0222 |    1398.9271 |    1141.8993 | 46834.918 |  327.1728 | 3638.7085 | 2128.7698 |  9448.305 |  7828.587 |
+| HUGE   |           NA |           NA |        NA |        NA | 181551.03 | 161716.45 |           NA |           NA |        NA |        NA |        NA |        NA |  298431.2 | 262761.16 |
 
 **** graph results
 #+headers: :file etc/data/evolved-improvement-by-input.svg
 #+begin_src gnuplot :var data=collated-energy-comparison
   set title 'evolved improvement in modeled energy by input size'
+  set datafile missing "NA"
   set key above
   set style data histograms
   set auto x
@@ -2041,7 +2131,7 @@ Parse results
   set xtic rotate by -45
   set ylabel "percent energy reduction"
   set xlabel "input size"
-  plot for [n=2:10:2] data u (100 * ((column(n) - column(n + 1)) / column(n))):xtic(1) ti col
+  plot for [n=2:14:2] data u (100 * ((column(n) - column(n + 1)) / column(n))):xtic(1) ti col
 #+end_src
 
 #+RESULTS:
