@@ -1500,7 +1500,7 @@ AMD Runs
 |--------------+---------+------------------------+------------------------+----------|
 | blackscholes | complex | <2013-07-10 Wed 06:18> | <2013-07-10 Wed 15:39> |     9.35 |
 | bodytrack    | complex | <2013-07-09 Tue 12:58> | <2013-07-11 Thu 14:02> |    49.07 |
-| facesim      | complex | <2013-07-11 Thu 18:43> |                        |          |
+| facesim      | complex | <2013-07-15 Mon 11:06> |                        |          |
 | ferret       | real    | <2013-07-10 Wed 14:14> | <2013-07-11 Thu 04:36> |    14.37 |
 | fluidanimate | real    | <2013-07-09 Tue 09:27> | <2013-07-09 Tue 20:45> |    11.30 |
 | freqmine     | complex | <2013-07-09 Tue 09:43> | <2013-07-10 Wed 03:50> |    18.12 |
@@ -1510,13 +1510,6 @@ AMD Runs
 |--------------+---------+------------------------+------------------------+----------|
 |              |         |                        |                        | 18.92875 |
 #+TBLFM: $5=($4-$3)*24;%0.2f::@11$5=vmean(@2..@-1)
-
-The facesim run should take ~3.5 more days, so by Tuesday morning.
-#+begin_src lisp
-  (let ((total-time (/ (/ (* 7 (expt 2 10)) 60) 24.0)) ; 4.958333333333333 days
-        (fraction-complete (/ 84736.0 (expt 2 18))))   ; 0.3232421875
-    (* total-time (- 1 fraction-complete)))            ; 3.36875 days left
-#+end_src
 
 *** TODO Different Input Size Tests
 AMD
@@ -1570,6 +1563,7 @@ AMD
 
 ** TODO Analyze Optimizations
 *** Overall energy reduction
+**** modeled
 #+name: overall-energy-reduction
 #+begin_src sh
   . bin/common
@@ -1626,6 +1620,19 @@ AMD
 |------+--------------+----------------+--------------+-------------|
 |      |              |      3896.0118 |    2239.7834 |   32.021967 |
 #+TBLFM: $5=100 * ($3 - $4)/$3::@8$3=vsum(@2..@-1)::@8$4=vsum(@2..@-1)::@8$5=vmean(@2..@-1)
+
+**** measured
+#+begin_src sh
+  . bin/common
+  RESULTS=/nfs/adaptive/data/opt/results/amd/
+  for bench in ${BENCHMARKS[@]};do
+      DIR=$RESULTS/$bench
+      if [ -d $DIR ];then
+          ./bin/best $DIR|head -10|./bin/multi-power $bench $DIR -r 20 \
+              |tee $bench-power.csv
+      fi
+  done
+#+end_src
 
 *** Histograms of improvement
 #+begin_src gnuplot :var data=overall-energy-reduction
