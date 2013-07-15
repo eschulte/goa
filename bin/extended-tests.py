@@ -122,13 +122,11 @@ def find_input( root, suffix ):
     raise Exception( "could not find input in " + root )
 
 def find_golden( benchmark ):
-    bmark_dir = os.path.join(
-        root, "benchmarks", "parsec-3.0", "pkgs", "apps", benchmark, "inst"
-    )
+    bmark_dir = os.path.join( root, "benchmarks", benchmark )
     matches = list()
     for d, dnames, fnames in os.walk( bmark_dir ):
         for fname in fnames:
-            if fname == benchmark:
+            if fname == benchmark + ".orig":
                 matches.append( os.path.join( d, fname ) )
     if len( matches ) != 1:
         raise Exception( "couldn't find golden binary for " + benchmark )
