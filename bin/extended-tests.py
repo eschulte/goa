@@ -39,6 +39,10 @@ parser.add_option(
     "-o", "--only", metavar = "ONLY", type = int,
     help = "only run test number ONLY"
 )
+parser.add_option(
+    "-l", "--limit", metavar = "LIMIT", type = str,
+    help = "protect execution with limit script LIMIT"
+)
 options, args = parser.parse_args()
 
 if len( args ) < 2 or len( args ) > 3:
@@ -289,7 +293,10 @@ class Blackscholes( TarballsMixin, Benchmark ):
                         print >>out, lines[ int( line.strip() ) ]
             out = mktemp()
             try:
-                check_run( [ self.executable, "1", input_file, out ] )
+                if options.limit is None:
+                    check_run( [ self.executable, "1", input_file, out ] )
+                else:
+                    check_run( [ options.limit, self.executable, "1", input_file, out ] )
             except Exception as e:
                 os.remove( out )
                 raise e
@@ -343,11 +350,14 @@ class Bodytrack( TarballsMixin, Benchmark ):
             shutil.copytree( dataset, tmpdata )
             tmpdata = os.path.join( tmpdata, glob( tmpdata + "/*" )[ 0 ] )
 
-            cmd = [
-                self.executable, tmpdata, n_cameras, n_frames,
-                    n_particles, n_layers,
-                    thd_model, n_threads, "1"
-            ]
+            if options.limit is None:
+                cmd = [ self.executable, tmpdata, n_cameras, n_frames,
+                        n_particles, n_layers, thd_model, n_threads, "1" ]
+            else:
+                cmd = [ options.limit, self.executable, tmpdata,
+                        n_cameras, n_frames, n_particles, n_layers,
+                        thd_model, n_threads, "1" ]
+                
             check_run( cmd )
 
             cwd = os.getcwd()
@@ -440,7 +450,10 @@ class Ferret( TarballsMixin, Benchmark ):
         imagedir = os.path.join( tardir, imagedir )
 
         tmp = mktemp()
-        cmd = [ self.executable, metadir, algorithm, imagedir ] + args + [ tmp ]
+        if options.limit is None:
+            cmd = [ self.executable, metadir, algorithm, imagedir ] + args + [ tmp ]
+        else:
+            cmd = [ options.limit, self.executable, metadir, algorithm, imagedir ] + args + [ tmp ]
         try:
             check_run( cmd )
             
@@ -498,7 +511,10 @@ class Fluidanimate( TarballsMixin, Benchmark ):
         input_file = find_input( tardir, ".fluid" )
 
         tmp = mktemp()
-        cmd = [ self.executable, nthreads, arg, input_file, tmp ]
+        if options.limit is None:
+            cmd = [ self.executable, nthreads, arg, input_file, tmp ]
+        else:
+            cmd = [ options.limit, self.executable, nthreads, arg, input_file, tmp ]
         try:
             check_run( cmd )
         except Exception as e:
@@ -547,7 +563,10 @@ class Freqmine( TarballsMixin, Benchmark ):
 
         tmp = mktemp()
         try:
-            cmd = [ self.executable, input_file, arg, tmp ]
+            if options.limit is None:
+                cmd = [ self.executable, input_file, arg, tmp ]
+            else:
+                cmd = [ options.limit, self.executable, input_file, arg, tmp ]
             env = dict( os.environ )
             env[ "OMP_NUM_THREADS" ] = "1"
             check_run( cmd, env = env )
@@ -598,7 +617,10 @@ class Swaptions( Benchmark ):
         if options.verbose:
             print "Running %s (%d)" % ( self.executable, i )
 
-        cmd = [ self.executable ]
+        if options.limit is None:
+            cmd = [ self.executable ]
+        else:
+            cmd = [ options.limit, self.executable ]
         with open( self.inputs[ i ] ) as fh:
             for line in fh:
                 cmd.extend( line.split() )
@@ -674,7 +696,10 @@ class Vips( TarballsMixin, Benchmark ):
         if options.verbose:
             print "Running %s (%d)" % ( self.executable, i )
 
-        cmd = [ self.executable ]
+        if options.limit is None:
+            cmd = [ self.executable ]
+        else:
+            cmd = [ options.limit, self.executable ]
         with open( self.inputs[ i ] ) as fh:
             channel = fh.next().strip()
             if channel == "0":
@@ -787,7 +812,10 @@ class X264( TarballsMixin, Benchmark ):
         cleanup = list()
         try:
             passes = ( 0, 0 )
-            cmd = [ self.executable ]
+            if options.limit is None:
+                cmd = [ self.executable ]
+            else:
+                cmd = [ options.limit, self.executable ]
             with open( self.inputs[ i ] ) as fh:
                 tarname = fh.next().strip()
                 suffix  = fh.next().strip()
