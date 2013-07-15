@@ -96,8 +96,6 @@ PREFIX="$LIMIT"
 if [ ! -z $WATTSUP ];then
     if [ ! -z $PERF ];then error "WattsUp and perf are incompatible options"; fi
     if [ ! -z $RAW  ];then error "WattsUp and raw are incompatible options"; fi
-    # default to 60 repeats if not specified
-    if [ -z $REPEATS ];then REPEATS=60; fi
     # setup output file for wu.py
     WU_OUT=$(mktemp wu.XXXXXXXX.csv)
     # add wu.py to the prefix
@@ -186,23 +184,29 @@ num_diff(){ # diff of aggregate numerical closeness
 run(){ # run, first argument picks an output stream to return
     local out=$1; shift;
     if [ ! -z $DEBUG ];then echo "$PREFIX $@" >&2; fi
-    # possibly to multiple runs
-    if [ -z $PERF ] && [ ! -z $REPEAT ];then
-        for i in $(seq $(($REPEAT - 1)));do
-            $PREFIX $@ 1>/dev/null 2>/dev/null
-            EXIT=$?
-        done
+    # possibly do multiple runs
+    if [ -z $PERF ] && [ -z $WATTSUP ] && [ ! -z $REPEAT ];then
+            for i in $(seq $(($REPEAT - 1)));do
+                $PREFIX $@ 1>/dev/null 2>/dev/null
+                EXIT=$?
+            done
     fi
-    # then do the run that counts
-    if [ $out -eq 1 ];then
-        $PREFIX $@ 2>/dev/null
-        EXIT=$?
-    elif [ $out -eq 2 ];then
-        $PREFIX $@ 3>&1 1>/dev/null 2>&3
+    if [ ! -z $WATTSUP ];then
+        CMD="for i in \$(seq $REPEAT);do $@ 1>/dev/null 2>/dev/null; done"
+        $PREFIX sh -c "$CMD"
         EXIT=$?
     else
-        $PREFIX $@ >/dev/null 2>/dev/null
-        EXIT=$?
+        # then do the run that counts
+        if [ $out -eq 1 ];then
+            $PREFIX $@ 2>/dev/null
+            EXIT=$?
+        elif [ $out -eq 2 ];then
+            $PREFIX $@ 3>&1 1>/dev/null 2>&3
+            EXIT=$?
+        else
+            $PREFIX $@ >/dev/null 2>/dev/null
+            EXIT=$?
+        fi
     fi; }
 
 freqclean(){
