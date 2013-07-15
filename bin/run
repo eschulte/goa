@@ -249,7 +249,6 @@ case $BENCHMARK in
         for f in $(ls $OUTPUT/output|grep -v log.txt);do
             diff $OUT/output/$f $OUTPUT/output/$f
             ERROR=$(($ERROR + $?))
-            echo "$ERROR diff $OUT/output/$f $OUTPUT/output/$f" >> /tmp/facesim.out
         done >/dev/null 2>/dev/null
         ERROR=$(($ERROR + $?))
         rm -rf $tmp
