@@ -22,6 +22,13 @@
 (defvar opt-energy 601.47565)
 (defvar extended-test-penalty (/ (- orig-energy opt-energy) 6))
 
+;; 0. set the model
+(unless *model*
+  (setf *model* (case (arch)
+                  (:intel 'intel-sandybridge-power-model)
+                  (:amd   'amd-opteron-power-model))))
+(when (symbolp *model*) (setf *model* (eval *model*)))
+
 ;; 1. redefine test to use the extended tests as well as the model.
 (defun test (asm)
   (note 4 "extended testing ~S~%" (edits asm))
@@ -43,17 +50,27 @@
       infinity))
 
 ;; 2. populate with a mix of the best individuals and the original
-(let* ((base "/nfs/adaptive/data/opt/results/amd/freqmine/")
-       (optimized
-        (mapc (lambda (opt) (setf (fitness opt) (test opt)))
-              (mapcar [#'restore {format nil "~a/best-~d.store" base}]
-                      '(243200 222720 169728 155136 153600 152832 151552
-                        151296 149504 148224)))))
+(progn
+  ;; using the range representation
+  (setf
+   *rep* (coerce (mapcar {aget :line} (genome *orig*)) 'vector)
+   *orig* (to-asm-range *orig*)
+   (reference *orig*) (copy *rep*)
+   *rep* 'asm)
+
   ;; 1/2 copies of the original
+  (setf (fitness *orig*) (test *orig*))
   (loop :for i :below (floor (/ *max-population-size* 2)) :do
      (push (copy *orig*) *population*))
+
   ;; 1/2 copies of optimizations
-  (loop :until (>= (length *population*) *max-population-size*) :do
-     (let ((opt (pop optimized)))
-       (push (copy opt) *population*)
-       (setf optimized (append optimized (list opt))))))
+  (let* ((base "/nfs/adaptive/data/opt/results/amd/freqmine/")
+         (optimized
+          (mapc (lambda (opt) (setf (fitness opt) (test opt)))
+                (mapcar [#'restore {format nil "~a/best-~d.store" base}]
+                        '(243200 222720 169728 155136 153600 152832 151552
+                          151296 149504 148224)))))
+    (loop :until (>= (length *population*) *max-population-size*) :do
+       (let ((opt (pop optimized)))
+         (push (copy opt) *population*)
+         (setf optimized (append optimized (list opt)))))))
