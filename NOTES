@@ -1588,40 +1588,38 @@ AMD
   done
 #+end_src
 
-#+RESULTS: overall-energy-reduction
-| amd   | blackscholes | 1079.9546 |    64.8971 |
-| amd   | bodytrack    | 568.41156 |   540.5206 |
-| amd   | facesim      | 3714.0596 |   3538.525 |
-| amd   | ferret       | 472.13297 |  421.91614 |
-| amd   | fluidanimate | 416.33728 |    339.564 |
-| amd   | freqmine     |  668.3218 |  601.47565 |
-| amd   | swaptions    |  909.4299 |  518.23346 |
-| amd   | vips         | 1148.3849 | 1018.41425 |
-| amd   | x264         | 349.83527 |    293.697 |
-| intel | blackscholes |        NA |         NA |
-| intel | bodytrack    |        NA |         NA |
-| intel | facesim      |        NA |         NA |
-| intel | ferret       |        NA |         NA |
-| intel | fluidanimate |        NA |         NA |
-| intel | freqmine     |        NA |         NA |
-| intel | swaptions    |        NA |         NA |
-| intel | vips         |        NA |         NA |
-| intel | x264         |        NA |         NA |
-
-#+name: manicured-overall-energy-reduction
-| arch | benchmark    | initial energy | final energy | % reduction |
-|------+--------------+----------------+--------------+-------------|
-| amd  | blackscholes |      1079.9546 |      64.8971 |   93.990757 |
-| amd  | ferret       |      472.13297 |    421.91614 |   10.636163 |
-| amd  | fluidanimate |      416.33728 |      339.564 |   18.440165 |
-| amd  | freqmine     |       668.3218 |    601.47565 |   10.002090 |
-| amd  | swaptions    |       909.4299 |    518.23346 |   43.015568 |
-| amd  | x264         |      349.83527 |      293.697 |   16.047058 |
-|------+--------------+----------------+--------------+-------------|
-|      |              |      3896.0118 |    2239.7834 |   32.021967 |
-#+TBLFM: $5=100 * ($3 - $4)/$3::@8$3=vsum(@2..@-1)::@8$4=vsum(@2..@-1)::@8$5=vmean(@2..@-1)
+#+RESULTS: manicured-overall-energy-reduction
+| arch | benchmark    |   initial |     final | % reduction |
+|------+--------------+-----------+-----------+-------------|
+| amd  | blackscholes | 1079.9546 |   64.8971 |   93.990757 |
+| amd  | bodytrack    | 568.41156 |  540.5206 |   4.9068249 |
+| amd  | facesim      |           |           |             |
+| amd  | ferret       | 472.13297 | 421.91614 |   10.636163 |
+| amd  | fluidanimate | 416.33728 |   339.564 |   18.440165 |
+| amd  | freqmine     |  668.3218 | 601.47565 |   10.002090 |
+| amd  | swaptions    |  909.4299 | 518.23346 |   43.015568 |
+| amd  | vips         | 1063.0033 |  710.5062 |   33.160490 |
+| amd  | x264         | 349.83527 |   293.697 |   16.047058 |
+|------+--------------+-----------+-----------+-------------|
+|      |              |           |           |   28.774889 |
+#+TBLFM: $5=100 * ($3 - $4)/$3::@11$5=vmean(@2..@-1)
 
 **** measured
+| benchmark    | original kwh | best kwh | % reduction |
+|--------------+--------------+----------+-------------|
+| blackscholes |       0.0057 |   0.0004 |   92.982456 |
+| bodytrack    |              |          |             |
+| facesim      |              |          |             |
+| ferret       |       0.0025 |   0.0025 |          0. |
+| fluidanimate |       0.0023 |    0.002 |   13.043478 |
+| freqmine     |       0.0051 |   0.0046 |   9.8039216 |
+| swaptions    |       0.0054 |    0.003 |   44.444444 |
+| vips         |              |          |             |
+| x264         |       0.0034 |    0.003 |   11.764706 |
+|--------------+--------------+----------+-------------|
+|              |              |          |   28.673168 |
+#+TBLFM: $4=100 * ($2-$3)/$2::@11$4=vmean(@2..@-1)
+
 #+begin_src sh
   . bin/common
   RESULTS=/nfs/adaptive/data/opt/results/amd/
