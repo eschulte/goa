@@ -86,7 +86,7 @@ Options:
  -h,--help ------------- print this help message and exit
  -f,--flags FLAGS ------ flags to use when linking
  -l,--linker LINKER ---- linker to use
- -e,--ext NUM ---------- run extended test NUM~%"))
+ -e,--extended NUM ----- run extended test NUM~%"))
       (when (or (not args)
                 (string= (subseq (car args) 0 2) "-h")
                 (string= (subseq (car args) 0 3) "--h"))
@@ -101,7 +101,7 @@ Options:
         (getopts
          ("-f" "--flags"  (setf (flags *orig*) (list (arg-pop))))
          ("-l" "--linker" (setf (linker *orig*) (arg-pop)))
-         ("-e" "--exe"
+         ("-e" "--extended"
                (setf script (format nil "./bin/extended-tests.py ~a ~a ~d -a"
                                     *benchmark* (phenome *orig*) (arg-pop)))))
 
