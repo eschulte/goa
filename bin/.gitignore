@@ -4,6 +4,7 @@ optimize*
 objread
 calc-energy
 model-variance
+annotate
 *limit
 *.in
 *.out

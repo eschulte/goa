@@ -18,7 +18,7 @@ $(error Please point QUICK_LISP to your quicklisp installation)
 endif
 
 # Compiled lisp executables
-LISP_EXES=optimize objread calc-energy model-variance
+LISP_EXES=optimize objread calc-energy model-variance annotate
 LISP_BINS=$(addprefix bin/, $(LISP_EXES))
 LISP_DEPS=src/package.lisp src/optimize.lisp etc/cl-launch.lisp
 
@@ -46,6 +46,9 @@ bin/calc-energy: src/calc-energy.lisp $(LISP_DEPS)
 
 bin/model-variance: src/model-variance.lisp $(LISP_DEPS)
 	$(CLC) $(CLFLAGS) --output $@ -r optimize:model-variance
+
+bin/annotate: src/annotate.lisp $(LISP_DEPS)
+	$(CLC) $(CLFLAGS) --output $@ -r optimize:annotate
 
 clean:
 	rm -f bin/no-limit bin/no-stack-limit bin/limit etc/cl-launch.lisp $(LISP_BINS)

@@ -4,16 +4,13 @@
 
 ;;; Commentary:
 
-;; The following code assumes that the compiler flag has been saved
-;; into the `flag' variable.
-;;
-;; Run with the optimize script with something like the following
-;;
-;;     optimize bzip2.s bzip2 -e "(defvar flag 'O0)" -c by-flag.lisp
+;; Use perf annotate to label the assembly instructions with the HW
+;; counters to which they contribute.
 
 ;;; Code:
 (in-package :optimize)
 
+;;; Genome Annotations
 (defun asm-disassemble (bin func)
   (let ((raw (shell "gdb --batch --eval-command=\"disassemble ~a\" ~a"
                     func bin))
@@ -74,28 +71,31 @@
               (incf (aref result ind) (* mult el))))))
     (coerce result 'list)))
 
-;; Weight mutation location selection using the annotations, and
-;; maintain annotation over mutations
-(defmethod pick-bad ((asm simple)) (pick asm [{+ 0.01} {aget :annotation}]))
+
+;;; print assembly LOC (aka ids) of annotations
+(defun annotate (&optional (args *arguments*))
+  (in-package :optimize)
+  (flet ((arg-pop () (pop args)))
+    (let ((help "Usage: annotate benchmark benchmark.s [OPTIONS...]
+ print the LOC of an ASM object annotated with perf
 
-(defmethod mutate :around ((asm asm))
-  (call-next-method)
-  (let ((edit (car (edits asm))))
-    (with-slots (genome) asm
-      (flet ((blend (i)
-               (setf (cdr (assoc :annotation (nth i genome)))
-                     (mean (remove nil
-                             (list (when (> i 0)
-                                     (aget :annotation (nth (1- i) genome)))
-                                   (aget :annotation (nth (1+ i) genome))))))))
-        (case (car edit)
-          (:insert (blend (second edit)))
-          (:swap (blend (second edit)) (blend (third edit)))))))
-  asm)
+Options:
+ -h,--help ------------- print this help message and exit
+ -f,--flags FLAGS ------ flags to use when linking
+ -l,--linker LINKER ---- linker to use~%"))
+      (when (or (not args)
+                (string= (subseq (car args) 0 2) "-h")
+                (string= (subseq (car args) 0 3) "--h"))
+        (format t help) (quit))
 
-;; apply the perf annotations to the genome
-(setf (genome *orig*)
-      (mapcar (lambda (ann element)
-                (cons (cons :annotation ann) element))
-              (smooth (mapcar (lambda (ans) (or ans 0)) (genome-anns *orig*)))
-              (genome *orig*)))
+      (setf
+       *benchmark* (arg-pop)
+       *path* (arg-pop)
+       *orig* (from-file (make-instance 'asm-perf) *path*))
+
+      (getopts
+       ("-f" "--flags"  (setf (flags *orig*) (list (arg-pop))))
+       ("-l" "--linker" (setf (linker *orig*) (arg-pop))))
+
+      (loop :for ann :in (genome-anns *orig*) :as i :upfrom 0 :do
+         (when ann (format t "~a ~a~%" i ann))))))

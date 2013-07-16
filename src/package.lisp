@@ -15,4 +15,5 @@
    :main
    :objread
    :calc-energy
-   :model-variance))
+   :model-variance
+   :annotate))
