@@ -25,11 +25,12 @@ This repository uses Graphite [2] and Linux perf [3] to measure
 non-functional properties of program variants in an EC system for
 software optimization.
 
-This repository will hold three benchmarks suites used in this
-investigation of evolutionary program optimization.  The PARSEC
+This repository holds support for two benchmark suites.  The PARSEC
 benchmark suite [4] focuses on emerging workloads.  The Spec benchmark
 suite [5] stresses a systems "processor, memory subsystem and
 compiler", and a collection of warehouse compute applications.
+Currently only PARSEC is fully supported or used in the experiment
+described below.
 
 Repository Layout
 =================
