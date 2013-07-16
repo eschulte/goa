@@ -22,10 +22,8 @@
                     (read-from-string (format nil "#x~a" (aref matches 0))))))
               (split-sequence #\Newline raw)))))
 
-(defun perf-annotations (bin)
-  (let ((raw (if (null *size*)
-                 (shell "~a ~a ~a -a"       *script* *benchmark* bin)
-                 (shell "~a ~a ~a -s ~a -a" *script* *benchmark* bin *size*)))
+(defun perf-annotations (script)
+  (let ((raw (shell script))
         (rx "([0-9\.]+) +:[ \\t]+([a-fA-F0-9]+):"))
     (remove nil
       (mapcar (lambda (line)
@@ -50,12 +48,17 @@
           (genome asm))
       (when (not bin) (delete-file my-bin)))))
 
-(defun genome-anns (asm &key bin)
-  (let ((my-bin (or bin (phenome asm))))
+(defun genome-anns (asm &key bin script)
+  (let* ((my-bin (unless script (or bin (phenome asm))))
+         (script
+          (or script
+              (if *size*
+                  (shell "~a ~a ~a -s ~a -a" *script* *benchmark* my-bin *size*)
+                  (shell "~a ~a ~a -a"       *script* *benchmark* my-bin)))))
     (unwind-protect
-         (mapcar {aget _ (perf-annotations my-bin)}
+         (mapcar {aget _ (perf-annotations script)}
                  (genome-addrs asm :bin my-bin))
-      (when (not bin) (delete-file my-bin)))))
+      (when (not (or bin script)) (delete-file my-bin)))))
 
 (defvar *kernel* '((-3 . 0.006) (-2 . 0.061) (-1 . 0.242)
                    (0 . 0.383)
@@ -82,20 +85,25 @@
 Options:
  -h,--help ------------- print this help message and exit
  -f,--flags FLAGS ------ flags to use when linking
- -l,--linker LINKER ---- linker to use~%"))
+ -l,--linker LINKER ---- linker to use
+ -e,--ext NUM ---------- run extended test NUM~%"))
       (when (or (not args)
                 (string= (subseq (car args) 0 2) "-h")
                 (string= (subseq (car args) 0 3) "--h"))
         (format t help) (quit))
 
-      (setf
-       *benchmark* (arg-pop)
-       *path* (arg-pop)
-       *orig* (from-file (make-instance 'asm-perf) *path*))
+      (let (script)
+        (setf
+         *benchmark* (arg-pop)
+         *path* (arg-pop)
+         *orig* (from-file (make-instance 'asm-perf) *path*))
 
-      (getopts
-       ("-f" "--flags"  (setf (flags *orig*) (list (arg-pop))))
-       ("-l" "--linker" (setf (linker *orig*) (arg-pop))))
+        (getopts
+         ("-f" "--flags"  (setf (flags *orig*) (list (arg-pop))))
+         ("-l" "--linker" (setf (linker *orig*) (arg-pop)))
+         ("-e" "--exe"
+               (setf script (format nil "./bin/extended-tests.py ~a ~a ~d -a"
+                                    *benchmark* (phenome *orig*) (arg-pop)))))
 
-      (loop :for ann :in (genome-anns *orig*) :as i :upfrom 0 :do
-         (when ann (format t "~a ~a~%" i ann))))))
+        (loop :for ann :in (genome-anns *orig* :script script) :as i :upfrom 0
+           :do (when ann (format t "~a ~a~%" i ann)))))))
