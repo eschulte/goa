@@ -36,10 +36,6 @@ parser.add_option(
     help = "skip test number SKIP"
 )
 parser.add_option(
-    "-o", "--only", metavar = "ONLY", type = int,
-    help = "only run test number ONLY"
-)
-parser.add_option(
     "-l", "--limit", metavar = "LIMIT", type = str,
     help = "protect execution with limit script LIMIT"
 )
@@ -938,7 +934,7 @@ with bmark:
             exitcode = 1
     if testid is None:
         for i in range( bmark.getNumInputs() ):
-            if ((options.skip is None or (not options.skip == i)) and (options.only is None or (options.only == i))):
+            if options.skip is None or (not options.skip == i):
                 runtest( i ) 
     else:
         runtest( testid )
