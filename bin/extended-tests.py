@@ -2,6 +2,7 @@
 
 from glob import glob
 import math
+from numpy.distutils import cpuinfo
 from optparse import OptionParser
 import os
 import random
@@ -38,6 +39,10 @@ parser.add_option(
 parser.add_option(
     "-l", "--limit", metavar = "LIMIT", type = str,
     help = "protect execution with limit script LIMIT"
+)
+parser.add_option(
+    "-a", "--annotate", action = "store_true",
+    help = "annotate execution with perf"
 )
 options, args = parser.parse_args()
 
@@ -142,6 +147,15 @@ def find_golden( benchmark ):
 
 def coin( p_heads = 0.5 ):
     return random.random() < p_heads
+
+if options.annotate:
+    ann_out = mktemp()
+    if cpuinfo.cpuinfo().is_AMD():
+        prefix = ["perf", "record", "-e", "cycles,instructions,r533f00,cache-references,cache-misses", "-o", ann_out, "--"]
+    else:
+        prefix = ["perf", "record", "-e", "cycles,instructions,r532010,r538010,cache-references,cache-misses", "-o", ann_out, "--"]
+elif options.limit:
+    prefix = [ options.limit ]
 
 class GoldenFailure( StandardError ):
     pass
@@ -289,10 +303,11 @@ class Blackscholes( TarballsMixin, Benchmark ):
                         print >>out, lines[ int( line.strip() ) ]
             out = mktemp()
             try:
-                if options.limit is None:
+                if prefix is None:
                     check_run( [ self.executable, "1", input_file, out ] )
                 else:
-                    check_run( [ options.limit, self.executable, "1", input_file, out ] )
+                    cmd = prefix
+                    cmd.extend( [ self.executable, "1", input_file, out ] )
             except Exception as e:
                 os.remove( out )
                 raise e
@@ -346,13 +361,14 @@ class Bodytrack( TarballsMixin, Benchmark ):
             shutil.copytree( dataset, tmpdata )
             tmpdata = os.path.join( tmpdata, glob( tmpdata + "/*" )[ 0 ] )
 
-            if options.limit is None:
+            if prefix is None:
                 cmd = [ self.executable, tmpdata, n_cameras, n_frames,
                         n_particles, n_layers, thd_model, n_threads, "1" ]
             else:
-                cmd = [ options.limit, self.executable, tmpdata,
-                        n_cameras, n_frames, n_particles, n_layers,
-                        thd_model, n_threads, "1" ]
+                cmd = prefix
+                cmd.extend([ self.executable, tmpdata,
+                             n_cameras, n_frames, n_particles, n_layers,
+                             thd_model, n_threads, "1" ])
                 
             check_run( cmd )
 
@@ -446,10 +462,11 @@ class Ferret( TarballsMixin, Benchmark ):
         imagedir = os.path.join( tardir, imagedir )
 
         tmp = mktemp()
-        if options.limit is None:
+        if prefix is None:
             cmd = [ self.executable, metadir, algorithm, imagedir ] + args + [ tmp ]
         else:
-            cmd = [ options.limit, self.executable, metadir, algorithm, imagedir ] + args + [ tmp ]
+            cmd = prefix
+            cmd.extend([ self.executable, metadir, algorithm, imagedir ] + args + [ tmp ])
         try:
             check_run( cmd )
             
@@ -507,10 +524,11 @@ class Fluidanimate( TarballsMixin, Benchmark ):
         input_file = find_input( tardir, ".fluid" )
 
         tmp = mktemp()
-        if options.limit is None:
+        if prefix is None:
             cmd = [ self.executable, nthreads, arg, input_file, tmp ]
         else:
-            cmd = [ options.limit, self.executable, nthreads, arg, input_file, tmp ]
+            cmd = prefix
+            cmd.extend([ prefix, self.executable, nthreads, arg, input_file, tmp ])
         try:
             check_run( cmd )
         except Exception as e:
@@ -559,10 +577,11 @@ class Freqmine( TarballsMixin, Benchmark ):
 
         tmp = mktemp()
         try:
-            if options.limit is None:
+            if prefix is None:
                 cmd = [ self.executable, input_file, arg, tmp ]
             else:
-                cmd = [ options.limit, self.executable, input_file, arg, tmp ]
+                cmd = prefix
+                cmd.extend( [ self.executable, input_file, arg, tmp ] )
             env = dict( os.environ )
             env[ "OMP_NUM_THREADS" ] = "1"
             check_run( cmd, env = env )
@@ -613,10 +632,11 @@ class Swaptions( Benchmark ):
         if options.verbose:
             print "Running %s (%d)" % ( self.executable, i )
 
-        if options.limit is None:
+        if prefix is None:
             cmd = [ self.executable ]
         else:
-            cmd = [ options.limit, self.executable ]
+            cmd = prefix
+            cmd.extend([ prefix, self.executable ])
         with open( self.inputs[ i ] ) as fh:
             for line in fh:
                 cmd.extend( line.split() )
@@ -692,10 +712,11 @@ class Vips( TarballsMixin, Benchmark ):
         if options.verbose:
             print "Running %s (%d)" % ( self.executable, i )
 
-        if options.limit is None:
+        if prefix is None:
             cmd = [ self.executable ]
         else:
-            cmd = [ options.limit, self.executable ]
+            cmd = prefix
+            cmd.extend([ prefix, self.executable ])
         with open( self.inputs[ i ] ) as fh:
             channel = fh.next().strip()
             if channel == "0":
@@ -808,10 +829,11 @@ class X264( TarballsMixin, Benchmark ):
         cleanup = list()
         try:
             passes = ( 0, 0 )
-            if options.limit is None:
+            if prefix is None:
                 cmd = [ self.executable ]
             else:
-                cmd = [ options.limit, self.executable ]
+                cmd = prefix
+                cmd.extend([ prefix, self.executable ])
             with open( self.inputs[ i ] ) as fh:
                 tarname = fh.next().strip()
                 suffix  = fh.next().strip()
@@ -927,11 +949,14 @@ with bmark:
             if options.verbose:
                 print e
             status = False
-        if status:
-            print "%d: pass" % i
+        if options.annotate:
+            check_call( ["perf", "annotate", "-i", ann_out] )
         else:
-            print "%d: FAIL" % i
-            exitcode = 1
+            if status:
+                print "%d: pass" % i
+            else:
+                print "%d: FAIL" % i
+                exitcode = 1
     if testid is None:
         for i in range( bmark.getNumInputs() ):
             if options.skip is None or (not options.skip == i):
