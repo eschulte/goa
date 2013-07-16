@@ -148,6 +148,8 @@ def find_golden( benchmark ):
 def coin( p_heads = 0.5 ):
     return random.random() < p_heads
 
+prefix = []
+
 if options.annotate:
     ann_out = mktemp()
     if cpuinfo.cpuinfo().is_AMD():
