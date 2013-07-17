@@ -23,16 +23,15 @@
               (split-sequence #\Newline raw)))))
 
 (defun perf-annotations (script)
-  (let ((raw (shell script))
-        (rx "([0-9\.]+) +:[ \\t]+([a-fA-F0-9]+):"))
-    (remove nil
-      (mapcar (lambda (line)
-                (multiple-value-bind (all matches) (scan-to-strings rx line)
-                  (when all
-                    (cons (read-from-string (format nil "#x~a"
-                                                    (aref matches 1)))
-                          (parse-number (aref matches 0))))))
-              (split-sequence #\Newline raw)))))
+  (remove nil
+    (mapcar (lambda (line)
+              (multiple-value-bind (all matches)
+                  (scan-to-strings "([0-9\.]+) +:[ \\t]+([a-fA-F0-9]+):" line)
+                (when all
+                  (cons (read-from-string (format nil "#x~a"
+                                                  (aref matches 1)))
+                        (parse-number (aref matches 0))))))
+            (split-sequence #\Newline (shell script)))))
 
 (defun genome-addrs (asm &key bin &aux func-addrs)
   (let ((my-bin (or bin (phenome asm))))
@@ -53,8 +52,10 @@
          (script
           (or script
               (if *size*
-                  (shell "~a ~a ~a -s ~a -a" *script* *benchmark* my-bin *size*)
-                  (shell "~a ~a ~a -a"       *script* *benchmark* my-bin)))))
+                  (format nil "~a ~a ~a -s ~a -a"
+                          *script* *benchmark* my-bin *size*)
+                  (format nil "~a ~a ~a -a"
+                          *script* *benchmark* my-bin)))))
     (unwind-protect
          (mapcar {aget _ (perf-annotations script)}
                  (genome-addrs asm :bin my-bin))
@@ -86,7 +87,8 @@ Options:
  -h,--help ------------- print this help message and exit
  -f,--flags FLAGS ------ flags to use when linking
  -l,--linker LINKER ---- linker to use
- -e,--extended NUM ----- run extended test NUM~%"))
+ -e,--extended NUM ----- run extended test NUM
+ -v,--verbose ---------- verbose debugging output~%"))
       (when (or (not args)
                 (string= (subseq (car args) 0 2) "-h")
                 (string= (subseq (car args) 0 3) "--h"))
@@ -103,7 +105,8 @@ Options:
          ("-l" "--linker" (setf (linker *orig*) (arg-pop)))
          ("-e" "--extended"
                (setf script (format nil "./bin/extended-tests.py ~a ~a ~d -a"
-                                    *benchmark* (phenome *orig*) (arg-pop)))))
+                                    *benchmark* (phenome *orig*) (arg-pop))))
+         ("-v" "--verbose" (setf *shell-debug* t)))
 
         (loop :for ann :in (genome-anns *orig* :script script) :as i :upfrom 0
            :do (when ann (format t "~a ~a~%" i ann)))))))
