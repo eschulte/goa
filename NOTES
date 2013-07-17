@@ -1563,6 +1563,39 @@ AMD
 
 ** TODO Analyze Optimizations
 *** Overall energy reduction
+**** runtime
+#+name: overall-runtime-reduction
+#+begin_src sh
+  . bin/common
+  
+  # have to protect against weird inf values... something broke w/ferret
+  final(){
+      for b in $1/best-*;do
+          ./bin/objread $b -E '(aget :seconds (stats obj))'
+      done|grep -v NIL|sort -n|head -1; }
+  
+  #for arch in amd intel;do
+  for arch in amd;do
+      #for bench in ${BENCHMARKS[@]};do
+      for bench in blackscholes;do
+          log=results/$arch/$bench/optimize.log
+          stats=results/$arch/$bench/stats.txt
+          if [ -f $log ];then
+              initial=$(grep ":SECONDS" $log \
+                  |sed 's/^.*:SECONDS \. //;s/[^0-9\.].*$//')
+              final=$(final results/$arch/$bench)
+          else
+              initial="NA"
+              final="NA"
+          fi
+          echo "$arch $bench $initial $final"
+      done
+  done
+#+end_src
+
+#+RESULTS: overall-runtime-reduction
+: amd blackscholes 3.0408022 0.24908768
+
 **** modeled
 #+name: overall-energy-reduction
 #+begin_src sh
@@ -1669,19 +1702,21 @@ see [[*all%20benchmarks%20(we%20have)%20over%20all%20inputs][all benchmarks (we 
    #+name: energy-comparison
    #+begin_src sh :cache yes
      . bin/common
-
+     
      power(){
          cut -d, -f1,$1|awk -F, 'OFS="," {print $2,$1}' \
              |./bin/calc-energy -m amd-opteron-power-model; }
-
+     
      base=results/amd-opt-by-size
-
+     
      echo "benchmark,small,,medium,,large,,huge,"
      for bench in ${BENCHMARKS[@]};do
          echo -n "$bench,"
          for size in small medium large huge;do
              file=$base/$bench-$size.csv
-             if [ -f $file ];then
+             if [ -f $file ] && \
+                 [ $(grep error $file|cut -d, -f2) -eq 0 ] && \
+                 [ $(grep error $file|cut -d, -f3) -eq 0 ];then
                  echo -n "$(cat $file|power 2),$(cat $file|power 3),"
              else
                  echo -n "NA,NA,"
@@ -1691,15 +1726,17 @@ see [[*all%20benchmarks%20(we%20have)%20over%20all%20inputs][all benchmarks (we 
      done|sed 's/,$//'
    #+end_src
 
-   #+RESULTS[7fa25c01e1805fb1359385d3f6bf7c4f3101a465]: energy-comparison
-   | benchmark    |     small |           |    medium |           |     large |           | huge        |           |
-   | blackscholes |  66.60791 |   4.83037 | 271.33185 | 16.524755 | 1082.9415 |  65.79707 | NA          | NA        |
-   | bodytrack    | 165.79736 | 160.81306 | 535.19275 |  521.2339 | 1905.3456 |  1858.862 | NA          | NA        |
-   | ferret       |  161.1923 | 146.59804 | 477.73395 | 429.60913 | 2113.6077 | 1830.0222 | 181551.03   | 161716.45 |
-   | fluidanimate |  193.1168 | 3.7036355 | 421.42395 |  357.1908 | 1398.9271 | 1141.8993 | NA          | NA        |
-   | freqmine     |  706.8656 |  607.6356 | 11939.437 | 155.58197 | 46834.918 |  327.1728 | NA          | NA        |
-   | swaptions    | 226.42577 | 132.70084 |   903.955 |  534.5128 | 3638.7085 | 2128.7698 | NA          | NA        |
-   | x264         | 401.76398 | 349.53668 |  2874.418 | 2509.6873 |  9448.305 |  7828.587 | 298431.2    | 262761.16 |
+#+RESULTS[4cb495efcf6dbf90ca14da469a96a61463076959]: energy-comparison
+| benchmark    |     small |           |    medium |           | large     |           | huge        |           |
+| blackscholes |  66.60791 |   4.83037 | 271.33185 | 16.524755 | 1082.9415 | 65.79707  | 157431.75   | 9728.703  |
+| bodytrack    | 165.79736 | 160.81306 | 535.19275 |  521.2339 | 1905.3456 | 1858.862  | NA          | NA        |
+| facesim      |        NA |        NA |        NA |        NA | NA        | NA        | NA          | NA        |
+| ferret       |  161.1923 | 146.59804 | 477.73395 | 429.60913 | 2113.6077 | 1830.0222 | NA          | NA        |
+| fluidanimate |        NA |        NA | 421.42395 |  357.1908 | NA        | NA        | NA          | NA        |
+| freqmine     |  706.8656 |  607.6356 |        NA |        NA | NA        | NA        | NA          | NA        |
+| swaptions    | 226.42577 | 132.70084 |   903.955 |  534.5128 | 3638.7085 | 2128.7698 | 178492.34   | 105277.53 |
+| vips         |        NA |        NA | 1127.7108 | 716.54816 | NA        | NA        | -0.15889622 | 1.4027784 |
+| x264         | 401.76398 | 349.53668 |        NA |        NA | NA        | NA        | NA          | NA        |
 
 2. correlate results
    #+name: collated-energy-comparison
@@ -1722,14 +1759,16 @@ see [[*all%20benchmarks%20(we%20have)%20over%20all%20inputs][all benchmarks (we 
    #+end_src
 
    #+RESULTS: collated-energy-comparison
-   | SIZE   | blackscholes | blackscholes | bodytrack | bodytrack |    ferret |    ferret | fluidanimate | fluidanimate |  freqmine |  freqmine | swaptions | swaptions |      x264 |      x264 |
-   | SMALL  |     66.60791 |      4.83037 | 165.79736 | 160.81306 |  161.1923 | 146.59804 |     193.1168 |    3.7036355 |  706.8656 |  607.6356 | 226.42577 | 132.70084 | 401.76398 | 349.53668 |
-   | MEDIUM |    271.33185 |    16.524755 | 535.19275 |  521.2339 | 477.73395 | 429.60913 |    421.42395 |     357.1908 | 11939.437 | 155.58197 |   903.955 |  534.5128 |  2874.418 | 2509.6873 |
-   | LARGE  |    1082.9415 |     65.79707 | 1905.3456 |  1858.862 | 2113.6077 | 1830.0222 |    1398.9271 |    1141.8993 | 46834.918 |  327.1728 | 3638.7085 | 2128.7698 |  9448.305 |  7828.587 |
-   | HUGE   |           NA |           NA |        NA |        NA | 181551.03 | 161716.45 |           NA |           NA |        NA |        NA |        NA |        NA |  298431.2 | 262761.16 |
+   | SIZE   | blackscholes | blackscholes | bodytrack | bodytrack | facesim | facesim |    ferret |    ferret | fluidanimate | fluidanimate | freqmine | freqmine | swaptions | swaptions | vips        | vips      | x264      | x264      |
+   | SMALL  |     66.60791 |      4.83037 | 165.79736 | 160.81306 | NA      | NA      |  161.1923 | 146.59804 | NA           | NA           | 706.8656 | 607.6356 | 226.42577 | 132.70084 | NA          | NA        | 401.76398 | 349.53668 |
+   | MEDIUM |    271.33185 |    16.524755 | 535.19275 |  521.2339 | NA      | NA      | 477.73395 | 429.60913 | 421.42395    | 357.1908     | NA       | NA       |   903.955 |  534.5128 | 1127.7108   | 716.54816 | NA        | NA        |
+   | LARGE  |    1082.9415 |     65.79707 | 1905.3456 |  1858.862 | NA      | NA      | 2113.6077 | 1830.0222 | NA           | NA           | NA       | NA       | 3638.7085 | 2128.7698 | NA          | NA        | NA        | NA        |
+   | HUGE   |    157431.75 |     9728.703 |        NA |        NA | NA      | NA      |        NA |        NA | NA           | NA           | NA       | NA       | 178492.34 | 105277.53 | -0.15889622 | 1.4027784 | NA        | NA        |
 
 3. display results
+   #+headers: :file etc/pub/evolved-improvement-by-input.tex
    #+begin_src gnuplot :var data=collated-energy-comparison
+     set term tikz
      set title 'evolved improvement in modeled energy by input size'
      set datafile missing "NA"
      set key above
@@ -1738,14 +1777,78 @@ see [[*all%20benchmarks%20(we%20have)%20over%20all%20inputs][all benchmarks (we 
      set style histogram cluster gap 1
      set style fill solid border -1
      set boxwidth 0.9
-     set xtic rotate by -45
+     # set xtic rotate by -12.25
      set ylabel "percent energy reduction"
      set xlabel "input size"
      plot for [n=2:14:2] data u (100 * ((column(n) - column(n + 1)) / column(n))):xtic(1) ti col
    #+end_src
 
-   #+RESULTS:
-   [[file:etc/data/evolved-improvement-by-input.svg]]
+**** other issues by size
+***** error
+#+begin_src sh
+  . bin/common
+  
+  base=results/amd-opt-by-size
+  
+  echo "benchmark,small,,medium,,large,,huge,"
+  for bench in ${BENCHMARKS[@]};do
+      echo -n "$bench,"
+      for size in small medium large huge;do
+          file=$base/$bench-$size.csv
+          if [ -f $file ];then
+              echo -n "$(grep error $file|cut -d, -f2,3),"
+          else
+              echo -n "NA,NA,"
+          fi
+      done
+      echo ""
+  done|sed 's/,$//'
+#+end_src
+
+#+RESULTS:
+| benchmark    | small |    | medium |    | large |    | huge |    |
+| blackscholes |     0 |  0 |      0 |  0 |     0 |  0 |    0 |  0 |
+| bodytrack    |     0 |  0 |      0 |  0 |     0 |  0 |    1 |  1 |
+| facesim      |    NA | NA |     NA | NA |    NA | NA |   NA | NA |
+| ferret       |     0 |  0 |      0 |  0 |     0 |  0 |   16 | 16 |
+| fluidanimate |     0 |  2 |      0 |  0 |     0 |  2 |    0 |  2 |
+| freqmine     |     0 |  0 |      0 |  1 |     0 |  1 |    2 |  2 |
+| swaptions    |     0 |  0 |      0 |  0 |     0 |  0 |    0 |  0 |
+| vips         |     0 |  2 |      0 |  0 |     0 |  2 |    0 |  0 |
+| x264         |     0 |  0 |      0 |  2 |     0 |  2 |    0 |  2 |
+
+***** seconds
+#+begin_src sh
+  . bin/common
+  
+  base=results/amd-opt-by-size
+  
+  echo "benchmark,small,,medium,,large,,huge,"
+  for bench in ${BENCHMARKS[@]};do
+      echo -n "$bench,"
+      for size in small medium large huge;do
+          file=$base/$bench-$size.csv
+          if [ -f $file ];then
+              echo -n "$(grep second $file|cut -d, -f2,3),"
+          else
+              echo -n "NA,NA,"
+          fi
+      done
+      echo ""
+  done|sed 's/,$//'
+#+end_src
+
+#+RESULTS:
+| benchmark    |       small |             |       medium |              |         large |              |           huge |                |
+| blackscholes | 0.187692442 | 0.017415448 |  0.764755907 |  0.065281222 |   3.047209719 |   0.25355994 |  444.768667995 |   37.732167101 |
+| bodytrack    | 0.498711849 | 0.485352237 |  1.603426342 |  1.565523042 |   5.681577725 |  5.567982263 |                |                |
+| facesim      |          NA |          NA |           NA |           NA |            NA |           NA |             NA |             NA |
+| ferret       | 0.499703248 | 0.462268506 |   1.44420668 |  1.317697672 |    6.31263199 |  5.556126241 |  560.009379427 |   516.51501811 |
+| fluidanimate | 0.580568447 | 0.011042083 |  1.291994643 |  1.123603631 |   4.215639506 |  3.554625315 |  649.848555536 |   16.807834724 |
+| freqmine     |  2.74416897 | 2.433659269 |  49.07001685 |  0.567490046 | 195.032431043 |  1.178472107 | 4778.060176806 |    4.125127682 |
+| swaptions    | 0.695905836 | 0.424635963 |  2.780658253 |  1.703306782 |  11.181952665 |  6.794015413 |  550.389700756 |  336.496063275 |
+| vips         | 1.213408887 | 0.659827449 |  3.820339512 |  2.502110461 |   9.995269895 |  5.611226583 |     0.00679999 |    0.007162996 |
+| x264         | 1.881809527 | 1.675157933 | 13.808103916 | 12.426627889 |  45.238713212 | 38.650996354 | 1471.939535268 | 1316.583726381 |
 
 ** Build optimization Taxonomy
 This might be too optimistic.
