@@ -305,12 +305,11 @@ class Blackscholes( TarballsMixin, Benchmark ):
                         print >>out, lines[ int( line.strip() ) ]
             out = mktemp()
             try:
-                if prefix is None:
-                    check_run( [ self.executable, "1", input_file, out ] )
-                else:
-                    cmd = prefix
-                    cmd.extend( [ self.executable, "1", input_file, out ] )
-                    check_run( cmd )
+                cmd = list()
+                if prefix is not None:
+                    cmd.extend( prefix )
+                cmd.extend( [ self.executable, "1", input_file, out ] )
+                check_run( cmd )
             except Exception as e:
                 os.remove( out )
                 raise e
@@ -364,15 +363,12 @@ class Bodytrack( TarballsMixin, Benchmark ):
             shutil.copytree( dataset, tmpdata )
             tmpdata = os.path.join( tmpdata, glob( tmpdata + "/*" )[ 0 ] )
 
-            if prefix is None:
-                cmd = [ self.executable, tmpdata, n_cameras, n_frames,
-                        n_particles, n_layers, thd_model, n_threads, "1" ]
-            else:
-                cmd = prefix
-                cmd.extend([ self.executable, tmpdata,
-                             n_cameras, n_frames, n_particles, n_layers,
-                             thd_model, n_threads, "1" ])
-                
+            cmd = list()
+            if prefix is not None:
+                cmd.extend( prefix )
+            cmd.extend([ self.executable, tmpdata,
+                         n_cameras, n_frames, n_particles, n_layers,
+                         thd_model, n_threads, "1" ])
             check_run( cmd )
 
             cwd = os.getcwd()
@@ -465,11 +461,10 @@ class Ferret( TarballsMixin, Benchmark ):
         imagedir = os.path.join( tardir, imagedir )
 
         tmp = mktemp()
-        if prefix is None:
-            cmd = [ self.executable, metadir, algorithm, imagedir ] + args + [ tmp ]
-        else:
-            cmd = prefix
-            cmd.extend([ self.executable, metadir, algorithm, imagedir ] + args + [ tmp ])
+        cmd = list()
+        if prefix is not None:
+            cmd.extend( prefix )
+        cmd.extend([ self.executable, metadir, algorithm, imagedir ] + args + [ tmp ])
         try:
             check_run( cmd )
             
@@ -527,11 +522,10 @@ class Fluidanimate( TarballsMixin, Benchmark ):
         input_file = find_input( tardir, ".fluid" )
 
         tmp = mktemp()
-        if prefix is None:
-            cmd = [ self.executable, nthreads, arg, input_file, tmp ]
-        else:
-            cmd = prefix
-            cmd.extend([ prefix, self.executable, nthreads, arg, input_file, tmp ])
+        cmd = list()
+        if prefix is not None:
+            cmd.extend( prefix )
+        cmd.extend([ self.executable, nthreads, arg, input_file, tmp ])
         try:
             check_run( cmd )
         except Exception as e:
@@ -580,11 +574,10 @@ class Freqmine( TarballsMixin, Benchmark ):
 
         tmp = mktemp()
         try:
-            if prefix is None:
-                cmd = [ self.executable, input_file, arg, tmp ]
-            else:
-                cmd = prefix
-                cmd.extend( [ self.executable, input_file, arg, tmp ] )
+            cmd = list()
+            if prefix is not None:
+                cmd.extend( prefix )
+            cmd.extend( [ self.executable, input_file, arg, tmp ] )
             env = dict( os.environ )
             env[ "OMP_NUM_THREADS" ] = "1"
             check_run( cmd, env = env )
@@ -635,11 +628,10 @@ class Swaptions( Benchmark ):
         if options.verbose:
             print "Running %s (%d)" % ( self.executable, i )
 
-        if prefix is None:
-            cmd = [ self.executable ]
-        else:
-            cmd = prefix
-            cmd.extend([ prefix, self.executable ])
+        cmd = list()
+        if prefix is not None:
+            cmd.extend( prefix )
+        cmd.append( self.executable )
         with open( self.inputs[ i ] ) as fh:
             for line in fh:
                 cmd.extend( line.split() )
@@ -715,11 +707,10 @@ class Vips( TarballsMixin, Benchmark ):
         if options.verbose:
             print "Running %s (%d)" % ( self.executable, i )
 
-        if prefix is None:
-            cmd = [ self.executable ]
-        else:
-            cmd = prefix
-            cmd.extend([ prefix, self.executable ])
+        cmd = list()
+        if prefix is not None:
+            cmd.extend( prefix )
+        cmd.append( self.executable )
         with open( self.inputs[ i ] ) as fh:
             channel = fh.next().strip()
             if channel == "0":
@@ -799,7 +790,7 @@ class X264( TarballsMixin, Benchmark ):
                 ( [ "--aq-strength" ], random.uniform( 0.5, 1.5 ) ),
                 ( [ "-p", "--pass" ], random.choice( [ 1, 2, 3 ] ) ),
                 ( [ "--qcomp" ], random.random() ),
-                ( [ "-A", "--partitions" ], random.sample( [ "p8x8", "p4x4", "b8x8", "i8x8", "i4x4" ], random.randrange( 5 ) + 1 ) ),
+                ( [ "-A", "--partitions" ], ",".join( random.sample( [ "p8x8", "p4x4", "b8x8", "i8x8", "i4x4" ], random.randrange( 5 ) + 1 ) ) ),
                 ( [ "--direct" ], random.choice( [ "none", "spatial", "temporal", "auto" ] ) ),
                 ( [ "-w", "--weightb" ], random.random() ),
                 ( [ "--me" ], random.choice( [ "dia", "hex", "umh" ] ) ),
@@ -832,11 +823,10 @@ class X264( TarballsMixin, Benchmark ):
         cleanup = list()
         try:
             passes = ( 0, 0 )
-            if prefix is None:
-                cmd = [ self.executable ]
-            else:
-                cmd = prefix
-                cmd.extend([ prefix, self.executable ])
+            cmd = list()
+            if prefix is not None:
+                cmd.extend( prefix )
+            cmd.append( self.executable )
             with open( self.inputs[ i ] ) as fh:
                 tarname = fh.next().strip()
                 suffix  = fh.next().strip()
