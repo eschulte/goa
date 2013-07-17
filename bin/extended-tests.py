@@ -310,6 +310,7 @@ class Blackscholes( TarballsMixin, Benchmark ):
                 else:
                     cmd = prefix
                     cmd.extend( [ self.executable, "1", input_file, out ] )
+                    check_run( cmd )
             except Exception as e:
                 os.remove( out )
                 raise e
@@ -966,4 +967,3 @@ with bmark:
     else:
         runtest( testid )
     exit( exitcode )
-
