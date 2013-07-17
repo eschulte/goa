@@ -20,7 +20,7 @@
 (in-package :optimize)
 (defvar orig-energy 668.3218)
 (defvar opt-energy 601.47565)
-(defvar extended-test-penalty (/ (- orig-energy opt-energy) 6))
+(defvar extended-test-penalty (/ (- orig-energy opt-energy) 2))
 
 ;; 0. set the model
 (unless *model*

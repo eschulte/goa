@@ -1576,8 +1576,7 @@ AMD
   
   #for arch in amd intel;do
   for arch in amd;do
-      #for bench in ${BENCHMARKS[@]};do
-      for bench in blackscholes;do
+      for bench in ${BENCHMARKS[@]};do
           log=results/$arch/$bench/optimize.log
           stats=results/$arch/$bench/stats.txt
           if [ -f $log ];then
@@ -1593,8 +1592,20 @@ AMD
   done
 #+end_src
 
-#+RESULTS: overall-runtime-reduction
-: amd blackscholes 3.0408022 0.24908768
+| arch | benchmark    |      orig |  optimized | % reduction |
+|------+--------------+-----------+------------+-------------|
+| amd  | blackscholes | 3.0408022 | 0.24908768 |   91.808488 |
+| amd  | bodytrack    | 1.7050157 |  1.6289097 |   4.4636539 |
+| amd  | facesim      | 10.872234 |  10.731139 |             |
+| amd  | ferret       | 1.4337407 |   1.313766 |   8.3679497 |
+| amd  | fluidanimate | 1.2734555 |  1.0789438 |   15.274323 |
+| amd  | freqmine     |           |            |             |
+| amd  | swaptions    | 2.8203497 |  1.6898595 |   40.083334 |
+| amd  | vips         | 3.6553993 |  2.4844027 |   32.034711 |
+| amd  | x264         | 1.8912624 |   1.664994 |   11.963882 |
+|------+--------------+-----------+------------+-------------|
+|      |              |           |            |   29.142335 |
+#+TBLFM: $5=(100*($3-$4)/$3)::@11$5=vmean(@2..@-1)
 
 **** modeled
 #+name: overall-energy-reduction
@@ -1696,6 +1707,7 @@ AMD
 [[file:etc/data/improvement-by-evals-by-benchmarks.svg]]
 
 *** Histogram of improvement by input size
+**** energy reduction
 see [[*all%20benchmarks%20(we%20have)%20over%20all%20inputs][all benchmarks (we have) over all inputs]]
 
 1. collect results
@@ -1726,17 +1738,17 @@ see [[*all%20benchmarks%20(we%20have)%20over%20all%20inputs][all benchmarks (we 
      done|sed 's/,$//'
    #+end_src
 
-#+RESULTS[4cb495efcf6dbf90ca14da469a96a61463076959]: energy-comparison
-| benchmark    |     small |           |    medium |           | large     |           | huge        |           |
-| blackscholes |  66.60791 |   4.83037 | 271.33185 | 16.524755 | 1082.9415 | 65.79707  | 157431.75   | 9728.703  |
-| bodytrack    | 165.79736 | 160.81306 | 535.19275 |  521.2339 | 1905.3456 | 1858.862  | NA          | NA        |
-| facesim      |        NA |        NA |        NA |        NA | NA        | NA        | NA          | NA        |
-| ferret       |  161.1923 | 146.59804 | 477.73395 | 429.60913 | 2113.6077 | 1830.0222 | NA          | NA        |
-| fluidanimate |        NA |        NA | 421.42395 |  357.1908 | NA        | NA        | NA          | NA        |
-| freqmine     |  706.8656 |  607.6356 |        NA |        NA | NA        | NA        | NA          | NA        |
-| swaptions    | 226.42577 | 132.70084 |   903.955 |  534.5128 | 3638.7085 | 2128.7698 | 178492.34   | 105277.53 |
-| vips         |        NA |        NA | 1127.7108 | 716.54816 | NA        | NA        | -0.15889622 | 1.4027784 |
-| x264         | 401.76398 | 349.53668 |        NA |        NA | NA        | NA        | NA          | NA        |
+   #+RESULTS[4cb495efcf6dbf90ca14da469a96a61463076959]: energy-comparison
+   | benchmark    |     small |           |    medium |           | large     |           | huge        |           |
+   | blackscholes |  66.60791 |   4.83037 | 271.33185 | 16.524755 | 1082.9415 | 65.79707  | 157431.75   | 9728.703  |
+   | bodytrack    | 165.79736 | 160.81306 | 535.19275 |  521.2339 | 1905.3456 | 1858.862  | NA          | NA        |
+   | facesim      |        NA |        NA |        NA |        NA | NA        | NA        | NA          | NA        |
+   | ferret       |  161.1923 | 146.59804 | 477.73395 | 429.60913 | 2113.6077 | 1830.0222 | NA          | NA        |
+   | fluidanimate |        NA |        NA | 421.42395 |  357.1908 | NA        | NA        | NA          | NA        |
+   | freqmine     |  706.8656 |  607.6356 |        NA |        NA | NA        | NA        | NA          | NA        |
+   | swaptions    | 226.42577 | 132.70084 |   903.955 |  534.5128 | 3638.7085 | 2128.7698 | 178492.34   | 105277.53 |
+   | vips         |        NA |        NA | 1127.7108 | 716.54816 | NA        | NA        | -0.15889622 | 1.4027784 |
+   | x264         | 401.76398 | 349.53668 |        NA |        NA | NA        | NA        | NA          | NA        |
 
 2. correlate results
    #+name: collated-energy-comparison
@@ -2041,15 +2053,76 @@ failures at stages.
 
 Run with =make check=.
 
-* Issues [9/11]
-** TODO unexpected non-functional issues during large runs
+* Issues [10/10]
+** breeding the best back with the original
+Almost instantly (first 256 evaluations) found a compromise individual
+which slightly reduced performance from the optimized, but passed all
+extended tests.
+
+reduces energy efficiency from best optimized individual by
+#+begin_src lisp
+  (let ((cross (fitness *best*))
+        (opt 601.47565)
+        (orig 668.3218))
+    (list
+     (* 100 (/ (- opt cross) opt))
+     (* 100 (/ (- orig cross) orig))))
+#+end_src
+
+#+RESULTS:
+| -1.5789008 | 8.58111 |
+
+The crossbreed version of freqmine has 29 differences from the
+original, while the result of optimization has 62.  Less than half.
+
+: $ diff freqmine-breed-total/orig.s freqmine-breed-total/best-243200.s|grep -c "\-\-\-"
+: 62
+: $ diff freqmine-breed-total/orig.s freqmine-breed-total/crossbreed.s|grep -c "\-\-\-"
+: 29
+
+** ASM path correlation
+#+begin_src sh :results verbatim
+  . bin/common
+  
+  for bench in ${BENCHMARKS[@]};do
+      for size in small medium large;do
+          rm benchmarks/$bench/$bench.{input,output}
+          mgmt output $bench -s $size
+          link=""
+          if [ ! "$(grep $bench etc/optimize-args|cut -f2)" == "" ];then
+              link="-l \"$(grep $bench etc/optimize-args|cut -f2)\""
+          fi
+          flag=""
+          if [ ! "$(grep $bench etc/optimize-args|cut -f3)" == "" ];then
+              flag="-f \"$(grep $bench etc/optimize-args|cut -f3)\""
+          fi
+          output=$bench-$size.ann
+          echo $output
+          annotate $bench benchmarks/$bench/$bench.s $link $flag -s $size > $output
+      done
+  done
+#+end_src
+
+*** correlation
+The correlation of vips with medium input and vips with small input is,
+#+begin_src sh
+  join <(sort -k 1b,1 /tmp/vips-medium.ann) <(sort -k 1b,1 /tmp/vips-small.ann) \
+      |sed 's/ /,/g'|cut -d, -f2-|./bin/correlation
+#+end_src
+
+#+RESULTS:
+|    |        V1 |        V2 |
+| V1 |       1.0 | 0.2408207 |
+| V2 | 0.2408207 |       1.0 |
+
+** unexpected non-functional issues during large runs
 Leftover Files
 - facesim requires removal of compilation files from TMPDIR
 
 Large Data
 - freqmine on huge input can us 86G in the benchmark and tmp directories
 
-** TODO facesim is running really slowly on AMD
+** DONE facesim is running really slowly on AMD
 |                5.700 |  6400 |
 |                 6.00 |  6656 |
 |  6.36666666666666664 |  6912 |
