@@ -33,6 +33,10 @@ import threading
 
 parser = OptionParser( usage = "%prog [options] benchmark resultsdir" )
 parser.add_option(
+    "--alpha", type = float, default = 0.01,
+    help = "alpha value for statistical tests"
+)
+parser.add_option(
     "--line-by-line", action = "store_true",
     help = "split multi-line deltas into several individual-line deltas"
 )
@@ -294,7 +298,7 @@ class MyDD(DD.DD):
         self.counter += 1
         p, myavg, avg = ttest( myenergy, energy, side = 1 )
         info( "p = %g (%g > %g)" % ( p, myavg, avg ) )
-        if p < 0.01:
+        if p < options.alpha:
             return self.PASS
         else:
             return self.FAIL
