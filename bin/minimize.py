@@ -37,6 +37,7 @@ parser.add_option(
     help = "split multi-line deltas into several individual-line deltas"
 )
 parser.add_option( "-s", "--size", help = "the input size to use" )
+parser.add_option( "--store", help = "the stored checkpoint to use" )
 parser.add_option(
     "-r", "--reps", metavar = "N", type = int, default = 5,
     help = "repeat energy measurement N times"
@@ -59,6 +60,10 @@ if options.size is None:
                 % ( os.path.join( root, "bin", "common" ), bmark )
     ], stdout = PIPE )
     options.size = p.communicate()[ 0 ].strip()
+
+if options.store is not None and not os.path.exists( options.store ):
+    print "ERROR:", options.store, "is not a valid path"
+    exit( 1 )
 
 bmarkdir = os.path.join( root, "benchmarks", bmark )
 if not os.path.exists( os.path.join( bmarkdir, bmark + ".s" ) ):
@@ -294,7 +299,9 @@ original = list()
 with open( os.path.join( bmarkdir, bmark + ".s" ) ) as fh:
     original = fh.readlines()
 
-if os.path.exists( os.path.join( resdir, "final-best.store" ) ):
+if options.store is not None:
+    store = options.store
+elif os.path.exists( os.path.join( resdir, "final-best.store" ) ):
     store = os.path.join( resdir, "final-best.store" )
 else:
     matcher = re.compile( "best-(\d+).store" )
