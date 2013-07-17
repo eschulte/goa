@@ -1,0 +1,6 @@
+#!/usr/bin/Rscript
+#
+# Usage: cat file.csv|correlation
+#  correlation of csv data read on STDIN
+# 
+cor(read.csv("stdin", header=FALSE, as.is=TRUE, fill=TRUE))
