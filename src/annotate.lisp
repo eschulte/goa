@@ -47,15 +47,16 @@
           (genome asm))
       (when (not bin) (delete-file my-bin)))))
 
-(defun genome-anns (asm &key bin script)
+(defun genome-anns (asm &key bin script limit)
   (let* ((my-bin (unless script (or bin (phenome asm))))
+         (limit (if limit (format nil "-l ~a" limit) ""))
          (script
           (or script
               (if *size*
-                  (format nil "~a ~a ~a -s ~a -a"
-                          *script* *benchmark* my-bin *size*)
-                  (format nil "~a ~a ~a -a"
-                          *script* *benchmark* my-bin)))))
+                  (format nil "~a ~a ~a -s ~a ~a -a"
+                          *script* *benchmark* my-bin limit *size*)
+                  (format nil "~a ~a ~a ~a -a"
+                          *script* *benchmark* limit my-bin)))))
     (unwind-protect
          (mapcar {aget _ (perf-annotations script)}
                  (genome-addrs asm :bin my-bin))
@@ -87,6 +88,7 @@ Options:
  -h,--help ------------- print this help message and exit
  -f,--flags FLAGS ------ flags to use when linking
  -l,--linker LINKER ---- linker to use
+ -L,--limit LIMIT ------ use LIMIT to limit execution
  -e,--extended NUM ----- run extended test NUM
  -s,--size SIZE -------- set size to SIZE
  -v,--verbose ---------- verbose debugging output~%"))
@@ -95,7 +97,7 @@ Options:
                 (string= (subseq (car args) 0 3) "--h"))
         (format t help) (quit))
 
-      (let (script)
+      (let (script limit)
         (setf
          *benchmark* (arg-pop)
          *path* (arg-pop)
@@ -104,11 +106,14 @@ Options:
         (getopts
          ("-f" "--flags"  (setf (flags *orig*) (list (arg-pop))))
          ("-l" "--linker" (setf (linker *orig*) (arg-pop)))
+         ("-L" "--limit"  (setf limit (arg-pop)))
          ("-e" "--extended"
                (setf script (format nil "./bin/extended-tests.py ~a ~a ~d -a"
                                     *benchmark* (phenome *orig*) (arg-pop))))
          ("-s" "--size" (setf *size* (arg-pop)))
          ("-v" "--verbose" (setf *shell-debug* t)))
 
-        (loop :for ann :in (genome-anns *orig* :script script) :as i :upfrom 0
+        (loop
+           :for ann :in (genome-anns *orig* :script script :limit limit)
+           :as i :upfrom 0
            :do (when ann (format t "~a ~a~%" i ann)))))))
