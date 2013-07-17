@@ -49,7 +49,7 @@
 
 (defun genome-anns (asm &key bin script limit)
   (let* ((my-bin (unless script (or bin (phenome asm))))
-         (limit (if limit (format nil "-l ~a" limit) ""))
+         (limit (if limit (format nil "-l ~s" limit) ""))
          (script
           (or script
               (if *size*
@@ -112,6 +112,9 @@ Options:
                                     *benchmark* (phenome *orig*) (arg-pop))))
          ("-s" "--size" (setf *size* (arg-pop)))
          ("-v" "--verbose" (setf *shell-debug* t)))
+
+        (when (and limit script)
+          (setf script (format nil "~a -l ~s" script limit)))
 
         (loop
            :for ann :in (genome-anns *orig* :script script :limit limit)
