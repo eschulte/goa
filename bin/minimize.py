@@ -46,12 +46,11 @@ options, args = parser.parse_args()
 
 root = os.path.dirname( os.path.dirname( os.path.abspath( sys.argv[ 0 ] ) ) )
 
-if len( args ) != 2:
+if len( args ) < 1:
     parser.print_help()
     exit()
 
 bmark  = args[ 0 ]
-resdir = args[ 1 ]
 
 if options.size is None:
     p = Popen( [
@@ -61,9 +60,16 @@ if options.size is None:
     ], stdout = PIPE )
     options.size = p.communicate()[ 0 ].strip()
 
-if options.store is not None and not os.path.exists( options.store ):
-    print "ERROR:", options.store, "is not a valid path"
-    exit( 1 )
+if options.store is not None:
+    if not os.path.exists( options.store ):
+        print "ERROR:", options.store, "is not a valid path"
+        exit( 1 )
+elif len( args ) < 2:
+    print "please either use --store or provide the results directory"
+    parser.print_help()
+    exit()
+else:
+    resdir = args[ 1 ]
 
 bmarkdir = os.path.join( root, "benchmarks", bmark )
 if not os.path.exists( os.path.join( bmarkdir, bmark + ".s" ) ):
