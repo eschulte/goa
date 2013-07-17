@@ -8,4 +8,5 @@ annotate
 *limit
 *.in
 *.out
+*.pyc
 inputgen
