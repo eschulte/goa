@@ -88,6 +88,7 @@ Options:
  -f,--flags FLAGS ------ flags to use when linking
  -l,--linker LINKER ---- linker to use
  -e,--extended NUM ----- run extended test NUM
+ -s,--size SIZE -------- set size to SIZE
  -v,--verbose ---------- verbose debugging output~%"))
       (when (or (not args)
                 (string= (subseq (car args) 0 2) "-h")
@@ -106,6 +107,7 @@ Options:
          ("-e" "--extended"
                (setf script (format nil "./bin/extended-tests.py ~a ~a ~d -a"
                                     *benchmark* (phenome *orig*) (arg-pop))))
+         ("-s" "--size" (setf *size* (arg-pop)))
          ("-v" "--verbose" (setf *shell-debug* t)))
 
         (loop :for ann :in (genome-anns *orig* :script script) :as i :upfrom 0
