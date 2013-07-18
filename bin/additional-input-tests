@@ -2,6 +2,9 @@
 #
 # Usage: additional-input-tests BENCHMARK EXECUTABLE
 #
+# Options:
+#  -t,--test NUM --- only run test number NUM
+#
 # This script must live in optimization/bin so that it can
 # infer the directory structure of the optimization project
 #
@@ -12,6 +15,17 @@ INPUT_DIR=$BASE/benchmarks/
 if [[ $# -le 1 ]]; then help; fi
 BENCHMARK=$1
 EXECUTABLE=$2
+TEST=""
+eval set -- $(getopt -o t: -l test: -- "$@" || help;)
+while [ $# -gt 0 ];do
+    case $1 in
+        -t|--test) TEST=$2; shift;;
+        (--) shift; break;;
+        (-*) error "unrecognized option $1";;
+        (*)  break;;
+    esac
+    shift
+done
 
 case $BENCHMARK in
   blackscholes)
@@ -45,36 +59,46 @@ case $BENCHMARK in
       $BODYTRACK_MASTER $INPUT 4 4   4000 5 0 1; mv $INPUT/Result0000.bmp $OUTPUTS/bodytrack.golden.4 1>/dev/null 2>&1
     fi
 
-    echo "Testing $2:"
-    printf "Test 0: "
-    $EXECUTABLE $INPUT 4 1 5 1 0 1 1>/dev/null 2>&1
-    diff $INPUT/Result0000.bmp $OUTPUTS/bodytrack.golden.0 
-    if [[ $? = 0 ]]; then printf "Pass\n"; else printf "Fail\n"; fi
-    rm $INPUT/Result0000.bmp
+    
+    if [ -z $TEST ] || [ $TEST -eq 0 ];then
+      printf "Test 0: "
+      $EXECUTABLE $INPUT 4 1 5 1 0 1 1>/dev/null 2>&1
+      diff $INPUT/Result0000.bmp $OUTPUTS/bodytrack.golden.0 
+      if [[ $? = 0 ]]; then printf "Pass\n"; else printf "Fail\n"; fi
+      rm $INPUT/Result0000.bmp
+    fi
 
-    printf "Test 1: "
-    $EXECUTABLE $INPUT 4 1 100 3 0 1 1>/dev/null 2>&1
-    diff $INPUT/Result0000.bmp $OUTPUTS/bodytrack.golden.1 
-    if [[ $? = 0 ]]; then printf "Pass\n"; else printf "Fail\n"; fi
-    rm $INPUT/Result0000.bmp
+    if [ -z $TEST ] || [ $TEST -eq 1 ];then
+      printf "Test 1: "
+      $EXECUTABLE $INPUT 4 1 100 3 0 1 1>/dev/null 2>&1
+      diff $INPUT/Result0000.bmp $OUTPUTS/bodytrack.golden.1 
+      if [[ $? = 0 ]]; then printf "Pass\n"; else printf "Fail\n"; fi
+      rm $INPUT/Result0000.bmp
+    fi
 
-    printf "Test 2: "
-    $EXECUTABLE $INPUT 4 1 1000 5 0 1 1>/dev/null 2>&1
-    diff $INPUT/Result0000.bmp $OUTPUTS/bodytrack.golden.2 
-    if [[ $? = 0 ]]; then printf "Pass\n"; else printf "Fail\n"; fi
-    rm $INPUT/Result0000.bmp
+    if [ -z $TEST ] || [ $TEST -eq 2 ];then
+      printf "Test 2: "
+      $EXECUTABLE $INPUT 4 1 1000 5 0 1 1>/dev/null 2>&1
+      diff $INPUT/Result0000.bmp $OUTPUTS/bodytrack.golden.2 
+      if [[ $? = 0 ]]; then printf "Pass\n"; else printf "Fail\n"; fi
+      rm $INPUT/Result0000.bmp
+    fi
 
-    printf "Test 3: "
-    $EXECUTABLE $INPUT 4 2 2000 5 0 1 1>/dev/null 2>&1
-    diff $INPUT/Result0000.bmp $OUTPUTS/bodytrack.golden.3 
-    if [[ $? = 0 ]]; then printf "Pass\n"; else printf "Fail\n"; fi
-    rm $INPUT/Result0000.bmp
+    if [ -z $TEST ] || [ $TEST -eq 3 ];then
+      printf "Test 3: "
+      $EXECUTABLE $INPUT 4 2 2000 5 0 1 1>/dev/null 2>&1
+      diff $INPUT/Result0000.bmp $OUTPUTS/bodytrack.golden.3 
+      if [[ $? = 0 ]]; then printf "Pass\n"; else printf "Fail\n"; fi
+      rm $INPUT/Result0000.bmp
+    fi
 
-    printf "Test 4: "
-    $EXECUTABLE $INPUT 4 4 4000 5 0 1 1>/dev/null 2>&1
-    diff $INPUT/Result0000.bmp $OUTPUTS/bodytrack.golden.4
-    if [[ $? = 0 ]]; then printf "Pass\n"; else printf "Fail\n"; fi
-    rm $INPUT/Result0000.bmp
+    if [ -z $TEST ] || [ $TEST -eq 4 ];then
+      printf "Test 4: "
+      $EXECUTABLE $INPUT 4 4 4000 5 0 1 1>/dev/null 2>&1
+      diff $INPUT/Result0000.bmp $OUTPUTS/bodytrack.golden.4
+      if [[ $? = 0 ]]; then printf "Pass\n"; else printf "Fail\n"; fi
+      rm $INPUT/Result0000.bmp
+    fi
   ;;
   facesim)
   error "Test for $BENCHMARK not implemented yet!"
@@ -116,23 +140,27 @@ case $BENCHMARK in
       
       echo "Generating known good output:"
       for i in {0..3}; do
-        $VIPS_MASTER im_benchmark --vips-concurrency=1 $INPUT/vips.input.$i.v $OUTPUTS/vips.golden.$i.v
+        if [ -z $TEST ] || [ $TEST -eq $i ];then
+          $VIPS_MASTER im_benchmark --vips-concurrency=1 $INPUT/vips.input.$i.v $OUTPUTS/vips.golden.$i.v
+        fi
       done
       cd -
     fi
 
     for i in {0..3}; do
-      printf "Test $i: "
-      $EXECUTABLE im_benchmark --vips-concurrency=1 $INPUT/vips.input.$i.v $VIPS_ADDL/vips.tstout.$i.v
-      # diff $OUTPUTS/vips.golden.$i.v $VIPS_ADDL/vips.tstout.$i.v
-      
-      diff \
-        <(grep --binary-file=text -v im_benchmark $OUTPUTS/vips.golden.$i.v) \
-        <(grep --binary-file=text -v im_benchmark $VIPS_ADDL/vips.tstout.$i.v) \
-        >/dev/null 2>/dev/null
+      if [ -z $TEST ] || [ $TEST -eq $i ];then
+        printf "Test $i: "
+        $EXECUTABLE im_benchmark --vips-concurrency=1 $INPUT/vips.input.$i.v $VIPS_ADDL/vips.tstout.$i.v
+        # diff $OUTPUTS/vips.golden.$i.v $VIPS_ADDL/vips.tstout.$i.v
 
-      if [[ $? = 0 ]]; then printf "Pass\n"; else printf "Fail\n"; fi
-      # rm $VIPS_ADDL/vips.tstout.$i.v
+        diff \
+          <(grep --binary-file=text -v im_benchmark $OUTPUTS/vips.golden.$i.v) \
+          <(grep --binary-file=text -v im_benchmark $VIPS_ADDL/vips.tstout.$i.v) \
+          >/dev/null 2>/dev/null
+
+        if [[ $? = 0 ]]; then printf "Pass\n"; else printf "Fail\n"; fi
+        # rm $VIPS_ADDL/vips.tstout.$i.v
+      fi
     done
   ;;
   x264)
@@ -161,17 +189,19 @@ case $BENCHMARK in
       done
     fi
     for n in {0..4}; do
-      printf "Test $n: "
-      $EXECUTABLE $X264_FLAGS $X264_ADDL/x264.input.$n.y4m -o $X264_ADDL/x264.tstout.$n >/dev/null 2>&1
-      diff $X264_ADDL/x264.golden.$n $X264_ADDL/x264.tstout.$n >/dev/null 2>&1
-      if [[ $? = 0 ]]; then
-        printf "PASS\n"
-      else
-        printf "FAIL\n"
-        printf "tried: diff $X264_ADDL/x264.golden.$n $X264_ADDL/x264.tstout.$n\n"
+      if [ -z $TEST ] || [ $TEST -eq $n ];then
+        printf "Test $n: "
+        $EXECUTABLE $X264_FLAGS $X264_ADDL/x264.input.$n.y4m -o $X264_ADDL/x264.tstout.$n >/dev/null 2>&1
+        diff $X264_ADDL/x264.golden.$n $X264_ADDL/x264.tstout.$n >/dev/null 2>&1
+        if [[ $? = 0 ]]; then
+          printf "PASS\n"
+        else
+          printf "FAIL\n"
+          printf "tried: diff $X264_ADDL/x264.golden.$n $X264_ADDL/x264.tstout.$n\n"
+        fi
       fi
     done
-    rm $X264_ADDL/*tstout*
+    rm -f $X264_ADDL/*tstout*
   ;;
   *)
     warning "Invalid benchmark \"$1\"!"
