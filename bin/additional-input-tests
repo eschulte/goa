@@ -120,9 +120,6 @@ case $BENCHMARK in
   freqmine)
   error "Test for $BENCHMARK not implemented yet!"
   ;;
-  raytrace)
-  error "Test for $BENCHMARK not implemented yet!"
-  ;;
   swaptions)
   error "Test for $BENCHMARK not implemented yet!"
   ;;
