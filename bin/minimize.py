@@ -188,12 +188,22 @@ def collectSeconds( binary ):
             val, key = terms
             if key == "seconds":
                 values.append( val )
+            elif ( key == "exit" or key == "error" ) and val != "0":
+                raise Exception( "invalid %s: %s" % ( key, val ) )
         else:
             values.append( None )
     return values
 
 def collectEnergy( binary ):
     results = runBmark( binary )
+    for result in results:
+        for line in result:
+            terms = line.strip().split( "," )
+            if len( terms ) != 2:
+                continue
+            val, key = terms
+            if ( key == "exit" or key == "error" ) and val != "0":
+                raise Exception( "invalid %s: %s" % ( key, val ) )
 
     values = list()
     cmd = [ os.path.join( root, "bin", "calc-energy" ) ]
