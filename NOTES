@@ -1496,19 +1496,19 @@ First we need
 
 *** TODO Main Experiment
 AMD Runs
-| benchmark    | machine | start                  | finish                 |  runtime |
-|--------------+---------+------------------------+------------------------+----------|
-| blackscholes | complex | <2013-07-10 Wed 06:18> | <2013-07-10 Wed 15:39> |     9.35 |
-| bodytrack    | complex | <2013-07-09 Tue 12:58> | <2013-07-11 Thu 14:02> |    49.07 |
-| facesim      | complex | <2013-07-15 Mon 11:06> |                        |          |
-| ferret       | real    | <2013-07-10 Wed 14:14> | <2013-07-11 Thu 04:36> |    14.37 |
-| fluidanimate | real    | <2013-07-09 Tue 09:27> | <2013-07-09 Tue 20:45> |    11.30 |
-| freqmine     | complex | <2013-07-09 Tue 09:43> | <2013-07-10 Wed 03:50> |    18.12 |
-| swaptions    | real    | <2013-07-09 Tue 09:29> | <2013-07-10 Wed 00:50> |    15.35 |
-| vips         | real    | <2013-07-12 Fri 09:58> | <2013-07-13 Sat 03:37> |    17.65 |
-| x264         | real    | <2013-07-10 Wed 14:17> | <2013-07-11 Thu 06:30> |    16.22 |
-|--------------+---------+------------------------+------------------------+----------|
-|              |         |                        |                        | 18.92875 |
+| benchmark    | machine | start                  | finish                 |   runtime |
+|--------------+---------+------------------------+------------------------+-----------|
+| blackscholes | complex | <2013-07-10 Wed 06:18> | <2013-07-10 Wed 15:39> |      9.35 |
+| bodytrack    | complex | <2013-07-09 Tue 12:58> | <2013-07-11 Thu 14:02> |           |
+| facesim      | complex | <2013-07-15 Mon 11:06> |                        |           |
+| ferret       | real    | <2013-07-10 Wed 14:14> | <2013-07-11 Thu 04:36> |     14.37 |
+| fluidanimate | real    | <2013-07-09 Tue 09:27> | <2013-07-09 Tue 20:45> |     11.30 |
+| freqmine     | complex | <2013-07-09 Tue 09:43> | <2013-07-10 Wed 03:50> |     18.12 |
+| swaptions    | real    | <2013-07-09 Tue 09:29> | <2013-07-10 Wed 00:50> |     15.35 |
+| vips         | real    | <2013-07-12 Fri 09:58> | <2013-07-13 Sat 03:37> |     17.65 |
+| x264         | real    | <2013-07-10 Wed 14:17> | <2013-07-11 Thu 06:30> |     16.22 |
+|--------------+---------+------------------------+------------------------+-----------|
+|              |         |                        |                        | 14.622857 |
 #+TBLFM: $5=($4-$3)*24;%0.2f::@11$5=vmean(@2..@-1)
 
 *** TODO Different Input Size Tests
@@ -1526,18 +1526,46 @@ AMD
 | x264         | x    | x    | x     | x      | x     | x    |
 
 *** TODO Different Input Tests
-*** TODO Extended Tests
-| benchmark    | orig  | opt   |
-|--------------+-------+-------|
-| blackscholes | 10/10 | 10/10 |
-| bodytrack    | 10/10 | 6/10  |
-| facesim      |       |       |
-| ferret       | 10/10 | 5/10  |
-| fluidanimate | 10/10 | 0/10  |
-| freqmine     | 10/10 | 3/10  |
-| swaptions    | 10/10 | 10/10 |
-| vips         |       |       |
-| x264         |       |       |
+*** TODO Extra Tests
+
+Extended
+| benchmark    | orig  | opt   | min   |
+|--------------+-------+-------+-------|
+| blackscholes | 10/10 | 10/10 | 10/10 |
+| bodytrack    | 10/10 | 6/10  | 10/10 |
+| facesim      |       |       |       |
+| ferret       | 10/10 | 5/10  | 10/10 |
+| fluidanimate | 10/10 | 0/10  |       |
+| freqmine     | 10/10 | 3/10  | 10/10 |
+| swaptions    | 10/10 | 10/10 |       |
+| x264         | 10/10 | 0/10  |       |
+
+Additional input tests
+| benchmark | orig | opt | min |
+|-----------+------+-----+-----|
+| bodytrack | 5/5  | 5/5 | 5/5 |
+| vips      | 4/4  | 0/4 | 4/4 |
+| x264      | 5/5  | 0/5 |     |
+
+Notes
+- In the additional tests for x264 look the optimized results all look
+  fine after a visual inspection, despite failing binary comparison to
+  oracle output.
+- In the additional tests for vips, 1/4 looks correct after visual
+  inspection despite failing binary comparison
+
+Additional input sizes
+| benchmark    | orig | opt | min |
+|--------------+------+-----+-----|
+| blackscholes | 4/4  | 4/4 | 4/4 |
+| bodytrack    | 3/4  | 3/4 |     |
+| facesim      |      |     |     |
+| ferret       | 3/4  | 3/4 | 3/4 |
+| fluidanimate | 4/4  | 1/4 |     |
+| freqmine     | 3/4  | 1/4 |     |
+| swaptions    | 4/4  | 4/4 | 4/4 |
+| vips         | 4/4  | 3/4 |     |
+| x264         | 4/4  | 1/4 |     |
 
 **** Full results
 | benchmark    | vsn  | 0    | 1    | 2    | 3    | 4    | 5    | 6    | 7    | 8    | 9    |
@@ -1558,8 +1586,8 @@ AMD
 | swaptions    | opt  | pass | pass | pass | pass | pass | pass | pass | pass | pass | pass |
 | vips         | orig |      |      |      |      |      |      |      |      |      |      |
 | vips         | opt  |      |      |      |      |      |      |      |      |      |      |
-| x264         | orig |      |      |      |      |      |      |      |      |      |      |
-| x264         | opt  |      |      |      |      |      |      |      |      |      |      |
+| x264         | orig | pass | pass | pass | pass | pass | pass | pass | pass | pass | pass |
+| x264         | opt  | FAIL | FAIL | FAIL | FAIL | FAIL | FAIL | FAIL | FAIL | FAIL | FAIL |
 
 ** TODO Analyze Optimizations
 *** Overall energy reduction
@@ -2054,6 +2082,13 @@ failures at stages.
 Run with =make check=.
 
 * Issues [10/10]
+** delta debugging
+: dd: 1 deltas left: [('replace', 23983, 23984, 23982, 23983)]
+: DD.py: 624: assertion failure
+: dd: done
+: The 1-minimal failure-inducing input is [('replace', 23983, 23984, 23982, 23983)]
+: Removing any element will make the failure go away.
+
 ** breeding the best back with the original
 Almost instantly (first 256 evaluations) found a compromise individual
 which slightly reduced performance from the optimized, but passed all
