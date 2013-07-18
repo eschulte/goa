@@ -1,10 +1,10 @@
-etc/additional-inputs/x264/x264.input.0.y4m
+benchmarks/x264/addl/x264.input.0.y4m
 .mkv
 -b 2
 --qp 26
 --crf 0.956583035932
 --pbratio 0.580106624205
--A ['p4x4']
+-A p4x4
 --me umh
 -m 3
 --8x8dct
