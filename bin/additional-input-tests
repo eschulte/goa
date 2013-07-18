@@ -4,6 +4,7 @@
 #
 # Options:
 #  -t,--test NUM --- only run test number NUM
+#  -k,--keep ------- keep the temporary output files
 #
 # This script must live in optimization/bin so that it can
 # infer the directory structure of the optimization project
@@ -16,16 +17,23 @@ if [[ $# -le 1 ]]; then help; fi
 BENCHMARK=$1
 EXECUTABLE=$2
 TEST=""
-eval set -- $(getopt -o t: -l test: -- "$@" || help;)
+KEEP=""
+eval set -- $(getopt -o t:k -l test:,keep -- "$@" || help;)
 while [ $# -gt 0 ];do
     case $1 in
         -t|--test) TEST=$2; shift;;
+        -k|--keep) KEEP="YES";;
         (--) shift; break;;
         (-*) error "unrecognized option $1";;
         (*)  break;;
     esac
     shift
 done
+
+clean(){
+    if [ -z $KEEP ];then
+        rm -rf $@
+    fi; }
 
 case $BENCHMARK in
   blackscholes)
@@ -65,7 +73,7 @@ case $BENCHMARK in
       $EXECUTABLE $INPUT 4 1 5 1 0 1 1>/dev/null 2>&1
       diff $INPUT/Result0000.bmp $OUTPUTS/bodytrack.golden.0 
       if [[ $? = 0 ]]; then printf "Pass\n"; else printf "Fail\n"; fi
-      rm $INPUT/Result0000.bmp
+      clean $INPUT/Result0000.bmp
     fi
 
     if [ -z $TEST ] || [ $TEST -eq 1 ];then
@@ -73,7 +81,7 @@ case $BENCHMARK in
       $EXECUTABLE $INPUT 4 1 100 3 0 1 1>/dev/null 2>&1
       diff $INPUT/Result0000.bmp $OUTPUTS/bodytrack.golden.1 
       if [[ $? = 0 ]]; then printf "Pass\n"; else printf "Fail\n"; fi
-      rm $INPUT/Result0000.bmp
+      clean $INPUT/Result0000.bmp
     fi
 
     if [ -z $TEST ] || [ $TEST -eq 2 ];then
@@ -81,7 +89,7 @@ case $BENCHMARK in
       $EXECUTABLE $INPUT 4 1 1000 5 0 1 1>/dev/null 2>&1
       diff $INPUT/Result0000.bmp $OUTPUTS/bodytrack.golden.2 
       if [[ $? = 0 ]]; then printf "Pass\n"; else printf "Fail\n"; fi
-      rm $INPUT/Result0000.bmp
+      clean $INPUT/Result0000.bmp
     fi
 
     if [ -z $TEST ] || [ $TEST -eq 3 ];then
@@ -89,7 +97,7 @@ case $BENCHMARK in
       $EXECUTABLE $INPUT 4 2 2000 5 0 1 1>/dev/null 2>&1
       diff $INPUT/Result0000.bmp $OUTPUTS/bodytrack.golden.3 
       if [[ $? = 0 ]]; then printf "Pass\n"; else printf "Fail\n"; fi
-      rm $INPUT/Result0000.bmp
+      clean $INPUT/Result0000.bmp
     fi
 
     if [ -z $TEST ] || [ $TEST -eq 4 ];then
@@ -97,7 +105,7 @@ case $BENCHMARK in
       $EXECUTABLE $INPUT 4 4 4000 5 0 1 1>/dev/null 2>&1
       diff $INPUT/Result0000.bmp $OUTPUTS/bodytrack.golden.4
       if [[ $? = 0 ]]; then printf "Pass\n"; else printf "Fail\n"; fi
-      rm $INPUT/Result0000.bmp
+      clean $INPUT/Result0000.bmp
     fi
   ;;
   facesim)
@@ -159,7 +167,7 @@ case $BENCHMARK in
           >/dev/null 2>/dev/null
 
         if [[ $? = 0 ]]; then printf "Pass\n"; else printf "Fail\n"; fi
-        # rm $VIPS_ADDL/vips.tstout.$i.v
+        clean $VIPS_ADDL/vips.tstout.$i.v
       fi
     done
   ;;
@@ -201,7 +209,7 @@ case $BENCHMARK in
         fi
       fi
     done
-    rm -f $X264_ADDL/*tstout*
+    clean $X264_ADDL/*tstout*
   ;;
   *)
     warning "Invalid benchmark \"$1\"!"
