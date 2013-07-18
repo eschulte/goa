@@ -9,6 +9,7 @@
 #  -s,--size S ----- limit to size S
 #  -S,--no-size S -- skip size S
 #  -d,--debug ------ print debug info
+#  -e,--ext EXT ---- use extension EXT (default opt)
 #
 . $(dirname $0)/common
 outdir=$1
@@ -20,8 +21,9 @@ fi
 DEBUG=""
 NO_SIZE=""
 NO_BENCH=""
+EXT="opt"
 
-eval set -- $(getopt -o b:B:s:S:d -l bench:,no-bench:,size:,no-size:,debug -- "$@" || help;)
+eval set -- $(getopt -o b:B:s:S:de: -l bench:,no-bench:,size:,no-size:,debug,ext: -- "$@" || help;)
 while [ $# -gt 0 ];do
     case $1 in
         -b|--bench) BENCHMARKS=($2); shift;;
@@ -29,6 +31,7 @@ while [ $# -gt 0 ];do
         -s|--size) SIZES=($2); shift;;
         -S|--no-size) NO_SIZE=$2; shift;;
         -d|--debug) DEBUG="yes";;
+        -e|--ext) EXT="$2"; shift;;
         (--) shift; break;;
         (-*) error "unrecognized option $1";;
         (*)  break;;
@@ -42,7 +45,7 @@ uniform(){ awk -F, '{print $2,$1}'|sort; }
 
 for size in ${SIZES[@]/$NO_SIZE/};do
     for bench in ${BENCHMARKS[@]/$NO_BENCH/};do
-        opt=benchmarks/$bench/$bench.opt
+        opt=benchmarks/$bench/$bench.$EXT
         holder=$(mktemp)
         if [ ! -f $opt ];then warning "$opt does not exist";
         else
@@ -54,9 +57,9 @@ for size in ${SIZES[@]/$NO_SIZE/};do
             orig=$(mktemp)
             evol=$(mktemp)
             if [ ! -z $DEBUG ];then
-                msg "$run $bench benchmarks/$bench/$bench -l \"\" -s $size -p -k > $orig"
+                msg "$run $bench benchmarks/$bench/$bench.orig -l \"\" -s $size -p -k > $orig"
             fi
-            $run $bench benchmarks/$bench/$bench -l "" -s $size -p -k > $orig
+            $run $bench benchmarks/$bench/$bench.orig -l "" -s $size -p -k > $orig
             tmp=$(cat $orig|grep output|sed 's/^.* //')
             if [ ! -z $DEBUG ];then
                 msg "$run $bench $opt -l \"\" -s $size -o $tmp -p |tee $evol"
