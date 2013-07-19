@@ -411,15 +411,17 @@ class Bodytrack( TarballsMixin, Benchmark ):
         finally:
             shutil.rmtree( gooddir )
 
-class Facesim( Benchmark ):
+class Facesim( TarballsMixin, Benchmark ):
     def __init__( self, executable ):
+        TarballsMixin.__init__( self )
         Benchmark.__init__( self, "facesim" )
         self.executable = executable
 
     def generate( self, num_inputs ):
-        tars = [ "simlarge", "native" ]
         for i in range( num_inputs ):
             fname = self._get_next_input_name()
+            with open( fname, 'w' ) as fh:
+                pass
         
 class Ferret( TarballsMixin, Benchmark ):
     def __init__( self, executable ):
@@ -622,7 +624,7 @@ class Swaptions( Benchmark ):
                 for key, value in args:
                     print >>fh, key, value
             self.inputs.append( fname )
-            self.outputs.append( fname )
+            self.outputs.append( None )
 
     def run( self, i ):
         if options.verbose:
@@ -931,9 +933,13 @@ bmark = ctors[ benchmark ]( executable )
 if bmark.getNumInputs() == 0:
     print "no inputs defined for", benchmark
 exitcode = 0
+goodcount = 0
+badcount  = 0
 with bmark:
     def runtest( i ):
+        global badcount
         global exitcode
+        global goodcount
         try:
             status = bmark.check( i )
         except GoldenFailure as e:
@@ -946,8 +952,10 @@ with bmark:
             check_call( ["perf", "annotate", "-i", ann_out] )
         else:
             if status:
+                goodcount += 1
                 print "%d: pass" % i
             else:
+                badcount += 1
                 print "%d: FAIL" % i
                 exitcode = 1
     if testid is None:
@@ -956,4 +964,5 @@ with bmark:
                 runtest( i ) 
     else:
         runtest( testid )
+    print "%d/%d" % ( goodcount, goodcount + badcount )
     exit( exitcode )
