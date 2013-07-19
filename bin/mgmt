@@ -213,7 +213,8 @@ compile(){
             blackscholes)
                 set_flags "-DNCO=4"
                 m4 ./c.m4.pthreads blackscholes.c > blackscholes.m4.cpp
-                g++ $FULL_FLAGS blackscholes.m4.cpp -S -o blackscholes.s
+                g++ $FULL_FLAGS blackscholes.m4.cpp -S -o blackscholes.s \
+                    || error "compilation failed"
                 ;;
             bodytrack)
                 set_flags "-fpermissive -fexceptions"
@@ -589,13 +590,13 @@ link(){
                 VBASE="$BASE"/benchmarks/parsec-3.0/pkgs/apps/vips/
                 VEXE="$VBASE"/src/tools/iofuncs/vips
                 if [ ! -f "$VEXE" ];then
-                    "$BASE"/bin/libvips.sh $VBASE
+                    "$BASE"/bin/libvips.sh $VBASE||error "linking failed"
                 fi
                 cp "$VEXE" $bench
                 ;;
             x264)
                 FLAGS="-lm -lpthread"
-                gcc $bench.s -o $bench $FLAGS
+                gcc $bench.s -o $bench $FLAGS||error "linking failed"
                 ;;
             ## SPEC
             bzip2)
