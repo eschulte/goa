@@ -1,0 +1,9 @@
+simlarge
+.264
+--qp 16
+--vbv-bufsize 9
+--aq-strength 1.42444238155
+--direct auto
+--8x8dct
+--no-dct-decimate
+--fps 30.0400779365

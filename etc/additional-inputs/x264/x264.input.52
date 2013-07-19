@@ -1,0 +1,9 @@
+simdev
+.264
+--bframes 1
+--crf 0.383524610352
+--pass 2
+--direct spatial
+-m 4
+--nr 1
+--fps 28.9754190756

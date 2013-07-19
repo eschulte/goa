@@ -1,0 +1,9 @@
+etc/additional-inputs/x264/x264.input.3.y4m
+.mkv
+--ref 7
+--interlaced
+--qp 3
+--crf 0.628463710799
+--vbv-bufsize 4
+-A p8x8,i4x4
+--merange 11

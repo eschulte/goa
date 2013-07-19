@@ -1,0 +1,12 @@
+etc/additional-inputs/x264/x264.input.3.y4m
+.mkv
+-r 7
+--qp 0
+--vbv-bufsize 7
+--ratetol 1.5964175617
+--aq-strength 0.61419987555
+--qcomp 0.770246161879
+-A p8x8,i8x8,p4x4,b8x8,i4x4
+--mixed-refs
+-8
+--nr 0

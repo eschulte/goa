@@ -1,0 +1,11 @@
+simmedium
+.mkv
+-b 2
+--b-pyramid
+-r 7
+--interlaced
+-q 15
+--pbratio 0.877075153871
+--aq-strength 1.37689080443
+--me umh
+--merange 19

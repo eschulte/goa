@@ -1,0 +1,7 @@
+simmedium
+.mkv
+-b 4
+--crf 0.945305992976
+--vbv-bufsize 0
+--qcomp 0.215641564885
+--no-fast-pskip

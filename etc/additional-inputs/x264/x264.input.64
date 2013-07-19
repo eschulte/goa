@@ -1,0 +1,7 @@
+test
+.264
+--qp 43
+--partitions i4x4,p8x8,i8x8,p4x4,b8x8
+--me dia
+--merange 2
+--nr 1

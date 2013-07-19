@@ -1,0 +1,13 @@
+simdev
+.mkv
+--b-pyramid
+--no-cabac
+--interlaced
+--crf 0.835083228249
+--ratetol 1.52957917259
+--ipratio 1.42338811078
+--pass 3
+--partitions p8x8,b8x8
+--me hex
+--merange 1
+--nr 0

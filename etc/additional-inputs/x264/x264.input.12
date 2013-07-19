@@ -1,0 +1,11 @@
+etc/additional-inputs/x264/x264.input.4.y4m
+.264
+-q 17
+--crf 0.976276230453
+--vbv-bufsize 3
+--pbratio 0.625097583335
+-p 1
+--qcomp 0.862854451252
+--me hex
+--8x8dct
+--fps 33.3474074963

@@ -1,0 +1,9 @@
+test
+.mkv
+--crf 0.48231358125
+--ratetol 1.85885121849
+--aq-strength 1.26833499959
+--partitions p8x8,i8x8,b8x8
+--merange 9
+--mixed-refs
+--no-fast-pskip

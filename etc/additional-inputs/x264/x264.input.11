@@ -1,0 +1,9 @@
+simmedium
+.mkv
+--b-pyramid
+--crf 0.91872115476
+--ratetol 0.253074777239
+--me hex
+--subme 5
+--no-dct-decimate
+--fps 26.4312785231

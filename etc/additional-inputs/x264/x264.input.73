@@ -1,0 +1,11 @@
+simlarge
+.mkv
+--b-pyramid
+--no-cabac
+--crf 0.133386802464
+--pbratio 0.913806483727
+--aq-strength 0.779717331991
+--direct none
+--me umh
+--merange 5
+--fps 34.4560905357

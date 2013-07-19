@@ -1,0 +1,10 @@
+test
+.mkv
+--no-cabac
+-q 0
+--ratetol 0.599684016511
+--aq-strength 1.31762908668
+--partitions p4x4,p8x8,i8x8,b8x8
+--direct temporal
+--mixed-refs
+--8x8dct

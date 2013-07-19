@@ -1,0 +1,11 @@
+simsmall
+.mkv
+-I 123
+--bframes 8
+--interlaced
+--qp 37
+--ipratio 0.933622518687
+--aq-strength 0.732329720799
+--partitions i8x8,p4x4,i4x4,p8x8,b8x8
+--me dia
+--fps 29.7572385851

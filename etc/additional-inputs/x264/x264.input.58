@@ -1,0 +1,10 @@
+etc/additional-inputs/x264/x264.input.0.y4m
+.mkv
+-r 8
+--qp 29
+--crf 0.0187834336321
+--ipratio 1.6106039837
+-p 3
+--partitions i4x4,p4x4,i8x8,b8x8
+--merange 12
+--mixed-refs

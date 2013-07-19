@@ -1,0 +1,7 @@
+simmedium
+.mkv
+--no-cabac
+--crf 0.77687674089
+--aq-strength 1.08861677968
+-p 2
+--no-dct-decimate

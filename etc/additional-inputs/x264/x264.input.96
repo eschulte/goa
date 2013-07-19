@@ -1,0 +1,12 @@
+simmedium
+.mkv
+--no-cabac
+--crf 0.21029880795
+--ratetol 0.740217567037
+--pbratio 1.43760284755
+--aq-strength 1.36050476207
+--qcomp 0.881086419349
+--direct auto
+--me hex
+--merange 10
+--no-dct-decimate

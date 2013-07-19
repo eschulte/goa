@@ -1,0 +1,11 @@
+simlarge
+.mkv
+--keyint 229
+--interlaced
+-q 31
+--crf 0.206421393
+--ipratio 0.89337276706
+--pass 1
+--direct temporal
+--merange 18
+-8

@@ -1,0 +1,10 @@
+etc/additional-inputs/x264/x264.input.4.y4m
+.264
+--keyint 61
+--interlaced
+--qp 8
+--crf 0.296874086599
+--qcomp 0.884015951535
+--direct spatial
+--merange 3
+--no-dct-decimate

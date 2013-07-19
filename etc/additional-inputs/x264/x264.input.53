@@ -1,0 +1,8 @@
+test
+.264
+--no-cabac
+--ref 1
+--crf 0.0321990285083
+--ipratio 1.04433203994
+--no-fast-pskip
+--no-dct-decimate

@@ -1,0 +1,13 @@
+etc/additional-inputs/x264/x264.input.2.y4m
+.mkv
+--b-pyramid
+--no-cabac
+--interlaced
+-q 48
+--ratetol 1.91487591993
+--pbratio 1.00221485456
+--aq-strength 1.36572346438
+--me hex
+--subme 6
+--mixed-refs
+--nr 1

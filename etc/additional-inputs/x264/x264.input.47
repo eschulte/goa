@@ -1,0 +1,10 @@
+etc/additional-inputs/x264/x264.input.4.y4m
+.mkv
+--b-pyramid
+--crf 0.276935624342
+--pbratio 1.80265725411
+--pass 2
+--direct auto
+-8
+--no-dct-decimate
+--fps 26.2596930599

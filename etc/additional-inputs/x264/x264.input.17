@@ -1,0 +1,10 @@
+etc/additional-inputs/x264/x264.input.1.y4m
+.mkv
+--keyint 250
+--ref 2
+--interlaced
+--qp 15
+--ipratio 0.537475015
+--aq-strength 0.703308461476
+-A i8x8
+--8x8dct

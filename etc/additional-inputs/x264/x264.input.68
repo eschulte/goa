@@ -1,0 +1,10 @@
+simlarge
+.mkv
+--interlaced
+--crf 0.975746131901
+--qcomp 0.551092726775
+--direct temporal
+--me umh
+--subme 5
+--no-fast-pskip
+--nr 1

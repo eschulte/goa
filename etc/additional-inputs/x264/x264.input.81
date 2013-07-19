@@ -1,0 +1,10 @@
+simmedium
+.264
+--bframes 4
+--no-cabac
+--ref 10
+-q 31
+--crf 0.0153945381632
+--ratetol 1.20952017167
+--pbratio 1.69495869183
+--no-dct-decimate

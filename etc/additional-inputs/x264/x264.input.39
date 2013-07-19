@@ -1,0 +1,12 @@
+simmedium
+.264
+--no-cabac
+--ref 4
+--interlaced
+--crf 0.383204348424
+--ratetol 1.20176309527
+--ipratio 1.51723294227
+--pbratio 0.6031002282
+--qcomp 0.926061524175
+--direct temporal
+--no-fast-pskip

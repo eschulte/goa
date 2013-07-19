@@ -1,0 +1,9 @@
+simlarge
+.264
+--b-pyramid
+--interlaced
+--crf 0.877517202764
+--ratetol 0.785117166121
+--ipratio 1.53825556141
+--pbratio 1.59721044622
+-m 8

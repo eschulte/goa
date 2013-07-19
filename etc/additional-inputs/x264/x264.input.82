@@ -1,0 +1,11 @@
+simlarge
+.mkv
+--ref 4
+--crf 0.897330561571
+--vbv-bufsize 4
+--aq-strength 1.32255693884
+--me hex
+--mixed-refs
+--no-dct-decimate
+--nr 1
+--fps 25.8158181641

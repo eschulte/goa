@@ -1,0 +1,10 @@
+simmedium
+.mkv
+--keyint 150
+--qp 8
+--ipratio 0.881937387264
+--pbratio 0.759340836567
+--direct spatial
+--mixed-refs
+-8
+--no-dct-decimate

@@ -1,0 +1,8 @@
+etc/additional-inputs/x264/x264.input.4.y4m
+.264
+--qp 48
+--aq-strength 0.710252546085
+--pass 1
+--direct temporal
+--me dia
+--mixed-refs

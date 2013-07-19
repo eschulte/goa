@@ -1,0 +1,9 @@
+etc/additional-inputs/x264/x264.input.4.y4m
+.mkv
+-I 230
+--bframes 4
+-q 5
+--ratetol 1.22776894019
+--aq-strength 0.891871074366
+--nr 1
+--fps 30.4955871054

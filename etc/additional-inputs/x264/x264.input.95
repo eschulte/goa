@@ -1,0 +1,11 @@
+etc/additional-inputs/x264/x264.input.1.y4m
+.264
+--bframes 1
+--crf 0.192037651164
+--ipratio 1.511598001
+--direct temporal
+--merange 10
+--subme 8
+--mixed-refs
+-8
+--no-fast-pskip

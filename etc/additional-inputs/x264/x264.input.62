@@ -1,0 +1,8 @@
+etc/additional-inputs/x264/x264.input.1.y4m
+.mkv
+--bframes 2
+--crf 0.0517815247156
+--ratetol 1.24172234085
+--pass 3
+-m 3
+--no-dct-decimate

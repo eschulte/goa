@@ -1,0 +1,11 @@
+test
+.264
+-r 4
+--interlaced
+--qp 27
+--vbv-bufsize 2
+--ratetol 1.43772552624
+--pbratio 1.91967544293
+--aq-strength 1.42259223289
+--qcomp 0.883319495734
+--merange 7

@@ -1,0 +1,11 @@
+simsmall
+.264
+--b-pyramid
+--qp 4
+--crf 0.71386774686
+--ratetol 1.69367937437
+--pbratio 1.1161128597
+--aq-strength 0.981033855422
+--qcomp 0.896973678232
+--direct none
+--nr 1

@@ -1,0 +1,8 @@
+etc/additional-inputs/x264/x264.input.4.y4m
+.mkv
+--b-pyramid
+--crf 0.41188492792
+--ratetol 0.75257752563
+--qcomp 0.892249623762
+--direct none
+--nr 0

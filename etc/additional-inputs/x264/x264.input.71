@@ -1,0 +1,8 @@
+simmedium
+.264
+--b-pyramid
+--qp 5
+-A i8x8,i4x4,p4x4
+--me dia
+--merange 5
+--subme 1

@@ -1,0 +1,12 @@
+etc/additional-inputs/x264/x264.input.0.y4m
+.264
+-r 6
+--interlaced
+--crf 0.550022765867
+--ratetol 1.17682671447
+--ipratio 0.668263996705
+--pbratio 1.46978116829
+--direct spatial
+--merange 1
+--no-dct-decimate
+--fps 31.8827757168

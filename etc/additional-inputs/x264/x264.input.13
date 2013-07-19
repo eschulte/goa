@@ -1,0 +1,8 @@
+etc/additional-inputs/x264/x264.input.3.y4m
+.mkv
+--qp 42
+--ratetol 0.597990354848
+--pass 3
+--qcomp 0.321044193712
+--direct auto
+--me hex

@@ -1,0 +1,12 @@
+simdev
+.mkv
+-I 70
+--bframes 8
+--b-pyramid
+-r 6
+--crf 0.000371621372894
+--pbratio 0.51248674108
+--qcomp 0.271908689104
+--merange 12
+--no-fast-pskip
+--fps 30.9683193958

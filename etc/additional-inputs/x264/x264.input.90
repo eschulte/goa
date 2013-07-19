@@ -1,0 +1,11 @@
+simmedium
+.264
+-I 97
+-b 8
+--b-pyramid
+--crf 0.936602861616
+--vbv-bufsize 1
+--qcomp 0.753881615803
+--merange 4
+--nr 0
+--fps 33.1136423363

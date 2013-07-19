@@ -1,0 +1,7 @@
+simdev
+.264
+--crf 0.835836631767
+--aq-strength 1.0389173142
+-m 5
+--mixed-refs
+--nr 1

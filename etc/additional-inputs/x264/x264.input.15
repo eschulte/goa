@@ -1,0 +1,10 @@
+etc/additional-inputs/x264/x264.input.4.y4m
+.mkv
+--qp 23
+--crf 0.337493059231
+--ratetol 0.432309216765
+--aq-strength 0.615024355939
+--direct none
+--merange 3
+--mixed-refs
+-8

@@ -1,0 +1,9 @@
+etc/additional-inputs/x264/x264.input.3.y4m
+.264
+--b-pyramid
+-q 1
+--pbratio 1.65872738642
+-A i8x8,b8x8,p4x4
+--direct spatial
+--no-fast-pskip
+--fps 28.3564804014

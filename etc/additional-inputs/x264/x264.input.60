@@ -1,0 +1,13 @@
+simmedium
+.mkv
+--bframes 4
+--b-pyramid
+--no-cabac
+-r 9
+--interlaced
+-q 13
+--crf 0.393844851028
+--ipratio 1.53172254746
+--aq-strength 0.549503113321
+-A p8x8
+--subme 6

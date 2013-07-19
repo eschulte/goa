@@ -1,0 +1,6 @@
+etc/additional-inputs/x264/x264.input.3.y4m
+.264
+--crf 0.382724712824
+--qcomp 0.226325428747
+-m 1
+--mixed-refs

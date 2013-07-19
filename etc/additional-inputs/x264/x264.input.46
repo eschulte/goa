@@ -1,0 +1,7 @@
+etc/additional-inputs/x264/x264.input.1.y4m
+.264
+-q 16
+--crf 0.730374693244
+--ratetol 1.51001682021
+--pbratio 0.673023270099
+--fps 30.6160615748

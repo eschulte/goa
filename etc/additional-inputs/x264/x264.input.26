@@ -1,0 +1,12 @@
+etc/additional-inputs/x264/x264.input.3.y4m
+.mkv
+--no-cabac
+--qp 18
+--vbv-bufsize 5
+--pbratio 1.11243055189
+--merange 7
+-m 7
+--mixed-refs
+--no-dct-decimate
+--nr 1
+--fps 26.5226425341

@@ -1,0 +1,12 @@
+etc/additional-inputs/x264/x264.input.2.y4m
+.mkv
+--no-cabac
+-q 21
+--crf 0.0911226897024
+--ratetol 0.516356748846
+--pbratio 1.54036376997
+--direct auto
+--me umh
+-m 3
+--mixed-refs
+--no-fast-pskip

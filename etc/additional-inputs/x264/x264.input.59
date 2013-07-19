@@ -1,0 +1,9 @@
+simlarge
+.mkv
+--interlaced
+--crf 0.788975996857
+--pbratio 1.56664428516
+--aq-strength 1.3902845156
+--subme 4
+--8x8dct
+--no-dct-decimate

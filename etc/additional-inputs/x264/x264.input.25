@@ -1,0 +1,14 @@
+etc/additional-inputs/x264/x264.input.4.y4m
+.mkv
+-b 8
+--qp 30
+--ratetol 0.355982851164
+--pbratio 1.68187522259
+--direct auto
+--merange 3
+-m 3
+--mixed-refs
+-8
+--no-fast-pskip
+--no-dct-decimate
+--fps 33.1992191233

@@ -1,0 +1,8 @@
+simsmall
+.mkv
+--ref 2
+--interlaced
+--crf 0.686371433207
+--ratetol 1.41905130863
+--qcomp 0.196030527995
+--mixed-refs

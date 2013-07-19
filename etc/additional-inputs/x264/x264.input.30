@@ -1,0 +1,12 @@
+etc/additional-inputs/x264/x264.input.1.y4m
+.mkv
+-I 217
+--no-cabac
+-r 1
+--interlaced
+--crf 0.42761589917
+--aq-strength 0.655553197497
+--pass 1
+--subme 3
+--mixed-refs
+--nr 0

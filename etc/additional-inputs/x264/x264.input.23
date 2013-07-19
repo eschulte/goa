@@ -1,0 +1,14 @@
+etc/additional-inputs/x264/x264.input.3.y4m
+.mkv
+--bframes 8
+--interlaced
+-q 45
+--crf 0.347169727759
+--vbv-bufsize 3
+--aq-strength 0.734190696968
+--pass 3
+--me dia
+-m 8
+--mixed-refs
+--no-dct-decimate
+--fps 32.4803505318

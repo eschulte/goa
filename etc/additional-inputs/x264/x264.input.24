@@ -1,0 +1,12 @@
+etc/additional-inputs/x264/x264.input.2.y4m
+.264
+-b 2
+--b-pyramid
+-q 19
+--vbv-bufsize 8
+--ipratio 1.29859072612
+--pbratio 0.567187361111
+--qcomp 0.26808422612
+--partitions p8x8,b8x8,p4x4,i4x4
+--mixed-refs
+--8x8dct

@@ -1,0 +1,9 @@
+etc/additional-inputs/x264/x264.input.4.y4m
+.mkv
+--keyint 127
+-q 45
+--vbv-bufsize 8
+--ratetol 0.570385905708
+--subme 4
+--mixed-refs
+--nr 1

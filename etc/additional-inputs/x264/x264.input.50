@@ -1,0 +1,10 @@
+etc/additional-inputs/x264/x264.input.3.y4m
+.264
+-b 8
+--interlaced
+-q 15
+--ratetol 1.65402428721
+--partitions i8x8
+-m 7
+--8x8dct
+--no-dct-decimate

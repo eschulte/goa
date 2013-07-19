@@ -1,0 +1,10 @@
+etc/additional-inputs/x264/x264.input.1.y4m
+.mkv
+-b 8
+--no-cabac
+--ref 8
+-q 21
+--aq-strength 0.942624451193
+--qcomp 0.619765034707
+--partitions p4x4,b8x8
+--no-dct-decimate

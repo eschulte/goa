@@ -1,0 +1,11 @@
+simlarge
+.mkv
+--keyint 61
+--interlaced
+--qp 43
+--aq-strength 1.49290805811
+--pass 1
+--partitions i8x8,i4x4,p4x4,b8x8
+--direct none
+--merange 7
+--nr 1

@@ -1,0 +1,11 @@
+simlarge
+.mkv
+--b-pyramid
+-r 5
+--qp 28
+--ipratio 1.74895595215
+--pbratio 1.50832844265
+--direct auto
+--me umh
+-m 1
+--nr 1

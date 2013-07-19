@@ -1,0 +1,8 @@
+simmedium
+.mkv
+-q 15
+--crf 0.92651444808
+--ratetol 0.784028346302
+-A p8x8,p4x4,i4x4,i8x8,b8x8
+-8
+--no-dct-decimate

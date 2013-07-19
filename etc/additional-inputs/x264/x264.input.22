@@ -1,0 +1,12 @@
+test
+.mkv
+--no-cabac
+--crf 0.918205032858
+--vbv-bufsize 6
+--aq-strength 0.728198572963
+--direct temporal
+-m 6
+--no-fast-pskip
+--no-dct-decimate
+--nr 0
+--fps 27.5052704804

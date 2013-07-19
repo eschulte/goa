@@ -1,0 +1,10 @@
+simsmall
+.264
+--b-pyramid
+--no-cabac
+--crf 0.515893763892
+--ipratio 1.15695611106
+--aq-strength 0.978676246323
+-m 4
+--no-fast-pskip
+--no-dct-decimate

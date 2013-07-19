@@ -1,0 +1,11 @@
+etc/additional-inputs/x264/x264.input.1.y4m
+.264
+-r 8
+--crf 0.712577524788
+--vbv-bufsize 5
+--ipratio 1.27744700077
+--aq-strength 0.869415126159
+--partitions i4x4,p4x4,p8x8,i8x8
+--merange 20
+--no-fast-pskip
+--no-dct-decimate

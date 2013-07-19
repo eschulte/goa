@@ -1,0 +1,6 @@
+etc/additional-inputs/x264/x264.input.1.y4m
+.264
+--no-cabac
+--crf 0.052329285678
+--no-fast-pskip
+--no-dct-decimate

@@ -1,0 +1,9 @@
+simsmall
+.264
+-r 5
+--crf 0.222363271704
+--aq-strength 0.770745239688
+--merange 1
+--mixed-refs
+-8
+--no-fast-pskip

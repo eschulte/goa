@@ -1,0 +1,13 @@
+simdev
+.mkv
+--b-pyramid
+--no-cabac
+-r 9
+--interlaced
+-q 32
+--crf 0.1860837654
+--ratetol 0.591695485678
+--ipratio 0.910445862834
+--partitions i8x8,p8x8,i4x4,b8x8
+--direct temporal
+--no-dct-decimate

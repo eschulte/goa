@@ -1,0 +1,14 @@
+etc/additional-inputs/x264/x264.input.1.y4m
+.mkv
+--b-pyramid
+--no-cabac
+-q 30
+--crf 0.556867841732
+--pbratio 1.95638816639
+--qcomp 0.441010374556
+-A b8x8,p4x4,i4x4,p8x8,i8x8
+--direct none
+--me hex
+--merange 6
+--no-dct-decimate
+--nr 1

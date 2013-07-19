@@ -1,0 +1,8 @@
+etc/additional-inputs/x264/x264.input.4.y4m
+.264
+--keyint 182
+-r 7
+-q 44
+--me umh
+--merange 19
+-8

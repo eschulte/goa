@@ -1,0 +1,8 @@
+etc/additional-inputs/x264/x264.input.0.y4m
+.mkv
+--interlaced
+--crf 0.891010069265
+-p 2
+--merange 17
+--mixed-refs
+--no-fast-pskip

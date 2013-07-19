@@ -1,0 +1,9 @@
+etc/additional-inputs/x264/x264.input.2.y4m
+.mkv
+--no-cabac
+--ref 3
+--interlaced
+--crf 0.854576644543
+--mixed-refs
+--no-dct-decimate
+--nr 1

@@ -1,0 +1,11 @@
+simdev
+.264
+-b 2
+--no-cabac
+--qp 37
+--vbv-bufsize 8
+--pass 1
+--direct spatial
+--8x8dct
+--no-fast-pskip
+--nr 1

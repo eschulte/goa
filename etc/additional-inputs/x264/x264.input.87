@@ -1,0 +1,11 @@
+etc/additional-inputs/x264/x264.input.2.y4m
+.mkv
+--crf 0.734799976379
+--vbv-bufsize 8
+--ratetol 0.377400153065
+-A i8x8,i4x4,p4x4,p8x8
+--direct temporal
+--subme 1
+--no-fast-pskip
+--nr 0
+--fps 31.4527026987

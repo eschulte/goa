@@ -1,0 +1,10 @@
+test
+.264
+-b 4
+--interlaced
+--qp 41
+--vbv-bufsize 6
+--aq-strength 0.878177739746
+--qcomp 0.748823902784
+--direct temporal
+--me hex

@@ -1,0 +1,9 @@
+simdev
+.mkv
+--bframes 1
+--b-pyramid
+--no-cabac
+--qp 31
+--crf 0.683779897885
+--me umh
+-8

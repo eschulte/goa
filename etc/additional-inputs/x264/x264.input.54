@@ -1,0 +1,9 @@
+simlarge
+.mkv
+--keyint 55
+--interlaced
+-q 21
+--qcomp 0.775223969322
+--merange 5
+--nr 1
+--fps 28.5869031233
