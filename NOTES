@@ -101,7 +101,7 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 | 998.specrand   |
 | 999.specrand   |
 
-* Tasks [31/38]
+* Tasks [31/42]
 ** DONE select GP parameters
 | selection tournament |   2 |
 | eviction tournament  |   2 |
@@ -1479,7 +1479,7 @@ For each of the bests, write out their percent makeup.
   (mapc #'cmps-for-flag flags)
 #+end_src
 
-** TODO Run Experiments [1/5]
+** TODO Run Experiments [1/6]
 *** DONE Preparation [7/7]
 First we need
 - [X] finalize power models (in file:src/optimize.lisp)
@@ -1511,22 +1511,21 @@ AMD Runs
 |              |         |                        |                        | 14.622857 |
 #+TBLFM: $5=($4-$3)*24;%0.2f::@11$5=vmean(@2..@-1)
 
-*** TODO Different Input Size Tests
-AMD
-| benchmark    | test | tiny | small | medium | large | huge |
-|--------------+------+------+-------+--------+-------+------|
-| blackscholes | x    | x    | x     | x      | x     | x    |
-| bodytrack    | x    | x    | x     | x      | x     |      |
-| facesim      |      |      |       |        |       |      |
-| ferret       | x    | x    | x     | x      | x     | x    |
-| fluidanimate | x    | x    | x     | x      | x     | x    |
-| freqmine     | x    | x    | x     | x      | x     |      |
-| swaptions    | x    | x    | x     | x      | x     | x    |
-| vips         | x    | x    | x     | x      | x     | x    |
-| x264         | x    | x    | x     | x      | x     | x    |
-
-*** TODO Different Input Tests
 *** TODO Extra Tests
+Combined
+| benchmark    | original | optimizat | minimized |
+|--------------+----------+-----------+-----------|
+| blackscholes | 13/13    | 13/13     | 13/13     |
+| bodytrack    | 17/18    | 13/18     | 17/18     |
+| facesim      |          |           |           |
+| ferret       | 12/13    | 7/13      | 12/13     |
+| fluidanimate | 13/13    | 0/13      |           |
+| freqmine     | 12/13    | 4/13      | 12/13     |
+| swaptions    | 13/13    | 13/13     |           |
+| vips         | 7/7      | 1/7       | 7/7       |
+| x264         | 10/10    | 0/10      |           |
+|--------------+----------+-----------+-----------|
+|              | 97/100   | 51/100    | 61/64     |
 
 Extended
 | benchmark    | orig  | opt   | min   |
@@ -1589,8 +1588,41 @@ Additional input sizes
 | x264         | orig | pass | pass | pass | pass | pass | pass | pass | pass | pass | pass |
 | x264         | opt  | FAIL | FAIL | FAIL | FAIL | FAIL | FAIL | FAIL | FAIL | FAIL | FAIL |
 
-** TODO Analyze Optimizations
-*** Overall energy reduction
+*** TODO Extended Technique
+**** TODO Distributed Evolution
+See if we can get ferret to do better.
+#+begin_src sh
+  FERRET_FLAGS="-lrt -lgsl -lgslcblas -ljpeg -lstdc++ -lpthread -lm -L$BASE/benchmarks/parsec-3.0/pkgs/libs/gsl/inst/amd64-linux.gcc/lib -L$BASE/benchmarks/parsec-3.0/pkgs/libs/libjpeg/inst/amd64-linux.gcc/lib/"
+  for flag in O0 O1 O2 O3 Os;do
+      optimize benchmarks/ferret/ferret-$flag.s ferret \
+          -f "$FERRET_FLAGS" \
+          -F 65536 \
+          -P 256 \
+          -R asm \
+          -t 4 \
+          -w sh-runner/work/ \
+          -r results/amd-dist/ferret/ \
+          -e "(defvar flag '$flag)" \
+          -C src/by-flag.lisp &
+  done
+#+end_src
+
+**** TODO Optimization localization
+#+begin_src sh
+  BODY_FLAGS="-lthreads -lpthread -L$BASE/benchmarks/parsec-3.0/pkgs/apps/bodytrack/obj/amd64-linux.gcc/FlexImageLib/.libs -L$BASE/benchmarks/parsec-3.0/pkgs/apps/bodytrack/obj/amd64-linux.gcc/TrackingBenchmark/threads/.libs"
+  
+  optimize benchmarks/bodytrack/bodytrack.s bodytrack \
+      -l g++ \
+      -f "$BODY_FLAGS" \
+      -R asm \
+      -t 12 \
+      -w sh-runner/work/ \
+      -r results/amd-loc/bodytrack \
+      -C src/opt-annotate.lisp
+#+end_src
+
+** TODO Analyze Optimizations [0/3]
+*** TODO Overall energy reduction
 **** runtime
 #+name: overall-runtime-reduction
 #+begin_src sh
@@ -1704,7 +1736,7 @@ Additional input sizes
   done
 #+end_src
 
-*** Histograms of improvement
+**** Histograms of improvement
 #+begin_src gnuplot :var data=overall-energy-reduction
   set title 'Energy Optimization Results'
   unset key
@@ -1734,7 +1766,7 @@ Additional input sizes
 #+RESULTS:
 [[file:etc/data/improvement-by-evals-by-benchmarks.svg]]
 
-*** Histogram of improvement by input size
+*** TODO Histogram of improvement by input size
 **** energy reduction
 see [[*all%20benchmarks%20(we%20have)%20over%20all%20inputs][all benchmarks (we have) over all inputs]]
 
@@ -1890,6 +1922,7 @@ see [[*all%20benchmarks%20(we%20have)%20over%20all%20inputs][all benchmarks (we 
 | vips         | 1.213408887 | 0.659827449 |  3.820339512 |  2.502110461 |   9.995269895 |  5.611226583 |     0.00679999 |    0.007162996 |
 | x264         | 1.881809527 | 1.675157933 | 13.808103916 | 12.426627889 |  45.238713212 | 38.650996354 | 1471.939535268 | 1316.583726381 |
 
+*** TODO Multi-flag spread graph
 ** Build optimization Taxonomy
 This might be too optimistic.
 
