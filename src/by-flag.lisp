@@ -56,5 +56,4 @@
         (loop :for i :below 12 :collect (tournament))))
 
 ;; Begin listening for shared individuals on flag-specified port.
-(make-thread (lambda () (accept :port (aget flag ports)
-                           :add-fn #'heros-welcome)))
+(make-thread (lambda () (accept :port (aget flag ports))))
