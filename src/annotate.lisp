@@ -62,19 +62,22 @@
                  (genome-addrs asm :bin my-bin))
       (when (not (or bin script)) (delete-file my-bin)))))
 
-(defvar *kernel* '((-3 . 0.006) (-2 . 0.061) (-1 . 0.242)
-                   (0 . 0.383)
-                   (1 . 0.242)  (2 . 0.061) (3 . 0.006)))
-
-(defun smooth (list &optional (kernel *kernel*))
-  "Gaussian smoothing of LIST by KERNEL."
-  (let ((result (make-array (length list) :initial-element 0)))
-    (loop :for el :in list :as i :from 0 :do
-       (loop :for (off . mult) :in kernel :do
-          (let ((ind (+ i off)))
-            (when (and (>= ind 0) (< ind (length list)))
-              (incf (aref result ind) (* mult el))))))
-    (coerce result 'list)))
+(defun smooth (list)
+  (declare (optimize speed))
+  (subseq
+   (mapcar (lambda (b3 b2 b1 o a1 a2 a3)
+             (+ (* 0.006 (+ b3 a3))
+                (* 0.061 (+ b2 a2))
+                (* 0.242 (+ b1 a1))
+                (* 0.383 o)))
+           (append         (cdddr list) '(0 0 0 0 0 0))
+           (append         (cddr  list) '(0 0 0 0 0))
+           (append         (cdr   list) '(0 0 0 0))
+           (append          list        '(0 0 0))
+           (append '(0)     list        '(0 0))
+           (append '(0 0)   list        '(0))
+           (append '(0 0 0) list))
+   3 (- (length list) 3)))
 
 
 ;;; print assembly LOC (aka ids) of annotations
