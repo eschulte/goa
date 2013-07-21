@@ -101,7 +101,7 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 | 998.specrand   |
 | 999.specrand   |
 
-* Tasks [31/42]
+* Tasks [33/42]
 ** DONE select GP parameters
 | selection tournament |   2 |
 | eviction tournament  |   2 |
@@ -1479,7 +1479,7 @@ For each of the bests, write out their percent makeup.
   (mapc #'cmps-for-flag flags)
 #+end_src
 
-** TODO Run Experiments [1/6]
+** TODO Run Experiments [3/6]
 *** DONE Preparation [7/7]
 First we need
 - [X] finalize power models (in file:src/optimize.lisp)
@@ -1494,7 +1494,7 @@ First we need
       | crossover            |   ?? |
 - [X] tag the version of the repo which we'll use
 
-*** TODO Main Experiment
+*** DONE Main Experiment
 AMD Runs
 | benchmark    | machine | start                  | finish                 |   runtime |
 |--------------+---------+------------------------+------------------------+-----------|
@@ -1511,21 +1511,21 @@ AMD Runs
 |              |         |                        |                        | 14.622857 |
 #+TBLFM: $5=($4-$3)*24;%0.2f::@11$5=vmean(@2..@-1)
 
-*** TODO Extra Tests
+*** DONE Extra Tests
 Combined
-| benchmark    | original | optimizat | minimized |
-|--------------+----------+-----------+-----------|
-| blackscholes | 13/13    | 13/13     | 13/13     |
-| bodytrack    | 17/18    | 13/18     | 17/18     |
-| facesim      |          |           |           |
-| ferret       | 12/13    | 7/13      | 12/13     |
-| fluidanimate | 13/13    | 0/13      |           |
-| freqmine     | 12/13    | 4/13      | 12/13     |
-| swaptions    | 13/13    | 13/13     |           |
-| vips         | 7/7      | 1/7       | 7/7       |
-| x264         | 10/10    | 0/10      |           |
-|--------------+----------+-----------+-----------|
-|              | 97/100   | 51/100    | 61/64     |
+| benchmark    | original | optimizat | minimized |   total |
+|--------------+----------+-----------+-----------+---------|
+| blackscholes | 13/13    | 13/13     | 13/13     |     100 |
+| bodytrack    | 17/18    | 13/18     | 17/18     |     100 |
+| ferret       | 12/13    | 7/13      | 12/13     |     100 |
+| fluidanimate | 13/13    | 0/13      |           |       0 |
+| freqmine     | 12/13    | 4/13      | 12/13     |     100 |
+| swaptions    | 13/13    | 13/13     |           |     100 |
+| vips         | 7/7      | 1/7       | 7/7       |     100 |
+| x264         | 10/10    | 0/10      |           |     5.5 |
+|--------------+----------+-----------+-----------+---------|
+|              | 97/100   | 51/100    | 61/64     | 75.6875 |
+#+TBLFM: @10$5=vmean(@2..@-1)
 
 Extended
 | benchmark    | orig  | opt   | min   |
@@ -1534,17 +1534,17 @@ Extended
 | bodytrack    | 10/10 | 6/10  | 10/10 |
 | facesim      |       |       |       |
 | ferret       | 10/10 | 5/10  | 10/10 |
-| fluidanimate | 10/10 | 0/10  |       |
+| fluidanimate | 10/10 | 0/10  | 0/10  |
 | freqmine     | 10/10 | 3/10  | 10/10 |
-| swaptions    | 10/10 | 10/10 |       |
-| x264         | 10/10 | 0/10  |       |
+| swaptions    | 10/10 | 10/10 | 10/10 |
+| x264         | 10/10 | 0/10  | 1/10  |
 
 Additional input tests
 | benchmark | orig | opt | min |
 |-----------+------+-----+-----|
 | bodytrack | 5/5  | 5/5 | 5/5 |
 | vips      | 4/4  | 0/4 | 4/4 |
-| x264      | 5/5  | 0/5 |     |
+| x264      | 5/5  | 0/5 | 0/5 |
 
 Notes
 - In the additional tests for x264 look the optimized results all look
@@ -1564,7 +1564,7 @@ Additional input sizes
 | freqmine     | 3/4  | 1/4 |     |
 | swaptions    | 4/4  | 4/4 | 4/4 |
 | vips         | 4/4  | 3/4 |     |
-| x264         | 4/4  | 1/4 |     |
+| x264         | 4/4  | 1/4 | 1/4 |
 
 **** Full results
 | benchmark    | vsn  | 0    | 1    | 2    | 3    | 4    | 5    | 6    | 7    | 8    | 9    |
@@ -1709,11 +1709,44 @@ See if we can get ferret to do better.
 #+TBLFM: $5=100 * ($3 - $4)/$3::@11$5=vmean(@2..@-1)
 
 **** measured
+***** minimized
+| benchmark    | org kwh | opt kwh | % reduction |
+|--------------+---------+---------+-------------|
+| blackscholes |   .0084 |   .0006 |   92.857143 |
+| bodytrack    |         |         |         0/0 |
+| ferret       |   .0039 |   .0038 |   2.5641026 |
+| fluidanimate |   .0035 |   .0032 |   8.5714286 |
+| freqmine     |   .0073 |   .0074 |  -1.3698630 |
+| swaptions    |   .0081 |   .0047 |   41.975309 |
+| vips         |   .0112 |   .0118 |  -5.3571429 |
+| x264         |    .005 |   .0045 |         10. |
+|--------------+---------+---------+-------------|
+|              |         |         |         0/0 |
+#+TBLFM: $4=100*($2-$3)/$2
+
+huge input
+| benchmark    | org kwh | opt kwh | % reduction |
+|--------------+---------+---------+-------------|
+| blackscholes |         |         | 0/0         |
+| bodytrack    |         |         | 0/0         |
+| ferret       |         |         | 0/0         |
+| fluidanimate |         |         | 0/0         |
+| freqmine     |         |         | 0/0         |
+| swaptions    |  0.0536 |  0.0309 | 42.350746   |
+| vips         |         |         | 0/0         |
+| x264         |         |         | 0/0         |
+|--------------+---------+---------+-------------|
+|              |         |         | 0/0         |
+#+TBLFM: $4=100*($2-$3)/$2
+
+***** better bests
+: head /nfs/adaptive/data/opt/results/amd/ferret.best |multi-power ferret /nfs/adaptive/data/opt/results/amd/ferret -r 10 -s 20 |tee results/ferret-power
+
+***** optimized
 | benchmark    | original kwh | best kwh | % reduction |
 |--------------+--------------+----------+-------------|
 | blackscholes |       0.0057 |   0.0004 |   92.982456 |
 | bodytrack    |              |          |             |
-| facesim      |              |          |             |
 | ferret       |       0.0025 |   0.0025 |          0. |
 | fluidanimate |       0.0023 |    0.002 |   13.043478 |
 | freqmine     |       0.0051 |   0.0046 |   9.8039216 |
