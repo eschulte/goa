@@ -31,10 +31,9 @@
   asm)
 
 ;; apply the perf annotations to the genome
-(setf (genome *orig*)
-      (mapcar (lambda (ann element)
-                (cons (cons :annotation ann) element))
-              (smooth (mapcar (lambda (ans) (or ans 0)) (genome-anns *orig*)))
-              (genome *orig*)))
-
-(store *orig* (format nil "~a/orig.store" *res-dir*))
+(unless (aget :annotation (car (genome *orig*)))
+  (mapcar (lambda (ann element)
+            (cons (cons :annotation ann) element))
+          (smooth (mapcar (lambda (ans) (or ans 0)) (genome-anns *orig*)))
+          (genome *orig*))
+  (store *orig* (format nil "~a/orig.store" (pathname-name *res-dir*))))
