@@ -1622,6 +1622,91 @@ See if we can get ferret to do better.
 #+end_src
 
 ** TODO Analyze Optimizations [0/3]
+*** other counters
+**** swaptions
+|                         |        orig |         min |           |   |
+|-------------------------+-------------+-------------+-----------+---|
+| branches                |   939762796 |   618530418 | 34.182283 |   |
+| branch-misses           |    23024279 |     8763176 | 61.939412 |   |
+| misses/branches         | 0.024500096 | 0.014167737 | 42.172729 |   |
+| stalled-cycles-frontend |   237700726 |   120899968 | 49.137737 |   |
+| stalled-cycles-backend  |  2958402561 |  1593778421 | 46.127061 |   |
+| seconds                 | 2.908294962 | 1.681562650 | 42.180464 |   |
+|-------------------------+-------------+-------------+-----------+---|
+|                         |             |             |       0/0 |   |
+#+TBLFM: $4=100*($2-$3)/$2::@4$2=@3/@2::@4$3=@3/@2
+
+: [eschulte@real optimization]$ run swaptions benchmarks/swaptions/swaptions.orig -c branches,branch-misses,stalled-cycles-frontend,stalled-cycles-backend -p -r 10
+: 0,exit
+: 1,error
+: 939762796,branches,0.01%
+: 23024279,branch-misses,0.27%
+: 237700726,stalled-cycles-frontend,0.99%
+: 2958402561,stalled-cycles-backend,0.04%
+: 2.908294962,seconds,0.03%
+: [eschulte@real optimization]$ run swaptions benchmarks/swaptions/swaptions.min -c branches,branch-misses,stalled-cycles-frontend,stalled-cycles-backend -p -r 10
+: 0,exit
+: 1,error
+: 618530418,branches,0.02%
+: 8763176,branch-misses,0.27%
+: 120899968,stalled-cycles-frontend,0.62%
+: 1593778421,stalled-cycles-backend,0.05%
+: 1.681562650,seconds,0.02%
+
+**** x264
+|                         |        orig |         min |           |   |
+|-------------------------+-------------+-------------+-----------+---|
+| branch-misses           |    44888866 |    41068922 | 8.5097806 |   |
+| stalled-cycles-frontend |   426438515 |   372072185 | 12.748926 |   |
+| stalled-cycles-backend  |   373302923 |   319759031 | 14.343282 |   |
+| seconds                 | 1.841273861 | 1.664690980 | 9.5902562 |   |
+|-------------------------+-------------+-------------+-----------+---|
+|                         |             |             |       0/0 |   |
+#+TBLFM: $4=100*($2-$3)/$2
+
+: run x264 benchmarks/x264/x264.orig -c branch-misses,stalled-cycles-frontend,stalled-cycles-backend -p -r 10
+: 0,exit
+: 0,error
+: 44888866,branch-misses,0.02%
+: 426438515,stalled-cycles-frontend,0.30%
+: 373302923,stalled-cycles-backend,0.82%
+: 1.841273861,seconds,0.10%
+
+: run x264 benchmarks/x264/x264.min -c branch-misses,stalled-cycles-frontend,stalled-cycles-backend -p -r 10
+: 0,exit
+: 0,error
+: 41068922,branch-misses,0.03%
+: 372072185,stalled-cycles-frontend,0.25%
+: 319759031,stalled-cycles-backend,0.40%
+: 1.664690980,seconds,0.05%
+
+**** fluidanimate
+|                         |        orig |         min |           |                                    |
+|-------------------------+-------------+-------------+-----------+------------------------------------|
+| branch-misses           |   110080216 |    91064473 | 17.274442 |                                    |
+| stalled-cycles-frontend |  1019469756 |   798736216 | 21.651799 | <- significantly more than seconds |
+| stalled-cycles-backend  |  6538927652 |  5700521443 | 12.821769 |                                    |
+| seconds                 | 6.733379862 | 5.949409069 | 11.643050 |                                    |
+|-------------------------+-------------+-------------+-----------+------------------------------------|
+|                         |             |             |       0/0 |                                    |
+#+TBLFM: $4=100*($2-$3)/$2
+
+: run fluidanimate benchmarks/fluidanimate/fluidanimate.orig -c branch-misses,stalled-cycles-frontend,stalled-cycles-backend -p -r 10
+: 0,exit
+: 2,error
+: 110080216,branch-misses,0.40%
+: 1019469756,stalled-cycles-frontend,0.69%
+: 6538927652,stalled-cycles-backend,0.24%
+: 6.733379862,seconds,1.08%
+
+: run fluidanimate benchmarks/fluidanimate/fluidanimate.min -c branch-misses,stalled-cycles-frontend,stalled-cycles-backend -p -r 10
+: 0,exit
+: 2,error
+: 91064473,branch-misses,0.39%
+: 798736216,stalled-cycles-frontend,0.50%
+: 5700521443,stalled-cycles-backend,0.81%
+: 5.949409069,seconds,0.39%
+
 *** TODO Overall energy reduction
 **** runtime
 #+name: overall-runtime-reduction
