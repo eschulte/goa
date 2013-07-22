@@ -262,9 +262,16 @@ class AltBinary:
         if os.path.exists( os.path.join( bmarkdir, bmark ) ):
             os.remove( os.path.join( bmarkdir, bmark ) )
         writeGenome( self.deltas, os.path.join( bmarkdir, bmark + ".s" ) )
-        status = call( [
-            os.path.join( root, "bin", "mgmt" ), "link", bmark
-        ] )
+        if bmark == "vips":
+            status = call( [
+                os.path.join( root, "bin", "link-vips" ),
+                    "-o", os.path.join( bmarkdir, bmark ),
+                    os.path.join( bmarkdir, bmark + ".s" ),
+            ] )
+        else:
+            status = call( [
+                os.path.join( root, "bin", "mgmt" ), "link", bmark
+            ] )
         if status != 0:
             self.__exit__( None, None, None )
             raise Exception( "mgmt failure" )
