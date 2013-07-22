@@ -313,9 +313,11 @@ class MyDD(DD.DD):
         myenergy = map( float, filter( lambda x: x is not None, myenergy ) )
 
         self.counter += 1
-        p, myavg, avg = ttest( myenergy, energy, side = 1 )
-        info( "p = %g (%g > %g)" % ( p, myavg, avg ) )
-        if p < options.alpha:
+        p = scipy.stats.ranksums( myenergy, energy )[ 1 ] / 2
+        myavg = numpy.mean( myenergy )
+        avg   = numpy.mean( energy )
+        info( "p = %g (%g vs %g)" % ( p, myavg, avg ) )
+        if p < options.alpha and myavg > avg:
             return self.PASS
         else:
             return self.FAIL
