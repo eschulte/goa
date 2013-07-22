@@ -37,6 +37,10 @@ parser.add_option(
     help = "skip test number SKIP"
 )
 parser.add_option(
+    "--save-failing", metavar = "dir",
+    help = "save output from failed tests to dir"
+)
+parser.add_option(
     "-l", "--limit", metavar = "LIMIT", type = str,
     help = "protect execution with limit script LIMIT"
 )
@@ -158,6 +162,12 @@ if options.annotate:
         prefix = ["perf", "record", "-e", "cycles,instructions,r532010,r538010,cache-references,cache-misses", "-o", ann_out, "--"]
 elif options.limit:
     prefix = [ options.limit ]
+
+def save_output( fname, bmark, i ):
+    if not os.path.exists( options.save_failing ):
+        os.makedirs( options.save_failing )
+    savename = os.path.join( options.save_failing, bmark + ".output.%d" % i )
+    shutil.move( fname, savename )
 
 class GoldenFailure( StandardError ):
     pass
@@ -321,9 +331,13 @@ class Blackscholes( TarballsMixin, Benchmark ):
         testfile = self.run( i )
         try:
             cmd = [ "diff", self.outputs[ i ], testfile ]
-            return call( cmd, stdout = stdout, stderr = stderr ) == 0
+            success = call( cmd, stdout = stdout, stderr = stderr ) == 0
         finally:
-            os.remove( testfile )
+            if not success and options.save_failing is not None:
+                save_output( testfile, self.bmark, i )
+            else:
+                os.remove( testfile )
+        return success
 
 class Bodytrack( TarballsMixin, Benchmark ):
     def __init__( self, executable ):
@@ -405,11 +419,16 @@ class Bodytrack( TarballsMixin, Benchmark ):
                 with tarfile.open( tarname ) as tarball:
                     tarball.extractall( testdir )
                 cmd = [ "diff", "-r", gooddir, testdir ]
-                return call( cmd, stdout = stdout, stderr = stderr ) == 0
+                success = call( cmd, stdout = stdout, stderr = stderr ) == 0
             finally:
                 shutil.rmtree( testdir )
         finally:
             shutil.rmtree( gooddir )
+            if not success and options.save_failing is not None:
+                save_output( tarname, self.bmark, i )
+            else:
+                os.remove( tarname )
+        return success
 
 class Facesim( TarballsMixin, Benchmark ):
     def __init__( self, executable ):
@@ -489,9 +508,13 @@ class Ferret( TarballsMixin, Benchmark ):
         testfile = self.run( i )
         try:
             cmd = [ "diff", self.outputs[ i ], testfile ]
-            return call( cmd, stdout = stdout, stderr = stderr ) == 0
+            success = call( cmd, stdout = stdout, stderr = stderr ) == 0
         finally:
-            os.remove( testfile )
+            if not success and options.save_failing is not None:
+                save_output( testfile, self.bmark, i )
+            else:
+                os.remove( testfile )
+        return success
 
 class Fluidanimate( TarballsMixin, Benchmark ):
     def __init__( self, executable ):
@@ -539,9 +562,13 @@ class Fluidanimate( TarballsMixin, Benchmark ):
         testfile = self.run( i )
         try:
             cmd = [ "diff", self.outputs[ i ], testfile ]
-            return call( cmd, stdout = stdout, stderr = stderr ) == 0
+            success = call( cmd, stdout = stdout, stderr = stderr ) == 0
         finally:
-            os.remove( testfile )
+            if not success and options.save_failing is not None:
+                save_output( testfile, self.bmark, i )
+            else:
+                os.remove( testfile )
+        return success
 
 class Freqmine( TarballsMixin, Benchmark ):
     def __init__( self, executable ):
@@ -592,9 +619,13 @@ class Freqmine( TarballsMixin, Benchmark ):
         testfile = self.run( i )
         try:
             cmd = [ "diff", self.outputs[ i ], testfile ]
-            return call( cmd, stdout = stdout, stderr = stderr ) == 0
+            success = call( cmd, stdout = stdout, stderr = stderr ) == 0
         finally:
-            os.remove( testfile )
+            if not success and options.save_failing is not None:
+                save_output( testfile, self.bmark, i )
+            else:
+                os.remove( testfile )
+        return success
 
 class Swaptions( Benchmark ):
     def __init__( self, executable ):
@@ -651,9 +682,13 @@ class Swaptions( Benchmark ):
         testfile = self.run( i )
         try:
             cmd = [ "diff", self.outputs[ i ], testfile ]
-            return call( cmd, stdout = stdout, stderr = stderr ) == 0
+            success = call( cmd, stdout = stdout, stderr = stderr ) == 0
         finally:
-            os.remove( testfile )
+            if not success and options.save_failing is not None:
+                save_output( testfile, self.bmark, i )
+            else:
+                os.remove( testfile )
+        return success
 
 class Vips( TarballsMixin, Benchmark ):
     def __init__( self, executable ):
@@ -757,9 +792,13 @@ class Vips( TarballsMixin, Benchmark ):
         testfile = self.run( i )
         try:
             cmd = [ "diff", self.outputs[ i ], testfile ]
-            return call( cmd, stdout = stdout, stderr = stderr ) == 0
+            success = call( cmd, stdout = stdout, stderr = stderr ) == 0
         finally:
-            os.remove( testfile )
+            if not success and options.save_failing is not None:
+                save_output( testfile, self.bmark, i )
+            else:
+                os.remove( testfile )
+        return success
 
 class X264( TarballsMixin, Benchmark ):
     def __init__( self, executable ):
@@ -869,9 +908,13 @@ class X264( TarballsMixin, Benchmark ):
         testfile = self.run( i )
         try:
             cmd = [ "diff", self.outputs[ i ], testfile ]
-            return call( cmd, stdout = stdout, stderr = stderr ) == 0
+            success = call( cmd, stdout = stdout, stderr = stderr ) == 0
         finally:
-            os.remove( testfile )
+            if not success and options.save_failing is not None:
+                save_output( testfile, self.bmark, i )
+            else:
+                os.remove( testfile )
+        return success
 
 ctors = {
     "blackscholes": Blackscholes,
