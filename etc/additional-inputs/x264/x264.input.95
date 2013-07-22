@@ -1,4 +1,4 @@
-etc/additional-inputs/x264/x264.input.1.y4m
+benchmarks/x264/addl/x264.input.1.y4m
 .264
 --bframes 1
 --crf 0.192037651164

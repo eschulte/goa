@@ -769,8 +769,8 @@ class X264( TarballsMixin, Benchmark ):
 
     def generate( self, num_inputs ):
         extras = glob( os.path.join(
-            root, "etc", "additional-inputs", self.bmark, "*.y4m" )
-        )
+            root, "benchmarks", "x264", "addl", "*.y4m"
+        ) )
         inputs = self._get_tars()
         for fname in extras:
             inputs.append( fname[ len( root ) + 1: ] )

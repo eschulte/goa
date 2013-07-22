@@ -1,4 +1,4 @@
-etc/additional-inputs/x264/x264.input.1.y4m
+benchmarks/x264/addl/x264.input.1.y4m
 .mkv
 --keyint 250
 --ref 2

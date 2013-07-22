@@ -1,4 +1,4 @@
-etc/additional-inputs/x264/x264.input.0.y4m
+benchmarks/x264/addl/x264.input.0.y4m
 .264
 -b 4
 --no-cabac

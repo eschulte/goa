@@ -1,4 +1,4 @@
-etc/additional-inputs/x264/x264.input.4.y4m
+benchmarks/x264/addl/x264.input.4.y4m
 .mkv
 -I 230
 --bframes 4
