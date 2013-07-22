@@ -2148,6 +2148,49 @@ failures at stages.
 Run with =make check=.
 
 * Issues [10/10]
+** minimizing hurts performance
+: freqmine
+: 0,exit
+: 0,error
+: 154,time
+: 332.885064935,watts
+: 118.136363636,volts
+: 2.85674675325,amps
+: 0.0142,kwh
+: 98.0454545455,power-factor
+: 100.0,duty-cycle
+: 0.0,power-cycle
+: 59.9850649351,hertz
+: 337.524675325,volt-amps
+
+: freqmine.min
+: 0,exit
+: 0,error
+: 153,time
+: 334.917647059,watts
+: 117.973202614,volts
+: 2.87873202614,amps
+: 0.0142,kwh
+: 97.9934640523,power-factor
+: 100.0,duty-cycle
+: 0.0,power-cycle
+: 59.9725490196,hertz
+: 339.688235294,volt-amps
+
+: freqmine.opt
+: 0,exit
+: 0,error
+: 150,time
+: 335.082,watts
+: 118.124,volts
+: 2.87544666667,amps
+: 0.0139,kwh
+: 98.1133333333,power-factor
+: 100.0,duty-cycle
+: 0.0,power-cycle
+: 59.962,hertz
+: 339.781333333,volt-amps
+
 ** delta debugging
 : dd: 1 deltas left: [('replace', 23983, 23984, 23982, 23983)]
 : DD.py: 624: assertion failure
