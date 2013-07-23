@@ -97,7 +97,7 @@ if [ ! -z $WATTSUP ];then
     if [ ! -z $PERF ];then error "WattsUp and perf are incompatible options"; fi
     if [ ! -z $RAW  ];then error "WattsUp and raw are incompatible options"; fi
     # setup output file for wu.py
-    WU_OUT=$(mktemp wu.XXXXXXXX.csv)
+    WU_OUT=$(mktemp /tmp/wu.XXXXXXXX.csv)
     # add wu.py to the prefix
     PREFIX+=" $BASE/bin/wu.py -o $WU_OUT ttyUSB0 --"
 fi
