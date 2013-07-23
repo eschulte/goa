@@ -1623,6 +1623,11 @@ See if we can get ferret to do better.
 
 ** TODO Analyze Optimizations [0/3]
 *** other counters
+Significant differences between non-target HW counters across
+benchmark programs.  For example,
+
+x264 does not decrease the rate of branch misses, but swaptions does.
+
 **** swaptions
 |                         |        orig |         min |           |   |
 |-------------------------+-------------+-------------+-----------+---|
@@ -1656,40 +1661,63 @@ See if we can get ferret to do better.
 **** x264
 |                         |        orig |         min |           |   |
 |-------------------------+-------------+-------------+-----------+---|
-| branch-misses           |    44888866 |    41068922 | 8.5097806 |   |
-| stalled-cycles-frontend |   426438515 |   372072185 | 12.748926 |   |
-| stalled-cycles-backend  |   373302923 |   319759031 | 14.343282 |   |
-| seconds                 | 1.841273861 | 1.664690980 | 9.5902562 |   |
+| branches                |   776839464 |   713583405 | 8.1427453 |   |
+| branch-misses           |    44904668 |    41068342 | 8.5432677 |   |
+| misses/branches         | 0.057804308 | 0.057552266 |       0/0 |   |
+| stalled-cycles-frontend |   438612265 |   372039863 | 15.177962 |   |
+| stalled-cycles-backend  |   414289445 |   318471090 | 23.128360 |   |
+| seconds                 | 1.868190708 | 1.667104490 | 10.763688 |   |
 |-------------------------+-------------+-------------+-----------+---|
 |                         |             |             |       0/0 |   |
-#+TBLFM: $4=100*($2-$3)/$2
+#+TBLFM: $4=100*($2-$3)/$2::@4$2=@3/@2::@4$3=@3/@2
 
-: run x264 benchmarks/x264/x264.orig -c branch-misses,stalled-cycles-frontend,stalled-cycles-backend -p -r 10
+: orig
 : 0,exit
 : 0,error
-: 44888866,branch-misses,0.02%
-: 426438515,stalled-cycles-frontend,0.30%
-: 373302923,stalled-cycles-backend,0.82%
-: 1.841273861,seconds,0.10%
-
-: run x264 benchmarks/x264/x264.min -c branch-misses,stalled-cycles-frontend,stalled-cycles-backend -p -r 10
+: 776839464,branches,0.04%
+: 44904668,branch-misses,0.04%
+: 438612265,stalled-cycles-frontend,0.23%
+: 414289445,stalled-cycles-backend,0.72%
+: 1.868190708,seconds,0.09%
+: min
 : 0,exit
 : 0,error
-: 41068922,branch-misses,0.03%
-: 372072185,stalled-cycles-frontend,0.25%
-: 319759031,stalled-cycles-backend,0.40%
-: 1.664690980,seconds,0.05%
+: 713583405,branches,0.02%
+: 41068342,branch-misses,0.03%
+: 372039863,stalled-cycles-frontend,0.18%
+: 318471090,stalled-cycles-backend,0.52%
+: 1.667104490,seconds,0.03%
 
 **** fluidanimate
-|                         |        orig |         min |           |                                    |
-|-------------------------+-------------+-------------+-----------+------------------------------------|
-| branch-misses           |   110080216 |    91064473 | 17.274442 |                                    |
-| stalled-cycles-frontend |  1019469756 |   798736216 | 21.651799 | <- significantly more than seconds |
-| stalled-cycles-backend  |  6538927652 |  5700521443 | 12.821769 |                                    |
-| seconds                 | 6.733379862 | 5.949409069 | 11.643050 |                                    |
-|-------------------------+-------------+-------------+-----------+------------------------------------|
-|                         |             |             |       0/0 |                                    |
-#+TBLFM: $4=100*($2-$3)/$2
+|                         |        orig |         min |           |       |
+|-------------------------+-------------+-------------+-----------+-------|
+| branches                |  2222520338 |  2094578622 | 5.7566050 |       |
+| branch-misses           |   110248335 |    91654464 | 16.865444 |       |
+| misses/branches         | 0.049605096 | 0.043757949 | 11.787392 |       |
+| stalled-cycles-frontend |  1022762764 |   811294879 | 20.676142 | <-sig |
+| stalled-cycles-backend  |  6424010207 |  5630481656 | 12.352542 |       |
+| seconds                 | 6.622636912 | 5.933638298 | 10.403690 |       |
+|-------------------------+-------------+-------------+-----------+-------|
+|                         |             |             |       0/0 |       |
+#+TBLFM: $4=100*($2-$3)/$2::@4$2=@3/@2::@4$3=@3/@2
+
+: orig
+: 0,exit
+: 2,error
+: 2222520338,branches,0.04%
+: 110248335,branch-misses,0.41%
+: 1022762764,stalled-cycles-frontend,0.99%
+: 6424010207,stalled-cycles-backend,1.20%
+: 6.622636912,seconds,0.58%
+: min
+: 0,exit
+: 2,error
+: 2094578622,branches,0.03%
+: 91654464,branch-misses,0.56%
+: 811294879,stalled-cycles-frontend,0.97%
+: 5630481656,stalled-cycles-backend,1.28%
+: 5.933638298,seconds,0.61%
+
 
 : run fluidanimate benchmarks/fluidanimate/fluidanimate.orig -c branch-misses,stalled-cycles-frontend,stalled-cycles-backend -p -r 10
 : 0,exit
@@ -1706,6 +1734,23 @@ See if we can get ferret to do better.
 : 798736216,stalled-cycles-frontend,0.50%
 : 5700521443,stalled-cycles-backend,0.81%
 : 5.949409069,seconds,0.39%
+
+*** causes of poor performance
+#+begin_src sh
+  for i in results/annotation-output/*;do
+      echo "$(basename $i .orig.ann.out) $(cat $i|./bin/percent-sampled)"
+  done
+#+end_src
+
+| benchmark    | percent |
+|--------------+---------|
+| blackscholes | 17.6871 |
+| bodytrack    |      NA |
+| ferret       | 3.44688 |
+| fluidanimate | 8.24675 |
+| freqmine     |  3.7523 |
+| swaptions    | 4.50143 |
+| x264         | 1.21806 |
 
 *** TODO Overall energy reduction
 **** runtime
