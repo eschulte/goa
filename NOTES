@@ -101,7 +101,7 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 | 998.specrand   |
 | 999.specrand   |
 
-* Tasks [35/37]
+* Tasks [37/37]
 ** DONE select GP parameters
 | selection tournament |   2 |
 | eviction tournament  |   2 |
@@ -1623,12 +1623,12 @@ See if we can get ferret to do better.
       -C src/opt-annotate.lisp
 #+end_src
 
-** TODO Analyze Optimizations [0/1]
-*** TODO Overall energy reduction
+** DONE Analyze Optimizations [1/1]
+*** DONE Overall energy reduction
 | benchmark    | minimized | extended | power |
 |--------------+-----------+----------+-------|
 | blackscholes | done      | done     | done  |
-| bodytrack    |           |          |       |
+| bodytrack    | done      | done     | done  |
 | ferret       | done      | done     | done  |
 | fluidanimate | done      | done     | done  |
 | freqmine     | done      | done     | done  |
@@ -1655,17 +1655,15 @@ time permitting
 Fix this up with small and better medium (many more reps!)
 
 ***** bodytrack
-| size   | orig | min | reduce |   |
-|--------+------+-----+--------+---|
-| small  |      |     |        |   |
-| medium |      |     |        |   |
-| large  |      |     |        |   |
-| huge   |      |     |        |   |
-|--------+------+-----+--------+---|
-|        |      |     |        |   |
-#+TBLFM: $4=100*($2-$3)/$2::@6$5=vmean(@2,@3,@5)
-
-Fix this up with small and better medium (many more reps!)
+| size   |   orig |    min |      reduce |             |
+|--------+--------+--------+-------------+-------------|
+| small  | 0.0049 | 0.0048 |   2.0408163 |   2.0408163 |
+| medium | 0.0076 | 0.0076 |          0. |             |
+| large  | 0.0131 | 0.0131 |          0. |           0 |
+| huge   | 0.0317 | 0.0318 | -0.31545741 | -0.31545741 |
+|--------+--------+--------+-------------+-------------|
+|        |        | 0.0573 |         0/0 |  0.57511963 |
+#+TBLFM: $4=100*($2-$3)/$2::@6$3=vsum(@2..@-1)::@6$5=vmean(@2,@4,@5)
 
 ***** ferret
 | size   |   orig |    min |    reduce |           |
@@ -1675,8 +1673,8 @@ Fix this up with small and better medium (many more reps!)
 | large  | 0.0316 | 0.0271 | 14.240506 | 14.240506 |
 | huge   |   0.05 | 0.0493 |       1.4 |       1.4 |
 |--------+--------+--------+-----------+-----------|
-|        |        |        |       0/0 | 5.9381397 |
-#+TBLFM: $4=100*($2-$3)/$2::@6$5=vmean(@2,@4,@5)
+|        |        | 0.0872 |       0/0 | 5.9381397 |
+#+TBLFM: $4=100*($2-$3)/$2::@6$3=vsum(@2..@-1)::@6$5=vmean(@2,@4,@5)
 
 ***** fluidanimate
 | size   |   orig | min    |    reduce |   |
@@ -1697,8 +1695,8 @@ Fix this up with small and better medium (many more reps!)
 | large  | 0.2454 | 0.2381 | 2.9747351 | 2.9747351 |
 | huge   |        |        |           |           |
 |--------+--------+--------+-----------+-----------|
-|        |        |        |           | 3.2867133 |
-#+TBLFM: $4=100*($2-$3)/$2::@6$5=vmean(@3,@4,@5)
+|        |        | 0.3505 |           | 3.2867133 |
+#+TBLFM: $4=100*($2-$3)/$2::@6$3=vsum(@2..@-1)::@6$5=vmean(@3,@4,@5)
 
 huge used over 50G of disk space before failing to complete.
 
@@ -1710,8 +1708,8 @@ huge used over 50G of disk space before failing to complete.
 | large  |  0.054 | 0.0313 | 42.037037 | 42.037037 |
 | huge   | 0.0534 |  0.031 | 41.947566 | 41.947566 |
 |--------+--------+--------+-----------+-----------|
-|        |        |        |       0/0 | 41.631231 |
-#+TBLFM: $4=100*($2-$3)/$2::@6$5=vmean(@2,@4,@5)
+|        |        | 0.0739 |       0/0 | 41.631231 |
+#+TBLFM: $4=100*($2-$3)/$2::@6$3=vsum(@2..@-1)::@6$5=vmean(@2,@4,@5)
 
 ***** vips
 huge is not implemented for vips
@@ -1723,8 +1721,8 @@ huge is not implemented for vips
 | large  | 0.0531 | 0.0415 | 21.845574 | 21.845574 |
 | huge   |        |        |           |           |
 |--------+--------+--------+-----------+-----------|
-|        |        |        |           | 21.253366 |
-#+TBLFM: $4=100*($2-$3)/$2::@6$5=vmean(@2,@4)
+|        |        | 0.0659 |           | 21.253366 |
+#+TBLFM: $4=100*($2-$3)/$2::@6$3=vsum(@2..@-1)::@6$5=vmean(@2,@4)
 
 ***** x264
 | size   |   orig |    min |    reduce |           |
@@ -1734,8 +1732,21 @@ huge is not implemented for vips
 | large  | 0.1979 | 0.1803 | 8.8933805 | 8.8933805 |
 | huge   | 0.1399 | 0.1276 | 8.7919943 | 8.7919943 |
 |--------+--------+--------+-----------+-----------|
-|        |        |        |       0/0 | 9.2390739 |
-#+TBLFM: $4=100*($2-$3)/$2::@6$5=vmean(@3,@4,@5)
+|        |        | 0.3799 |       0/0 | 9.2390739 |
+#+TBLFM: $4=100*($2-$3)/$2::@6$3=vsum(@2..@-1)::@6$5=vmean(@3,@4,@5)
+
+*** executable size
+|    36696 |   33672 |    8.2406802 | blackscholes |
+|  2717101 | 5020593 |   -84.777563 | ferret       |
+|   164256 |  158758 |    3.3472141 | fluidanimate |
+|   321760 |  381879 |   -18.684423 | freqmine     |
+|   166744 |  211697 |   -26.959291 | swaptions    |
+| 13578832 | 6408756 |    52.803334 | vips2        |
+|   419373 |  419513 | -0.033383170 | x264         |
+#+TBLFM: $3=100*($1-$2)/$1
+
+*** manual vips analysis
+18 patches in diff with original
 
 *** other counters
 Significant differences between non-target HW counters across
