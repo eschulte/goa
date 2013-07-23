@@ -1,0 +1,7 @@
+#!/usr/bin/gawk -f
+#
+# Return the percent sampled of an annotation output
+#
+BEGIN{ zeros = 0.0 }
+{ if($2 == 0.0){ zeros += 1 } }
+END{ if(NR > 0){print 100 * (NR - zeros)/NR } else { print "NA" }}
