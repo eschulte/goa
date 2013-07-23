@@ -1848,6 +1848,100 @@ x264 does not decrease the rate of branch misses, but swaptions does.
 : 5700521443,stalled-cycles-backend,0.81%
 : 5.949409069,seconds,0.39%
 
+*** x264 failure correlates
+#+begin_src sh
+  for i in $(grep PASS /tmp/x264-pass-fail|sed 's/:.*$//');do
+      cat etc/additional-inputs/x264/x264.input.$i
+  done > /tmp/passed
+  for i in $(grep FAIL /tmp/x264-pass-fail|sed 's/:.*$//');do
+      cat etc/additional-inputs/x264/x264.input.$i
+  done > /tmp/failed
+  join <(cat /tmp/passed |cut -d' ' -f1|sort |uniq -c|awk '{print $2,$1}'|sort) \
+       <(cat /tmp/failed|cut -d' ' -f1|sort |uniq -c|awk '{print $2,$1}'|sort)
+#+end_src
+
+#+RESULTS:
+| arg                                   | pass | fail |      diff |
+|---------------------------------------+------+------+-----------|
+| simsmall                              |    3 |    2 |       -50 |
+| benchmarks/x264/addl/x264.input.3.y4m |    3 |    5 |        40 |
+| 0.264                                 |   12 |   26 | 53.846154 |
+| benchmarks/x264/addl/x264.input.4.y4m |    4 |    9 | 55.555556 |
+| --nr                                  |   10 |   23 | 56.521739 |
+| --ref                                 |    3 |    7 | 57.142857 |
+| --fps                                 |    7 |   17 | 58.823529 |
+| -I                                    |    2 |    5 |        60 |
+| --crf                                 |   17 |   43 | 60.465116 |
+| --b-pyramid                           |    7 |   18 | 61.111111 |
+| --mixed-refs                          |    8 |   21 | 61.904762 |
+| -m                                    |    5 |   14 | 64.285714 |
+| --qcomp                               |    6 |   17 | 64.705882 |
+| --ratetol                             |    8 |   23 | 65.217391 |
+| -r                                    |    4 |   12 | 66.666667 |
+| --subme                               |    3 |    9 | 66.666667 |
+| benchmarks/x264/addl/x264.input.0.y4m |    2 |    7 | 71.428571 |
+| benchmarks/x264/addl/x264.input.1.y4m |    2 |    7 | 71.428571 |
+| --ipratio                             |    5 |   19 | 73.684211 |
+| --me                                  |    6 |   23 | 73.913043 |
+| --no-dct-decimate                     |    6 |   24 |        75 |
+| --pbratio                             |    5 |   20 |        75 |
+| simdev                                |    2 |    8 |        75 |
+| --vbv-bufsize                         |    5 |   20 |        75 |
+| --qp                                  |    6 |   25 |        76 |
+| --direct                              |    6 |   26 | 76.923077 |
+| --interlaced                          |    5 |   22 | 77.272727 |
+| --aq-strength                         |    5 |   25 |        80 |
+| --keyint                              |    2 |   10 |        80 |
+| simlarge                              |    2 |   10 |        80 |
+| .mkv                                  |    9 |   48 |     81.25 |
+| -A                                    |    2 |   12 | 83.333333 |
+| --merange                             |    4 |   24 | 83.333333 |
+| --no-fast-pskip                       |    3 |   19 | 84.210526 |
+| benchmarks/x264/addl/x264.input.2.y4m |    1 |    7 | 85.714286 |
+| simmedium                             |    2 |   14 | 85.714286 |
+| -q                                    |    3 |   22 | 86.363636 |
+| --pass                                |    1 |   11 | 90.909091 |
+| --no-cabac                            |    2 |   26 | 92.307692 |
+#+TBLFM: $4=100*($3-$2)/$3
+
+Flags found only in failures
+: -8
+: --8x8dct
+: -b
+: --bframes
+: -p
+: --partitions
+: test
+
+#+begin_src sh
+  for i in $(grep PASS /tmp/x264-pass-fail|sed 's/:.*$//');do
+      head -1 etc/additional-inputs/x264/x264.input.$i
+  done
+#+end_src
+
+#+RESULTS:
+| benchmarks/x264/addl/x264.input.2.y4m |
+| simmedium                             |
+| benchmarks/x264/addl/x264.input.3.y4m |
+| benchmarks/x264/addl/x264.input.4.y4m |
+| simdev                                |
+| benchmarks/x264/addl/x264.input.1.y4m |
+| simmedium                             |
+| simdev                                |
+| benchmarks/x264/addl/x264.input.3.y4m |
+| simsmall                              |
+| benchmarks/x264/addl/x264.input.3.y4m |
+| benchmarks/x264/addl/x264.input.1.y4m |
+| benchmarks/x264/addl/x264.input.0.y4m |
+| simsmall                              |
+| benchmarks/x264/addl/x264.input.0.y4m |
+| simlarge                              |
+| benchmarks/x264/addl/x264.input.4.y4m |
+| simlarge                              |
+| benchmarks/x264/addl/x264.input.4.y4m |
+| benchmarks/x264/addl/x264.input.4.y4m |
+| simsmall                              |
+
 *** causes of poor performance
 Percent of assembly instructions contributing to HW counters.
 #+begin_src sh
