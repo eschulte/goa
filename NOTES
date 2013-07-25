@@ -101,7 +101,8 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 | 998.specrand   |
 | 999.specrand   |
 
-* Tasks [37/37]
+* Tasks [37/38]
+** TODO look at higher mutation rates
 ** DONE select GP parameters
 | selection tournament |   2 |
 | eviction tournament  |   2 |
@@ -2354,7 +2355,16 @@ We could use the "bubble" and the "reporter" from [[#mars2011bubble]].
 Measuring the values of HW counters against the bubble could give us
 coefficients for a memory linear model.
 
-* Code Tasks [8/8]
+* Code Tasks [8/10]
+** TODO generalize optimization
+- user supplied workload script
+- user supplied fitness function
+  (lisp or nice equation format with HW counters)
+- user supplied program
+
+** TODO non-fixed point crossover
+important for profile guided optimization
+
 ** DONE inefficient mgmt generated executables
 | benchmark    | Intel | AMD |
 |--------------+-------+-----|
