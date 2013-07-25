@@ -1,9 +1,0 @@
-#!/bin/bash
-#
-# log all calls to CC_LOG_FILE (default /tmp/cc.log)
-# then pass them to CC (default gcc)
-#
-if [ -z "$CC" ];then CC="g++";fi
-if [ -z "$CC_LOG_FILE" ];then CC_LOG_FILE="/tmp/cc.log";fi
-echo "$CC $@">> $CC_LOG_FILE
-$CC $@
