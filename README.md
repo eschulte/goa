@@ -143,9 +143,9 @@ Experimental Reproduction
 The following steps perform the optimizations of the PARSEC benchmark
 applications for reduced energy consumption.
 
-1. Check out the `main-experiment` tag of this repository and checkout
-   commit `8193d14f` of the software-evolution repository.  Then
-   re-build the executables with `make clean && make`.
+1. Check out the `energy-experiment` tag [10] of this repository and
+   checkout commit `8193d14f` of the software-evolution repository.
+   Then re-build the executables with `make clean && make`.
 
 2. Run the `self-test` script to ensure that the benchmark
    applications are available and can be successfully built and
@@ -161,7 +161,7 @@ applications for reduced energy consumption.
    stores which may become easily overloaded.
 
 4. An energy model should be trained for your system, the process of
-   training an energy model is not covered here [10].  In our case the
+   training an energy model is not covered here [11].  In our case the
    models included in `src/optimize.lisp` are used
    (`amd-opteron-power-model` and `intel-sandybridge-power-model` for
    our AMD and Intel systems respectively).
@@ -222,6 +222,8 @@ Footnotes
 
 [9]  http://www.cliki.net/cl-launch
 
-[10] See NOTES for pointers to methodology and shell scripts for
+[10] https://github.com/eschulte/optimization/archive/energy-experiment.zip
+
+[11] See NOTES for pointers to methodology and shell scripts for
      training an energy model.  A WattsUp?™ Pro is required to measure
      wall plug energy consumption.  https://www.wattsupmeters.com
