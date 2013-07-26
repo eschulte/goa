@@ -126,7 +126,7 @@ orig(){
     local bench_dir="$BASE/benchmarks/$bench";
     if [ -f "$bench_dir/$bench.orig" ];then
         msg "$bench_dir/$bench.orig exists"
-    elif [ $bench == x264 ];then
+    elif [ $bench == x264 ] || echo "${SHOOTOUT_APPS[@]}"|grep -q $bench;then
         compile $bench \
             && link $bench \
             && cp "$bench_dir/$bench" "$bench_dir/$bench.orig"
@@ -186,7 +186,8 @@ unpack(){ # dispatch depending on benchmark suite
             esac
             mkdir -p "$bench_dir"
         elif echo "${SHOOTOUT_APPS[@]}"|grep -q $bench;then
-            cp -R "$BASE"/benchmarks/benchmarksgame/bench/$BENCHMARK \
+            mkdir "$bench_dir"
+            cp "$BASE"/benchmarks/benchmarksgame/bench/$BENCHMARK/*gcc* \
                 "$bench_dir"
         elif echo "${SPEC_APPS[@]}"|grep -q $bench;then
             SPEC_BENCH=$(echo "${SPEC_APPS[@]}"|tr ' ' '\n'|grep $bench)
@@ -762,6 +763,12 @@ input(){
                     huge)   in=eledream_1920x1080_512.y4m;;
                 esac
                 mv $in $target;;
+
+            ## SHOOTOUT
+            nbody)
+                msg "no input needed for $bench"
+                return 0;;
+
             ## SPEC
             bzip2)
                 SPEC_BENCH=$(echo "${SPEC_APPS[@]}"|tr ' ' '\n'|grep $bench)
@@ -894,6 +901,21 @@ output(){
                 ./$bench $X264_CMD -o $bench.output $tmp
                 rm -f $tmp
                 ;;
+
+            ## SHOOTOUT
+            nbody)
+                local nbody_size;
+                case $SIZE in
+                    test)   nbody_size=10000;;
+                    tiny)   nbody_size=100000;;
+                    small)  nbody_size=500000;;
+                    medium) nbody_size=5000000;;
+                    large)  nbody_size=50000000;;
+                    huge)   nbody_size=1000000000;;
+                esac
+                ./$bench $nbody_size > $target
+                ;;
+
             ## SPEC
             bzip2)
                 ./$bench -c $bench.input > $target;;

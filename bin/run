@@ -356,6 +356,21 @@ case $BENCHMARK in
         ERROR=$?
         ;;
 
+    ## SHOOTOUT
+    nbody)
+        case $SIZE in
+            test)   nbody_size=10000;;
+            tiny)   nbody_size=100000;;
+            small)  nbody_size=500000;;
+            medium) nbody_size=5000000;;
+            large)  nbody_size=50000000;;
+            huge)   nbody_size=1000000000;;
+        esac
+        run 1 $EXECUTABLE $nbody_size > $OUT
+        ndiff -q -abserr 1e-7 $OUTPUT $OUT >/dev/null 2>/dev/null
+        ERROR=$?
+        ;;
+
     # Instruction for running SPEC programs
     #
     # 13 (run it), it tells you to use "specinvoke" but the fine print
