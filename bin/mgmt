@@ -953,6 +953,7 @@ if echo "${PARSEC_APPS[@]}"|grep -q $BENCHMARK;then
 elif echo "${SHOOTOUT_APPS[@]}"|grep -q $BENCHMARK;then
     shootout_dir="$BASE/benchmarks/benchmarksgame"
     shootout_tar="$BASE/etc/data/benchmarksgame-scm-latest.tar.gz"
+    shootout_sub="benchmarksgame-$(date +%Y-%m-%d)/benchmarksgame"
     if [ ! -d "$shootout_dir" ];then
         if [ ! -f "$shootout_tar" ];then
             warning "downloading SHOOTOUT"
@@ -960,11 +961,10 @@ elif echo "${SHOOTOUT_APPS[@]}"|grep -q $BENCHMARK;then
                 -O "$shootout_tar"
         fi
         msg "unpacking SHOOTOUT"
-        tar xzf "$shootout_tar" -C "$BASE/benchmarks" \
-            benchmarksgame-2013-07-25/benchmarksgame
-        mv "$BASE/benchmarks/benchmarksgame-2013-07-25/benchmarksgame" \
+        tar xzf "$shootout_tar" -C "$BASE/benchmarks" $shootout_sub
+        mv "$BASE/benchmarks/$shootout_sub" \
             "$BASE/benchmarks/"
-        rmdir "$BASE/benchmarks/benchmarksgame-2013-07-25"
+        rmdir "$BASE/benchmarks/benchmarksgame-$(date +%Y-%m-%d)"
     fi
 elif echo "${SPEC_APPS[@]}"|grep -q $BENCHMARK;then
     if [ ! -d "$SPEC_ROOT" ] ; then
