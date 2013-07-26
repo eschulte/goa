@@ -142,6 +142,8 @@ size_for_benchmark(){
                 swaptions)    echo medium;;
                 vips)         echo medium;;
                 x264)         echo small;;
+                # SHOOTOUT benchmarks
+                nbody)        echo medium;;
                 *) warning "medium for unknown benchmark"; echo medium;;
             esac;;
         intel)
@@ -154,6 +156,8 @@ size_for_benchmark(){
                 swaptions)    echo medium;;
                 vips)         echo medium;;
                 x264)         echo medium;;
+                # SHOOTOUT benchmarks
+                nbody)        echo medium;;
                 *) warning "medium for unknown benchmark"; echo medium;;
             esac;;
     esac; }

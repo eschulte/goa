@@ -65,6 +65,23 @@ PARSEC_APPS+=(swaptions)
 PARSEC_APPS+=(vips)
 PARSEC_APPS+=(x264)
 
+declare -a SHOOTOUT_APPS
+SHOOTOUT_APPS+=(binarytrees)
+SHOOTOUT_APPS+=(fasta)
+SHOOTOUT_APPS+=(mandelbrot)
+SHOOTOUT_APPS+=(regexdna)
+SHOOTOUT_APPS+=(binarytreesredux)
+SHOOTOUT_APPS+=(fastaredux)
+SHOOTOUT_APPS+=(meteor)
+SHOOTOUT_APPS+=(revcomp)
+SHOOTOUT_APPS+=(chameneosredux)
+SHOOTOUT_APPS+=(nbody)
+SHOOTOUT_APPS+=(spectralnorm)
+SHOOTOUT_APPS+=(fannkuchredux)
+SHOOTOUT_APPS+=(knucleotide)
+SHOOTOUT_APPS+=(pidigits)
+SHOOTOUT_APPS+=(threadring)
+
 declare -a SPEC_APPS
 SPEC_APPS+=(400.perlbench)
 SPEC_APPS+=(401.bzip2)
@@ -168,6 +185,9 @@ unpack(){ # dispatch depending on benchmark suite
                     cp -R "$BASE"/benchmarks/parsec-3.0/pkgs/apps/$bench/src/* "$bench_dir" ;;
             esac
             mkdir -p "$bench_dir"
+        elif echo "${SHOOTOUT_APPS[@]}"|grep -q $bench;then
+            cp -R "$BASE"/benchmarks/benchmarksgame/bench/$BENCHMARK \
+                "$bench_dir"
         elif echo "${SPEC_APPS[@]}"|grep -q $bench;then
             SPEC_BENCH=$(echo "${SPEC_APPS[@]}"|tr ' ' '\n'|grep $bench)
             mkdir -p "$bench_dir"
@@ -473,6 +493,12 @@ compile(){
                 gcc-4.4 $FULL_FLAGS -fno-inline --combine -S -I. -Icommon \
                     $X264_SOURCE -o $bench.s ||error "compilation failed"
                 ;;
+
+            ## SHOOTOUT
+            nbody)
+                set_flags "-O3" "-O3"
+                gcc -x c $bench.gcc -S -o $bench.s || error "compilation failed";;
+
             ## SPEC
             bzip2)
                 set_flags "" "-O3 -fno-inline"
@@ -598,6 +624,12 @@ link(){
                 FLAGS="-lm -lpthread"
                 gcc $bench.s -o $bench $FLAGS||error "linking failed"
                 ;;
+
+            ## SHOOTOUT
+            nbody)
+                FLAGS="-lm"
+                gcc $bench.s -o $bench $FLAGS||error "linking failed";;
+
             ## SPEC
             bzip2)
                 gcc ${bench}.s -o $bench||error "linking failed";;
@@ -889,12 +921,28 @@ if echo "${PARSEC_APPS[@]}"|grep -q $BENCHMARK;then
     parsec_tar="$BASE/etc/data/parsec-3.0.tar.gz"
     if [ ! -d "$parsec_dir" ];then
         if [ ! -f "$parsec_tar" ];then
-            msg "downloading PARSEC"
+            warning "downloading PARSEC"
             wget http://parsec.cs.princeton.edu/download/3.0/parsec-3.0.tar.gz \
-                -O "$BASE/etc/data/parsec-3.0.tar.gz"
+                -O "$parsec_tar"
         fi
         msg "unpacking PARSEC"
-        tar xzf "$BASE/etc/data/parsec-3.0.tar.gz" -C "$BASE/benchmarks"
+        tar xzf "$parsec_tar" -C "$BASE/benchmarks"
+    fi
+elif echo "${SHOOTOUT_APPS[@]}"|grep -q $BENCHMARK;then
+    shootout_dir="$BASE/benchmarks/benchmarksgame"
+    shootout_tar="$BASE/etc/data/benchmarksgame-scm-latest.tar.gz"
+    if [ ! -d "$shootout_dir" ];then
+        if [ ! -f "$shootout_tar" ];then
+            warning "downloading SHOOTOUT"
+            wget https://alioth.debian.org/snapshots.php?group_id=100815 \
+                -O "$shootout_tar"
+        fi
+        msg "unpacking SHOOTOUT"
+        tar xzf "$shootout_tar" -C "$BASE/benchmarks" \
+            benchmarksgame-2013-07-25/benchmarksgame
+        mv "$BASE/benchmarks/benchmarksgame-2013-07-25/benchmarksgame" \
+            "$BASE/benchmarks/"
+        rmdir "$BASE/benchmarks/benchmarksgame-2013-07-25"
     fi
 elif echo "${SPEC_APPS[@]}"|grep -q $BENCHMARK;then
     if [ ! -d "$SPEC_ROOT" ] ; then
