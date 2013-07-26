@@ -1,0 +1,29 @@
+# -*- shell-script -*-
+# Contributor: Eric Schulte <schulte.eric@gmail.com>
+#
+pkgname=ndiff
+pkgrel=1
+pkgver=2.00
+pkgdesc="compare putatively similar files, ignoring small numeric differences "
+arch=(x86_64 i686)
+url="http://www.math.utah.edu/~beebe/software/ndiff/"
+license=('GPLV2')
+depends=()
+makedepends=(make gcc awk)
+source=("ftp://ftp.math.utah.edu/pub/misc/ndiff-2.00.tar.gz")
+md5sums=('885548b4dc26e72c5455bebb5ba6c16d')
+
+build() {
+    cd ${srcdir}/${pkgname}-${pkgver}
+    autoconf
+    ./configure
+    make
+}
+
+package() {
+    cd ${srcdir}/${pkgname}-${pkgver}
+    mkdir -p ${pkgdir}/usr/bin
+    mkdir -p ${pkgdir}/usr/man/{cat1,man1}
+    mkdir -p ${pkgdir}/usr/share/lib/ndiff/ndiff-2.00
+    make prefix=${pkgdir}/usr install
+}
