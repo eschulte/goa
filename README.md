@@ -47,6 +47,12 @@ Repository Layout
 Installation and Usage
 ======================
 
+Clone this repository.  To avoid a downloading a large amount of
+historical data, use the `--single-branch` option to `git clone` as
+follows.
+
+    git clone --single-branch git://github.com/eschulte/optimization.git
+
 The evolution toolkit which we'll use to evolve programs is written in
 Common Lisp.  Each optimized program also requires a shell script test
 driver, and a test harness (used to limit resources consumed by
