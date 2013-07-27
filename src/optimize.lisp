@@ -23,29 +23,25 @@
   ((stats :initarg :stats :accessor stats :initform nil)))
 
 (defun to-asm-light (asm)
-  (with-slots (flags linker edits genome) asm
+  (with-slots (flags linker genome) asm
     (make-instance 'asm-light
       :flags flags
       :linker linker
-      :edits edits
       :genome (mapcar {aget :line} genome))))
 
 (defclass asm-range (range asm)
   ((stats :initarg :stats :accessor stats :initform nil)))
 
 (defun to-asm-range (asm)
-  (with-slots (flags linker edits genome) asm
+  (with-slots (flags linker genome) asm
     (make-instance 'asm-range
       :flags flags
-      :linker linker
-      :edits edits)))
+      :linker linker)))
 
-(defmethod copy ((asm asm-range)
-                 &key (edits (copy-tree (edits asm))) (fitness (fitness asm)))
+(defmethod copy ((asm asm-range))
   (with-slots (genome linker flags reference) asm
     (make-instance (type-of asm)
-      :edits edits
-      :fitness fitness
+      :fitness (fitness asm)
       :genome (copy-tree genome)
       :linker linker
       :flags flags
@@ -141,7 +137,7 @@ This includes evolved individuals in the training set.")
       (unless (zerop exit)
         (note 5 "ERROR [~a]: ~a" exit info)
         (error "error [~a]: ~a" exit info)))
-    (note 4 "running ~S~%" (edits asm))
+    (note 4 "running ~S~%" asm)
     (multiple-value-bind (stdout stderr errno)
         (if (null *size*)
             (shell "~a ~a ~a -p"       *script* *benchmark* bin)
@@ -172,7 +168,7 @@ This includes evolved individuals in the training set.")
   (error "must specify a positive infinity value"))
 
 (defun test (asm)
-  (note 4 "testing ~S~%" (edits asm))
+  (note 4 "testing ~S~%" asm)
   (or (ignore-errors
         (unless (stats asm) (setf (stats asm) (run asm)))
         (note 4 "stats:~%~S~%" (stats asm))
@@ -188,14 +184,6 @@ This includes evolved individuals in the training set.")
          (make-pathname :directory *res-dir*
                         :name (format nil "best-~a" *fitness-evals*)
                         :type "store"))
-  ;; write out and clean the list of saved edits
-  (with-open-file
-      (out (make-pathname :directory *res-dir* :name "edits" :type "lisp")
-           :direction :output
-           :if-exists :append
-           :if-does-not-exist :create)
-    (format out "~&~{~s~^~%~}~%" (prog1 *consolidated-edits*
-                                   (setf *consolidated-edits* nil))))
   ;; write out population stats
   (let ((fits  (mapcar #'fitness *population*))
         (sizes (mapcar [#'length #'genome] *population*))

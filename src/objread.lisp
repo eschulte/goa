@@ -9,7 +9,6 @@
 Options:
  -h,--help ------------- print this help message and exit
  -l,--link FILE -------- link an executable to FILE
- -e,--edits ------------ write the edits to STDOUT
  -s,--stats ------------ write the stats to STDOUT
  -g,--genome ----------- write the genome to STDOUT
  -G,--genome-string ---- write the genome string to STDOUT
@@ -22,7 +21,6 @@ Options:
       (let ((best (restore (arg-pop))))
         (getopts
          ("-l" "--link"   (phenome best :bin (arg-pop)))
-         ("-e" "--edits"  (format t "~&~S~%" (edits best)))
          ("-s" "--stats"
                (mapc (lambda-bind ((counter . count))
                        (format t "~a ~a~%"

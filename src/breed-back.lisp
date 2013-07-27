@@ -34,7 +34,7 @@
 
 ;; 1. redefine test to use the extended tests as well as the model.
 (defun test (asm)
-  (note 4 "extended testing ~S~%" (edits asm))
+  (note 4 "extended testing ~S~%" asm)
   (or (ignore-errors
         (let ((model (or (progn
                            (unless (stats asm) (setf (stats asm) (run asm)))
