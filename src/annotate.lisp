@@ -47,20 +47,13 @@
           (genome asm))
       (when (not bin) (delete-file my-bin)))))
 
-(defun genome-anns (asm &key bin script limit)
-  (let* ((my-bin (unless script (or bin (phenome asm))))
-         (limit (if limit (format nil "-l ~s" limit) ""))
-         (script
-          (or script
-              (if *size*
-                  (format nil "~a ~a ~a -s ~a ~a -a"
-                          *script* *benchmark* my-bin limit *size*)
-                  (format nil "~a ~a ~a ~a -a"
-                          *script* *benchmark* limit my-bin)))))
+(defun genome-anns (asm &key bin)
+  (let* ((my-bin (or bin (phenome asm)))
+         (script (format nil *script* my-bin)))
     (unwind-protect
          (mapcar {aget _ (perf-annotations script)}
                  (genome-addrs asm :bin my-bin))
-      (when (not (or bin script)) (delete-file my-bin)))))
+      (when (not bin) (delete-file my-bin)))))
 
 (defun smooth (list)
   (declare (cl-user::optimize speed))
@@ -82,42 +75,42 @@
 (defun annotate (&optional (args *arguments*))
   (in-package :optimize)
   (flet ((arg-pop () (pop args)))
-    (let ((help "Usage: annotate benchmark benchmark.s [OPTIONS...]
+    (let ((help "Usage: annotate ANN-SCRIPT ASM-FILE [OPTIONS...]
  print the LOC of an ASM object annotated with perf
+
+ANN-SCRIPT:
+  Command line used to evaluate executables.  If the test
+  script contains the substring \"~~a\" it will be replaced
+  with the name of the executable, otherwise the executable
+  will be appended to the end of the test script.  The script
+  should return \"perf annotate\" output.
+
+ASM-FILE:
+  Is a text file of assembler code.
 
 Options:
  -h,--help ------------- print this help message and exit
  -f,--flags FLAGS ------ flags to use when linking
  -l,--linker LINKER ---- linker to use
- -L,--limit LIMIT ------ use LIMIT to limit execution
  -e,--extended NUM ----- run extended test NUM
- -s,--size SIZE -------- set size to SIZE
  -v,--verbose ---------- verbose debugging output~%"))
       (when (or (not args)
                 (string= (subseq (car args) 0 2) "-h")
                 (string= (subseq (car args) 0 3) "--h"))
         (format t help) (quit))
 
-      (let (script limit)
-        (setf
-         *benchmark* (arg-pop)
-         *path* (arg-pop)
-         *orig* (from-file (make-instance 'asm-perf) *path*))
+      (setf
+       *script* (arg-pop)
+       *path* (arg-pop)
+       *orig* (from-file (make-instance 'asm-perf) *path*))
 
-        (getopts
-         ("-f" "--flags"  (setf (flags *orig*) (list (arg-pop))))
-         ("-l" "--linker" (setf (linker *orig*) (arg-pop)))
-         ("-L" "--limit"  (setf limit (arg-pop)))
-         ("-e" "--extended"
-               (setf script (format nil "./bin/extended-tests.py ~a ~a ~d -a"
-                                    *benchmark* (phenome *orig*) (arg-pop))))
-         ("-s" "--size" (setf *size* (arg-pop)))
-         ("-v" "--verbose" (setf *shell-debug* t)))
+      (getopts
+       ("-f" "--flags"  (setf (flags *orig*) (list (arg-pop))))
+       ("-l" "--linker" (setf (linker *orig*) (arg-pop)))
+       ("-e" "--extended" (throw-error "Extended option not supported."))
+       ("-v" "--verbose" (setf *shell-debug* t)))
 
-        (when (and limit script)
-          (setf script (format nil "~a -l ~s" script limit)))
-
-        (loop
-           :for ann :in (genome-anns *orig* :script script :limit limit)
-           :as i :upfrom 0
-           :do (when ann (format t "~a ~a~%" i ann)))))))
+      (loop
+         :for ann :in (genome-anns *orig*)
+         :as i :upfrom 0
+         :do (when ann (format t "~a ~a~%" i ann))))))

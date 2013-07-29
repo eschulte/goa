@@ -50,11 +50,9 @@
 
 ;;; Configuration Fitness and Runtime
 (defvar *path*      nil        "Path to Assembly file.")
-(defvar *script*   "./bin/run" "Script used to test benchmark application.")
-(defvar *size*      nil        "size of input for fitness evaluation")
+(defvar *script*    nil        "Script used to test benchmark application.")
 (defvar *res-dir*   nil        "Directory in which to save results.")
 (defvar *orig*      nil        "Original version of the program to be run.")
-(defvar *benchmark* nil        "Name of the benchmark.")
 (defvar *period*    nil        "Period at which to run `checkpoint'.")
 (defvar *threads*   1          "Number of cores to use.")
 (defvar *evals*    (expt 2 18) "Maximum number of test evaluations.")
@@ -93,10 +91,7 @@
         (note 5 "ERROR [~a]: ~a" exit info)
         (error "error [~a]: ~a" exit info)))
     (note 4 "running ~S~%" asm)
-    (multiple-value-bind (stdout stderr errno)
-        (if (null *size*)
-            (shell "~a ~a ~a -p"       *script* *benchmark* bin)
-            (shell "~a ~a ~a -s ~a -p" *script* *benchmark* bin *size*))
+    (multiple-value-bind (stdout stderr errno) (shell *script* bin)
       (declare (ignorable stderr) (ignorable errno))
       (ignore-errors (parse-stdout stdout)))))
 
@@ -189,8 +184,16 @@
   (let ((help "Usage: opt TEST-SCRIPT ASM-FILE [OPTIONS...]
  Optimize the assembly code in ASM-FILE against TEST-SCRIPT.
 
-TEST-SCRIPT takes an executable, returns a numeric fitness.
-   ASM-FILE is a text file of assembler code.
+TEST-SCRIPT:
+  Command line used to evaluate executables.  If the test
+  script contains the substring \"~~a\" it will be replaced
+  with the name of the executable, otherwise the executable
+  will be appended to the end of the test script.  The script
+  should return a single numeric fitness or multiple metrics
+  in csv format.
+
+ASM-FILE:
+  Is a text file of assembler code.
 
 Options:
  -c,--cross-chance NUM - crossover chance (default 2/3)
@@ -259,7 +262,10 @@ Options:
       (quit))
 
     ;; process mandatory command line arguments
-    (setf *script* (pop args)
+    (setf *script* (let ((script "run-nbody"))
+                     (if (scan "~a" script)
+                         script
+                         (format nil "~a ~~a" script)))
           *path*   (pop args))
 
     ;; process command line options
@@ -335,8 +341,6 @@ Options:
           (mapcar (lambda (param)
                     (cons param (eval param)))
                   '(*path*
-                    *benchmark*
-                    *size*
                     (linker *orig*)
                     (flags *orig*)
                     *threads*

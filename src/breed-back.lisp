@@ -44,8 +44,7 @@
                          infinity))
               (extended ;; run just the speedy extended tests
                ;; (multiple-value-bind (out err errno)
-               ;;     (shell "extended-tests.py ~a ~a -l \"limit\" -s 8"
-               ;;            *benchmark* (phenome asm))
+               ;;     (shell *script* (phenome asm))
                ;;   (declare (ignorable err errno))
                ;;   (* (count-if {scan "FAIL"} (split-sequence #\Newline out))
                ;;      extended-test-penalty))

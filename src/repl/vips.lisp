@@ -1,7 +1,7 @@
 (in-package :optimize)
 
-(setf *benchmark* "vips"
-      *orig* (from-file (make-instance 'asm-perf) "benchmarks/vips/vips.s")
+(setf *orig* (from-file (make-instance 'asm-perf) "benchmarks/vips/vips.s")
+      *script* "run vips ~a -p"
       (linker *orig*) "link-vips"
       *num-threads* 16
       *tournament-size* 4
