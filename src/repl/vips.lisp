@@ -7,9 +7,9 @@
       *tournament-size* 4
       *evals* 15000
       *work-dir* "sh-runner/work"
-      *model* (eval (case (arch)
-                      (:intel 'intel-sandybridge-energy-model)
-                      (:amd   'amd-opteron-energy-model)))
+      *fitness-function* (case (arch)
+                           (:intel 'intel-sandybridge-energy-model)
+                           (:amd   'amd-opteron-energy-model))
       (fitness *orig*) (or (test *orig*) (error "bad fitness"))
       *max-population-size* 512
       *period* 256

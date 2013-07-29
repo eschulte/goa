@@ -15,5 +15,4 @@
    :optimize
    :objread
    :calc-energy
-   :model-variance
    :annotate))

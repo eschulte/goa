@@ -25,33 +25,9 @@
 
 ;;; Running
 
-;; 0. general setup
-(unless *model*
-  (setf *model* (case (arch)
-                  (:intel 'intel-sandybridge-power-model)
-                  (:amd   'amd-opteron-power-model))))
-(when (symbolp *model*) (setf *model* (eval *model*)))
-
-;; 1. redefine test to use the extended tests as well as the model.
-(defun test (asm)
-  (note 4 "extended testing ~S~%" asm)
-  (or (ignore-errors
-        (let ((model (or (progn
-                           (unless (stats asm) (setf (stats asm) (run asm)))
-                           (note 4 "stats:~%~S~%" (stats asm))
-                           (when (<= (aget :error (stats asm)) *max-err*)
-                             (apply-model *model* (stats asm))))
-                         infinity))
-              (extended ;; run just the speedy extended tests
-               ;; (multiple-value-bind (out err errno)
-               ;;     (shell *script* (phenome asm))
-               ;;   (declare (ignorable err errno))
-               ;;   (* (count-if {scan "FAIL"} (split-sequence #\Newline out))
-               ;;      extended-test-penalty))
-               )
-              (additional #| run just the speedy additional tests |# ))
-          (+ model extended)))
-      infinity))
+;; 1. the fitness function should include extended tests
+(assert *fitness-function* (*fitness-function*)
+        "Fitness function should be set and should incorporate extended tests.")
 
 ;; 2. populate with a mix of the best individuals and the original
 (progn

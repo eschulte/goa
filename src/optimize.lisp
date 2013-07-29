@@ -49,15 +49,17 @@
 
 
 ;;; Configuration Fitness and Runtime
-(defvar *path*      nil        "Path to Assembly file.")
 (defvar *script*    nil        "Script used to test benchmark application.")
+(defvar *path*      nil        "Path to Assembly file.")
+(defvar *rep*       nil        "Program representation to use.")
+(defvar *mcmc*      nil        "Whether MCMC search should be used.")
 (defvar *res-dir*   nil        "Directory in which to save results.")
 (defvar *orig*      nil        "Original version of the program to be run.")
 (defvar *period*    nil        "Period at which to run `checkpoint'.")
 (defvar *threads*   1          "Number of cores to use.")
 (defvar *evals*    (expt 2 18) "Maximum number of test evaluations.")
 (defvar *max-err*   0          "Maximum allowed error.")
-(defvar *model*     nil        "HW counter model to optimized.")
+(defvar *fitness-function* nil "Fitness function.")
 (setf *max-population-size* (expt 2 9)
       *fitness-predicate* #'<
       *cross-chance* 2/3
@@ -95,8 +97,8 @@
       (declare (ignorable stderr) (ignorable errno))
       (ignore-errors (parse-stdout stdout)))))
 
-(defun apply-model (model stats)
-  "Apply MODEL to STATS."
+(defun apply-fitness-function (fitness-function stats)
+  "Apply FITNESS-FUNCTION to STATS."
   (flet ((key-to-sym (keyword)
            (if (keywordp keyword)
                (intern (string-upcase (symbol-name keyword)) :optimize)
@@ -106,7 +108,7 @@
           (expr `(let ,(mapcar (lambda (pair)
                                  (list (key-to-sym (car pair)) (cdr pair)))
                                stats)
-                   ,model)))
+                   ,fitness-function)))
       (values (eval expr) expr))))
 
 (defvar infinity
@@ -123,7 +125,7 @@
         (unless (stats asm) (setf (stats asm) (run asm)))
         (note 4 "stats:~%~S~%" (stats asm))
         (when (<= (aget :error (stats asm)) *max-err*)
-          (apply-model *model* (stats asm))))
+          (apply-fitness-function *fitness-function* (stats asm))))
       infinity))
 
 (defun checkpoint ()
@@ -151,7 +153,7 @@
                                   ,@(stats sizes)))))))))
 
 
-;;; Simple helpers
+;;; Helpers
 (defun throw-error (&rest args)
   (apply #'note 0 args)
   (quit))
@@ -240,7 +242,7 @@ Options:
               (evolve #'test :max-evals *evals*
                       :period *period*
                       :period-fn (lambda () (mapc #'funcall *checkpoint-funcs*)))))
-        (rep 'range) (mcmc nil) (*note-level* 1) linker flags)
+        (*rep* 'range) (*note-level* 1) linker flags)
     ;; Set default GC threshold
     #+ccl (ccl:set-lisp-heap-gc-threshold (expt 2 30))
     #+sbcl (setf (sb-ext:bytes-consed-between-gcs) (expt 2 24))
@@ -262,7 +264,7 @@ Options:
       (quit))
 
     ;; process mandatory command line arguments
-    (setf *script* (let ((script "run-nbody"))
+    (setf *script* (let ((script (pop args)))
                      (if (scan "~a" script)
                          script
                          (format nil "~a ~~a" script)))
@@ -275,8 +277,8 @@ Options:
      ("-e" "--eval"      (eval (read-from-string (pop args))))
      ("-E" "--max-err"   (setf *max-err* (read-from-string (pop args))))
      ("-f" "--fit-evals" (setf *evals* (parse-integer (pop args))))
-     ("-F" "--fit-func"  (throw-error "Fitness Functions are not implemented."))
-     (nil  "--fit-pred"  (setf *fitness-predicate* (read (pop args))))
+     ("-F" "--fit-func" (setf *fitness-function* (read-from-string (pop args))))
+     (nil "--fit-pred" (setf *fitness-predicate* (read-from-string (pop args))))
      ("-g" "--gc-size"
            #+ccl  (ccl:set-lisp-heap-gc-threshold (parse-integer (pop args)))
            #+sbcl (setf (sb-ext:bytes-consed-between-gcs)
@@ -285,7 +287,7 @@ Options:
      ("-L" "--lflags"    (setf flags (split-sequence #\Space (pop args)
                                                      :remove-empty-subseqs t)))
      ("-m" "--mut-rate"  (setf *mut-rate* (parse-number (pop args))))
-     ("-M" "--mcmc"      (setf mcmc t))
+     ("-M" "--mcmc"      (setf *mcmc* t))
      ("-p" "--pop-size"  (setf *max-population-size*
                                (parse-integer (pop args))))
      ("-P" "--period"    (setf *period* (parse-integer (pop args))))
@@ -295,7 +297,7 @@ Options:
                                   (if (string= (subseq dir (1- (length dir)))
                                                "/")
                                       dir (concatenate 'string dir "/"))))))
-     ("-R" "--rep"       (setf rep (intern (string-upcase (pop args)))))
+     ("-R" "--rep"       (setf *rep* (intern (string-upcase (pop args)))))
      ("-s" "--evict-size" (setf *tournament-eviction-size*
                                 (parse-integer (pop args))))
      ("-t" "--threads"   (setf *threads* (parse-integer (pop args))))
@@ -306,7 +308,7 @@ Options:
      ("-w" "--work-dir"  (setf *work-dir* (pop args))))
     (unless *period* (setf *period* (ceiling (/ *evals* (expt 2 10)))))
     (unless *orig*
-      (setf *orig* (from-file (make-instance (case rep
+      (setf *orig* (from-file (make-instance (case *rep*
                                                (asm 'asm-perf)
                                                (light 'asm-light)
                                                (range 'asm-range)))
@@ -327,12 +329,6 @@ Options:
            #-ccl (open log-name :direction :output)
            *note-out*)))
 
-    (unless *model*
-      (setf *model* (case (arch)
-                      (:intel 'intel-sandybridge-power-model)
-                      (:amd   'amd-opteron-power-model))))
-    (when (symbolp *model*) (setf *model* (eval *model*)))
-
     ;; write out version information
     (note 1 version)
 
@@ -344,7 +340,7 @@ Options:
                     (linker *orig*)
                     (flags *orig*)
                     *threads*
-                    mcmc
+                    *mcmc*
                     *mut-rate*
                     *cross-chance*
                     *evals*
@@ -352,9 +348,8 @@ Options:
                     *work-dir*
                     *max-err*
                     *max-population-size*
-                    *model*
                     *period*
-                    rep
+                    *rep*
                     *note-level*
                     *res-dir*)))
 
@@ -375,19 +370,19 @@ Options:
                                  :type "store"))
 
     ;; actually perform the optimization
-    (if mcmc
+    (if *mcmc*
         (progn
           (when (> *threads* 1)
             (throw-error "Multi-threaded MCMC is not supported."))
           (note 1 "Starting MCMC search")
           (setf *population* (list *orig*))
-          (mcmc *orig* #'test :max-evals *evals*
-                :every-fn
-                (lambda (new)
-                  (when (funcall *fitness-predicate* new (car *population*))
-                    (setf *population* (list new))))
-                :period *period*
-                :period-fn (lambda () (mapc #'funcall *checkpoint-funcs*))))
+          (*mcmc* *orig* #'test :max-evals *evals*
+                  :every-fn
+                  (lambda (new)
+                    (when (funcall *fitness-predicate* new (car *population*))
+                      (setf *population* (list new))))
+                  :period *period*
+                  :period-fn (lambda () (mapc #'funcall *checkpoint-funcs*))))
         (progn
           ;; populate population
           (unless *population* ;; don't re-populate an existing population

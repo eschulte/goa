@@ -48,7 +48,7 @@ This includes evolved individuals in the training set.")
 
 ;;; Executable script driver
 (defun calc-energy (&optional (args *arguments*))
-  (flet ((arg-pop () (pop args)))
+  (let (model)
     (let ((help "Usage: run BENCHMARK EXECUTABLE -p|calc-energy [OPTIONS...]
  calculate the energy of a run
 
@@ -67,14 +67,14 @@ Options:
         (quit))
       
       (getopts
-       ("-m" "--model" (setf *model* (intern (string-upcase (arg-pop)))))
+       ("-m" "--model" (setf model (intern (string-upcase (pop args)))))
        ("-d" "--debug" (setf debug t)))
 
-      (setf *model* (eval (or *model*
-                              (case (arch)
-                                (:intel 'intel-sandybridge-power-model)
-                                (:amd   'amd-opteron-power-model)))))
-      (when debug (format t "~&; model~%~S~%~%" *model*))
+      (setf model (eval (or model
+                            (case (arch)
+                              (:intel 'intel-sandybridge-power-model)
+                              (:amd   'amd-opteron-power-model)))))
+      (when debug (format t "~&; model~%~S~%~%" model))
 
       ;; parse inputs
       (let ((cs (mapcar
@@ -90,7 +90,7 @@ Options:
 
         ;; Apply the model to the counters
         (handler-case
-            (multiple-value-bind (value expr) (apply-model *model* cs)
+            (multiple-value-bind (value expr) (apply-fitness-function model cs)
               (when debug (format t "~&; expression~%~S~%~%" expr))
               (format t "~S~%" value))
           (UNBOUND-VARIABLE (e) (format t "~S~%" e)))))))

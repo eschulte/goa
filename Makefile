@@ -18,7 +18,7 @@ $(error Please point QUICK_LISP to your quicklisp installation)
 endif
 
 # Compiled lisp executables
-LISP_EXES=optimize objread calc-energy model-variance annotate
+LISP_EXES=optimize objread calc-energy annotate
 LISP_BINS=$(addprefix bin/, $(LISP_EXES))
 LISP_DEPS=src/package.lisp src/optimize.lisp src/annotate.lisp etc/cl-launch.lisp
 

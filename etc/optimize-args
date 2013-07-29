@@ -9,3 +9,4 @@ raytrace	g++	-lglut -lGL -lGL -lGLU -lXmu -lXext -lXau -lX11 -ldl -lpthread -lst
 swaptions	g++	-lpthread
 vips	link-vips	
 x264	gcc	-lm -lpthread
+nbody	gcc	-lm

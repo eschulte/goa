@@ -4,9 +4,9 @@
  *orig* (from-file (make-instance 'asm-perf) "benchmarks/h264ref/h264ref.s")
  *script* "run h264ref ~a -p"
  (flags *orig*) '("-lm" "-O3")
- *model* (case (arch)
-           (:intel intel-sandybridge-energy-model)
-           (:amd   amd-opteron-energy-model))
+ *fitness-function* (case (arch)
+                      (:intel intel-sandybridge-energy-model)
+                      (:amd   amd-opteron-energy-model))
  (fitness *orig*) (test *orig*)
  *max-population-size* (expt 2 4)
  *population* (loop :for n :below *max-population-size*

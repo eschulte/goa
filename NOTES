@@ -2355,8 +2355,8 @@ We could use the "bubble" and the "reporter" from [[#mars2011bubble]].
 Measuring the values of HW counters against the bubble could give us
 coefficients for a memory linear model.
 
-* Code Tasks [8/10]
-** TODO generalize optimization
+* Code Tasks [9/10]
+** DONE generalize optimization
 - user supplied workload script
 - user supplied fitness function
   (lisp or nice equation format with HW counters)
