@@ -64,20 +64,18 @@
 
 (defun smooth (list)
   (declare (optimize speed))
-  (subseq
-   (mapcar (lambda (b3 b2 b1 o a1 a2 a3)
-             (+ (* 0.006 (+ b3 a3))
-                (* 0.061 (+ b2 a2))
-                (* 0.242 (+ b1 a1))
-                (* 0.383 o)))
-           (append         (cdddr list) '(0 0 0 0 0 0))
-           (append         (cddr  list) '(0 0 0 0 0))
-           (append         (cdr   list) '(0 0 0 0))
-           (append          list        '(0 0 0))
-           (append '(0)     list        '(0 0))
-           (append '(0 0)   list        '(0))
-           (append '(0 0 0) list))
-   3 (- (length list) 3)))
+  (mapcar (lambda (b3 b2 b1 o a1 a2 a3)
+            (+ (* 0.006 (+ b3 a3))
+               (* 0.061 (+ b2 a2))
+               (* 0.242 (+ b1 a1))
+               (* 0.383 o)))
+          (append         (cdddr list) '(0 0 0))
+          (append         (cddr  list) '(0 0))
+          (append         (cdr   list) '(0))
+          (append          list)
+          (append '(0)     list)
+          (append '(0 0)   list)
+          (append '(0 0 0) list)))
 
 
 ;;; print assembly LOC (aka ids) of annotations

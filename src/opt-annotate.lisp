@@ -11,6 +11,8 @@
 ;;; Code:
 (in-package :optimize)
 
+(setf *rep* 'asm)
+
 ;; Weight mutation location selection using the annotations, and
 ;; maintain annotation over mutations
 (defmethod pick-bad ((asm simple)) (pick asm [{+ 0.01} {aget :annotation}]))
@@ -31,10 +33,11 @@
 
 ;; apply the perf annotations to the genome
 (unless (aget :annotation (car (genome *orig*)))
-  (mapcar (lambda (ann element)
-            (cons (cons :annotation ann) element))
-          (smooth (mapcar (lambda (ans) (or ans 0)) (genome-anns *orig*)))
-          (genome *orig*))
+  (setf (genome *orig*)
+        (mapcar (lambda (ann element)
+                  (cons (cons :annotation ann) element))
+                (smooth (mapcar (lambda (ans) (or ans 0)) (genome-anns *orig*)))
+                (genome *orig*)))
   (store *orig* (make-pathname :directory *res-dir*
                                :name "orig"
                                :type "store")))
