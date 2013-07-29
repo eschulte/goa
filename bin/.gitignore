@@ -1,6 +1,6 @@
 REMOTES
-optimize
-optimize*
+opt
+opt*
 objread
 calc-energy
 model-variance

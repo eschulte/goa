@@ -12,7 +12,7 @@
         :bordeaux-threads)
   (:shadow :type :magic-number)
   (:export
-   :main
+   :opt
    :objread
    :calc-energy
    :model-variance

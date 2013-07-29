@@ -5,39 +5,38 @@
 ;;; Code:
 (in-package :optimize)
 
-(defvar *help* "Usage: optimize program.s benchmark-name [OPTIONS...]
- Optimize the assembly code of a benchmark program
+(defvar *help* "Usage: opt TEST-SCRIPT ASM-FILE.s [OPTIONS...]
+ Optimize the assembly code in ASM-FILE against TEST-SCRIPT
 
 Options:
- -C,--config FILE ------ read configuration from FILE
  -c,--cross-chance NUM - crossover chance (default 2/3)
- -E,--max-error NUM ---- maximum allowed error
+ -C,--config FILE ------ read configuration from FILE
  -e,--eval SEXP -------- evaluate S-expression SEXP
- -F,--fit-evals NUM ---- max number of fitness evals
+ -E,--max-error NUM ---- maximum allowed error (default 0)
+ -f,--fit-evals NUM ---- max number of fitness evals
                          default: 2^18
- -f,--flags FLAGS ------ flags to use when linking
+ -F,--fit-func FLAGS --- fitness function
  -g,--gc-size ---------- ~a
                          default: ~:d
  -l,--linker LINKER ---- linker to use
+ -L,--lflags FLAGS ----- flags to use when linking
+ -m,--mut-rate NUM ----- mutation rate (default 1)
  -M,--mcmc ------------- run MCMC search instead of GP
- -m,--mut-chance NUM --- mutation chance (default 1)
- -o,--model NAME ------- model name
- -P,--period NUM ------- period (in evals) of checkpoints
-                         default: max-evals/(2^10)
  -p,--pop-size NUM ----- population size
                          default: 2^9
- -R,--rep REP ---------- use REP program representation
-                         asm, light, or range (default)
+ -P,--period NUM ------- period (in evals) of checkpoints
+                         default: max-evals/(2^10)
  -r,--res-dir DIR ------ save results to dir
                          default: program.opt/
- -S,--evict-size NUM --- eviction tournament size
+ -R,--rep REP ---------- use REP program representation
+                         asm, light, or range (default)
+ -s,--evict-size NUM --- eviction tournament size
                          default: 2
- -s,--size SIZE -------- input size test,tiny,small,medium,large
+ -t,--threads NUM ------ number of threads
  -T,--tourny-size NUM -- selection tournament size
                          default: 1 (i.e., random selection)
- -t,--threads NUM ------ number of threads
- -V,--version ---------- print version and exit
  -v,--verbose NUM ------ verbosity level 0-4
+ -V,--version ---------- print version and exit
  -w,--work-dir DIR ----- use an sh-runner/work directory~%")
 
 (defvar *version*
@@ -61,7 +60,7 @@ Options:
           :period *period*
           :period-fn (lambda () (mapc #'funcall *checkpoint-funcs*))))
 
-(defun main (&optional (args *arguments*))
+(defun opt (&optional (args *arguments*))
   (in-package :optimize)
   (setf *note-level* 1)
   (flet ((arg-pop () (pop args)))
@@ -87,8 +86,8 @@ Options:
 
     ;; process command line arguments
     (setf
+     *script* (arg-pop)
      *path* (arg-pop)
-     *benchmark* (arg-pop)
      *orig* (from-file (make-instance 'asm-perf) *path*)
      *res-dir* (append (pathname-directory *path*)
                        (list (concatenate 'string
@@ -96,23 +95,25 @@ Options:
 
     ;; process command line options
     (getopts
-     ("-C" "--config"    (load (arg-pop)))
      ("-c" "--cross-chance" (setf *cross-chance* (parse-number (arg-pop))))
-     ("-E" "--max-err"   (setf *max-err* (read-from-string (arg-pop))))
+     ("-C" "--config"    (load (arg-pop)))
      ("-e" "--eval"      (eval (read-from-string (arg-pop))))
-     ("-F" "--fit-evals" (setf *evals* (parse-integer (arg-pop))))
-     ("-f" "--flags"     (setf (flags *orig*) (list (arg-pop))))
+     ("-E" "--max-err"   (setf *max-err* (read-from-string (arg-pop))))
+     ("-f" "--fit-evals" (setf *evals* (parse-integer (arg-pop))))
+     ("-F" "--fit-func"  (throw-error "Fitness Functions are not implemented."))
      ("-g" "--gc-size"
            #+ccl  (ccl:set-lisp-heap-gc-threshold (parse-integer (arg-pop)))
            #+sbcl (setf (sb-ext:bytes-consed-between-gcs)
                         (parse-integer (arg-pop))))
      ("-l" "--linker"    (setf (linker *orig*) (arg-pop)))
+     ("-L" "--lflags"    (setf (flags *orig*)
+                               (split-sequence #\Space (arg-pop)
+                                               :remove-empty-subseqs t)))
+     ("-m" "--mut-rate"  (setf *mut-rate* (parse-number (arg-pop))))
      ("-M" "--mcmc"      (setf *mcmc* t))
-     ("-m" "--mut-chance" (setf *mut-chance* (parse-number (arg-pop))))
-     ("-o" "--model"     (setf *model* (intern (string-upcase (arg-pop)))))
-     ("-P" "--period"    (setf *period* (parse-integer (arg-pop))))
      ("-p" "--pop-size"  (setf *max-population-size*
                                (parse-integer (arg-pop))))
+     ("-P" "--period"    (setf *period* (parse-integer (arg-pop))))
      ("-r" "--res-dir"   (setf *res-dir*
                                (let ((dir (arg-pop)))
                                  (pathname-directory
@@ -120,11 +121,10 @@ Options:
                                                "/")
                                       dir (concatenate 'string dir "/"))))))
      ("-R" "--rep"       (setf *rep* (intern (string-upcase (arg-pop)))))
-     ("-s" "--size"      (setf *size* (arg-pop)))
-     ("-T" "--tourny-size" (setf *tournament-size* (parse-integer (arg-pop))))
-     ("-S" "--evict-size" (setf *tournament-eviction-size*
+     ("-s" "--evict-size" (setf *tournament-eviction-size*
                                 (parse-integer (arg-pop))))
      ("-t" "--threads"   (setf *threads* (parse-integer (arg-pop))))
+     ("-T" "--tourny-size" (setf *tournament-size* (parse-integer (arg-pop))))
      ("-v" "--verbose"   (let ((lvl (parse-integer (arg-pop))))
                            (when (>= lvl 4) (setf *shell-debug* t))
                            (setf *note-level* lvl)))
@@ -164,7 +164,7 @@ Options:
                     (flags *orig*)
                     *threads*
                     *mcmc*
-                    *mut-chance*
+                    *mut-rate*
                     *cross-chance*
                     *evals*
                     *tournament-size*
