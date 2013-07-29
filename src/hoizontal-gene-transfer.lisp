@@ -43,18 +43,25 @@
   (:documentation
    "Variable length crossover with between-genome pairing through synapsis."))
 
+(declaim (inline string-similar))
 (defun string-similar (string1 string2)
   "Return the similarity between STRING1 and STRING2 as a number from 0 to 1."
+  (declare (optimize speed))
   (reduce (lambda-bind (acc (a b)) (if (equal a b) (1+ acc) acc))
           (mapcar #'list (coerce string1 'list) (coerce string2 'list))
           :initial-value 0))
 
+(declaim (inline lines-similar))
 (defun line-similar (line1 line2)
   "Return the similarity between LINE1 and LINE2 as a number from 0 to 1."
+  (declare (optimize speed))
   (let ((splits (mapcar [{remove ""} {split "[ \\t]"}] (list line1 line2))))
     ((lambda (a b) (if (zerop b) 0 (/ a b)))
      (reduce #'+ (apply {mapcar #'string-similar} splits))
      (reduce #'+ (apply {mapcar #'min} (mapcar {mapcar #'length} splits))))))
+
+(defvar synapsis-specificity 4
+  "Increase this number to make crossover points require more similarity.")
 
 (defmethod synapsis-crossover ((a asm) (b asm))
   (let ((new (copy a))
@@ -65,11 +72,17 @@
         (index (random (size a))))
     (labels ((line-at (ind asm) (aget :line (nth ind (genome asm))))
              (scan-towards (target)
-               (loop :until (or (not (and (>= index 0)
-                                          (< index (length (genome a)))))
-                                (< (random 1.0)
-                                   (line-similar target (line-at index a))))
-                  :do (incf index step))
+               (let ((spec synapsis-specificity))
+                 (loop :for steps :upfrom 0
+                    :until (or (not (and (>= index 0)
+                                         (< index (length (genome a)))))
+                               (< (random 1.0)
+                                  (expt (line-similar target (line-at index a))
+                                        synapsis-specificity)))
+                    :do (incf index step)
+                    ;; become less choosy the longer we search
+                    :when (> steps 2000)
+                    :do (progn (setf steps 0) (decf spec (/ spec 4)))))
                index))
       (let* ((in-start (scan-towards (line-at (first piece) b)))
              (in-end (progn (setf step 1)
