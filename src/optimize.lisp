@@ -244,8 +244,7 @@ Options:
 
 (defun optimize (&optional (args *arguments*))
   (in-package :optimize)
-  (setf *note-level* 1)
-  (flet ((arg-pop () (pop args)))
+  (let ((*note-level* 1))
     ;; Set default GC threshold
     #+ccl (ccl:set-lisp-heap-gc-threshold (expt 2 30))
     #+sbcl (setf (sb-ext:bytes-consed-between-gcs) (expt 2 24))
@@ -268,8 +267,8 @@ Options:
 
     ;; process command line arguments
     (setf
-     *script* (arg-pop)
-     *path* (arg-pop)
+     *script* (pop args)
+     *path* (pop args)
      *orig* (from-file (make-instance 'asm-perf) *path*)
      *res-dir* (append (pathname-directory *path*)
                        (list (concatenate 'string
@@ -277,41 +276,41 @@ Options:
 
     ;; process command line options
     (getopts
-     ("-c" "--cross-chance" (setf *cross-chance* (parse-number (arg-pop))))
-     ("-C" "--config"    (load (arg-pop)))
-     ("-e" "--eval"      (eval (read-from-string (arg-pop))))
-     ("-E" "--max-err"   (setf *max-err* (read-from-string (arg-pop))))
-     ("-f" "--fit-evals" (setf *evals* (parse-integer (arg-pop))))
+     ("-c" "--cross-chance" (setf *cross-chance* (parse-number (pop args))))
+     ("-C" "--config"    (load (pop args)))
+     ("-e" "--eval"      (eval (read-from-string (pop args))))
+     ("-E" "--max-err"   (setf *max-err* (read-from-string (pop args))))
+     ("-f" "--fit-evals" (setf *evals* (parse-integer (pop args))))
      ("-F" "--fit-func"  (throw-error "Fitness Functions are not implemented."))
-     (nil  "--fit-pred"  (setf *fitness-predicate* (read (arg-pop))))
+     (nil  "--fit-pred"  (setf *fitness-predicate* (read (pop args))))
      ("-g" "--gc-size"
-           #+ccl  (ccl:set-lisp-heap-gc-threshold (parse-integer (arg-pop)))
+           #+ccl  (ccl:set-lisp-heap-gc-threshold (parse-integer (pop args)))
            #+sbcl (setf (sb-ext:bytes-consed-between-gcs)
-                        (parse-integer (arg-pop))))
-     ("-l" "--linker"    (setf (linker *orig*) (arg-pop)))
+                        (parse-integer (pop args))))
+     ("-l" "--linker"    (setf (linker *orig*) (pop args)))
      ("-L" "--lflags"    (setf (flags *orig*)
-                               (split-sequence #\Space (arg-pop)
+                               (split-sequence #\Space (pop args)
                                                :remove-empty-subseqs t)))
-     ("-m" "--mut-rate"  (setf *mut-rate* (parse-number (arg-pop))))
+     ("-m" "--mut-rate"  (setf *mut-rate* (parse-number (pop args))))
      ("-M" "--mcmc"      (setf *mcmc* t))
      ("-p" "--pop-size"  (setf *max-population-size*
-                               (parse-integer (arg-pop))))
-     ("-P" "--period"    (setf *period* (parse-integer (arg-pop))))
+                               (parse-integer (pop args))))
+     ("-P" "--period"    (setf *period* (parse-integer (pop args))))
      ("-r" "--res-dir"   (setf *res-dir*
-                               (let ((dir (arg-pop)))
+                               (let ((dir (pop args)))
                                  (pathname-directory
                                   (if (string= (subseq dir (1- (length dir)))
                                                "/")
                                       dir (concatenate 'string dir "/"))))))
-     ("-R" "--rep"       (setf *rep* (intern (string-upcase (arg-pop)))))
+     ("-R" "--rep"       (setf *rep* (intern (string-upcase (pop args)))))
      ("-s" "--evict-size" (setf *tournament-eviction-size*
-                                (parse-integer (arg-pop))))
-     ("-t" "--threads"   (setf *threads* (parse-integer (arg-pop))))
-     ("-T" "--tourny-size" (setf *tournament-size* (parse-integer (arg-pop))))
-     ("-v" "--verbose"   (let ((lvl (parse-integer (arg-pop))))
+                                (parse-integer (pop args))))
+     ("-t" "--threads"   (setf *threads* (parse-integer (pop args))))
+     ("-T" "--tourny-size" (setf *tournament-size* (parse-integer (pop args))))
+     ("-v" "--verbose"   (let ((lvl (parse-integer (pop args))))
                            (when (>= lvl 4) (setf *shell-debug* t))
                            (setf *note-level* lvl)))
-     ("-w" "--work-dir"  (setf *work-dir* (arg-pop))))
+     ("-w" "--work-dir"  (setf *work-dir* (pop args))))
     (unless *period* (setf *period* (ceiling (/ *evals* (expt 2 10)))))
 
     ;; directories for results saving and logging
