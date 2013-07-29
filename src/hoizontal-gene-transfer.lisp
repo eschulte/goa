@@ -46,7 +46,7 @@
 (declaim (inline string-similar))
 (defun string-similar (string1 string2)
   "Return the similarity between STRING1 and STRING2 as a number from 0 to 1."
-  (declare (optimize speed))
+  (declare (cl-user::optimize speed))
   (reduce (lambda-bind (acc (a b)) (if (equal a b) (1+ acc) acc))
           (mapcar #'list (coerce string1 'list) (coerce string2 'list))
           :initial-value 0))
@@ -54,7 +54,7 @@
 (declaim (inline lines-similar))
 (defun line-similar (line1 line2)
   "Return the similarity between LINE1 and LINE2 as a number from 0 to 1."
-  (declare (optimize speed))
+  (declare (cl-user::optimize speed))
   (let ((splits (mapcar [{remove ""} {split "[ \\t]"}] (list line1 line2))))
     ((lambda (a b) (if (zerop b) 0 (/ a b)))
      (reduce #'+ (apply {mapcar #'string-similar} splits))

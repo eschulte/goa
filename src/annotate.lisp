@@ -63,7 +63,7 @@
       (when (not (or bin script)) (delete-file my-bin)))))
 
 (defun smooth (list)
-  (declare (optimize speed))
+  (declare (cl-user::optimize speed))
   (mapcar (lambda (b3 b2 b1 o a1 a2 a3)
             (+ (* 0.006 (+ b3 a3))
                (* 0.061 (+ b2 a2))

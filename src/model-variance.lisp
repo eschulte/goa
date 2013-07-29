@@ -19,7 +19,7 @@
 
 ;; http://en.wikipedia.org/wiki/Variance#Weighted_sum_of_variables
 (defun sum-of-var (coefficients samples)
-  (declare (optimize speed))
+  (declare (cl-user::optimize speed))
   (loop :for i :below (length coefficients) :summing
      (loop :for j :below (length coefficients) :summing
         (* (nth i coefficients) (nth j coefficients)

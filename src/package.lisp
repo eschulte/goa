@@ -10,9 +10,9 @@
         :cl-ppcre
         :cl-launch
         :bordeaux-threads)
-  (:shadow :type :magic-number)
+  (:shadow :type :magic-number :optimize)
   (:export
-   :opt
+   :optimize
    :objread
    :calc-energy
    :model-variance
