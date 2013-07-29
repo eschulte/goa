@@ -181,7 +181,12 @@
 
 
 ;;; Command line optimization driver
-(defvar *help* "Usage: opt TEST-SCRIPT ASM-FILE [OPTIONS...]
+(defvar *checkpoint-funcs* (list #'checkpoint)
+  "Functions to record checkpoints.")
+
+(defun optimize (&optional (args *arguments*))
+  (in-package :optimize)
+  (let ((help "Usage: opt TEST-SCRIPT ASM-FILE [OPTIONS...]
  Optimize the assembly code in ASM-FILE against TEST-SCRIPT.
 
 TEST-SCRIPT takes an executable, returns a numeric fitness.
@@ -220,31 +225,19 @@ Options:
  -v,--verbose NUM ------ verbosity level 0-4
  -V,--version ---------- print version and exit
  -w,--work-dir DIR ----- use an sh-runner/work directory~%")
-
-(defvar *version*
-  (format nil
+        (version
+         (format nil
           #+ccl "optimize version ~a using Clozure Common Lisp (CCL)~%"
           #+sbcl "optimize version ~a using Steel Bank Common Lisp (SBCL)~%"
           (eval-when (:compile-toplevel :load-toplevel :execute)
             (let ((raw (shell "git describe --always")))
               (subseq raw 0 (1- (length raw)))))))
-
-(defvar *checkpoint-funcs* (list #'checkpoint)
-  "Functions to record checkpoints.")
-
-(defvar *mcmc* nil "Use MCMC search instead of GP.")
-
-(defvar *rep* 'range
-  "The type of program representation to use during optimization.")
-
-(defun do-evolve ()
-  (evolve #'test :max-evals *evals*
-          :period *period*
-          :period-fn (lambda () (mapc #'funcall *checkpoint-funcs*))))
-
-(defun optimize (&optional (args *arguments*))
-  (in-package :optimize)
-  (let ((*note-level* 1))
+        (do-evolve
+            (lambda ()
+              (evolve #'test :max-evals *evals*
+                      :period *period*
+                      :period-fn (lambda () (mapc #'funcall *checkpoint-funcs*)))))
+        (rep 'range) (mcmc nil) (*note-level* 1) linker flags)
     ;; Set default GC threshold
     #+ccl (ccl:set-lisp-heap-gc-threshold (expt 2 30))
     #+sbcl (setf (sb-ext:bytes-consed-between-gcs) (expt 2 24))
@@ -257,22 +250,17 @@ Options:
               (string= (car args) "--version"))
       (if (or (string= (car args) "-V")
               (string= (car args) "--version"))
-          (progn (format t *version*) (quit))
-          (format t *help*
+          (progn (format t version) (quit))
+          (format t help
                   #+ccl "space left after a full GC pass"
                   #+sbcl "bytes consed between every GC pass"
                   #+ccl (ccl:lisp-heap-gc-threshold)
                   #+sbcl (sb-ext:bytes-consed-between-gcs)))
       (quit))
 
-    ;; process command line arguments
-    (setf
-     *script* (pop args)
-     *path* (pop args)
-     *orig* (from-file (make-instance 'asm-perf) *path*)
-     *res-dir* (append (pathname-directory *path*)
-                       (list (concatenate 'string
-                               (pathname-name *path*) ".opt"))))
+    ;; process mandatory command line arguments
+    (setf *script* (pop args)
+          *path*   (pop args))
 
     ;; process command line options
     (getopts
@@ -287,12 +275,11 @@ Options:
            #+ccl  (ccl:set-lisp-heap-gc-threshold (parse-integer (pop args)))
            #+sbcl (setf (sb-ext:bytes-consed-between-gcs)
                         (parse-integer (pop args))))
-     ("-l" "--linker"    (setf (linker *orig*) (pop args)))
-     ("-L" "--lflags"    (setf (flags *orig*)
-                               (split-sequence #\Space (pop args)
-                                               :remove-empty-subseqs t)))
+     ("-l" "--linker"    (setf linker (pop args)))
+     ("-L" "--lflags"    (setf flags (split-sequence #\Space (pop args)
+                                                     :remove-empty-subseqs t)))
      ("-m" "--mut-rate"  (setf *mut-rate* (parse-number (pop args))))
-     ("-M" "--mcmc"      (setf *mcmc* t))
+     ("-M" "--mcmc"      (setf mcmc t))
      ("-p" "--pop-size"  (setf *max-population-size*
                                (parse-integer (pop args))))
      ("-P" "--period"    (setf *period* (parse-integer (pop args))))
@@ -302,7 +289,7 @@ Options:
                                   (if (string= (subseq dir (1- (length dir)))
                                                "/")
                                       dir (concatenate 'string dir "/"))))))
-     ("-R" "--rep"       (setf *rep* (intern (string-upcase (pop args)))))
+     ("-R" "--rep"       (setf rep (intern (string-upcase (pop args)))))
      ("-s" "--evict-size" (setf *tournament-eviction-size*
                                 (parse-integer (pop args))))
      ("-t" "--threads"   (setf *threads* (parse-integer (pop args))))
@@ -312,6 +299,14 @@ Options:
                            (setf *note-level* lvl)))
      ("-w" "--work-dir"  (setf *work-dir* (pop args))))
     (unless *period* (setf *period* (ceiling (/ *evals* (expt 2 10)))))
+    (unless *orig*
+      (setf *orig* (from-file (make-instance (case rep
+                                               (asm 'asm-perf)
+                                               (light 'asm-light)
+                                               (range 'asm-range)))
+                              *path*)))
+    (when linker (setf (linker *orig*) linker))
+    (when flags  (setf (flags  *orig*) flags))
 
     ;; directories for results saving and logging
     (unless (ensure-directories-exist (make-pathname :directory *res-dir*))
@@ -333,7 +328,7 @@ Options:
     (when (symbolp *model*) (setf *model* (eval *model*)))
 
     ;; write out version information
-    (note 1 *version*)
+    (note 1 version)
 
     ;; write out configuration parameters
     (note 1 "Parameters:~%~S~%"
@@ -345,7 +340,7 @@ Options:
                     (linker *orig*)
                     (flags *orig*)
                     *threads*
-                    *mcmc*
+                    mcmc
                     *mut-rate*
                     *cross-chance*
                     *evals*
@@ -355,20 +350,9 @@ Options:
                     *max-population-size*
                     *model*
                     *period*
-                    *rep*
+                    rep
                     *note-level*
                     *res-dir*)))
-
-    ;; Convert the program to the specified representation
-    (case *rep*
-      (light
-       (setf *orig* (to-asm-light *orig*)))
-      (range
-       (setf *rep* (coerce (mapcar {aget :line} (genome *orig*)) 'vector))
-       (setf *orig* (to-asm-range *orig*))
-       (setf (reference *orig*) *rep*))
-      (asm)
-      (t (throw-error "representation ~S is not recognized" *rep*)))
 
     ;; Run optimization
     (unless (fitness *orig*)
@@ -381,8 +365,13 @@ Options:
     (when (= (fitness *orig*) infinity)
       (throw-error "Original program has no fitness!"))
 
+    ;; save the original
+    (store *orig* (make-pathname :directory *res-dir*
+                                 :name "original"
+                                 :type "store"))
+
     ;; actually perform the optimization
-    (if *mcmc*
+    (if mcmc
         (progn
           (when (> *threads* 1)
             (throw-error "Multi-threaded MCMC is not supported."))
@@ -410,10 +399,11 @@ Options:
           (let (threads)
             ;; kick off optimization threads
             (loop :for n :below *threads* :do
-               (push (make-thread #'do-evolve) threads))
+               (push (make-thread do-evolve) threads))
             ;; wait for all threads to return
             (mapc #'join-thread threads))))
 
+    ;; finish up
     #+sbcl (sb-ext:gc :force t)
     (store *population* (make-pathname :directory *res-dir*
                                        :name "final-pop"
