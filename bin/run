@@ -9,6 +9,7 @@
 #  -a,--annotate -- annotate the assembly with perf
 #  -c,--counters -- comma separated list of perf counters
 #  -w,--wattsup --- collect watts-up data during execution
+#  -t,--time ------ collect time of execution
 #  -r,--repeat N -- repeat the execution N times
 #  -R,--raw ------- print raw output
 #  -s,--size ------ input size test,tiny,small,medium,large
@@ -21,14 +22,13 @@
 # Benchmark should be one of
 #  blackscholes
 #  bodytrack
-#  facesim
 #  ferret
 #  fluidanimate
 #  freqmine
-#  raytrace
 #  swaptions
 #  vips
 #  x264
+#  nbody
 #
 . $(dirname $0)/common
 
@@ -42,6 +42,7 @@ PERF=""
 ANNOTATE=""
 COUNTERS=""
 WATTSUP=""
+TIME=""
 REPEAT=""
 RAW=""
 DEBUG=""
@@ -53,8 +54,8 @@ INPUT="$BASE/benchmarks/$BENCHMARK/$BENCHMARK.input"
 OUTPUT="$BASE/benchmarks/$BENCHMARK/$BENCHMARK.output"
 OUT=$(mktemp)
 eval set -- \
-    $(getopt -o l:pac:wr:Rs:dkKi:o: \
-    -l limit:,perf,annotate,counters:,wattsup,repeat:,raw,size:,debug,keep,keep-perf,input:,output: \
+    $(getopt -o l:pac:wtr:Rs:dkKi:o: \
+    -l limit:,perf,annotate,counters:,wattsup,time,repeat:,raw,size:,debug,keep,keep-perf,input:,output: \
     -- "$@" || help;)
 while [ $# -gt 0 ];do
     case $1 in
@@ -64,6 +65,7 @@ while [ $# -gt 0 ];do
         -r|--repeat) REPEAT="$2"; shift;;
         -c|--counters) PERF="yes"; COUNTERS="$2"; shift;;
         -w|--wattsup) WATTSUP="yes";;
+        -t|--time)  TIME="yes";;
         -R|--raw) RAW="yes";;
         -s|--size) SIZE="$2"; shift;;
         -d|--debug) DEBUG="yes";;
@@ -93,9 +95,18 @@ if [ -z $COUNTERS ];then
 fi
 
 PREFIX="$LIMIT"
-if [ ! -z $WATTSUP ];then
+if [ ! -z $TIME ];then
+    if [ ! -z $PERF    ];then error "time and perf are incompatible options"; fi
+    if [ ! -z $WATTSUP ];then error "time and WattsUp are incompatible options"; fi
+    if [ ! -z $RAW     ];then error "time and raw are incompatible options"; fi
+    # setup output file for wu.py
+    TIME_OUT=$(mktemp /tmp/time.XXXXXXXX.txt)
+    # add wu.py to the prefix
+    PREFIX+=" time -p -o $TIME_OUT"
+elif [ ! -z $WATTSUP ];then
     if [ ! -z $PERF ];then error "WattsUp and perf are incompatible options"; fi
     if [ ! -z $RAW  ];then error "WattsUp and raw are incompatible options"; fi
+    if [ ! -z $RAW  ];then error "WattsUp and time are incompatible options"; fi
     # setup output file for wu.py
     WU_OUT=$(mktemp /tmp/wu.XXXXXXXX.csv)
     # add wu.py to the prefix
@@ -110,6 +121,8 @@ if [ -z $PERF ];then
             if [ ! -z $WATTSUP ];then
                 cat $WU_OUT|sed 's/,/ /g'|transpose \
                     |awk '{print $2,$1}'|sed 's/ /,/g'
+            elif [ ! -z $TIME ];then
+                cat $TIME_OUT|awk '{print $2,$1}'|sed 's/ /,/g'
             fi
         else
             cat $OUT
@@ -117,6 +130,7 @@ if [ -z $PERF ];then
         if [ -z $KEEP ];then
             rm -rf $OUT
             if [ ! -z $WATTSUP ];then rm -f $WU_OUT; fi
+            if [ ! -z $WATTSUP ];then rm -f $TIME_OUT; fi
             if [ ! -z "$tmp"   ];then rm -f $tmp;    fi
             if [ ! -z "$tmpd"  ];then rm -rf $tmpd;  fi
         else
