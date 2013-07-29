@@ -48,51 +48,6 @@
       :reference reference)))
 
 
-;;; Models
-(defvar intel-sandybridge-energy-model
-  '(+
-    (* 5.007e-15 cycles)
-    (* 1.774e-16 instructions)
-    (* 2.787e-16 (+ r532010 r538010))
-    (* 2.374e-14 cache-references)
-    (* 1.464e-14 cache-misses))
-  "HW counters and coefficients for the Intel Sandybridge energy model.")
-
-(defvar amd-opteron-energy-model
-  '(+
-    (*  4.411e-14 cycles)
-    (*  2.235e-15 instructions)
-    (* -8.531e-16 r533f00)
-    (* -1.256e-14 cache-references)
-    (* 3.679e-13  cache-misses))
-  "HW counters and coefficients in the AMD Opteron energy model.")
-
-(defvar intel-sandybridge-power-model
-  '(* seconds (+ 31.530
-               (*   20.490 (/ instructions cycles))
-               (*    9.838 (/ (+ r532010 r538010) cycles))
-               (*   -4.102 (/ cache-references cycles))
-               (* 2962.678 (/ cache-misses cycles))))
-  "HW counters and coefficients for the Intel Sandybridge power model.")
-
-(defvar amd-opteron-power-model
-  '(* seconds (+ 394.74
-               (*   -83.68 (/ instructions cycles))
-               (*    60.23 (/ r533f00 cycles))
-               (*   -16.38 (/ cache-references cycles))
-               (* -4209.09 (/ cache-misses cycles))))
-  "HW counters and coefficients in the AMD Opteron power model.")
-
-(defvar amd-opteron-power-model-plus
-  '(* seconds (+ 3.049e+02
-               (* 7.205e-06 (/ instructions cycles))
-               (* 9.395e-07 (/ r533f00 cycles))
-               (* 7.031e-06 (/ cache-references cycles))
-               (* 1.370e-05 (/ cache-misses cycles))))
-  "HW counters and coefficients in the AMD Opteron power model.
-This includes evolved individuals in the training set.")
-
-
 ;;; Configuration Fitness and Runtime
 (defvar *path*      nil        "Path to Assembly file.")
 (defvar *script*   "./bin/run" "Script used to test benchmark application.")
@@ -211,7 +166,9 @@ This includes evolved individuals in the training set.")
     `(loop :for ,arg = (pop args) :while ,arg :do
         (cond
           ,@(mapcar (lambda-bind ((short long . body))
-                      `((or (string= ,arg ,short) (string= ,arg ,long)) ,@body))
+                      `((or (and ,short (string= ,arg ,short))
+                            (and ,long  (string= ,arg ,long)))
+                        ,@body))
                     forms)))))
 
 (defun covariance (a b)

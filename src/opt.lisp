@@ -5,17 +5,23 @@
 ;;; Code:
 (in-package :optimize)
 
-(defvar *help* "Usage: opt TEST-SCRIPT ASM-FILE.s [OPTIONS...]
- Optimize the assembly code in ASM-FILE against TEST-SCRIPT
+(defvar *help* "Usage: opt TEST-SCRIPT ASM-FILE [OPTIONS...]
+ Optimize the assembly code in ASM-FILE against TEST-SCRIPT.
+
+TEST-SCRIPT takes an executable, returns a numeric fitness.
+   ASM-FILE is a text file of assembler code.
 
 Options:
  -c,--cross-chance NUM - crossover chance (default 2/3)
  -C,--config FILE ------ read configuration from FILE
  -e,--eval SEXP -------- evaluate S-expression SEXP
  -E,--max-error NUM ---- maximum allowed error (default 0)
- -f,--fit-evals NUM ---- max number of fitness evals
+ -f,--fit-evals NUM ---- max number of fitness evaluations
                          default: 2^18
  -F,--fit-func FLAGS --- fitness function
+                         default: output of TEST-SCRIPT
+ --fit-pred PRED ------- fitness predicate (#'< or #'>)
+                         default: #'<, minimize fit-func
  -g,--gc-size ---------- ~a
                          default: ~:d
  -l,--linker LINKER ---- linker to use
@@ -101,6 +107,7 @@ Options:
      ("-E" "--max-err"   (setf *max-err* (read-from-string (arg-pop))))
      ("-f" "--fit-evals" (setf *evals* (parse-integer (arg-pop))))
      ("-F" "--fit-func"  (throw-error "Fitness Functions are not implemented."))
+     (nil  "--fit-pred"  (setf *fitness-predicate* (read (arg-pop))))
      ("-g" "--gc-size"
            #+ccl  (ccl:set-lisp-heap-gc-threshold (parse-integer (arg-pop)))
            #+sbcl (setf (sb-ext:bytes-consed-between-gcs)
