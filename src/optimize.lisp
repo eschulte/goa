@@ -29,6 +29,9 @@
       :linker linker
       :genome (mapcar {aget :line} genome))))
 
+(defmethod from-file ((asm asm-light) file)
+  (to-asm-light (from-file (make-instance 'asm-perf) file)))
+
 (defclass asm-range (range asm)
   ((stats :initarg :stats :accessor stats :initform nil)))
 
@@ -37,6 +40,9 @@
     (make-instance 'asm-range
       :flags flags
       :linker linker)))
+
+(defmethod from-file ((asm asm-range) file)
+  (to-asm-light (from-file (make-instance 'asm-perf) file)))
 
 (defmethod copy ((asm asm-range))
   (with-slots (genome linker flags reference) asm
