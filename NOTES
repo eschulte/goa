@@ -2363,7 +2363,8 @@ coefficients for a memory linear model.
 - user supplied program
 
 ** TODO non-fixed point crossover
-important for profile guided optimization
+- important for sub-population and between differently compiled code
+- https://en.wikipedia.org/wiki/Homologous_recombination#Facilitating_genetic_transfer
 
 ** DONE inefficient mgmt generated executables
 | benchmark    | Intel | AMD |
