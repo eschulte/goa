@@ -130,7 +130,7 @@ if [ -z $PERF ];then
         if [ -z $KEEP ];then
             rm -rf $OUT
             if [ ! -z $WATTSUP ];then rm -f $WU_OUT; fi
-            if [ ! -z $WATTSUP ];then rm -f $TIME_OUT; fi
+            if [ ! -z $TIME    ];then rm -f $TIME_OUT; fi
             if [ ! -z "$tmp"   ];then rm -f $tmp;    fi
             if [ ! -z "$tmpd"  ];then rm -rf $tmpd;  fi
         else
