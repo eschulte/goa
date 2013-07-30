@@ -130,7 +130,8 @@
   (or (ignore-errors
         (unless (stats asm) (setf (stats asm) (run asm)))
         (note 4 "stats:~%~S~%" (stats asm))
-        (when (<= (aget :error (stats asm)) *max-err*)
+        (when (and (zerop (aget :exit (stats asm)))
+                   (<= (aget :error (stats asm)) *max-err*))
           (apply-fitness-function *fitness-function* (stats asm))))
       infinity))
 
