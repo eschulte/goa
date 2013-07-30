@@ -383,13 +383,13 @@ Options:
             (throw-error "Multi-threaded MCMC is not supported."))
           (note 1 "Starting MCMC search")
           (setf *population* (list *orig*))
-          (*mcmc* *orig* #'test :max-evals *evals*
-                  :every-fn
-                  (lambda (new)
-                    (when (funcall *fitness-predicate* new (car *population*))
-                      (setf *population* (list new))))
-                  :period *period*
-                  :period-fn (lambda () (mapc #'funcall *checkpoint-funcs*))))
+          (mcmc *orig* #'test :max-evals *evals*
+                :every-fn
+                (lambda (new)
+                  (when (funcall *fitness-predicate* new (car *population*))
+                    (setf *population* (list new))))
+                :period *period*
+                :period-fn (lambda () (mapc #'funcall *checkpoint-funcs*))))
         (progn
           ;; populate population
           (unless *population* ;; don't re-populate an existing population
