@@ -244,6 +244,7 @@ Options:
               (subseq raw 0 (1- (length raw)))))))
         (do-evolve
             (lambda ()
+              #+ccl (note 1 "check in") ;; for ccl `*terminal-io*' sharing
               (evolve #'test :max-evals *evals*
                       :period *period*
                       :period-fn (lambda () (mapc #'funcall *checkpoint-funcs*)))))
@@ -404,7 +405,15 @@ Options:
           ;; run optimization
           (note 1 "Kicking off ~a optimization threads" *threads*)
 
-          (let (threads)
+          (let (threads
+;;; see http://ccl.clozure.com/ccl-documentation.html#Background-Terminal-Input
+                #+ccl
+                (*default-special-bindings*
+                 (list (cons '*terminal-io*
+                             (make-two-way-stream
+                              (make-string-input-stream "y")
+                              (two-way-stream-output-stream
+                               *terminal-io*))))))
             ;; kick off optimization threads
             (loop :for n :below *threads* :do
                (push (make-thread do-evolve) threads))
