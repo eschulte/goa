@@ -133,7 +133,7 @@
       infinity))
 
 (defun checkpoint ()
-  (note 1 "checkpoint after ~a fitness evaluations~%" *fitness-evals*)
+  (note 1 "checkpoint after ~a fitness evaluations" *fitness-evals*)
   #+sbcl (sb-ext:gc :force t :full t)
   ;; save the best of the entire population
   (store (extremum *population* *fitness-predicate* :key #'fitness)
