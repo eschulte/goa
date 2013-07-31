@@ -199,7 +199,8 @@ TEST-SCRIPT:
   in csv format.
 
 ASM-FILE:
-  Is a text file of assembler code.
+  A text file of assembler code or (if using the \".store\"
+  extension) a serialized software object.
 
 Options:
  -c,--cross-chance NUM - crossover chance (default 2/3)
@@ -246,7 +247,7 @@ Options:
               (evolve #'test :max-evals *evals*
                       :period *period*
                       :period-fn (lambda () (mapc #'funcall *checkpoint-funcs*)))))
-        (*rep* 'range) (*note-level* 1) linker flags)
+        (*rep* 'range) (*note-level* 1) linker flags restored)
     ;; Set default GC threshold
     #+ccl (ccl:set-lisp-heap-gc-threshold (expt 2 30))
     #+sbcl (setf (sb-ext:bytes-consed-between-gcs) (expt 2 24))
@@ -273,6 +274,9 @@ Options:
                          script
                          (format nil "~a ~~a" script)))
           *path*   (pop args))
+
+    (when (string= (pathname-type (pathname *path*)) "store")
+      (setf *orig* (restore *path*)))
 
     ;; process command line options
     (getopts

@@ -4,14 +4,11 @@
 
 ;;; Commentary:
 
-;; Use perf annotate to label the assembly instructions with the HW
-;; counters to which they contribute.  This file may be passed to the
-;; --config option of the optimize script.
+;; Use annotations to bias mutation operations towards annotated
+;; portions of the genome.
 
 ;;; Code:
 (in-package :optimize)
-
-(setf *rep* 'asm)
 
 ;; Weight mutation location selection using the annotations, and
 ;; maintain annotation over mutations
@@ -30,14 +27,3 @@
         (:insert (blend (second op)))
         (:swap (blend (second op)) (blend (third op))))))
   asm)
-
-;; apply the perf annotations to the genome
-(unless (aget :annotation (car (genome *orig*)))
-  (setf (genome *orig*)
-        (mapcar (lambda (ann element)
-                  (cons (cons :annotation ann) element))
-                (smooth (mapcar (lambda (ans) (or ans 0)) (genome-anns *orig*)))
-                (genome *orig*)))
-  (store *orig* (make-pathname :directory *res-dir*
-                               :name "orig"
-                               :type "store")))

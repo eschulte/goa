@@ -71,6 +71,15 @@
           (append '(0 0)   list)
           (append '(0 0 0) list)))
 
+(defun apply-annotations (asm &key smooth)
+  "Apply annotations to the genome of ASM."
+  (setf (genome asm)
+        (mapcar (lambda (ann element)
+                  (cons (cons :annotation ann) element))
+                ((lambda (raw) (if smooth (smooth raw) raw))
+                 (mapcar (lambda (ans) (or ans 0)) (genome-anns asm)))
+                (genome asm))))
+
 
 ;;; print assembly LOC (aka ids) of annotations
 (defun annotate (&optional (args *arguments*))
@@ -93,8 +102,11 @@ Options:
  -h,--help ------------- print this help message and exit
  -f,--flags FLAGS ------ flags to use when linking
  -l,--linker LINKER ---- linker to use
+ -s,--smooth ----------- smooth the annotations
+ -o,--out FILE --------- store annotated individual in FILE
  -e,--extended NUM ----- run extended test NUM
- -v,--verbose ---------- verbose debugging output~%"))
+ -v,--verbose ---------- verbose debugging output~%")
+          smooth out)
       (when (or (not args)
                 (string= (subseq (car args) 0 2) "-h")
                 (string= (subseq (car args) 0 3) "--h"))
@@ -108,10 +120,16 @@ Options:
       (getopts
        ("-f" "--flags"  (setf (flags *orig*) (list (arg-pop))))
        ("-l" "--linker" (setf (linker *orig*) (arg-pop)))
+       ("-s" "--smooth" (setf smooth t))
+       ("-o" "--out"    (setf out (arg-pop)))
        ("-e" "--extended" (throw-error "Extended option not supported."))
        ("-v" "--verbose" (setf *shell-debug* t)))
 
-      (loop
-         :for ann :in (genome-anns *orig*)
-         :as i :upfrom 0
-         :do (when ann (format t "~a ~a~%" i ann))))))
+      (apply-annotations *orig* :smooth smooth)
+
+      (if out
+          (progn
+            (store *orig* out)
+            (format t "~&Stored annotated individual in ~a~%" out))
+          (format t "~&~{~{~a~^ ~}~^~%~}~%"
+                  (indexed (mapcar {aget :annotation} (genome *orig*))))))))
