@@ -381,8 +381,7 @@ case $BENCHMARK in
             huge)   nbody_size=1000000000;;
         esac
         run 1 $EXECUTABLE $nbody_size > $OUT
-        ndiff -q -abserr 1e-7 $OUTPUT $OUT >/dev/null 2>/dev/null
-        ERROR=$?
+        ERROR=$(ndiff -q -abserr 1e-7 $OUTPUT $OUT 2>&1|wc -l)
         ;;
 
     # Instruction for running SPEC programs
