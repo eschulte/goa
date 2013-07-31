@@ -101,8 +101,18 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 | 998.specrand   |
 | 999.specrand   |
 
-* Tasks [37/38]
-** TODO look at higher mutation rates
+* Tasks [37/40]
+** TODO higher mutation rate runs
+** TODO fault localization runs
+** TODO heterogeneous sub-populations
+single fitness function, multiple heterogeneous sub-populations
+
+heterogeneous sub-populations could be seeded using
+- different compiler flags from the same program
+- different compilers from the same program
+- different implementations of the same spec
+- N-version programming
+
 ** DONE select GP parameters
 | selection tournament |   2 |
 | eviction tournament  |   2 |
