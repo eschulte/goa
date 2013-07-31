@@ -12,15 +12,16 @@
 
 ;;; Genome Annotations
 (defun asm-disassemble (bin func)
-  (let ((raw (shell "gdb --batch --eval-command=\"disassemble ~a\" ~a"
-                    func bin))
-        (rx "[ \t]*0x([a-zA-Z0-9]+)[ \t]*<\\+[0-9]+>:.*"))
-    (remove nil
-      (mapcar (lambda (line)
-                (multiple-value-bind (all matches) (scan-to-strings rx line)
-                  (when all
-                    (read-from-string (format nil "#x~a" (aref matches 0))))))
-              (split-sequence #\Newline raw)))))
+  (ignore-errors ;; TODO: debug parse-integer errors thrown within
+    (let ((raw (shell "gdb --batch --eval-command=\"disassemble ~a\" ~a"
+                      func bin))
+          (rx "[ \t]*0x([a-zA-Z0-9]+)[ \t]*<\\+[0-9]+>:.*"))
+      (remove nil
+        (mapcar (lambda (line)
+                  (multiple-value-bind (all matches) (scan-to-strings rx line)
+                    (when all
+                      (read-from-string (format nil "#x~a" (aref matches 0))))))
+                (split-sequence #\Newline raw))))))
 
 (defun perf-annotations (script)
   (remove nil
