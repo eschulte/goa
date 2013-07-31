@@ -247,7 +247,8 @@ Options:
               (evolve #'test :max-evals *evals*
                       :period *period*
                       :period-fn (lambda () (mapc #'funcall *checkpoint-funcs*)))))
-        (*rep* 'range) (*note-level* 1) linker flags restored)
+        (*rep* 'range) linker flags)
+    (setf *note-level* 1)
     ;; Set default GC threshold
     #+ccl (ccl:set-lisp-heap-gc-threshold (expt 2 30))
     #+sbcl (setf (sb-ext:bytes-consed-between-gcs) (expt 2 24))
