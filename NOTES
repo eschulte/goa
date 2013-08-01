@@ -103,6 +103,14 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 
 * Tasks [37/40]
 ** TODO higher mutation rate runs
+#+Caption: Effectiveness at varying mutation rates.
+| benchmark | 1 | 8 | 64 |
+|-----------+---+---+----|
+| nbody     |   |   |    |
+
+For multiple values of =*mut-rate*=, see how effective optimization is
+at a simple runtime improvement task.
+
 ** TODO fault localization runs
 ** TODO heterogeneous sub-populations
 single fitness function, multiple heterogeneous sub-populations
