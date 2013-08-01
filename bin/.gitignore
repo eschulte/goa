@@ -5,6 +5,7 @@ objread
 calc-energy
 model-variance
 annotate
+delta
 *limit
 *.in
 *.out

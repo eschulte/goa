@@ -5,20 +5,22 @@
   :depends-on (alexandria
                metabang-bind
                curry-compose-reader-macros
-               software-evolution
-               software-evolution-utility
-               cl-store
                split-sequence
+               cl-store
                cl-ppcre
                cl-launch
                bordeaux-threads
-               iolib)
+               lhstats
+               diff
+               delta-debug
+               software-evolution
+               software-evolution-utility)
   :components
   ((:file "src/package")
    (:file "src/optimize"       :depends-on ("src/package"))
    (:file "src/annotate"       :depends-on ("src/package" "src/optimize"))
    (:file "src/objread"        :depends-on ("src/package" "src/optimize"))
    (:file "src/calc-energy"    :depends-on ("src/package" "src/optimize"))
-   (:file "src/io"             :depends-on ("src/package" "src/optimize"))
+   (:file "src/delta"          :depends-on ("src/package" "src/optimize"))
    (:file "src/horizontal-gene-transfer"
           :depends-on ("src/package" "src/optimize"))))

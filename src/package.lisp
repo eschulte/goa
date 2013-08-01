@@ -3,17 +3,20 @@
         :alexandria
         :metabang-bind
         :curry-compose-reader-macros
-        :software-evolution
-        :software-evolution-utility
-        :cl-store
         :split-sequence
+        :cl-store
         :cl-ppcre
         :cl-launch
         :bordeaux-threads
-        :iolib)
+        :diff
+        :delta-debug
+        :software-evolution
+        :software-evolution-utility)
+  (:import-from :statistics :t-test-two-sample-on-sequences)
   (:shadow :type :magic-number :optimize)
   (:export
    :optimize
    :objread
    :calc-energy
-   :annotate))
+   :annotate
+   :delta))
