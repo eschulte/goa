@@ -104,4 +104,5 @@ Options:
                 (render-diff diff out)
                 (with-open-file (out out :direction :output)
                   (render-diff diff out)))
-            (store (from-windows (diff-windows diff)) out))))))
+            (progn (note 2 "saving minimized individual to ~s" out)
+                   (store (from-windows (diff-windows diff)) out)))))))
