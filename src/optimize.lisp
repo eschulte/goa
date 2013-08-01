@@ -27,7 +27,7 @@
     (make-instance 'asm-light
       :flags flags
       :linker linker
-      :genome (mapcar {aget :line} genome))))
+      :genome (lines genome))))
 
 (defclass asm-range (range asm)
   ((stats :initarg :stats :accessor stats :initform nil)))
@@ -36,10 +36,13 @@
   (with-slots (flags linker genome) asm
     (make-instance 'asm-range
       :flags flags
-      :linker linker)))
+      :linker linker
+      :genome (list (cons 0 (1- (length genome))))
+      :reference (coerce (lines asm) 'vector))))
 
 (defmethod from-file ((asm asm-range) file)
-  (to-asm-range (from-file (make-instance 'asm-perf) file)))
+  (setf (lines asm) (split-sequence #\Newline (file-to-string file)))
+  asm)
 
 (defmethod copy ((asm asm-range))
   (with-slots (genome linker flags reference) asm
