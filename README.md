@@ -68,11 +68,12 @@ will need to be installed.
 
 3. Under the directory to which quicklisp has been installed (by
    default `~/quicklisp`), there will be a `local-projects` directory.
-   Clone the following three git repositories into this directory.
+   Clone the following git repositories into this directory.
 
         git clone git://github.com/eschulte/curry-compose-reader-macros.git
         git clone git://github.com/eschulte/software-evolution.git
         git clone git://github.com/eschulte/delta-debug.git
+        git clone git://github.com/eschulte/diff.git
 
    You will also need to symlink this repository into your
    `local-projects` directory.

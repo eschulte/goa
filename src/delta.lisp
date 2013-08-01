@@ -49,7 +49,7 @@ Options:
  -a,--alpha ------------ maximum significance (default ~d)
  -r,--reps NUM --------- run objects NUM times (default ~d)
  -v,--verbose ---------- verbose debugging output~%")
-        (alpha 0.05) (reps 5) orig new patch out)
+        (alpha 0.1) (reps 5) orig new patch out)
     (when (or (not args)
               (< (length args) 3)
               (string= (subseq (car args) 0 2) "-h")
@@ -99,7 +99,9 @@ Options:
                               ;; return success if sig is lower than alpha
                               (< alpha sig))))))
         ;; print the diff or the individual
-        (unless (streamp out) (setf out (open out :direction :output)))
         (if patch
-            (render-diff diff out)
+            (if (streamp out)
+                (render-diff diff out)
+                (with-open-file (out out :direction :output)
+                  (render-diff diff out)))
             (store (from-windows (diff-windows diff)) out))))))
