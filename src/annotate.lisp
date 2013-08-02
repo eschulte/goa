@@ -100,8 +100,8 @@ ASM-FILE:
 
 Options:
  -h,--help ------------- print this help message and exit
- -f,--flags FLAGS ------ flags to use when linking
  -l,--linker LINKER ---- linker to use
+ -L,--lflags FLAGS ----- flags to use when linking
  -s,--smooth ----------- smooth the annotations
  -o,--out FILE --------- store annotated individual in FILE
  -e,--extended NUM ----- run extended test NUM
@@ -118,8 +118,10 @@ Options:
        *orig* (from-file (make-instance 'asm-perf) *path*))
 
       (getopts
-       ("-f" "--flags"  (setf (flags *orig*) (list (arg-pop))))
        ("-l" "--linker" (setf (linker *orig*) (arg-pop)))
+       ("-L" "--lflags" (setf (flags *orig*)
+                              (split-sequence #\Space (pop args)
+                                              :remove-empty-subseqs t)))
        ("-s" "--smooth" (setf smooth t))
        ("-o" "--out"    (setf out (arg-pop)))
        ("-e" "--extended" (throw-error "Extended option not supported."))
