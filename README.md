@@ -92,6 +92,12 @@ will need to be installed.
 
         (ql:quickload :optimize)
 
+   It may also be necessary to explicitly load some additional
+   dependencies with the following.
+
+        (ql:quickload :trivial-gray-streams)
+        (ql:quickload :lhstats)
+
 5. Checkout the following tool for the protected execution of shell
    commands through the file system.  This serves to isolate the
    evolutionary process from the many errors thrown during extremely
@@ -105,28 +111,32 @@ will need to be installed.
    lisp REPL as described below.  To build a command line program
    optimization executable, install cl-launch [9] and then run make.
 
-   Make Variables:
+### Make Variables
 
-   - The `LISP` environment variable may be set to `sbcl` or `ccl`
-     to compile executables with Steel Bank Common Lisp or Clozure
-     Common Lisp respectively.
+The following variables may be used to control the behavior of make.
 
-   - The `LISP_STACK` environment variable may be used to set the
-     maximum amount of memory available to the `optimize` executable
-     when compiled with SBCL.  Large programs, especially when
-     annotated (e.g., with `src/configs/use-annotation.lisp`) may
-     require large amounts of memory.  For example run the following
-     to build the `optimize` executable with 30G of memory.
+- The `LISP` variable may be set to `sbcl` or `ccl` to compile
+  executables with Steel Bank Common Lisp or Clozure Common Lisp
+  respectively.
 
-            make bin/optimize LISP_STACK=$((30 * 1024))
+- The `QUICK_LISP` variable may be set to point to a custom quicklisp
+  installation directory.  The default value is `$HOME/quicklisp/`.
 
-   - The `LISP_PKGS` environment variable may be used to include
-     additional packages into compiled executables.  For example to
-     compile the `iolib` package into the `optimize` executable for
-     socket communication (e.g., with `src/configs/by-flag.lisp`),
-     run the following.
+- The `LISP_STACK` variable may be used to set the maximum amount of
+  memory available to the `optimize` executable when compiled with
+  SBCL.  Large programs, especially when annotated (e.g., with
+  `src/configs/use-annotation.lisp`) may require large amounts of
+  memory.  For example run the following to build the `optimize`
+  executable with 30G of memory.
 
-            make bin/optimize LISP_PKGS=iolib
+         make bin/optimize LISP_STACK=$((30 * 1024))
+
+- The `LISP_PKGS` variable may be used to include additional packages
+  into compiled executables.  For example to compile the `iolib`
+  package into the `optimize` executable for socket communication
+  (e.g., with `src/configs/by-flag.lisp`), run the following.
+
+         make bin/optimize LISP_PKGS=iolib
 
 Optimization at the Command Line
 --------------------------------
@@ -136,7 +146,8 @@ steps walk through optimizing `nbody` from the command line to reduce
 energy consumption.
 
 1. Run the `optimize` executable once to view all of the optional
-   arguments.
+   arguments.  All scripts and executables in the `./bin/` directory
+   print help information in response to the `-h` flag.
 
         ./bin/optimize -h
 
