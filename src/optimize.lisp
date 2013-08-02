@@ -366,6 +366,9 @@ Options:
           (mapcar (lambda (param)
                     (cons param (eval param)))
                   '(*path*
+                    *script*
+                    *fitness-function*
+                    *fitness-predicate*
                     (linker *orig*)
                     (flags *orig*)
                     *threads*
@@ -374,6 +377,7 @@ Options:
                     *cross-chance*
                     *evals*
                     *tournament-size*
+                    *tournament-eviction-size*
                     *work-dir*
                     *max-err*
                     *max-population-size*
