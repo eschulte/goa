@@ -10,3 +10,8 @@ swaptions	g++	-lpthread
 vips	link-vips	
 x264	gcc	-lm -lpthread
 nbody	gcc	-lm
+binarytrees	gcc	-lm -fopenmp -D_FILE_OFFSET_BITS=64 -I/usr/include/apr-1.0
+chameneosredux	gcc	-pthread
+fannkuchredux	gcc	-pthread -falign-labels=8
+mandelbrot	gcc	-mfpmath=sse -msse2 -fopenmp
+meteor	gcc	-lm
