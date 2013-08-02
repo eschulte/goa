@@ -12,10 +12,14 @@
 (in-package :optimize)
 (require :sb-sprof)
 
+(defvar *start-time* (get-universal-time))
 (sb-sprof:start-profiling :max-samples (* 2 50000))
 
 (defun finish-profiling-and-report ()
   (sb-sprof:stop-profiling)
+  (note 1 "Profiling results:")
+  (mapc {format _ "Wall clock run time: ~d seconds~%"
+         (- (get-universal-time) *start-time*)} *note-out*)
   (sb-sprof:report
    :stream (apply #'make-broadcast-stream
                   (mapcar (lambda (stream)
