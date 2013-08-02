@@ -163,7 +163,7 @@ energy consumption.
 
 4. Optimize `nbody` to reduce runtime.
 
-        ./bin/optimize "run nbody ~a -t" benchmarks/nbody/nbody.s \
+        ./bin/optimize "./bin/run nbody ~a -t" benchmarks/nbody/nbody.s \
           -l gcc -L -lm -F real -f 256 -p 128 -P 64 -t 2
 
    The options specify that `gcc` should be used as the linker (this
