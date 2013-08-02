@@ -2,53 +2,8 @@ Optimization Notes  -*- mode:org; org-attach-directory:"etc/data/" -*-
 #+Options: ^:{}
 #+Property: header-args:gnuplot :results silent
 
-* Work Plan
-:   train energy    memory       benchmarks       baselines       write
-:     models      fitness func       |         (Rinard, O2 O3)      |
-:      |              |              |                |             |
-:      |              v              |                v             |
-:      +--> begin evolutionary <-----+------------> apply           |
-:                 runs                            baselines         |
-:                  |                                  |             |
-:                  v                                  v             |
-:            lists of bests --------------> compare performance     |
-:                  |                        against baselines       |
-:                  v                                  |             |
-:             minimize and                            |             |
-:               analyze                               |   table     |
-:                  |                                  |  results    |
-:                  |                                  +------------>|
-:        +---------+----------+                                     |
-:        |                    |                                     |
-:        v                    v                                     |
-:    taxonomy of      compare to known                              |
-:   optimizations       techniques             find loop            |
-:        |                    |               perforation, etc...   |
-:        |                    +------------------------------------>|
-:        |                                                          |
-:        |                                                          |
-:        |                                      taxonomy            |
-:        +--------------------------------------------------------->|
-:                                                                   |
-:                                                                   |
-:                                                                   v
-:                                                                finished
-:                                                                 paper
-
-** Optional Additional Topics
-- Breeders :: apply the Breeders Equation to analyze the relations
-              between software traits and predict directions of
-              software evolution
-
-- Pareto :: return a Pareto frontier of solutions as a result of
-            optimization rather than a single individual
-
-- MCMC :: our mutation operations are nearly MCMC compliant already,
-          with some small changes we should be able to implement MCMC
-          as a search strategy
-
 * Notes and Ideas
-** pre-processing
+** Pre-Processing
 Before beginning evolution, what about "seeding" a linear ASM genome
 with strings of un-executed genetic fodder.  These would be sequences
 of instructions protected by unconditional jumps, with the idea that
@@ -59,6 +14,10 @@ Benefits
 - compelling biological analogy
 - chance to introduce instructions not present in the original
   (e.g., vector instructions, sequences from other compilers)
+
+** Pareto
+Return a Pareto frontier of solutions as a result of optimization
+rather than a single individual.
 
 ** Benchmarks
 Perhaps these Fortran programs would make a suitable addition to our
@@ -114,6 +73,28 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 | 999.specrand   |
 
 * Tasks [37/41]
+** TODO Application of the Breeders equation
+Apply the Breeders Equation to analyze the relations between software
+traits (e.g., HW counters, executable size, etc...) and predict
+directions of software evolution.
+
+\begin{equation*}
+  \Delta \hat{Z} = G \beta  
+\end{equation*}
+
+1. Generate variance-covariance matrix (/G/) for a benchmark and a
+   number of traits.
+
+   Evolve each trait in both directions (+++ and ---), and record the
+   individuals along each run and especially some neutral variants
+   around the ends of the runs.
+
+   Fit a variance-covariance matrix to all of these resulting traits.
+
+2. Multiplying the matrix with possible selection matrices (e.g., \beta)
+   may be useful to predict the effects of evolution on non-selected
+   traits.
+
 ** TODO higher mutation rate runs
 #+Caption: Effectiveness at varying mutation rates.
 | benchmark | 1 | 8 | 64 |
