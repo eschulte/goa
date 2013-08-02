@@ -10,6 +10,7 @@ Options:
  -h,--help ------------- print this help message and exit
  -l,--link FILE -------- link an executable to FILE
  -s,--stats ------------ write the stats to STDOUT
+ -a,--annotations ------ write the annotations to STDOUT
  -g,--genome ----------- write the genome to STDOUT
  -G,--genome-string ---- write the genome string to STDOUT
  -E,--eval LISP -------- eval LISP with `obj' bound~%"))
@@ -27,6 +28,9 @@ Options:
                                (string-downcase (symbol-name counter))
                                count))
                      (stats best)))
+         ("-a" "--annotations"
+               (format t "~{~{~a~^ ~}~^~%~}~%"
+                       (indexed (mapcar {aget :annotation} (genome best)))))
          ("-g" "--genome" (format t "~&~S~%" (genome best)))
          ("-G" "--genome-string"
                (format t "~&~a~%" (genome-string best)))
