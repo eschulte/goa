@@ -940,6 +940,7 @@ output(){
 ## Ensure the requisite benchmark suite is installed
 if echo "${PARSEC_APPS[@]}"|grep -q $BENCHMARK;then
     parsec_dir="$BASE/benchmarks/parsec-3.0"
+    mkdir -p "$BASE/etc/data"
     parsec_tar="$BASE/etc/data/parsec-3.0.tar.gz"
     if [ ! -d "$parsec_dir" ];then
         if [ ! -f "$parsec_tar" ];then
@@ -952,6 +953,7 @@ if echo "${PARSEC_APPS[@]}"|grep -q $BENCHMARK;then
     fi
 elif echo "${SHOOTOUT_APPS[@]}"|grep -q $BENCHMARK;then
     shootout_dir="$BASE/benchmarks/benchmarksgame"
+    mkdir -p "$BASE/etc/data"
     shootout_tar="$BASE/etc/data/benchmarksgame-scm-latest.tar.gz"
     shootout_sub="benchmarksgame-$(date +%Y-%m-%d)/benchmarksgame"
     if [ ! -d "$shootout_dir" ];then
