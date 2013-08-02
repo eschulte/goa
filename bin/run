@@ -371,6 +371,64 @@ case $BENCHMARK in
         ;;
 
     ## SHOOTOUT
+    chameneosredux)
+        case $SIZE in
+            test)   chameneosredux_size=60;;
+            tiny)   chameneosredux_size=6000;;
+            small)  chameneosredux_size=60000;;
+            medium) chameneosredux_size=1400000;;
+            large)  chameneosredux_size=6000000;;
+            huge)   chameneosredux_size=600000000;;
+        esac
+        run 1 $EXECUTABLE $chameneosredux_size > $OUT
+        diff $OUTPUT $OUT >/dev/null 2>/dev/null
+        ERROR=$(($ERROR + $?))
+        ;;
+    binarytrees)
+        case $SIZE in
+            test)   binarytrees_size=2;;
+            tiny)   binarytrees_size=6;;
+            small)  binarytrees_size=12;;
+            medium) binarytrees_size=16;;
+            large)  binarytrees_size=20;;
+            huge)   binarytrees_size=128;;
+        esac
+        run 1 $EXECUTABLE $binarytrees_size > $OUT
+        diff $OUTPUT $OUT >/dev/null 2>/dev/null
+        ERROR=$(($ERROR + $?))
+        ;;
+    fannkuchredux)
+        case $SIZE in
+            test)   fannkuchredux_size=2;;
+            tiny)   fannkuchredux_size=4;;
+            small)  fannkuchredux_size=8;;
+            medium) fannkuchredux_size=10;;
+            large)  fannkuchredux_size=12;;
+            huge)   fannkuchredux_size=36;;
+        esac
+        run 1 $EXECUTABLE $fannkuchredux_size > $OUT
+        diff $OUTPUT $OUT >/dev/null 2>/dev/null
+        ERROR=$(($ERROR + $?))
+        ;;
+    mandelbrot)
+        case $SIZE in
+            test)   mandelbrot_size=4;;
+            tiny)   mandelbrot_size=100;;
+            small)  mandelbrot_size=4000;;
+            medium) mandelbrot_size=5000;;
+            large)  mandelbrot_size=16000;;
+            huge)   mandelbrot_size=640000;;
+        esac
+        run 1 $EXECUTABLE $mandelbrot_size > $OUT
+        diff $OUTPUT $OUT >/dev/null 2>/dev/null
+        ERROR=$(($ERROR + $?))
+        ;;
+    meteor)
+        meteor_size=2098
+        run 1 $EXECUTABLE $meteor_size > $OUT
+        diff $OUTPUT $OUT >/dev/null 2>/dev/null
+        ERROR=$(($ERROR + $?))
+        ;;
     nbody)
         case $SIZE in
             test)   nbody_size=10000;;

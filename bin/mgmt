@@ -496,7 +496,10 @@ compile(){
                 ;;
 
             ## SHOOTOUT
-            nbody)
+            chameneosredux)
+                set_flags "-O3" "-O3"
+                gcc -x c $bench.gcc-2.gcc -S -o $bench.s || error "compilation failed";;
+            binarytrees|fannkuchredux|mandelbrot|meteor|nbody)
                 set_flags "-O3" "-O3"
                 gcc -x c $bench.gcc -S -o $bench.s || error "compilation failed";;
 
@@ -627,7 +630,19 @@ link(){
                 ;;
 
             ## SHOOTOUT
-            nbody)
+            binarytrees)
+                FLAGS="-lm -fopenmp -D_FILE_OFFSET_BITS=64 -I/usr/include/apr-1.0"
+                gcc $bench.s -o $bench $FLAGS||error "linking failed";;
+            chameneosredux)
+                FLAGS="-pthread"
+                gcc $bench.s -o $bench $FLAGS||error "linking failed";;
+            fannkuchredux)
+                FLAGS="-pthread -falign-labels=8"
+                gcc $bench.s -o $bench $FLAGS||error "linking failed";;
+            mandelbrot)
+                FLAGS="-mfpmath=sse -msse2 -fopenmp"
+                gcc $bench.s -o $bench $FLAGS||error "linking failed";;
+            meteor|nbody)
                 FLAGS="-lm"
                 gcc $bench.s -o $bench $FLAGS||error "linking failed";;
 
@@ -765,7 +780,7 @@ input(){
                 mv $in $target;;
 
             ## SHOOTOUT
-            nbody)
+            binarytrees|chameneosredux|fannkuchredux|mandelbrot|meteor|nbody)
                 msg "no input needed for $bench"
                 return 0;;
 
@@ -903,6 +918,60 @@ output(){
                 ;;
 
             ## SHOOTOUT
+            chameneosredux)
+                local binarytrees_size;
+                case $SIZE in
+                    test)   chameneosredux_size=60;;
+                    tiny)   chameneosredux_size=6000;;
+                    small)  chameneosredux_size=60000;;
+                    medium) chameneosredux_size=1400000;;
+                    large)  chameneosredux_size=6000000;;
+                    huge)   chameneosredux_size=600000000;;
+                esac
+                ./$bench $chameneosredux_size > $target
+                ;;
+            binarytrees)
+                local binarytrees_size;
+                case $SIZE in
+                    test)   binarytrees_size=2;;
+                    tiny)   binarytrees_size=6;;
+                    small)  binarytrees_size=12;;
+                    medium) binarytrees_size=16;;
+                    large)  binarytrees_size=20;;
+                    huge)   binarytrees_size=128;;
+                esac
+                ./$bench $binarytrees_size > $target
+                ;;
+            fannkuchredux)
+                local fannkuchredux_size;
+                case $SIZE in
+                    test)   fannkuchredux_size=2;;
+                    tiny)   fannkuchredux_size=4;;
+                    small)  fannkuchredux_size=8;;
+                    medium) fannkuchredux_size=10;;
+                    large)  fannkuchredux_size=12;;
+                    huge)   fannkuchredux_size=36;;
+                esac
+                ./$bench $fannkuchredux_size > $target
+                ;;
+            mandelbrot)
+                local mandelbrot_size;
+                case $SIZE in
+                    test)   mandelbrot_size=4;;
+                    tiny)   mandelbrot_size=100;;
+                    small)  mandelbrot_size=4000;;
+                    medium) mandelbrot_size=5000;;
+                    large)  mandelbrot_size=16000;;
+                    huge)   mandelbrot_size=640000;;
+                esac
+                ./$bench $mandelbrot_size > $target
+                ;;
+            meteor)
+                local meteor_size;
+                # looks like meteor only handles a single input
+                meteor_size=2098
+                ./$bench $meteor_size > $target
+                ;;
             nbody)
                 local nbody_size;
                 case $SIZE in
