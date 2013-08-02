@@ -8,6 +8,10 @@ endif
 endif
 LISP:="sbcl ccl"
 
+# Set this variable to require additional packages into the compiled
+# lisp executables
+LISP_PKGS:=
+
 # You can set this as an environment variable to point to an alternate
 # quicklisp install location.  If you do, ensure that it ends in a "/"
 # character, and that you use the $HOME variable instead of ~.
@@ -37,9 +41,11 @@ endif
 all: $(C_BINS) $(LISP_BINS)
 
 etc/cl-launch.lisp:
-	echo "(load \"$(QUICK_LISP)/setup.lisp\")" >$@
+	@echo "(load \"$(QUICK_LISP)/setup.lisp\")" >$@
 
 bin/%: src/%.lisp $(LISP_DEPS)
+	@sed -i '/require/d' etc/cl-launch.lisp
+	@for pkg in $(LISP_PKGS);do echo "(require :$$pkg)";done >>etc/cl-launch.lisp
 	$(CLC) $(CLFLAGS) --output $@ -r optimize:$*
 
 bin/limit: bin/limit.c

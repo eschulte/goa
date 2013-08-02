@@ -105,37 +105,65 @@ will need to be installed.
    lisp REPL as described below.  To build a command line program
    optimization executable, install cl-launch [9] and then run make.
 
-   The LISP environment variable may be set to `sbcl` or `ccl` to
-   compile executables with Steel Bank Common Lisp or Clozure Common
-   Lisp respectively.
+   Make Variables:
 
-Batch Optimization at the Command Line
---------------------------------------
+   - The `LISP` environment variable may be set to `sbcl` or `ccl`
+     to compile executables with Steel Bank Common Lisp or Clozure
+     Common Lisp respectively.
+
+   - The `LISP_STACK` environment variable may be used to set the
+     maximum amount of memory available to the `optimize` executable
+     when compiled with SBCL.  Large programs, especially when
+     annotated (e.g., with `src/configs/use-annotation.lisp`) may
+     require large amounts of memory.  For example run the following
+     to build the `optimize` executable with 30G of memory.
+
+            make bin/optimize LISP_STACK=$((30 * 1024))
+
+   - The `LISP_PKGS` environment variable may be used to include
+     additional packages into compiled executables.  For example to
+     compile the `iolib` package into the `optimize` executable for
+     socket communication (e.g., with `src/configs/by-flag.lisp`),
+     run the following.
+
+            make bin/optimize LISP_PKGS=iolib
+
+Optimization at the Command Line
+--------------------------------
 
 At this point everything needed has been installed.  The following
-steps walk through optimizing blackscholes from the command line to
-reduce energy consumption.
+steps walk through optimizing `nbody` from the command line to reduce
+energy consumption.
 
 1. Run the `optimize` executable once to view all of the optional
    arguments.
 
         ./bin/optimize -h
 
-2. Compile blackscholes to assembly and generate the test input and
-   oracle output files.
+2. Compile `nbody` to assembly and generate the test input and oracle
+   output files.
 
-        ./bin/mgmt output blackscholes
+        ./bin/mgmt output nbody
 
-3. Optimize blackscholes to reduce runtime energy consumption.
+3. Run a test of the `nbody` executable to ensure everything is
+   working and to see the output available to our fitness function.
 
-        ./bin/optimize benchmarks/blackscholes/src/blackscholes.s \
-          blackscholes -l g++ -f -lpthread -e 256 -p 128 -P 64 -t 2
+        ./bin/run nbody ./benchmarks/nbody/nbody -t
 
-   The options specify that `g++` should be used as the linker, that
-   the `-lpthread` should be passed to `g++` during linking, 256 total
-   fitness evaluations should be run, a population of size 128 should
-   be used, periodic checkpoints should be written every 64 fitness
-   evaluations, and 2 threads should be used.
+4. Optimize `nbody` to reduce runtime.
+
+        ./bin/optimize "run nbody ~a -t" benchmarks/nbody/nbody.s \
+          -l gcc -L -lm -F real -f 256 -p 128 -P 64 -t 2
+
+   The options specify that `gcc` should be used as the linker (this
+   option could be omitted as `gcc` is the default linker), that the
+   `-lm` flag should be passed to `gcc` during linking.  By passing
+   `real` to `-F` we specify that we want to our fitness function to
+   minimize the real time taken to run this program.  The remaining
+   flags specify 256 total fitness evaluations should be run, a
+   population of size 128 should be used, periodic checkpoints should
+   be written every 64 fitness evaluations, and optimization should be
+   distributed across 2 threads.
 
 Interactive Optimization at the REPL
 ------------------------------------
@@ -144,70 +172,6 @@ See `src/repl/example.lisp`, which demonstrates how these tools may be
 run interactively from the common lisp REPL.  The evolving population,
 and many important evolutionary parameters are exposed as global
 variables for live analysis and modification during interactive runs.
-
-Experimental Reproduction
-=========================
-
-The following steps perform the optimizations of the PARSEC benchmark
-applications for reduced energy consumption.
-
-1. Check out the `energy-experiment` tag [10] of this repository and
-   checkout commit `8193d14f` of the software-evolution repository.
-   Then re-build the executables with `make clean && make`.
-
-2. Run the `self-test` script to ensure that the benchmark
-   applications are available and can be successfully built and
-   evaluated.  After some minutes (should be less than an hour, much
-   less if much PARSEC has already been built) you should see a table
-   of results printed.  If the table is all ✓'s and 0's then move on,
-   otherwise you'll need to debug here, or skip any benchmark programs
-   with ×'s or positive numbers in their row.
-
-3. The system on which optimization runs will be performed should
-   match the target environment.  For these runs we need to ensure the
-   system is below full load and we do not use NFS or other data
-   stores which may become easily overloaded.
-
-4. An energy model should be trained for your system, the process of
-   training an energy model is not covered here [11].  In our case the
-   models included in `src/optimize.lisp` are used
-   (`amd-opteron-power-model` and `intel-sandybridge-power-model` for
-   our AMD and Intel systems respectively).
-
-5. The `self-test` script should have populated all of the required
-   assembler, test input and oracle output files needed by the
-   optimization runs.
-
-   The only other requirements are the `bin/limit` script which should
-   have been built by running `make` above, and the `foreman` script
-   running in the `sh-runner` directory (also described above).  Run
-   the foreman script with a 30 second timeout as below from the
-   sh-runner directory.
-
-        ./foreman 30
-
-   Each benchmark requires that the linker and flags be specified
-   (`-l` and `-f` options to the `optimize` executable).  The values
-   of these flags are stored in `etc/optimize-args`.
-
-        # linker for swaptions
-        grep swaptions etc/optimize-args|cut -f2
-
-        # flags for swaptions
-        grep swaptions etc/optimize-args|cut -f3
-
-   Aside from these flags, all benchmarks will use the same arguments
-   to `optimize`.  The correct GP parameters for these runs are
-   already set as defaults in `optimize`.  The only other flags which
-   should be used are given below.
-
-        -w # path to the sh-runner working directory
-        -t # number of threads to be used
-        -r # path to the results directory
-
-   Note that *only* these five flags to `optimize` (namely, `-l`,
-   `-f`, `-w`, `-r`, `-t`) should be used in the main experimental
-   runs.
 
 Footnotes
 =========

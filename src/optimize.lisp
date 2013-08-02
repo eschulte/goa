@@ -219,7 +219,7 @@ TEST-SCRIPT:
 
 ASM-FILE:
   A text file of assembler code or (if using the \".store\"
-  extension) a serialized software object.
+  extension) a serialized assembly software object.
 
 Options:
  -c,--cross-chance NUM - crossover chance (default 2/3)
