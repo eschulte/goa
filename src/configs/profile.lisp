@@ -11,6 +11,7 @@
 ;;; Code:
 (in-package :optimize)
 (require :sb-sprof)
+
 (sb-sprof:start-profiling :max-samples (* 2 50000))
 
 (defun finish-profiling-and-report ()
@@ -21,4 +22,4 @@
                             (if (equalp stream t) *standard-output* stream))
                           *note-out*))))
 
-(push *final-funcs* #'finish-profiling-and-report)
+(push #'finish-profiling-and-report *final-funcs*)
