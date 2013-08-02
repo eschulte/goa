@@ -17,6 +17,5 @@
   (:export
    :optimize
    :objread
-   :calc-energy
    :annotate
    :delta))

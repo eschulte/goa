@@ -20,7 +20,6 @@
    (:file "src/optimize"       :depends-on ("src/package"))
    (:file "src/annotate"       :depends-on ("src/package" "src/optimize"))
    (:file "src/objread"        :depends-on ("src/package" "src/optimize"))
-   (:file "src/calc-energy"    :depends-on ("src/package" "src/optimize"))
    (:file "src/delta"          :depends-on ("src/package" "src/optimize"))
    (:file "src/horizontal-gene-transfer"
           :depends-on ("src/package" "src/optimize"))))
