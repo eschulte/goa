@@ -47,7 +47,19 @@ Optimization Notes  -*- mode:org; org-attach-directory:"etc/data/" -*-
           with some small changes we should be able to implement MCMC
           as a search strategy
 
-* Notes
+* Notes and Ideas
+** pre-processing
+Before beginning evolution, what about "seeding" a linear ASM genome
+with strings of un-executed genetic fodder.  These would be sequences
+of instructions protected by unconditional jumps, with the idea that
+the instructions could be either jumped-to, or copied to elsewhere in
+the genome by later mutations.
+
+Benefits
+- compelling biological analogy
+- chance to introduce instructions not present in the original
+  (e.g., vector instructions, sequences from other compilers)
+
 ** Benchmarks
 Perhaps these Fortran programs would make a suitable addition to our
 benchmark suites.  http://www.polyhedron.com/MFL6VW74649
@@ -101,7 +113,7 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 | 998.specrand   |
 | 999.specrand   |
 
-* Tasks [37/40]
+* Tasks [37/41]
 ** TODO higher mutation rate runs
 #+Caption: Effectiveness at varying mutation rates.
 | benchmark | 1 | 8 | 64 |
