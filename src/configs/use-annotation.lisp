@@ -14,7 +14,7 @@
 ;; maintain annotation over mutations
 (defmethod pick-bad ((asm simple)) (pick asm [{+ 0.01} {aget :annotation}]))
 
-(defmethod apply-mutate :around ((asm asm) op)
+(defmethod apply-mutation :around ((asm asm) op)
   (call-next-method)
   (with-slots (genome) asm
     (flet ((blend (i)
