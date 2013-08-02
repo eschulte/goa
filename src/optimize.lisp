@@ -188,6 +188,22 @@
 (defvar *checkpoint-funcs* (list #'checkpoint)
   "Functions to record checkpoints.")
 
+(defun store-final-population ()
+  #+sbcl (sb-ext:gc :force t)
+  (store *population* (make-pathname :directory *res-dir*
+                                     :name "final-pop"
+                                     :type "store")))
+
+(defun store-final-best ()
+  (store (extremum *population* *fitness-predicate* :key #'fitness)
+         (make-pathname :directory *res-dir*
+                        :name "final-best"
+                        :type "store")))
+
+(defvar *final-funcs*
+  (list #'store-final-population #'store-final-best)
+  "Functions to run at the end of optimization.")
+
 (defun optimize (&optional (args *arguments*))
   (in-package :optimize)
   (let ((help "Usage: opt TEST-SCRIPT ASM-FILE [OPTIONS...]
@@ -424,15 +440,7 @@ Options:
             (mapc #'join-thread threads))))
 
     ;; finish up
-    #+sbcl (sb-ext:gc :force t)
-    (store *population* (make-pathname :directory *res-dir*
-                                       :name "final-pop"
-                                       :type "store"))
-    (store (extremum *population* *fitness-predicate* :key #'fitness)
-           (make-pathname :directory *res-dir*
-                          :name "final-best"
-                          :type "store"))
-
+    (mapc #'funcall *final-funcs*)
     (note 1 "done after ~a fitness evaluations~%" *fitness-evals*)
     (note 1 "results saved in ~a~%" *res-dir*)
     (close (pop *note-out*))))
