@@ -25,12 +25,13 @@ This repository uses Graphite [2] and Linux perf [3] to measure
 non-functional properties of program variants in an EC system for
 software optimization.
 
-This repository holds support for two benchmark suites.  The PARSEC
-benchmark suite [4] focuses on emerging workloads.  The Spec benchmark
-suite [5] stresses a systems "processor, memory subsystem and
-compiler", and a collection of warehouse compute applications.
-Currently only PARSEC is fully supported or used in the experiment
-described below.
+This repository supports a couple of benchmark suites.  The PARSEC
+benchmark suite [4] focuses on emerging workloads.  The "Computer
+Language Benchmarks Game" [5] holds a number of simpler more
+traditional benchmark programs implemented in multiple languages.
+Partial support is provided for working with the SPEC benchmark suite
+[6] which stresses a systems "processor, memory subsystem and
+compiler".  Currently PARSEC has the most complete support.
 
 Repository Layout
 =================
@@ -60,9 +61,9 @@ evolved variants) is written in C.  Assuming you already have both
 bash and a C compiler on your system, the following additional tools
 will need to be installed.
 
-1. Steel Bank Common Lisp (SBCL) [6] or Clozure Common Lisp (CCL) [7].
+1. Steel Bank Common Lisp (SBCL) [7] or Clozure Common Lisp (CCL) [8].
 
-2. The Quicklisp [8] Common Lisp package manager which will be used to
+2. The Quicklisp [9] Common Lisp package manager which will be used to
    install all of the required lisp packages.  Follow the instructions
    on the Quicklisp site to install it.
 
@@ -109,7 +110,7 @@ will need to be installed.
 
 6. At this point it is possible to run program optimization from the
    lisp REPL as described below.  To build a command line program
-   optimization executable, install cl-launch [9] and then run make.
+   optimization executable, install cl-launch [10] and then run make.
 
 ### Make Variables
 
@@ -195,18 +196,14 @@ Footnotes
 
 [4]  http://parsec.cs.princeton.edu/
 
-[5]  http://www.spec.org/cpu2006/
+[5]  http://benchmarksgame.alioth.debian.org/
 
-[6]  http://www.sbcl.org/
+[6]  http://www.spec.org/cpu2006/
 
-[7]  http://ccl.clozure.com/
+[7]  http://www.sbcl.org/
 
-[8]  http://www.quicklisp.org/beta/
+[8]  http://ccl.clozure.com/
 
-[9]  http://www.cliki.net/cl-launch
+[9]  http://www.quicklisp.org/beta/
 
-[10] https://github.com/eschulte/optimization/archive/energy-experiment.zip
-
-[11] See NOTES for pointers to methodology and shell scripts for
-     training an energy model.  A WattsUp?™ Pro is required to measure
-     wall plug energy consumption.  https://www.wattsupmeters.com
+[10] http://www.cliki.net/cl-launch
