@@ -162,6 +162,76 @@ size_for_benchmark(){
             esac;;
     esac; }
 
+cmd_for_benchmark(){
+    declare -A cmdlines
+    case $1 in
+        chameneosredux)
+            cmdlines[test]=60
+            cmdlines[tiny]=6000
+            cmdlines[small]=60000
+            cmdlines[medium]=1400000
+            cmdlines[large]=6000000
+            cmdlines[huge]=600000000
+            ;;
+        binarytrees)
+            cmdlines[test]=2
+            cmdlines[tiny]=6
+            cmdlines[small]=12
+            cmdlines[medium]=16
+            cmdlines[large]=20
+            cmdlines[huge]=128
+            ;;
+        fannkuchredux)
+            cmdlines[test]=2
+            cmdlines[tiny]=4
+            cmdlines[small]=8
+            cmdlines[medium]=10
+            cmdlines[large]=12
+            cmdlines[huge]=36
+            ;;
+        fasta)
+            cmdlines[test]=250
+            cmdlines[tiny]=25000
+            cmdlines[small]=250000
+            cmdlines[medium]=3750000
+            cmdlines[large]=25000000
+            cmdlines[huge]=500000000
+            ;;
+        mandelbrot)
+            cmdlines[test]=4
+            cmdlines[tiny]=100
+            cmdlines[small]=4000
+            cmdlines[medium]=5000
+            cmdlines[large]=16000
+            cmdlines[huge]=640000
+            ;;
+        meteor)
+            cmdlines[test]=2098
+            cmdlines[tiny]=2098
+            cmdlines[small]=2098
+            cmdlines[medium]=2098
+            cmdlines[large]=2098
+            cmdlines[huge]=2098
+            ;;
+        nbody)
+            cmdlines[test]=10000
+            cmdlines[tiny]=100000
+            cmdlines[small]=500000
+            cmdlines[medium]=5000000
+            cmdlines[large]=50000000
+            cmdlines[huge]=1000000000
+            ;;
+        pidigits)
+            cmdlines[test]=20
+            cmdlines[tiny]=2000
+            cmdlines[small]=6000
+            cmdlines[medium]=10000
+            cmdlines[large]=100000
+            cmdlines[huge]=10000000
+            ;;
+    esac
+    echo ${cmdlines[$SIZE]}; }
+
 # OS-specific qemu command
 case $OS in
     Debian|Ubuntu)
