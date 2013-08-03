@@ -143,7 +143,7 @@ size_for_benchmark(){
                 vips)         echo medium;;
                 x264)         echo small;;
                 # SHOOTOUT benchmarks
-                binarytrees|chameneosredux|fannkuchredux|mandelbrot|meteor|nbody) echo medium;;
+                binarytrees|chameneosredux|fannkuchredux|fasta|mandelbrot|meteor|nbody|pidigits) echo medium;;
                 *) warning "medium for unknown benchmark"; echo medium;;
             esac;;
         intel)
@@ -157,7 +157,7 @@ size_for_benchmark(){
                 vips)         echo medium;;
                 x264)         echo medium;;
                 # SHOOTOUT benchmarks
-                binarytrees|chameneosredux|fannkuchredux|mandelbrot|meteor|nbody) echo medium;;
+                binarytrees|chameneosredux|fannkuchredux|fasta|mandelbrot|meteor|nbody|pidigits) echo medium;;
                 *) warning "medium for unknown benchmark"; echo medium;;
             esac;;
     esac; }

@@ -410,6 +410,19 @@ case $BENCHMARK in
         diff $OUTPUT $OUT >/dev/null 2>/dev/null
         ERROR=$(($ERROR + $?))
         ;;
+    fasta)
+        case $SIZE in
+            test)   fasta_size=250;;
+            tiny)   fasta_size=25000;;
+            small)  fasta_size=250000;;
+            medium) fasta_size=3750000;;
+            large)  fasta_size=25000000;;
+            huge)   fasta_size=500000000;;
+        esac
+        run 1 $EXECUTABLE $fasta_size > $OUT
+        diff $OUTPUT $OUT >/dev/null 2>/dev/null
+        ERROR=$(($ERROR + $?))
+        ;;
     mandelbrot)
         case $SIZE in
             test)   mandelbrot_size=4;;
@@ -441,6 +454,19 @@ case $BENCHMARK in
         run 1 $EXECUTABLE $nbody_size > $OUT
         # for now it looks to be too easy to trick ndiff
         # ERROR=$(ndiff -q -abserr 1e-7 $OUTPUT $OUT 2>&1|wc -l)
+        diff $OUTPUT $OUT >/dev/null 2>/dev/null
+        ERROR=$(($ERROR + $?))
+        ;;
+    pidigits)
+        case $SIZE in
+            test)   pidigits_size=20;;
+            tiny)   pidigits_size=2000;;
+            small)  pidigits_size=6000;;
+            medium) pidigits_size=10000;;
+            large)  pidigits_size=100000;;
+            huge)   pidigits_size=10000000;;
+        esac
+        run 1 $EXECUTABLE $pidigits_size > $OUT
         diff $OUTPUT $OUT >/dev/null 2>/dev/null
         ERROR=$(($ERROR + $?))
         ;;

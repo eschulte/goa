@@ -67,19 +67,19 @@ PARSEC_APPS+=(x264)
 
 declare -a SHOOTOUT_APPS
 SHOOTOUT_APPS+=(binarytrees)
-SHOOTOUT_APPS+=(fasta)
-SHOOTOUT_APPS+=(mandelbrot)
-SHOOTOUT_APPS+=(regexdna)
 SHOOTOUT_APPS+=(binarytreesredux)
-SHOOTOUT_APPS+=(fastaredux)
-SHOOTOUT_APPS+=(meteor)
-SHOOTOUT_APPS+=(revcomp)
 SHOOTOUT_APPS+=(chameneosredux)
-SHOOTOUT_APPS+=(nbody)
-SHOOTOUT_APPS+=(spectralnorm)
 SHOOTOUT_APPS+=(fannkuchredux)
+SHOOTOUT_APPS+=(fasta)
+SHOOTOUT_APPS+=(fastaredux)
 SHOOTOUT_APPS+=(knucleotide)
+SHOOTOUT_APPS+=(mandelbrot)
+SHOOTOUT_APPS+=(meteor)
+SHOOTOUT_APPS+=(nbody)
 SHOOTOUT_APPS+=(pidigits)
+SHOOTOUT_APPS+=(regexdna)
+SHOOTOUT_APPS+=(revcomp)
+SHOOTOUT_APPS+=(spectralnorm)
 SHOOTOUT_APPS+=(threadring)
 
 declare -a SPEC_APPS
@@ -499,7 +499,7 @@ compile(){
             chameneosredux)
                 set_flags "-O3" "-O3"
                 gcc -x c $bench.gcc-2.gcc -S -o $bench.s || error "compilation failed";;
-            binarytrees|fannkuchredux|mandelbrot|meteor|nbody)
+            binarytrees|fannkuchredux|fasta|mandelbrot|meteor|nbody|pidigits)
                 set_flags "-O3" "-O3"
                 gcc -x c $bench.gcc -S -o $bench.s || error "compilation failed";;
 
@@ -639,11 +639,17 @@ link(){
             fannkuchredux)
                 FLAGS="-pthread -falign-labels=8"
                 gcc $bench.s -o $bench $FLAGS||error "linking failed";;
+            fasta)
+                FLAGS="-std=c99 -mfpmath=sse -msse3"
+                gcc $bench.s -o $bench $FLAGS||error "linking failed";;
             mandelbrot)
                 FLAGS="-mfpmath=sse -msse2 -fopenmp"
                 gcc $bench.s -o $bench $FLAGS||error "linking failed";;
             meteor|nbody)
                 FLAGS="-lm"
+                gcc $bench.s -o $bench $FLAGS||error "linking failed";;
+            pidigits)
+                FLAGS="-lgmp"
                 gcc $bench.s -o $bench $FLAGS||error "linking failed";;
 
             ## SPEC
@@ -780,7 +786,7 @@ input(){
                 mv $in $target;;
 
             ## SHOOTOUT
-            binarytrees|chameneosredux|fannkuchredux|mandelbrot|meteor|nbody)
+            binarytrees|chameneosredux|fannkuchredux|fasta|mandelbrot|meteor|nbody|pidigits)
                 msg "no input needed for $bench"
                 return 0;;
 
@@ -954,6 +960,18 @@ output(){
                 esac
                 ./$bench $fannkuchredux_size > $target
                 ;;
+            fasta)
+                local fasta_size;
+                case $SIZE in
+                    test)   fasta_size=250;;
+                    tiny)   fasta_size=25000;;
+                    small)  fasta_size=250000;;
+                    medium) fasta_size=3750000;;
+                    large)  fasta_size=25000000;;
+                    huge)   fasta_size=500000000;;
+                esac
+                ./$bench $fasta_size > $target
+                ;;
             mandelbrot)
                 local mandelbrot_size;
                 case $SIZE in
@@ -983,6 +1001,18 @@ output(){
                     huge)   nbody_size=1000000000;;
                 esac
                 ./$bench $nbody_size > $target
+                ;;
+            pidigits)
+                local pidigits_size;
+                case $SIZE in
+                    test)   pidigits_size=20;;
+                    tiny)   pidigits_size=2000;;
+                    small)  pidigits_size=6000;;
+                    medium) pidigits_size=10000;;
+                    large)  pidigits_size=100000;;
+                    huge)   pidigits_size=10000000;;
+                esac
+                ./$bench $pidigits_size > $target
                 ;;
 
             ## SPEC
