@@ -1,0 +1,58 @@
+#!/bin/bash
+#
+# Usage link-vips vips.s exe
+#
+. $(dirname $0)/common
+
+if [ "$1" == "-o" ];then
+    EXE=$2; ASM=$3;
+else
+    ASM=$1
+    if [ "$2" == "-o" ];then
+        EXE=$3;
+    else
+        EXE=$2;
+    fi
+fi
+
+DIR=$(mktemp -d)
+
+PKGS="$BASE"/benchmarks/parsec-3.0/pkgs
+
+LDIRS+=" -L /usr/lib64"
+LDIRS+=" -L /usr/lib"
+LDIRS+=" -L $PKGS/apps/vips/inst/amd64-linux.gcc/lib"
+LDIRS+=" -L $PKGS/libs/glib/inst/amd64-linux.gcc/lib"
+LDIRS+=" -L $PKGS/libs/zlib/inst/amd64-linux.gcc/lib"
+LDIRS+=" -L $PKGS/libs/libxml2/inst/amd64-linux.gcc/lib"
+
+FLAGS+=" -lgmodule-2.0"
+FLAGS+=" -ldl"
+FLAGS+=" -lgobject-2.0"
+FLAGS+=" -lglib-2.0"
+FLAGS+=" -lgthread-2.0"
+FLAGS+=" -lm"
+FLAGS+=" -lstdc++"
+FLAGS+=" -lxml2"
+FLAGS+=" -pthread"
+FLAGS+=" -lrt"
+FLAGS+=" -lz"
+
+cp $ASM $DIR/some_libvips.s
+cp "$PKGS"/apps/vips/src/tools/iofuncs/libvips.o $DIR
+cp "$PKGS"/apps/vips/src/tools/iofuncs/vips.o $DIR
+
+pushd $DIR >/dev/null
+
+## build some_libvips.o
+gcc -DG_DISABLE_CAST_CHECKS $LDIRS -c some_libvips.s $FLAGS \
+    || error "failed to link some_libvips.o"
+
+## build vips
+gcc -std=gnu99 -DHAVE_CONFIG_H -DG_DISABLE_CAST_CHECKS \
+    $LDIRS -o vips vips.o some_libvips.o libvips.o $FLAGS \
+    || error "failed to link vips executable"
+
+popd >/dev/null
+cp $DIR/vips $EXE
+rm -rf $DIR
