@@ -105,6 +105,17 @@ For multiple values of =*mut-rate*=, see how effective optimization is
 at a simple runtime improvement task.
 
 ** TODO fault localization runs
+| benchmark    | state                         |
+|--------------+-------------------------------|
+| blackscholes | annotated                     |
+| bodytrack    | running-ann                   |
+| ferret       | annotated                     |
+| fluidanimate | real:results/ann/fluidanimate |
+| freqmine     | annotated                     |
+| swaptions    | running                       |
+| vips         | running-ann                   |
+| x264         | running                       |
+
 ** TODO heterogeneous sub-populations
 single fitness function, multiple heterogeneous sub-populations
 
