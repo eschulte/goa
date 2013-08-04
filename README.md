@@ -1,36 +1,37 @@
 Evolutionary Program Optimization
 =================================
 
-During compilation and linking, non-functional properties of software
-such as running time and executable size may be optimized.  Current
-techniques rely on operations which may be formally proven to preserve
-program semantics.
+A post-compilation optimization tool capable of optimizing myriad
+aspects of program runtime behavior.  The three required inputs are
+(1) compiled program assembly code, (2) a test workload used to
+exercise candidate optimizations, and (3) a fitness function used to
+score runtime behavior.  As opposed to compiler optimizations which
+maintain program semantics and typically target only executable speed
+and size, this technique is capable of addressing any measurable
+aspect of runtime behavior and may change program semantics.
 
-Using a test-suite based definition of program behavior we are able to
-apply non-semantic preserving mutations to software resulting in
-program variants not reachable through semantic preserving operation.
+Assembler code is modified using simply program transformations used
+in Genetic Programming yielding candidate optimizations.  The fitness
+of candidates are determined using a workload and fitness function.
 Due to the inherent mutational robustness of software [1], many of
 these mutations will change the runtime behavior of software without
-changing the specification to which the software conforms.
+changing the specification to which the software conforms.  Some
+candidates will have desirable non-functional properties such as
+faster running times, reduced energy consumption or a smaller
+executable size.
 
-Some program variants will have desirable non-functional properties
-such as faster running times, reduced energy consumption or a smaller
-executable size.  By assigning fitness to variants based on these
-characteristics it is possible to optimize software.
+Modern system emulators and profilers (e.g., Linux perf [2]) allow
+fine-grained monitoring of aspects of program execution.  Fitness
+functions combine these measurements to model aspects of program
+execution such as energy consumption and communication overhead, which
+may be difficult to predict a-priori.
 
-Modern system emulators and profilers allow fine-grained monitoring of
-aspects of program execution, such as energy consumption and
-communication overhead, which may be difficult to predict a-priori.
-This repository uses Graphite [2] and Linux perf [3] to measure
-non-functional properties of program variants in an EC system for
-software optimization.
-
-This repository supports a couple of benchmark suites.  The PARSEC
-benchmark suite [4] focuses on emerging workloads.  The "Computer
-Language Benchmarks Game" [5] holds a number of simpler more
+This repository supports multiple benchmark suites.  The PARSEC
+benchmark suite [3] focuses on emerging workloads.  The "Computer
+Language Benchmarks Game" [4] holds a number of simpler more
 traditional benchmark programs implemented in multiple languages.
 Partial support is provided for working with the SPEC benchmark suite
-[6] which stresses a systems "processor, memory subsystem and
+[5] which stresses a system's "processor, memory subsystem and
 compiler".  Currently PARSEC has the most complete support.
 
 Repository Layout
@@ -61,9 +62,9 @@ evolved variants) is written in C.  Assuming you already have both
 bash and a C compiler on your system, the following additional tools
 will need to be installed.
 
-1. Steel Bank Common Lisp (SBCL) [7] or Clozure Common Lisp (CCL) [8].
+1. Steel Bank Common Lisp (SBCL) [6] or Clozure Common Lisp (CCL) [7].
 
-2. The Quicklisp [9] Common Lisp package manager which will be used to
+2. The Quicklisp [8] Common Lisp package manager which will be used to
    install all of the required lisp packages.  Follow the instructions
    on the Quicklisp site to install it.
 
@@ -110,7 +111,7 @@ will need to be installed.
 
 6. At this point it is possible to run program optimization from the
    lisp REPL as described below.  To build a command line program
-   optimization executable, install cl-launch [10] and then run make.
+   optimization executable, install cl-launch [9] and then run make.
 
 ### Make Variables
 
@@ -188,22 +189,20 @@ variables for live analysis and modification during interactive runs.
 Footnotes
 =========
 
-[1]  http://arxiv.org/abs/1204.4224
+[1] http://arxiv.org/abs/1204.4224
 
-[2]  http://groups.csail.mit.edu/carbon/?page_id=111
+[2] https://perf.wiki.kernel.org/index.php/Main_Page
 
-[3]  https://perf.wiki.kernel.org/index.php/Main_Page
+[3] http://parsec.cs.princeton.edu/
 
-[4]  http://parsec.cs.princeton.edu/
+[4] http://benchmarksgame.alioth.debian.org/
 
-[5]  http://benchmarksgame.alioth.debian.org/
+[5] http://www.spec.org/cpu2006/
 
-[6]  http://www.spec.org/cpu2006/
+[6] http://www.sbcl.org/
 
-[7]  http://www.sbcl.org/
+[7] http://ccl.clozure.com/
 
-[8]  http://ccl.clozure.com/
+[8] http://www.quicklisp.org/beta/
 
-[9]  http://www.quicklisp.org/beta/
-
-[10] http://www.cliki.net/cl-launch
+[9] http://www.cliki.net/cl-launch
