@@ -95,6 +95,8 @@ directions of software evolution.
    may be useful to predict the effects of evolution on non-selected
    traits.
 
+See file:src/neutral.lisp.
+
 ** TODO higher mutation rate runs
 #+Caption: Effectiveness at varying mutation rates.
 | benchmark | 1 | 8 | 64 |
@@ -108,12 +110,12 @@ at a simple runtime improvement task.
 | benchmark    | state                         |
 |--------------+-------------------------------|
 | blackscholes | annotated                     |
-| bodytrack    | running-ann                   |
+| bodytrack    | annotated                     |
 | ferret       | annotated                     |
 | fluidanimate | real:results/ann/fluidanimate |
 | freqmine     | annotated                     |
 | swaptions    | running                       |
-| vips         | running-ann                   |
+| vips         | annotated                     |
 | x264         | running                       |
 
 ** TODO heterogeneous sub-populations
