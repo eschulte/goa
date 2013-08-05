@@ -98,25 +98,35 @@ directions of software evolution.
 See file:src/neutral.lisp.
 
 ** TODO higher mutation rate runs
-#+Caption: Effectiveness at varying mutation rates.
-| benchmark | 1 | 8 | 64 |
-|-----------+---+---+----|
-| nbody     |   |   |    |
-
 For multiple values of =*mut-rate*=, see how effective optimization is
 at a simple runtime improvement task.
 
+From the runs on prime, it looks like a mutation rate of 8 might be
+best, 64 was all over the place, with significant decreases in
+fitness.
+
+Higher mutation rates may require more exploitative selection.
+
+| benchmark | rate | machine | status                               |
+|-----------+------+---------+--------------------------------------|
+| nbody     |    1 | prime   | file:results/shootout-mut/nbody-m1/  |
+| nbody     |    8 | prime   | file:results/shootout-mut/nbody-m8/  |
+| nbody     |   64 | prime   | file:results/shootout-mut/nbody-m64/ |
+| swaptions |    1 | prime   | running                              |
+| swaptions |    8 | prime   | running                              |
+| swaptions |   64 | prime   | running                              |
+
 ** TODO fault localization runs
-| benchmark    | state                         |
-|--------------+-------------------------------|
-| blackscholes | annotated                     |
-| bodytrack    | annotated                     |
-| ferret       | annotated                     |
-| fluidanimate | real:results/ann/fluidanimate |
-| freqmine     | annotated                     |
-| swaptions    | running                       |
-| vips         | annotated                     |
-| x264         | running                       |
+| benchmark    | state     |
+|--------------+-----------|
+| blackscholes | annotated |
+| bodytrack    | annotated |
+| ferret       | annotated |
+| fluidanimate | real      |
+| freqmine     | running   |
+| swaptions    | real      |
+| vips         | annotated |
+| x264         | real      |
 
 ** TODO heterogeneous sub-populations
 single fitness function, multiple heterogeneous sub-populations
