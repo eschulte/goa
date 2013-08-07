@@ -2585,7 +2585,13 @@ failures at stages.
 
 Run with =make check=.
 
-* Issues [10/10]
+* Issues [10/11]
+** TODO leftover temporary files
+need to clean these up
+- find them (run scripts, lisp executables)
+- add catches to remove them
+- worst case, setup automatic cleaning
+
 ** minimizing hurts performance
 : freqmine
 : 0,exit
