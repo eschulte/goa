@@ -125,7 +125,7 @@ Higher mutation rates may require more exploitative selection.
 | fluidanimate | real      |
 | freqmine     | running   |
 | swaptions    | real      |
-| vips         | annotated |
+| vips         | running   |
 | x264         | real      |
 
 ** TODO heterogeneous sub-populations

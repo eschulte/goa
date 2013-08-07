@@ -58,7 +58,6 @@ Options:
      ("-n" "--num"     (setf num (parse-number (pop args))))
      ("-s" "--steps"   (setf steps (parse-number (pop args))))
      ("-d" "--diff"    (setf diff t))
-     ("-o" "--out"     (setf out (pop args)))
      ("-v" "--verbose" (setf *shell-debug* t)))
 
     (throw-error "TODO: implement")))
