@@ -2585,7 +2585,8 @@ failures at stages.
 
 Run with =make check=.
 
-* Issues [10/11]
+* Issues [10/12]
+** TODO ensure that annotation works as expected
 ** TODO leftover temporary files
 need to clean these up
 - find them (run scripts, lisp executables)
