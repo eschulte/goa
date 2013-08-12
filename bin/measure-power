@@ -1,6 +1,9 @@
 #!/bin/bash
 #
-#
+# Usage: measure-power BENCHMARK [EXECUTABLES...]
+#  Measure the wall plug power consumed by EXECUTABLES over multiple
+#  runs at every input size.  This may be used to generate final
+#  measured assessments.
 #
 . $(dirname $0)/common
 
@@ -12,20 +15,40 @@ msg "benchmark $BENCHMARK"
 unset SIZES[0]
 unset SIZES[1]
 
-rm ~/measure-power-finished
- for size in ${SIZES[@]};do
-    case $size in
-        small)  reps=100;;
-        medium) reps=50;;
-        large)  reps=50;;
-        huge)   reps=1;;
+for size in huge;do
+    case $(size_for_benchmark) in
+        small)
+            case $size in
+                small)  reps=50;;
+                medium) reps=20;;
+                large)  reps=25;;
+                huge)   reps=1;;
+            esac;;
+        medium)
+            case $size in
+                small)  reps=100;;
+                medium) reps=50;;
+                large)  reps=25;;
+                huge)   reps=1;;
+            esac;;
+        large)
+            case $size in
+                small)  reps=200;;
+                medium) reps=100;;
+                large)  reps=50;;
+                huge)   reps=1;;
+            esac;;
     esac
     rm -rf benchmarks/$BENCHMARK/$BENCHMARK.{input,output}
-    mgmt output $BENCHMARK -s $size
-    for exe in "$@";do
-        sleep $SLEEP
-        msg "$exe $size"
-        "$BASE"/bin/run $BENCHMARK $exe -l "" -s $size -w -r $reps
-    done
+    mgmt output $BENCHMARK -s $size >/dev/null
+    if [ -z $reps ];then
+        error "not repetition number set of $BENCHMARK and $size"
+    else
+        for exe in "$@";do
+            sleep $SLEEP
+            echo "$exe $size"
+            "$BASE"/bin/run $BENCHMARK $exe -l "" -s $size -w -r $reps
+            echo ""
+        done
+    fi
 done
-date > ~/measure-power-finished
