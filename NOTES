@@ -2389,7 +2389,10 @@ We could use the "bubble" and the "reporter" from [[#mars2011bubble]].
 Measuring the values of HW counters against the bubble could give us
 coefficients for a memory linear model.
 
-* Code Tasks [9/11]
+* Code Tasks [9/12]
+** TODO memory efficient annotations
+Need to figure out the best data structure to hold these efficiently.
+
 ** TODO multiple runs of fitness functions
 Add an option allowing multiple runs of fitness functions, until the
 sigma falls within some interval (or maybe just a set number of runs).
@@ -2592,6 +2595,10 @@ need to clean these up
 - find them (run scripts, lisp executables)
 - add catches to remove them
 - worst case, setup automatic cleaning
+
+including
+- vips-* in the directory from which optimize is run
+- /tmp/cc*, /tmp/file*, /tmp/tmp.*
 
 ** minimizing hurts performance
 : freqmine

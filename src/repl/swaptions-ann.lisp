@@ -6,13 +6,13 @@
 (load "src/optimize.lisp")
 (in-package :optimize)
 
-;; 1. create an annotated swaptions software object
+;; (1) create an annotated swaptions software object
 ;;    $ annotate "run swaptions ~a -a" benchmarks/swaptions/swaptions.s \
-;;               -L -lm -s -o benchmarks/swaptions/swaptions.store
+;;        -l g++ -L -lpthread -s -o benchmarks/swaptions/swaptions.store
 (setf *orig* (restore "benchmarks/swaptions/swaptions.store"))
 
-;; 2. customize the around method to `apply-mutation' to collection
-;;    mutation information.
+;; (2) customize the around method to `apply-mutation' and the
+;;     `pick-bad' function to collect mutation information.
 (defvar picked nil)
 
 (defmethod pick-bad ((asm simple))
@@ -36,21 +36,26 @@
         (:swap (blend (second op)) (blend (third op))))))
   asm)
 
-;; (5) Setup configuration variables.
+;; (3) Setup
 (setf
+ *work-dir* "sh-runner/work"            ; use external script execution
  *evals* (expt 2 18)                    ; max runtime in evals
  *threads* 12                           ; number of threads
  *script* "run swaptions ~a -p"         ; test script
- (fitness *orig*) (test *orig*)         ; sanity
- *max-population-size* (expt 2 8)
- ;; fitness function stuff
- *fitness-predicate* #'<
+ *max-population-size* (expt 2 5)       ; max pop size
+ *fitness-predicate* #'<                ; fitness function stuff
  *fitness-function* (progn (load "src/configs/energy-models.lisp")
                            amd-opteron-power-model)
+ (fitness *orig*) (test *orig*)         ; sanity
  ;; fill the population with copies of the original
+ #+sbcl (sb-ext:bytes-consed-between-gcs) (expt 2 24)
  *population* (loop :for n :below *max-population-size* :collect (copy *orig*)))
 
-;; (6) Run.
+;; (4) Sanity check
+(assert (not (equal infinity (fitness *orig*))) (*orig*)
+        "Original program has no fitness.~%~S" (stats *orig*))
+
+;; (5) Run
 (let (threads
       #+ccl
       (*default-special-bindings*
