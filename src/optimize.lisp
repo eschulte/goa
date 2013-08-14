@@ -438,7 +438,8 @@ Options:
                                *terminal-io*))))))
             ;; kick off optimization threads
             (loop :for n :below *threads* :do
-               (push (make-thread do-evolve) threads))
+               (push (make-thread do-evolve :name (format nil "opt-~d" n))
+                     threads))
             ;; wait for all threads to return
             (mapc #'join-thread threads))))
 
