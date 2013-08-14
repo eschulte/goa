@@ -81,6 +81,39 @@
                 (genome asm))))
 
 
+;;; Annotated lighter weight range representation
+(defclass ann-range (asm-range)
+  ((anns    :initarg :anns    :accessor anns    :initform nil)
+   (ann-ref :initarg :ann-ref :accessor ann-ref :initform nil)))
+
+(defun to-ann-range (asm)
+  (with-slots (flags linker genome) asm
+    (make-instance 'ann-range
+      :flags flags
+      :linker linker
+      :genome (list (cons 0 (1- (length genome))))
+      :reference (coerce (lines asm) 'vector)
+      :anns (list (cons 0 (1- (length genome))))
+      :ann-ref (coerce (mapcar {aget :annotation} genome) 'vector))))
+
+(defmethod annotations ((ann ann-range))
+  (mapcan (lambda-bind ((start . end))
+            (mapcar {aref (ann-ref ann)}
+                    (loop :for i :from start :to end :collect i)))
+          (anns ann)))
+
+(defmethod copy ((asm ann-range))
+  (with-slots (genome linker flags reference anns ann-ref) asm
+    (make-instance (type-of asm)
+      :fitness (fitness asm)
+      :genome (copy-tree genome)
+      :linker linker
+      :flags flags
+      :reference reference
+      :anns anns
+      :ann-ref ann-ref)))
+
+
 ;;; print assembly LOC (aka ids) of annotations
 (defun annotate (&optional (args *arguments*))
   (in-package :optimize)

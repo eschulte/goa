@@ -2389,9 +2389,13 @@ We could use the "bubble" and the "reporter" from [[#mars2011bubble]].
 Measuring the values of HW counters against the bubble could give us
 coefficients for a memory linear model.
 
-* Code Tasks [9/12]
-** TODO memory efficient annotations
+* Code Tasks [10/12]
+** DONE memory efficient annotations
 Need to figure out the best data structure to hold these efficiently.
+- do this just like the range representation for source code
+- may be possible to use fractional indices to indicate that we
+  actually want the average of two neighboring values (e.g., 25.5 is
+  the average of 25 and 26)
 
 ** TODO multiple runs of fitness functions
 Add an option allowing multiple runs of fitness functions, until the

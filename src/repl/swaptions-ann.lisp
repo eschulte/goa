@@ -3,38 +3,32 @@
 ;; Copyright (C) 2013  Eric Schulte
 
 ;;; Code:
-(load "src/optimize.lisp")
 (in-package :optimize)
+(load "src/configs/use-annotation.lisp")
+(load "src/configs/energy-models.lisp")
+(load "src/repl/helpers.lisp")
 
 ;; (1) create an annotated swaptions software object
 ;;    $ annotate "run swaptions ~a -a" benchmarks/swaptions/swaptions.s \
 ;;        -l g++ -L -lpthread -s -o benchmarks/swaptions/swaptions.store
-(setf *orig* (restore "benchmarks/swaptions/swaptions.store"))
+
+;; (setf *orig* (restore "benchmarks/swaptions/swaptions.store"))
+(setf *orig* (to-ann-range (restore "benchmarks/swaptions/swaptions.store")))
 
 ;; (2) customize the around method to `apply-mutation' and the
 ;;     `pick-bad' function to collect mutation information.
 (defvar picked nil)
 
 (defmethod pick-bad ((asm simple))
-    (let ((id (pick asm [{+ 0.01} {aget :annotation}])))
-      (push id picked) id))
+  (let ((id (pick asm [{+ 0.01} {aget :annotation}])))
+    (push id picked) id))
+
+(defmethod pick-bad ((asm ann-range))
+  (let ((id (proportional-pick (annotations asm) #'identity)))
+    (push id picked) id))
 
 (defvar mutations nil)
-
-(defmethod apply-mutation :around ((asm asm) op)
-  (call-next-method)
-  (push op mutations)
-  (with-slots (genome) asm
-    (flet ((blend (i)
-             (setf (cdr (assoc :annotation (nth i genome)))
-                   (mean (remove nil
-                           (list (when (> i 0)
-                                   (aget :annotation (nth (1- i) genome)))
-                                 (aget :annotation (nth (1+ i) genome))))))))
-      (case (car op)
-        (:insert (blend (second op)))
-        (:swap (blend (second op)) (blend (third op))))))
-  asm)
+(push (lambda (it) (push it mutations)) *mutation-hooks*)
 
 ;; (3) Setup
 (setf
@@ -42,20 +36,25 @@
  *evals* (expt 2 18)                    ; max runtime in evals
  *threads* 12                           ; number of threads
  *script* "run swaptions ~a -p"         ; test script
- *max-population-size* (expt 2 5)       ; max pop size
+ *max-population-size* (expt 2 8)       ; max pop size
  *fitness-predicate* #'<                ; fitness function stuff
- *fitness-function* (progn (load "src/configs/energy-models.lisp")
-                           amd-opteron-power-model)
- (fitness *orig*) (test *orig*)         ; sanity
- ;; fill the population with copies of the original
+ *fitness-function* (case (arch)
+                      (:intel intel-sandybridge-power-model)
+                      (:amd amd-opteron-power-model))
+ (fitness *orig*) (test *orig*))        ; original fitness
+
+;; (4) Sanity check
+(assert (not (equal infinity (fitness *orig*))) (*fitness-function* *orig*)
+        "Original program has bad fitness.~%fitness function:~%~Sstats:~%~S"
+        *fitness-function*
+        (stats *orig*))
+
+;; (5) Populate
+(setf
  #+sbcl (sb-ext:bytes-consed-between-gcs) (expt 2 24)
  *population* (loop :for n :below *max-population-size* :collect (copy *orig*)))
 
-;; (4) Sanity check
-(assert (not (equal infinity (fitness *orig*))) (*orig*)
-        "Original program has no fitness.~%~S" (stats *orig*))
-
-;; (5) Run
+;; (6) Run
 (let (threads
       #+ccl
       (*default-special-bindings*
@@ -66,6 +65,8 @@
                      *terminal-io*))))))
   ;; kick off optimization threads
   (loop :for n :below *threads* :do
-     (push (make-thread (lambda () (evolve #'test :max-evals *evals*))) threads))
+     (push (make-thread (lambda () (evolve #'test :max-evals *evals*))
+                        :name (format nil "opt-~d" n))
+           threads))
   ;; wait for all threads to return
   (mapc #'join-thread threads))
