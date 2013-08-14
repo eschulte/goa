@@ -75,11 +75,10 @@
 (defun arch ()
   (let ((cpuinfo "/proc/cpuinfo"))
     (if (probe-file cpuinfo)
-        (block nil
-          (with-open-file (in cpuinfo)
-            (loop :for line = (read-line in nil) :while line :do
-               (cond ((scan "Intel" line) (return :intel))
-                     ((scan "AMD" line) (return :amd))))))
+        (with-open-file (in cpuinfo)
+          (loop :for line = (read-line in nil) :while line :do
+             (cond ((scan "Intel" line) (return-from arch :intel))
+                   ((scan "AMD" line)   (return-from arch :amd)))))
         :darwin)))
 
 (defun parse-stdout (stdout)
