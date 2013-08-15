@@ -137,9 +137,10 @@ Options:
  -L,--lflags FLAGS ----- flags to use when linking
  -s,--smooth ----------- smooth the annotations
  -o,--out FILE --------- store annotated individual in FILE
+ -r,--range ------------ save as an `ann-range' object
  -e,--extended NUM ----- run extended test NUM
  -v,--verbose ---------- verbose debugging output~%")
-          smooth out)
+          smooth out range)
       (when (or (not args)
                 (string= (subseq (car args) 0 2) "-h")
                 (string= (subseq (car args) 0 3) "--h"))
@@ -157,6 +158,7 @@ Options:
                                               :remove-empty-subseqs t)))
        ("-s" "--smooth" (setf smooth t))
        ("-o" "--out"    (setf out (arg-pop)))
+       ("-r" "--range"  (setf range t))
        ("-e" "--extended" (throw-error "Extended option not supported."))
        ("-v" "--verbose" (setf *shell-debug* t)))
 
@@ -164,7 +166,7 @@ Options:
 
       (if out
           (progn
-            (store *orig* out)
+            (store (if range (to-ann-range *orig*) *orig*) out)
             (format t "~&Stored annotated individual in ~a~%" out))
           (format t "~&~{~{~a~^ ~}~^~%~}~%"
                   (indexed (mapcar {aget :annotation} (genome *orig*))))))))
