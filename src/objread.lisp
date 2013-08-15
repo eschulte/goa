@@ -20,22 +20,22 @@ Options:
                 (string= (subseq (car args) 0 3) "--h"))
         (format t help) (quit))
 
-      (let ((best (restore (arg-pop))))
+      (let ((obj (restore (arg-pop))))
         (getopts
-         ("-l" "--link"   (phenome best :bin (arg-pop)))
+         ("-l" "--link"   (phenome obj :bin (arg-pop)))
          ("-s" "--stats"
                (mapc (lambda-bind ((counter . count))
                        (format t "~a ~a~%"
                                (string-downcase (symbol-name counter))
                                count))
-                     (stats best)))
-         ("-f" "--fitness" (format t "~&~a~%" (fitness best)))
+                     (stats obj)))
+         ("-f" "--fitness" (format t "~&~a~%" (fitness obj)))
          ("-a" "--annotations"
                (format t "~{~{~a~^ ~}~^~%~}~%"
-                       (indexed (mapcar {aget :annotation} (genome best)))))
-         ("-g" "--genome" (format t "~&~S~%" (genome best)))
+                       (indexed (annotations obj))))
+         ("-g" "--genome" (format t "~&~S~%" (genome obj)))
          ("-G" "--genome-string"
-               (format t "~&~a~%" (genome-string best)))
+               (format t "~&~a~%" (genome-string obj)))
          ("-E" "--eval"
                (let ((form `(lambda (obj) ,(read-from-string (arg-pop)))))
-                 (format t "~&~a~%" (funcall (eval form) best)))))))))
+                 (format t "~&~a~%" (funcall (eval form) obj)))))))))

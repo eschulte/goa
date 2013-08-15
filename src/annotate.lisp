@@ -96,6 +96,8 @@
       :anns (list (cons 0 (1- (length genome))))
       :ann-ref (coerce (mapcar {aget :annotation} genome) 'vector))))
 
+(defmethod annotations ((asm asm)) (mapcar {aget :annotation} (genome asm)))
+
 (defmethod annotations ((ann ann-range))
   (mapcan (lambda-bind ((start . end))
             (mapcar {aref (ann-ref ann)}
@@ -169,4 +171,4 @@ Options:
             (store (if range (to-ann-range *orig*) *orig*) out)
             (format t "~&Stored annotated individual in ~a~%" out))
           (format t "~&~{~{~a~^ ~}~^~%~}~%"
-                  (indexed (mapcar {aget :annotation} (genome *orig*))))))))
+                  (indexed (annotations *orig*)))))))
