@@ -49,5 +49,5 @@
 (defmethod apply-mutation :around ((asm asm) op)
   (call-next-method)
   (smooth-annotation asm op)
-  (mapc {funcall _ op} *mutation-hooks*)
+  (mapc {funcall _ asm op} *mutation-hooks*)
   asm)

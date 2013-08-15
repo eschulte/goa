@@ -15,22 +15,7 @@
 ;; (setf *orig* (restore "benchmarks/swaptions/swaptions.store"))
 (setf *orig* (to-ann-range (restore "benchmarks/swaptions/swaptions.store")))
 
-;; (2) customize the around method to `apply-mutation' and the
-;;     `pick-bad' function to collect mutation information.
-(defvar picked nil)
-
-(defmethod pick-bad ((asm simple))
-  (let ((id (pick asm [{+ 0.01} {aget :annotation}])))
-    (push id picked) id))
-
-(defmethod pick-bad ((asm ann-range))
-  (let ((id (proportional-pick (annotations asm) #'identity)))
-    (push id picked) id))
-
-(defvar mutations nil)
-(push (lambda (it) (push it mutations)) *mutation-hooks*)
-
-;; (3) Setup
+;; (2) Setup
 (setf
  *work-dir* "sh-runner/work"            ; use external script execution
  *evals* (expt 2 18)                    ; max runtime in evals
@@ -43,18 +28,18 @@
                       (:amd amd-opteron-power-model))
  (fitness *orig*) (test *orig*))        ; original fitness
 
-;; (4) Sanity check
+;; (3) Sanity check
 (assert (not (equal infinity (fitness *orig*))) (*fitness-function* *orig*)
         "Original program has bad fitness.~%fitness function:~%~Sstats:~%~S"
         *fitness-function*
         (stats *orig*))
 
-;; (5) Populate
+;; (4) Populate
 (setf
  #+sbcl (sb-ext:bytes-consed-between-gcs) (expt 2 24)
  *population* (loop :for n :below *max-population-size* :collect (copy *orig*)))
 
-;; (6) Run
+;; (5) Run
 (let (threads
       #+ccl
       (*default-special-bindings*
