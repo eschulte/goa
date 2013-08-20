@@ -160,6 +160,10 @@
 
 
 ;;; Helpers
+(defun better (orig new)
+  "Return the fraction improvement of new over original."
+  (/ (abs (- orig new)) orig))
+
 (defun throw-error (&rest args)
   (apply #'note 0 args)
   (quit))
