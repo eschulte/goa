@@ -1,0 +1,63 @@
+#!/bin/bash
+#
+# Usage: plot [OPTIONS...] -- FILES
+#  plot stats files
+#
+# Options:
+#  -d,--dry-run ---- print the command but don't plot
+#  -k,--keep ------- keep the temporary files
+#  -l,--lines ------ plot with lines
+#
+. $(dirname $0)/common
+
+## Parse Options
+if [ $# -lt 1 ];then help; fi
+LINES=""
+DRY=""
+keep=""
+
+eval set -- $(getopt -o ldk -l lines,dry-run,keep -- "$@" || help;)
+while [ $# -gt 0 ];do
+    case $1 in
+        -l|--lines) LINES="yes";;
+        -d|--dry-run) DRY="yes";;
+        -k|--keep)   KEEP="yes";;
+        (--) shift; break;;
+        (-*) error "unrecognized option $1";;
+        (*)  break;;
+    esac
+    shift
+done
+
+## cleanup
+declare -a TMPS
+function exit_hook () { if [ -z $KEEP ];then rm -f ${TMPS[@]}; fi; }
+trap exit_hook EXIT
+
+# print the fitness and evals of each line in a format that looks
+# sorted to `join'.
+fitness(){ cat $1/stats.txt|awk '{printf "%06d\t%s\n", $1, $2}'; }
+
+# print the legend information for a file.
+legend(){ echo $1|sed 's/results\///'; }
+
+PLOT_OPTS="--domain"
+if [ ! -z $LINES ];then PLOT_OPTS+="  --lines";fi
+counter=0;
+for file in "$@";do
+    PLOT_OPTS+=" --legend $counter $(legend $file)"
+    counter=$(($counter + 1))
+done
+
+CMD="join -e nan"
+for file in "$@";do
+    tmp=$(mktemp)
+    TMPS+=($tmp)
+    fitness $file > $tmp
+    CMD+=" $tmp"
+done
+if [ -z $DRY ];then
+    join -e nan ${TMPS[@]}|grep -v e|feedgnuplot $PLOT_OPTS
+else
+    echo "join -e nan ${TMPS[@]}|grep -v e|feedgnuplot $PLOT_OPTS"
+fi
