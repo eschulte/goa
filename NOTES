@@ -2592,8 +2592,47 @@ failures at stages.
 
 Run with =make check=.
 
-* Issues [10/12]
+* Issues [11/13]
 ** TODO ensure that annotation works as expected
+Not getting the desired improvement from targeted mutation operations.
+
+*** DONE useful mutations not located along the weighted path
+- file:etc/data/min-edits-w-annotations-vips.svg
+- file:etc/data/min-edits-w-annotations-swaptions.svg
+- file:etc/data/min-edits-w-annotations-ferret.svg
+- file:etc/data/min-edits-w-annotations-fluidanimate.svg
+- file:etc/data/min-edits-w-annotations-x264.svg
+- file:etc/data/min-edits-w-annotations-freqmine.svg
+
+**** calculations
+#+name: min-edits-hist
+#+begin_src sh :var bench="vips" :results scalar
+  export PATH="bin/:$PATH"
+  
+  patch_bins(){
+      grep "^[0-9]"|sed 's/[\,adc]/\n/g'|in-bins 25; }
+  
+  join \
+      <(objread benchmarks/$bench/$bench.store -a -n|sed 's/0.0$/0/') \
+      <(diff results/parsec-amd/$bench.orig.s results/parsec-amd/$bench.minimized.s|patch_bins) \
+      -n -e NaN > /tmp/combined-$bench
+
+  echo -n "/tmp/combined-$bench"
+#+end_src
+
+#+headers: :var data=min-edits-hist("freqmine")
+#+begin_src gnuplot :file etc/data/min-edits-w-annotations-freqmine.svg
+  set datafile missing 'NaN'
+  set yrange [0.01:]
+  set title  'freqmine minimized edits and annotations'
+  set xlabel 'ASM LOC'
+  plot data using 1:2 title 'annotations', data using 1:3 title 'minimized edits'
+#+end_src
+
+There does seem to be some correlation between the weighted path and
+the useful annotation spots, but there are noticeable pools of useful
+annotations which are *not* on the weighted.
+
 ** TODO leftover temporary files
 need to clean these up
 - find them (run scripts, lisp executables)
