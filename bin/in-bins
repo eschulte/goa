@@ -1,0 +1,30 @@
+#!/usr/bin/gawk -f
+#
+# Collect numbers into bins.
+#
+function floor(x){ return int(x); }
+
+BEGIN {
+    # process optional command line argument
+    if(ARGV[1] ~ /[0-9.]/){
+        bin_width = ARGV[1]; ARGV[1] = "-"; }
+    else{
+        bin_width = 1; } }
+
+{   for(i=1; i<=NF; i++){
+        my_bin = floor($i / bin_width);
+        bins[i][my_bin]++;
+        if(my_bin > max){ max = my_bin; } }
+    if(NF > max_nf){ max_nf = NF; } }
+
+END {
+    # build format string for printing results
+    if (bin_width % 2 == 0){ fmt = "%d "; } else { fmt = "%0.1f "; }
+    for(j=0;j<=max;j++){
+        # print the middle of the bin
+        printf fmt, ((j * bin_width) + bin_width / 2);
+        for(i=1; i<=max_nf; i++){
+            if (i == max_nf){
+                printf "%d\n", bins[i][j]; }
+            else {
+                printf "%d ", bins[i][j]; } } } }
