@@ -30,37 +30,42 @@ Options:
  -l,--linker LINKER ---- linker to use
  -L,--lflags FLAGS ----- flags to use when linking
  -s,--smooth ----------- smooth the annotations
+ -f,--flat ------------- binary annotation indicating execution
+ -w,--widen RADIUS ----- widen binary annotations by RADIUS
  -o,--out FILE --------- store annotated individual in FILE
  -r,--range ------------ save as an `ann-range' object
  -e,--extended NUM ----- run extended test NUM
  -v,--verbose ---------- verbose debugging output~%")
-          smooth out range)
-      (when (or (not args)
-                (string= (subseq (car args) 0 2) "-h")
-                (string= (subseq (car args) 0 3) "--h"))
-        (format t help) (quit))
+        (self (pop args))
+        smooth flat widen out range)
+    (when (or (not args)
+              (string= (subseq (car args) 0 2) "-h")
+              (string= (subseq (car args) 0 3) "--h"))
+      (format t help self) (quit))
 
-      (setf
-       *script* (arg-pop)
-       *path* (arg-pop)
-       *orig* (from-file (make-instance 'asm-perf) *path*))
+    (setf
+     *script* (pop args)
+     *path* (pop args)
+     *orig* (from-file (make-instance 'asm-perf) *path*))
 
-      (getopts
-       ("-l" "--linker" (setf (linker *orig*) (arg-pop)))
-       ("-L" "--lflags" (setf (flags *orig*)
-                              (split-sequence #\Space (pop args)
-                                              :remove-empty-subseqs t)))
-       ("-s" "--smooth" (setf smooth t))
-       ("-o" "--out"    (setf out (arg-pop)))
-       ("-r" "--range"  (setf range t))
-       ("-e" "--extended" (throw-error "Extended option not supported."))
-       ("-v" "--verbose" (setf *shell-debug* t)))
+    (getopts
+     ("-l" "--linker" (setf (linker *orig*) (pop args)))
+     ("-L" "--lflags" (setf (flags *orig*)
+                            (split-sequence #\Space (pop args)
+                                            :remove-empty-subseqs t)))
+     ("-s" "--smooth" (setf smooth t))
+     ("-f" "--flat"   (setf flat t))
+     ("-w" "--widen"  (setf widen (parse-number (pop args))))
+     ("-o" "--out"    (setf out (pop args)))
+     ("-r" "--range"  (setf range t))
+     ("-e" "--extended" (throw-error "Extended option not supported."))
+     ("-v" "--verbose" (setf *shell-debug* t)))
 
-      (apply-annotations *orig* :smooth smooth)
+    (apply-annotations *orig* :smooth smooth :flat flat)
 
-      (if out
-          (progn
-            (store (if range (to-ann-range *orig*) *orig*) out)
-            (format t "~&Stored annotated individual in ~a~%" out))
-          (format t "~&~{~{~a~^ ~}~^~%~}~%"
-                  (indexed (annotations *orig*)))))))
+    (if out
+        (progn
+          (store (if range (to-ann-range *orig*) *orig*) out)
+          (format t "~&Stored annotated individual in ~a~%" out))
+        (format t "~&~{~{~a~^ ~}~^~%~}~%"
+                (indexed (annotations *orig*))))))

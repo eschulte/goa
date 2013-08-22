@@ -247,6 +247,8 @@
       (when (not bin) (delete-file my-bin)))))
 
 (defun genome-anns (asm &key bin)
+  (assert (stringp *script*) (*script*)
+          "`*script*' must be set to run `genome-anns'")
   (let* ((my-bin (or bin (phenome asm)))
          (script (format nil *script* my-bin)))
     (unwind-protect
@@ -269,14 +271,40 @@
           (append '(0 0)   list)
           (append '(0 0 0) list)))
 
-(defun apply-annotations (asm &key smooth)
-  "Apply annotations to the genome of ASM."
+(defun widen (list radius)
+  "Widen the maximum values in LIST by RADIUS."
+  (apply #'mapcar #'max (loop :for i :from (* -1 radius) :to radius :collect
+                           (if (< i 0)
+                               (append (drop (* i -1) list)
+                                       (make-list (* i -1) :initial-element 0))
+                               (append (make-list i :initial-element 0)
+                                       (butlast list i))))))
+
+(defun apply-annotations (asm &key smooth widen flat)
+  "Apply annotations to the genome of ASM.
+Keyword argument SMOOTH will `smooth' the annotations with a Gaussian
+blur.  Keyword argument WIDEN will `widen' the annotations.  If both
+SMOOTH and WIDEN are given, widening is applied first.  Keyword
+argument FLAT will produce flat annotations simply indicating if the
+instruction was executed or not."
   (setf (genome asm)
-        (mapcar (lambda (ann element)
-                  (cons (cons :annotation ann) element))
-                ((lambda (raw) (if smooth (smooth raw) raw))
-                 (mapcar (lambda (ans) (or ans 0)) (genome-anns asm)))
-                (genome asm))))
+        (mapcar
+         (lambda (ann element)
+           (cons (cons :annotation ann) element))
+         ((lambda (raw)
+            ((lambda (raw) (if smooth (smooth raw) raw))
+             (if widen
+                 (progn (assert
+                         (numberp widen) (widen)
+                         "widen arg to `apply-annotations' isn't numeric: ~a"
+                         widen)
+                        (widen raw widen))
+                 raw)))
+          (mapcar (if flat
+                      (lambda (ann) (if ann 1 0))
+                      (lambda (ann) (or ann 0)))
+                  (genome-anns asm)))
+         (genome asm))))
 
 
 ;;; Annotated lighter weight range representation
