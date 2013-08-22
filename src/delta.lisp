@@ -21,9 +21,9 @@
         (if (tree-equal seq1 seq2) 1.0 0)
         (t-test-two-sample-on-sequences seq1 seq2))))
 
-(defun delta (&optional (args *arguments*))
+(defun delta (args)
   (in-package :optimize)
-  (let ((help "Usage: delta TEST-SCRIPT ORIG.store NEW.store [OPTIONS...]
+  (let ((help "Usage: ~a TEST-SCRIPT ORIG.store NEW.store [OPTIONS...]
  Minimize the genetic differences between ORIGINAL and NEW as
  much as possible such that TEST-SCRIPT continues to show a
  phenotypic difference between the two.
@@ -49,12 +49,13 @@ Options:
  -a,--alpha ------------ maximum significance (default ~d)
  -r,--reps NUM --------- run objects NUM times (default ~d)
  -v,--verbose ---------- verbose debugging output~%")
+        (self (pop args))
         (alpha 0.1) (reps 5) orig new patch out)
     (when (or (not args)
               (< (length args) 3)
               (string= (subseq (car args) 0 2) "-h")
               (string= (subseq (car args) 0 3) "--h"))
-      (format t help alpha reps) (quit))
+      (format t help self alpha reps) (quit))
     (setf *script* (pop args)
           orig     (restore (pop args))
           new      (restore (pop args)))

@@ -1,18 +1,18 @@
-;;; neutral.lisp --- annotate assembly LOC with perf
+;;; neutral.lisp --- collect neutral variants
 
 ;; Copyright (C) 2013  Eric Schulte
 
 ;;; Commentary:
 
-;; Collect multiple neutral variants of an assembly file.
+;; Collect multiple neutral variants of an assembly file.  This has
+;; not yet been implemented.
 
 ;;; Code:
 (in-package :optimize)
 
-;;; print assembly LOC (aka ids) of annotations
-(defun neutral (&optional (args *arguments*))
+(defun neutral (args)
   (in-package :optimize)
-  (let ((help "Usage: neutral SCRIPT ASM-FILE [OPTIONS...]
+  (let ((help "Usage: ~a SCRIPT ASM-FILE [OPTIONS...]
  Collect neutral variants of ASM-FILE removed from the
  original by multiple numbers of edits (steps).  For each
  neutral variant also store the output of SCRIPT.
@@ -38,11 +38,12 @@ Options:
                          default: 16
  -d,--diff ------------- only store diffs of variants
  -v,--verbose ---------- verbose debugging output~%")
+        (self (pop args))
         (res-dir "neutral-variants") diff (num 256) (steps 16))
     (when (or (not args)
               (string= (subseq (car args) 0 2) "-h")
               (string= (subseq (car args) 0 3) "--h"))
-      (format t help) (quit))
+      (format t help self) (quit))
 
     (setf
      *script* (pop args)

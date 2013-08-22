@@ -1,16 +1,5 @@
-# Build uses cl-launch
-CLC:=cl-launch
-
-ifneq ($(LISP_STACK),)
-ifneq ($(LISP),)
-$(error LISP_STACK overrides LISP forcing use of sbcl.  Unset LISP_STACK or LISP)
-endif
-endif
-LISP:="sbcl ccl"
-
-# Set this variable to require additional packages into the compiled
-# lisp executables
-LISP_PKGS:=
+# Use buildapp as the lisp compiler
+LC:=buildapp
 
 # You can set this as an environment variable to point to an alternate
 # quicklisp install location.  If you do, ensure that it ends in a "/"
@@ -21,32 +10,29 @@ $(warning $(QUICK_LISP) does not appear to be a valid quicklisp install)
 $(error Please point QUICK_LISP to your quicklisp installation)
 endif
 
+# Lisp Libraries to compile into executables
+#
+#  Set the LISP_LIBS env variable to load another lisp system into the
+#  compiled optimization executables.
+#
+LISP_LIBS+= optimize
+LC_LIBS:=$(addprefix --load-system , $(LISP_LIBS))
+
+# Flags to buildapp
+LCFLAGS=--asdf-tree $(QUICK_LISP)/local-projects/ \
+	--asdf-tree $(QUICK_LISP)/dists/quicklisp/software \
+	$(LC_LIBS)
+
 # Compiled lisp executables
 LISP_EXES=optimize objread annotate delta neutral
 LISP_BINS=$(addprefix bin/, $(LISP_EXES))
-LISP_DEPS=src/package.lisp src/optimize.lisp src/annotate.lisp etc/cl-launch.lisp
 
 # Compiled C executables
 C_EXES=limit no-limit
 C_BINS=$(addprefix bin/, $(C_EXES))
 
-# Flags to build standalone executables
-CLFLAGS=--no-include --system optimize --lisp $(LISP) --dump '!' -f etc/cl-launch.lisp
-
-ifneq ($(LISP_STACK),)
-	LISP=sbcl
-	CLFLAGS+= --wrap 'SBCL_OPTIONS="--dynamic-space-size $(LISP_STACK)"'
-endif
-
 all: $(C_BINS) $(LISP_BINS)
-
-etc/cl-launch.lisp:
-	@echo "(load \"$(QUICK_LISP)/setup.lisp\")" >$@
-
-bin/%: src/%.lisp $(LISP_DEPS)
-	@sed -i '/require/d' etc/cl-launch.lisp
-	@for pkg in $(LISP_PKGS);do echo "(require :$$pkg)";done >>etc/cl-launch.lisp
-	$(CLC) $(CLFLAGS) --output $@ -r optimize:$*
+.PHONY:  clean
 
 bin/limit: bin/limit.c
 	$(CC) $< -o $@
@@ -54,8 +40,8 @@ bin/limit: bin/limit.c
 bin/no-limit: bin/no-limit.c
 	$(CC) $< -o $@
 
-clean:
-	rm -f etc/cl-launch.lisp $(C_BINS) $(LISP_BINS)
+bin/%: src/package.lisp src/optimize.lisp src/%.lisp
+	$(LC) $(LCFLAGS) --output $@ --entry "optimize:$*"
 
-real-clean: clean
-	rm -f **/*.fasl **/*.lx32fsl
+clean:
+	rm -f etc/cl-launch.lisp $(C_BINS) $(LISP_BINS) **/*.fasl **/*.lx32fsl

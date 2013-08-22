@@ -111,7 +111,7 @@ will need to be installed.
 
 6. At this point it is possible to run program optimization from the
    lisp REPL as described below.  To build a command line program
-   optimization executable, install cl-launch [9] and then run make.
+   optimization executable, install buildapp [9] and then run make.
 
 ### Make Variables
 
@@ -133,12 +133,12 @@ The following variables may be used to control the behavior of make.
 
          make bin/optimize LISP_STACK=$((30 * 1024))
 
-- The `LISP_PKGS` variable may be used to include additional packages
+- The `LISP_LIBS` variable may be used to include additional packages
   into compiled executables.  For example to compile the `iolib`
   package into the `optimize` executable for socket communication
   (e.g., with `src/configs/by-flag.lisp`), run the following.
 
-         make bin/optimize LISP_PKGS=iolib
+         make bin/optimize LISP_LIBS=iolib
 
 Optimization at the Command Line
 --------------------------------
@@ -205,4 +205,4 @@ Footnotes
 
 [8] http://www.quicklisp.org/beta/
 
-[9] http://www.cliki.net/cl-launch
+[9] http://www.xach.com/lisp/buildapp/
