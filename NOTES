@@ -2592,11 +2592,20 @@ failures at stages.
 
 Run with =make check=.
 
-* Issues [11/13]
+* Issues [11/14]
 ** TODO ensure that annotation works as expected
 Not getting the desired improvement from targeted mutation operations.
 
 *** DONE useful mutations not located along the weighted path
+It looks like there isn't overmuch overlap between our code
+annotations (basically fault localization for our HW counters), and
+the locations of the beneficial edits.
+
+The following graphs show both the ASM annotations (as collected by
+=perf annotate=) and the locations of beneficial edits (namely the
+places of difference between the original =.s= file and the final
+minimized =.s= file).
+
 - file:etc/data/min-edits-w-annotations-vips.svg
 - file:etc/data/min-edits-w-annotations-swaptions.svg
 - file:etc/data/min-edits-w-annotations-ferret.svg
@@ -2632,6 +2641,9 @@ Not getting the desired improvement from targeted mutation operations.
 There does seem to be some correlation between the weighted path and
 the useful annotation spots, but there are noticeable pools of useful
 annotations which are *not* on the weighted.
+
+*** TODO flat annotation
+Only two classes, run and not run, see if this helps.
 
 ** TODO leftover temporary files
 need to clean these up
