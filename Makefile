@@ -19,7 +19,7 @@ LISP_LIBS+= optimize
 LC_LIBS:=$(addprefix --load-system , $(LISP_LIBS))
 
 # Flags to buildapp
-LCFLAGS=--asdf-tree $(QUICK_LISP)/local-projects/ \
+LCFLAGS=--manifest-file $(QUICK_LISP)/local-projects/system-index.txt \
 	--asdf-tree $(QUICK_LISP)/dists/quicklisp/software \
 	$(LC_LIBS)
 
