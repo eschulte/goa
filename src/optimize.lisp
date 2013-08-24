@@ -222,6 +222,8 @@
                 (split-sequence #\Newline raw))))))
 
 (defun perf-annotations (script)
+  ;; Note: another option could use
+  ;;       perf report --stdio -i perf.data --sort srcline
   (remove nil
     (mapcar (lambda (line)
               (multiple-value-bind (all matches)
