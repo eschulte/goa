@@ -7,6 +7,7 @@
 #  -l,--limit ----- limit script for sandboxing
 #  -p,--perf ------ collect performance counters
 #  -a,--annotate -- annotate the assembly with perf
+#  -e,--record ---- record perf counters
 #  -c,--counters -- comma separated list of perf counters
 #  -w,--wattsup --- collect watts-up data during execution
 #  -t,--time ------ collect time of execution
@@ -40,6 +41,7 @@ SIZE=$(size_for_benchmark $BENCHMARK)
 EXECUTABLE="$2"
 PERF=""
 ANNOTATE=""
+RECORD=""
 COUNTERS=""
 WATTSUP=""
 TIME=""
@@ -54,14 +56,15 @@ INPUT="$BASE/benchmarks/$BENCHMARK/$BENCHMARK.input"
 OUTPUT="$BASE/benchmarks/$BENCHMARK/$BENCHMARK.output"
 OUT=$(mktemp)
 eval set -- \
-    $(getopt -o l:pac:wtr:Rs:dkKi:o: \
-    -l limit:,perf,annotate,counters:,wattsup,time,repeat:,raw,size:,debug,keep,keep-perf,input:,output: \
+    $(getopt -o l:paec:wtr:Rs:dkKi:o: \
+    -l limit:,perf,annotate,record,,counters:,wattsup,time,repeat:,raw,size:,debug,keep,keep-perf,input:,output: \
     -- "$@" || help;)
 while [ $# -gt 0 ];do
     case $1 in
         -l|--limit) LIMIT="$2"; shift;;
         -p|--perf)  PERF="yes";;
         -a|--annotate) ANNOTATE="yes"; PERF="yes";;
+        -e|--record) RECORD="yes"; PERF="yes"; KEEP_PERF="yes";;
         -r|--repeat) REPEAT="$2"; shift;;
         -c|--counters) PERF="yes"; COUNTERS="$2"; shift;;
         -w|--wattsup) WATTSUP="yes";;
@@ -139,7 +142,7 @@ if [ -z $PERF ];then
 else
     # perf prefix to the command
     PERF_OUT=$(mktemp)
-    if [ -z $ANNOTATE ];then
+    if [ -z $ANNOTATE ] && [ -z $RECORD ];then
         PREFIX+=" perf stat -e $COUNTERS -o $PERF_OUT"
     else
         PREFIX+=" perf record -e $COUNTERS -o $PERF_OUT"
@@ -148,7 +151,7 @@ else
     PREFIX+=" --"
     # handle perf output on exit
     function exit_hook (){
-        if [ -z $ANNOTATE ];then
+        if [ -z $ANNOTATE ] && [ -z $RECORD ];then
             echo "$EXIT,exit"
             echo "$ERROR,error"
             # collect missed counters
@@ -170,9 +173,11 @@ else
                 $0 $ARGS -c $MISSED|grep $(echo "$MISSED"|sed 's/,/\\|/')
             fi
         else
-            perf annotate -i $PERF_OUT
-            # |grep ": \+[a-fA-F0-9]\+" \
-            # |sed 's/ \([a-fA-F0-9]\+\):.*$/\1/;s/\s*:\s*/,/;s/^\s*//'
+            if [ ! -z $ANNOTATE ];then
+                perf annotate -i $PERF_OUT
+                # |grep ": \+[a-fA-F0-9]\+" \
+                # |sed 's/ \([a-fA-F0-9]\+\):.*$/\1/;s/\s*:\s*/,/;s/^\s*//'
+            fi
         fi
         if [ -z $KEEP_PERF ];then
             rm -f $PERF_OUT;
