@@ -26,6 +26,12 @@ Options:
                 (string= (subseq (car args) 0 3) "--h"))
         (format t help self) (quit))
 
+      ;; only want this when running objread from the command line
+      (let ((*error-output* (make-broadcast-stream)))
+        (defmethod slot-missing (class obj name op &optional new)
+          (format *error-output* "; slot-missing: (~s ~s)~%"
+                  name (class-name class))))
+
       (let ((obj (restore (arg-pop))))
         (getopts
          ("-l" "--link"   (phenome obj :bin (arg-pop)))
