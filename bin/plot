@@ -15,10 +15,12 @@
 if [ $# -lt 1 ];then help; fi
 FILE1="$1"; shift;
 FILE2="$1"; shift;
+JOIN=join
 JOINED=$(mktemp)
 LINES=""
 DRY=""
 KEEP=""
+RAW=""
 
 eval set -- $(getopt -o ldkr -l lines,dry-run,keep,raw -- "$@" || help;)
 while [ $# -gt 0 ];do
@@ -39,19 +41,10 @@ declare -a TMPS
 function exit_hook () { if [ -z $KEEP ];then rm -f $JOINED; fi; }
 trap exit_hook EXIT
 
-# Print the fitness and evals in a format that looks sorted to `join'.
-fitness(){ cat $1/stats.txt|awk '{printf "%06d\t%s\n", $1, $2}'; }
-
-plot(){
-    if [ ! $RAW ];then
-        feedgnuplot $PLOT_OPTS
-    else
-        cat -
-    fi; }
-
 # combine the files
 if [ -z $DRY ];then
-    $JOIN <(fitness $FILE1) <(fitness $FILE2) -e "NaN"|grep -v e > $JOINED
+    $JOIN <(cat $FILE1|cut -d' ' -f1,2) <(cat $FILE2|cut -d' ' -f1,2) \
+        -n -e "NaN"|grep -v e > $JOINED
 else
     echo "$JOIN <(fitness $FILE1) <(fitness $FILE2) -e 'NaN'|grep -v e > $JOINED"
 fi
@@ -61,7 +54,11 @@ GNUPLOT_CMD+="plot '$JOINED' u 1:2 title '$FILE1', '$both' u 1:3 title '$FILE2'"
 
 # pass to gnuplot
 if [ -z $DRY ];then
-    gnuplot -p -e "$GNUPLOT_CMD"
+    if [ ! $RAW ];then
+        gnuplot -p -e "$GNUPLOT_CMD"
+    else
+        cat $JOINED
+    fi
 else
     echo "gnuplot -p -e \"$GNUPLOT_CMD\""
 fi
