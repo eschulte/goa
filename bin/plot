@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Usage: plot FILE1 FILE2 [OPTIONS...]
+# Usage: plot [OPTIONS...] FILE1 FILE2
 #  plot stats files
 #
 # Options:
@@ -13,9 +13,7 @@
 
 ## Parse Options
 if [ $# -lt 1 ];then help; fi
-FILE1="$1"; shift;
-FILE2="$1"; shift;
-JOIN=join
+JOIN=join # enhanced `join' utility from https://github.com/eschulte/cl-join
 JOINED=$(mktemp)
 LINES=""
 DRY=""
@@ -41,16 +39,24 @@ declare -a TMPS
 function exit_hook () { if [ -z $KEEP ];then rm -f $JOINED; fi; }
 trap exit_hook EXIT
 
-# combine the files
 if [ -z $DRY ];then
-    $JOIN <(cat $FILE1|cut -d' ' -f1,2) <(cat $FILE2|cut -d' ' -f1,2) \
-        -n -e "NaN"|grep -v e > $JOINED
+    $JOIN -v 1 -n -e "NaN" $@|grep -v e > $JOINED
 else
-    echo "$JOIN <(fitness $FILE1) <(fitness $FILE2) -e 'NaN'|grep -v e > $JOINED"
+    echo "$JOIN -v 1 -n -e "NaN" $@|grep -v e > $JOINED"
 fi
 
-GNUPLOT_CMD="set datafile missing 'NaN';"
-GNUPLOT_CMD+="plot '$JOINED' u 1:2 title '$FILE1', '$both' u 1:3 title '$FILE2'"
+GNUPLOT_CMD="set datafile missing 'NaN';plot "
+FIRST="YES"
+COUNTER=2
+for file in $@;do
+    if [ -z $FIRST ];then
+        GNUPLOT_CMD+=", "
+    else
+        FIRST=""
+    fi
+    GNUPLOT_CMD+="'$JOINED' u 1:$COUNTER title '$file'"
+    COUNTER=$(($COUNTER + 1))
+done
 
 # pass to gnuplot
 if [ -z $DRY ];then
