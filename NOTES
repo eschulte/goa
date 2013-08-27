@@ -2592,7 +2592,26 @@ failures at stages.
 
 Run with =make check=.
 
-* Issues [11/14]
+* Issues [12/15]
+** DONE runtimes for each benchmark
+#+begin_src sh
+  . bin/common
+  for bench in ${BENCHMARKS[@]/facesim/};do
+      min=$(grep seconds results/parsec-amd/$bench.min.perf|cut -d, -f1)
+      orig=$(grep seconds results/parsec-amd/$bench.orig.perf|cut -d, -f1)
+      echo -e "$bench\t$((100 * ($orig - $min)/$orig))"
+  done
+#+end_src
+
+| blackscholes |  91.714645805032916 |
+| bodytrack    | 0.31150229069921542 |
+| ferret       | -7.9459749296280862 |
+| fluidanimate |  9.4588131023175865 |
+| freqmine     |  3.2474265608067694 |
+| swaptions    |  41.959327395323804 |
+| vips         |  29.829097210322999 |
+| x264         |  9.8283565152724588 |
+
 ** TODO ensure that annotation works as expected
 Not getting the desired improvement from targeted mutation operations.
 
