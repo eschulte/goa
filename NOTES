@@ -2592,7 +2592,7 @@ failures at stages.
 
 Run with =make check=.
 
-* Issues [12/15]
+* Issues [13/16]
 ** DONE runtimes for each benchmark
 #+begin_src sh
   . bin/common
@@ -2661,9 +2661,12 @@ There does seem to be some correlation between the weighted path and
 the useful annotation spots, but there are noticeable pools of useful
 annotations which are *not* on the weighted.
 
-*** TODO flat annotation
+*** DONE flat annotation
 Only two classes, run and not run, see if this helps.
 
+these also don't seem to improve over nothing.
+
+*** TODO try different annotation techniques
 ** TODO leftover temporary files
 need to clean these up
 - find them (run scripts, lisp executables)
