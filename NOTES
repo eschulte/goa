@@ -2389,7 +2389,10 @@ We could use the "bubble" and the "reporter" from [[#mars2011bubble]].
 Measuring the values of HW counters against the bubble could give us
 coefficients for a memory linear model.
 
-* Code Tasks [10/12]
+* Code Tasks [10/13]
+** TODO assembler annotation
+printf just after each jump location and jump instruction
+
 ** DONE memory efficient annotations
 Need to figure out the best data structure to hold these efficiently.
 - do this just like the range representation for source code
