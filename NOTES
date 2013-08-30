@@ -72,7 +72,7 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 | 998.specrand   |
 | 999.specrand   |
 
-* Tasks [37/41]
+* Tasks [39/44]
 ** TODO Application of the Breeders equation
 Apply the Breeders Equation to analyze the relations between software
 traits (e.g., HW counters, executable size, etc...) and predict
@@ -101,21 +101,37 @@ See file:src/neutral.lisp.
 For multiple values of =*mut-rate*=, see how effective optimization is
 at a simple runtime improvement task.
 
+*** DONE Initial nbody runs on prime
 From the runs on prime, it looks like a mutation rate of 8 might be
 best, 64 was all over the place, with significant decreases in
 fitness.
-
-Higher mutation rates may require more exploitative selection.
 
 | benchmark | rate | machine | status                               |
 |-----------+------+---------+--------------------------------------|
 | nbody     |    1 | prime   | file:results/shootout-mut/nbody-m1/  |
 | nbody     |    8 | prime   | file:results/shootout-mut/nbody-m8/  |
 | nbody     |   64 | prime   | file:results/shootout-mut/nbody-m64/ |
-| swaptions |    1 | prime   | running                              |
-| swaptions |    8 | prime   | running                              |
-| swaptions |   64 | prime   | running                              |
 
+*** DONE Swaptions higher mutation rate runs
+From four runs at each level, it doesn't look like there is too much
+difference.  If anything lower mutation rates are preferable.
+
+#+begin_src sh
+  for i in $(seq 1 6);do
+      ave=$(tail -n 1 results/parsec-more/swaptions-m$i-r{1,2,3,4}/stats.txt|grep "^[0-9]"|cut -d' ' -f2|./bin/mean|tail -1)
+      echo -e "$i\t$ave"
+  done
+#+end_src
+
+#+RESULTS:
+| 1 | 664.812 |
+| 2 | 653.156 |
+| 3 | 662.424 |
+| 4 | 708.871 |
+| 5 |  656.36 |
+| 6 | 716.759 |
+
+*** TODO Higher mutation rates may require more exploitative selection
 ** TODO fault localization runs
 | benchmark    | state     |
 |--------------+-----------|
