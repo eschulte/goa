@@ -72,7 +72,7 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 | 998.specrand   |
 | 999.specrand   |
 
-* Tasks [39/44]
+* Tasks [40/46]
 ** TODO Application of the Breeders equation
 Apply the Breeders Equation to analyze the relations between software
 traits (e.g., HW counters, executable size, etc...) and predict
@@ -97,7 +97,7 @@ directions of software evolution.
 
 See file:src/neutral.lisp.
 
-** TODO higher mutation rate runs
+** TODO higher mutation rate runs [3/5]
 For multiple values of =*mut-rate*=, see how effective optimization is
 at a simple runtime improvement task.
 
@@ -131,6 +131,15 @@ difference.  If anything lower mutation rates are preferable.
 | 5 |  656.36 |
 | 6 | 716.759 |
 
+*** DONE Combined higher mutation rate and annotations are worse than either alone
+This isn't completely surprising because the annotation increases the
+chance of destructive mutations as well.
+
+#+begin_src sh
+  ./bin/plot results/parsec-more/swaptions-m{1,2,3,4}-r1*/stats.txt
+#+end_src
+
+*** TODO Run a higher mutation rate run on a program with poor coverage
 *** TODO Higher mutation rates may require more exploitative selection
 ** TODO fault localization runs
 | benchmark    | state     |
