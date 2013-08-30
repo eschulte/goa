@@ -160,6 +160,10 @@
 
 
 ;;; Helpers
+(defun quit (&optional (errno 0))
+  #+sbcl (sb-ext:exit :code errno)
+  #+ccl  (ccl:quit errno))
+
 (defun better (orig new)
   "Return the fraction improvement of new over original."
   (/ (abs (- orig new)) orig))
