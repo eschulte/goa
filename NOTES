@@ -141,6 +141,10 @@ chance of destructive mutations as well.
 
 *** TODO Run a higher mutation rate run on a program with poor coverage
 *** TODO Higher mutation rates may require more exploitative selection
+With larger tournament sizes.
+
+running on =real=
+
 ** TODO fault localization runs
 | benchmark    | state     |
 |--------------+-----------|
@@ -2620,7 +2624,34 @@ failures at stages.
 
 Run with =make check=.
 
-* Issues [13/16]
+* Issues [13/17]
+** TODO bug in tourny-more runs                                      :ATTACH:
+   :PROPERTIES:
+   :Attachments: bug
+   :ID:       a9ccb904-5b5f-49b5-a8dd-72f42d2c35d5
+   :END:
+text copied from the terminal is attached
+
+with
+#+begin_src lisp
+  ((*PATH* . "./benchmarks/swaptions/swaptions.s")
+   (*SCRIPT* . "run swaptions ~a -p")
+   (*FITNESS-FUNCTION* * SECONDS
+                       (+ 394.74 (* -83.68 (/ INSTRUCTIONS CYCLES))
+                          (* 60.23 (/ R533F00 CYCLES))
+                          (* -16.38 (/ CACHE-REFERENCES CYCLES))
+                          (* -4209.09 (/ CACHE-MISSES CYCLES))))
+   (*FITNESS-PREDICATE* . #<FUNCTION <>) ((LINKER *ORIG*) . "g++")
+   ((FLAGS *ORIG*) "-lpthread") (*THREADS* . 16) (*MCMC*) (*MUT-RATE* . 3)
+   (*CROSS-CHANCE* . 2/3) (*EVALS* . 65536) (*TOURNAMENT-SIZE* . 16)
+   (*TOURNAMENT-EVICTION-SIZE* . 2) (*WORK-DIR* . "sh-runner/work/")
+   (*MAX-ERR* . 0) (*MAX-POPULATION-SIZE* . 512) (*PERIOD* . 64) (*REP* . RANGE)
+   (*NOTE-LEVEL* . 1)
+   (*RES-DIR* :RELATIVE "results" "more" "swaptions-m1-r1-t16"))
+#+end_src
+
+: failed AVER: (< I 2)
+
 ** DONE runtimes for each benchmark
 #+begin_src sh
   . bin/common
