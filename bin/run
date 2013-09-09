@@ -4,13 +4,15 @@
 #  run a version of a benchmark program
 #
 # Options:
-#  -l,--limit ----- limit script for sandboxing
+#  -l,--limit L --- use limit script L for sandboxing
+#  -L,--no-limit -- use no limit script for sandboxing
 #  -p,--perf ------ collect performance counters
 #  -a,--annotate -- annotate the assembly with perf
 #  -e,--record ---- record perf counters
 #  -c,--counters -- comma separated list of perf counters
 #  -w,--wattsup --- collect watts-up data during execution
 #  -t,--time ------ collect time of execution
+#  -T,--tool TOOL - collect trace of execution with TOOL
 #  -r,--repeat N -- repeat the execution N times
 #  -R,--raw ------- print raw output
 #  -s,--size ------ input size test,tiny,small,medium,large
@@ -45,6 +47,7 @@ RECORD=""
 COUNTERS=""
 WATTSUP=""
 TIME=""
+TOOL=""
 REPEAT=""
 RAW=""
 DEBUG=""
@@ -56,12 +59,13 @@ INPUT="$BASE/benchmarks/$BENCHMARK/$BENCHMARK.input"
 OUTPUT="$BASE/benchmarks/$BENCHMARK/$BENCHMARK.output"
 OUT=$(mktemp)
 eval set -- \
-    $(getopt -o l:paec:wtr:Rs:dkKi:o: \
-    -l limit:,perf,annotate,record,,counters:,wattsup,time,repeat:,raw,size:,debug,keep,keep-perf,input:,output: \
+    $(getopt -o l:Lpaec:wtT:r:Rs:dkKi:o: \
+    -l limit:,no-limit,perf,annotate,record,,counters:,wattsup,time,tool:,repeat:,raw,size:,debug,keep,keep-perf,input:,output: \
     -- "$@" || help;)
 while [ $# -gt 0 ];do
     case $1 in
         -l|--limit) LIMIT="$2"; shift;;
+        -L|--no-limit) LIMIT="";;
         -p|--perf)  PERF="yes";;
         -a|--annotate) ANNOTATE="yes"; PERF="yes";;
         -e|--record) RECORD="yes"; PERF="yes"; KEEP_PERF="yes";;
@@ -69,6 +73,7 @@ while [ $# -gt 0 ];do
         -c|--counters) PERF="yes"; COUNTERS="$2"; shift;;
         -w|--wattsup) WATTSUP="yes";;
         -t|--time)  TIME="yes";;
+        -T|--tool)  TOOL="$2"; shift;;
         -R|--raw) RAW="yes";;
         -s|--size) SIZE="$2"; shift;;
         -d|--debug) DEBUG="yes";;
@@ -98,16 +103,27 @@ if [ -z $COUNTERS ];then
 fi
 
 PREFIX="$LIMIT"
-if [ ! -z $TIME ];then
+if [ ! -z $TOOL ];then
+    if [ ! -z $PERF    ];then error "tool and perf are incompatible options"; fi
+    if [ ! -z $TIME    ];then error "tool and time are incompatible options"; fi
+    if [ ! -z $WATTSUP ];then error "tool and WattsUp are incompatible options"; fi
+    if [ ! -z $RAW     ];then error "tool and raw are incompatible options"; fi
+    # setup output file for wu.py
+    TOOL_OUT=$(mktemp /tmp/tool.XXXXXXXX.txt)
+    # add wu.py to the prefix
+    PREFIX+=" $TOOL -o $TOOL_OUT --"
+elif [ ! -z $TIME ];then
     if [ ! -z $PERF    ];then error "time and perf are incompatible options"; fi
+    if [ ! -z $TOOL    ];then error "time and tool are incompatible options"; fi
     if [ ! -z $WATTSUP ];then error "time and WattsUp are incompatible options"; fi
     if [ ! -z $RAW     ];then error "time and raw are incompatible options"; fi
     # setup output file for wu.py
     TIME_OUT=$(mktemp /tmp/time.XXXXXXXX.txt)
     # add wu.py to the prefix
-    PREFIX+=" time -p -o $TIME_OUT"
+    PREFIX+=" time -p -o $TIME_OUT --"
 elif [ ! -z $WATTSUP ];then
     if [ ! -z $PERF ];then error "WattsUp and perf are incompatible options"; fi
+    if [ ! -z $TOOL ];then error "WattsUp and tool are incompatible options"; fi
     if [ ! -z $RAW  ];then error "WattsUp and raw are incompatible options"; fi
     if [ ! -z $RAW  ];then error "WattsUp and time are incompatible options"; fi
     # setup output file for wu.py
@@ -119,13 +135,17 @@ if [ -z $PERF ];then
     # maybe print out RAW and clean up OUT
     function exit_hook (){
         if [ -z $RAW ];then
-            echo "$EXIT,exit"
-            echo "$ERROR,error"
+            if [ -z $TOOL ];then
+                echo "$EXIT,exit"
+                echo "$ERROR,error"
+            fi
             if [ ! -z $WATTSUP ];then
                 cat $WU_OUT|sed 's/,/ /g'|transpose \
                     |awk '{print $2,$1}'|sed 's/ /,/g'
             elif [ ! -z $TIME ];then
                 cat $TIME_OUT|awk '{print $2,$1}'|sed 's/ /,/g'
+            elif [ ! -z $TOOL ];then
+                cat $TOOL_OUT
             fi
         else
             cat $OUT
@@ -134,6 +154,7 @@ if [ -z $PERF ];then
             rm -rf $OUT
             if [ ! -z $WATTSUP ];then rm -f $WU_OUT; fi
             if [ ! -z $TIME    ];then rm -f $TIME_OUT; fi
+            if [ ! -z $TOOL    ];then rm -f $TOOL_OUT; fi
             if [ ! -z "$tmp"   ];then rm -f $tmp;    fi
             if [ ! -z "$tmpd"  ];then rm -rf $tmpd;  fi
         else
