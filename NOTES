@@ -2624,7 +2624,7 @@ failures at stages.
 
 Run with =make check=.
 
-* Issues [13/17]
+* Issues [13/18]
 ** TODO bug in tourny-more runs                                      :ATTACH:
    :PROPERTIES:
    :Attachments: bug
@@ -2693,22 +2693,22 @@ minimized =.s= file).
 
 **** calculations
 #+name: min-edits-hist
-#+begin_src sh :var bench="vips" :results scalar
+#+begin_src sh :var bench="swaptions" :results scalar
   export PATH="bin/:$PATH"
   
   patch_bins(){
       grep "^[0-9]"|sed 's/[\,adc]/\n/g'|in-bins 25; }
   
-  join \
-      <(objread benchmarks/$bench/$bench.store -a -n|sed 's/0.0$/0/') \
+  join -n -e NaN \
+      <(objread benchmarks/$bench/$bench.store -a -n) \
       <(diff results/parsec-amd/$bench.orig.s results/parsec-amd/$bench.minimized.s|patch_bins) \
-      -n -e NaN > /tmp/combined-$bench
+      > /tmp/combined-$bench
 
-  echo -n "/tmp/combined-$bench"
+  echo /tmp/combined-$bench
 #+end_src
 
-#+headers: :var data=min-edits-hist("freqmine")
-#+begin_src gnuplot :file etc/data/min-edits-w-annotations-freqmine.svg
+#+headers: :var data="/tmp/combined-swaptions"
+#+begin_src gnuplot :file etc/data/min-edits-w-annotations-swaptions-2.svg
   set datafile missing 'NaN'
   set yrange [0.01:]
   set title  'freqmine minimized edits and annotations'
@@ -2719,6 +2719,38 @@ minimized =.s= file).
 There does seem to be some correlation between the weighted path and
 the useful annotation spots, but there are noticeable pools of useful
 annotations which are *not* on the weighted.
+
+*** TODO analyze optimizations off the annotated path
+   DEADLINE: <2013-09-10 Tue>
+
+#+name: minimized-diff
+#+begin_src sh :var bench="swaptions" :results silent
+  diff -u results/parsec-amd/$bench.orig.s results/parsec-amd/$bench.minimized.s \
+      > /tmp/$bench.diff
+#+end_src
+
+**** swaptions
+
+
+**** fluidanimate
+
+Four differences which reduce down to two single changes which are
+both simply strings describing the version of GNU C++ used during
+compilation (this shouldn't be different between the original and
+evolved, must have re-compiled the original with a newer version when
+doing this final minimization run).
+1. compilation string
+   : .LASF732:
+   :        .string "GNU C++ 4.8.1 -mtune=generic -march=x86-64 -g -O3 -funroll-loops -fprefetch-loop-arrays -fpermissive -fno-exceptions"
+   to
+   : .LASF732:
+   :        .string "GNU C++ 4.8.0 20130502 (prerelease) -mtune=generic -march=x86-64 -g -O3 -funroll-loops -fprefetch-loop-arrays -fpermissive -fno-exceptions"
+2. and indent string
+   :        .ident  "GCC: (GNU) 4.8.1"
+   to
+   :        .ident  "GCC: (GNU) 4.8.0 20130502 (prerelease)"
+
+Not sure why these would have any runtime effect
 
 *** DONE flat annotation
 Only two classes, run and not run, see if this helps.
