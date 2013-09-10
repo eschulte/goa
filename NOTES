@@ -2730,10 +2730,19 @@ annotations which are *not* on the weighted.
 #+end_src
 
 **** swaptions
+Right where annotations stop the ASM switches to data.
 
+swaptions is over half data directives
+#+begin_src sh :var asm="results/parsec-amd/swaptions.orig.s"
+  directives=$(grep -Pc "^\t\." $asm)
+  total=$(cat $asm|wc -l)
+  echo "$directives / $total"
+#+end_src
+
+#+RESULTS:
+: 37373 / 61134
 
 **** fluidanimate
-
 Four differences which reduce down to two single changes which are
 both simply strings describing the version of GNU C++ used during
 compilation (this shouldn't be different between the original and
