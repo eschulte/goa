@@ -19,8 +19,9 @@ LISP_LIBS+= optimize
 LC_LIBS:=$(addprefix --load-system , $(LISP_LIBS))
 
 # Flags to buildapp
-QUIT=(lambda (&rest args)
-QUIT+=(declare (ignorable args))
+QUIT=(lambda (error hook-value)
+QUIT+=(declare (ignorable hook-value))
+QUIT+=(format *error-output* \"ERROR: ~a~%\" error)
 QUIT+=\#+sbcl (sb-ext:exit :code 2) \#+ccl (quit 2))
 LCFLAGS=--manifest-file $(QUICK_LISP)/local-projects/system-index.txt \
 	--asdf-tree $(QUICK_LISP)/dists/quicklisp/software \
