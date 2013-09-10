@@ -252,13 +252,10 @@
           (genome asm))
       (when (not bin) (delete-file my-bin)))))
 
-(defun genome-anns (asm &key bin)
-  (assert (stringp *script*) (*script*)
-          "`*script*' must be set to run `genome-anns'")
-  (let* ((my-bin (or bin (phenome asm)))
-         (script (format nil *script* my-bin)))
+(defun genome-anns (asm annotations &key bin)
+  (let ((my-bin (or bin (phenome asm))))
     (unwind-protect
-         (mapcar {aget _ (perf-annotations script)}
+         (mapcar {aget _ annotations}
                  (genome-addrs asm :bin my-bin))
       (when (not bin) (delete-file my-bin)))))
 
@@ -286,7 +283,7 @@
                                (append (make-list i :initial-element 0)
                                        (butlast list i))))))
 
-(defun apply-annotations (asm &key smooth widen flat)
+(defun apply-annotations (asm annotations &key smooth widen flat bin)
   "Apply annotations to the genome of ASM.
 Keyword argument SMOOTH will `smooth' the annotations with a Gaussian
 blur.  Keyword argument WIDEN will `widen' the annotations.  If both
@@ -309,7 +306,7 @@ instruction was executed or not."
           (mapcar (if flat
                       (lambda (ann) (if ann 1 0))
                       (lambda (ann) (or ann 0)))
-                  (genome-anns asm)))
+                  (genome-anns asm annotations :bin bin)))
          (genome asm))))
 
 

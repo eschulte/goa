@@ -20,7 +20,8 @@ ANN-SCRIPT:
   script contains the substring \"~~a\" it will be replaced
   with the name of the executable, otherwise the executable
   will be appended to the end of the test script.  The script
-  should return \"perf annotate\" output.
+  should return \"perf annotate\" output unless the --direct
+  option is given.
 
 ASM-FILE:
   Is a text file of assembler code.
@@ -32,12 +33,14 @@ Options:
  -s,--smooth ----------- smooth the annotations
  -f,--flat ------------- binary annotation indicating execution
  -w,--widen RADIUS ----- widen binary annotations by RADIUS
+ -d,--direct ----------- script outputs direct addresses
+                         (otherwise \"perf annotate\" assumed)
  -o,--out FILE --------- store annotated individual in FILE
  -r,--range ------------ save as an `ann-range' object
  -e,--extended NUM ----- run extended test NUM
  -v,--verbose ---------- verbose debugging output~%")
         (self (pop args))
-        smooth flat widen out range)
+        smooth flat widen out range direct)
     (when (or (not args)
               (string= (subseq (car args) 0 2) "-h")
               (string= (subseq (car args) 0 3) "--h"))
@@ -56,12 +59,24 @@ Options:
      ("-s" "--smooth" (setf smooth t))
      ("-f" "--flat"   (setf flat t))
      ("-w" "--widen"  (setf widen (parse-number (pop args))))
+     ("-d" "--direct" (setf direct t))
      ("-o" "--out"    (setf out (pop args)))
      ("-r" "--range"  (setf range t))
      ("-e" "--extended" (throw-error "Extended option not supported."))
      ("-v" "--verbose" (setf *shell-debug* t)))
 
-    (apply-annotations *orig* :smooth smooth :flat flat)
+    (with-temp-file (bin)
+      (phenome *orig* :bin bin)
+      (let* ((script (format nil *script* bin))
+             (anns (if direct
+                       ;; count number of times each address occurs
+                       (counts (mapcar #'parse-number
+                                       (split-sequence #\Newline
+                                         (shell script)
+                                         :remove-empty-subseqs t)))
+                       (perf-annotations script))))
+        (apply-annotations *orig* anns
+                           :smooth smooth :widen widen :flat flat :bin bin)))
 
     (if out
         (progn
