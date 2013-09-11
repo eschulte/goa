@@ -2729,6 +2729,7 @@ annotations which are *not* on the weighted.
       > /tmp/$bench.diff
 #+end_src
 
+**** vips
 **** swaptions
 Right where annotations stop the ASM switches to data.
 
@@ -2743,6 +2744,11 @@ swaptions is over half data directives
 : 37373 / 61134
 
 **** fluidanimate
+Need to redo this, as apparently the minimized version in use here was
+built with the wrong version of g++.
+
+***** the edits just off the weighted path
+***** the isolated edits at the end
 Four differences which reduce down to two single changes which are
 both simply strings describing the version of GNU C++ used during
 compilation (this shouldn't be different between the original and
