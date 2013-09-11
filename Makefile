@@ -27,6 +27,9 @@ LCFLAGS=--manifest-file $(QUICK_LISP)/local-projects/system-index.txt \
 	--asdf-tree $(QUICK_LISP)/dists/quicklisp/software \
 	--eval "(setf *debugger-hook* $(QUIT))" \
 	$(LC_LIBS)
+ifneq ($(LISP_STACK),)
+LCFLAGS+= --dynamic-space-size $(LISP_STACK)
+endif
 
 # Compiled lisp executables
 LISP_EXES=optimize objread annotate delta neutral
