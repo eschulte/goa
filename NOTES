@@ -2624,7 +2624,7 @@ failures at stages.
 
 Run with =make check=.
 
-* Issues [13/18]
+* Issues [14/18]
 ** TODO bug in tourny-more runs                                      :ATTACH:
    :PROPERTIES:
    :Attachments: bug
@@ -2772,7 +2772,13 @@ Only two classes, run and not run, see if this helps.
 
 these also don't seem to improve over nothing.
 
-*** TODO try different annotation techniques
+*** DONE try different annotation techniques
+Annotated again with direct ASM instrumentation using the following.
+https://github.com/eschulte/asm-inst
+
+Apparently large portions of swaptions are not regular executable
+code.
+
 ** TODO leftover temporary files
 need to clean these up
 - find them (run scripts, lisp executables)
