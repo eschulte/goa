@@ -283,13 +283,22 @@
                                (append (make-list i :initial-element 0)
                                        (butlast list i))))))
 
-(defun apply-annotations (asm annotations &key smooth widen flat bin)
+(defun apply-annotations (asm annotations &key smooth widen flat bin loc)
   "Apply annotations to the genome of ASM.
 Keyword argument SMOOTH will `smooth' the annotations with a Gaussian
 blur.  Keyword argument WIDEN will `widen' the annotations.  If both
 SMOOTH and WIDEN are given, widening is applied first.  Keyword
 argument FLAT will produce flat annotations simply indicating if the
-instruction was executed or not."
+instruction was executed or not. LOCS indicates that annotations are
+organized by line of code in the ASM file, and are not addresses."
+  (when loc
+    (assert (= (length annotations) (length (genome asm))) (annotations)
+            "Annotations length ~d != genome length ~d"
+            (length annotations) (length (genome asm))))
+  (when widen
+    (assert (numberp widen) (widen)
+            "widen arg to `apply-annotations' isn't numeric: ~a"
+            widen))
   (setf (genome asm)
         (mapcar
          (lambda (ann element)
@@ -297,16 +306,14 @@ instruction was executed or not."
          ((lambda (raw)
             ((lambda (raw) (if smooth (smooth raw) raw))
              (if widen
-                 (progn (assert
-                         (numberp widen) (widen)
-                         "widen arg to `apply-annotations' isn't numeric: ~a"
-                         widen)
-                        (widen raw widen))
+                 (widen raw widen)
                  raw)))
           (mapcar (if flat
                       (lambda (ann) (if ann 1 0))
                       (lambda (ann) (or ann 0)))
-                  (genome-anns asm annotations :bin bin)))
+                  (if loc
+                      annotations
+                      (genome-anns asm annotations :bin bin))))
          (genome asm))))
 
 
