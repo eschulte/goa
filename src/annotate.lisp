@@ -35,12 +35,13 @@ Options:
  -w,--widen RADIUS ----- widen binary annotations by RADIUS
  -d,--direct ----------- script outputs direct addresses
                          (otherwise \"perf annotate\" assumed)
+ -D,--Direct ----------- script outputs direct ASM LOC numbers
  -o,--out FILE --------- store annotated individual in FILE
  -r,--range ------------ save as an `ann-range' object
  -e,--extended NUM ----- run extended test NUM
  -v,--verbose ---------- verbose debugging output~%")
         (self (pop args))
-        smooth flat widen out range direct)
+        smooth flat widen out range direct very-direct)
     (when (or (not args)
               (string= (subseq (car args) 0 2) "-h")
               (string= (subseq (car args) 0 3) "--h"))
@@ -60,6 +61,7 @@ Options:
      ("-f" "--flat"   (setf flat t))
      ("-w" "--widen"  (setf widen (parse-number (pop args))))
      ("-d" "--direct" (setf direct t))
+     ("-D" "--Direct" (setf very-direct t))
      ("-o" "--out"    (setf out (pop args)))
      ("-r" "--range"  (setf range t))
      ("-e" "--extended" (throw-error "Extended option not supported."))
@@ -68,15 +70,22 @@ Options:
     (with-temp-file (bin)
       (phenome *orig* :bin bin)
       (let* ((script (format nil *script* bin))
-             (anns (if direct
-                       ;; count number of times each address occurs
-                       (counts (mapcar #'parse-number
-                                       (split-sequence #\Newline
-                                         (shell script)
-                                         :remove-empty-subseqs t)))
-                       (perf-annotations script))))
+             (anns (cond
+                     ;; each line of the input file corresponds to an ASM LOC
+                     (very-direct (mapcar #'parse-number
+                                          (split-sequence #\Newline
+                                            (shell script)
+                                            :remove-empty-subseqs t)))
+                     ;; count number of times each address occurs
+                     (direct (counts (mapcar #'parse-number
+                                             (split-sequence #\Newline
+                                               (shell script)
+                                               :remove-empty-subseqs t))))
+                     ;; default to perf annotations
+                     (t (perf-annotations script)))))
         (apply-annotations *orig* anns
-                           :smooth smooth :widen widen :flat flat :bin bin)))
+                           :smooth smooth :widen widen :flat flat :bin bin
+                           :loc very-direct)))
 
     (if out
         (progn
