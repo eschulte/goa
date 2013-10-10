@@ -2624,7 +2624,7 @@ failures at stages.
 
 Run with =make check=.
 
-* Issues [14/18]
+* Issues [16/21]
 ** TODO bug in tourny-more runs                                      :ATTACH:
    :PROPERTIES:
    :Attachments: bug
@@ -2671,8 +2671,36 @@ with
 | vips         |  29.829097210322999 |
 | x264         |  9.8283565152724588 |
 
-** TODO ensure that annotation works as expected
+** TODO ensure that annotation works as expected [5/7]
 Not getting the desired improvement from targeted mutation operations.
+
+*** TODO run with locations of minimized edits as fault localization
+*** TODO visually and interactively improve vips annotations
+Check annotations at each step along the way.
+- use ptrace
+- use perf annotate
+- propagate
+
+*** DONE more complete annotations
+1. use ptrace to annotate code portions
+2. convert ptrace addresses to assembler LOC
+3. use asm-trace to propagate code LOC traces to data portions
+
+In both cases need to update =annotate= to take LOC inputs, and then
+rebuild the =.store= programs, then run =optimize=.
+
+running
+- on real
+  1. traced vips execution with =tracer=
+  2. propagated =tracer= traces into the data portions
+  3. compiled into =vips-trace.store=
+  4. evolving the annotated individual
+     : optimize "run vips ~a -p" ./benchmarks/vips/vips-trace.store -C src/configs/energy-models.lisp -F "#.optimize::amd-opteron-power-model" -C src/configs/use-annotation.lisp -C src/configs/save-muts.lisp -t 12 -r results/trace/vips -w sh-runner/work/
+
+- on complex
+  1. instrumented bodytrack.s with =asm-trace=
+  2. ran bodytrack.s collecting trace output
+  3. collecting unique counts of trace labels
 
 *** DONE useful mutations not located along the weighted path
 It looks like there isn't overmuch overlap between our code
@@ -2720,8 +2748,11 @@ There does seem to be some correlation between the weighted path and
 the useful annotation spots, but there are noticeable pools of useful
 annotations which are *not* on the weighted.
 
-*** TODO analyze optimizations off the annotated path
+*** DONE analyze optimizations off the annotated path
    DEADLINE: <2013-09-10 Tue>
+
+The take-away here is that there are a great deal of non-executable
+lines in assembler files.
 
 #+name: minimized-diff
 #+begin_src sh :var bench="swaptions" :results silent
