@@ -12,3 +12,5 @@ delta
 *.out
 *.pyc
 inputgen
+asm-trace
+expand-counts
