@@ -2662,6 +2662,7 @@ with
   done
 #+end_src
 
+*** AMD
 | blackscholes |  91.714645805032916 |
 | bodytrack    | 0.31150229069921542 |
 | ferret       | -7.9459749296280862 |
@@ -2671,15 +2672,56 @@ with
 | vips         |  29.829097210322999 |
 | x264         |  9.8283565152724588 |
 
+*** Intel
+| blackscholes  |         81.3% |
+| bodytrack     |         0.19% |
+| ferret        |       -0.053% |
+| *fluidanimate |         -753% |
+| freqmine      |        0.092% |
+| swaptions     |         36.7% |
+| *vips         | Infinite loop |
+| x264          |        0.003% |
+
+*** Both
+| Benchmark     |         Intel |     AMD |
+|---------------+---------------+---------|
+| blackscholes  |         81.3% | 91.714% |
+| bodytrack     |         0.19% |  0.311% |
+| ferret        |       -0.053% | -7.945% |
+| *fluidanimate |         -753% |  9.458% |
+| freqmine      |        0.092% |  3.247% |
+| swaptions     |         36.7% | 41.959% |
+| *vips         | Infinite loop | 29.829% |
+| x264          |        0.003% |  9.828% |
+
+*** Both only correct
+| Benchmark    |     Intel |       AMD |
+|--------------+-----------+-----------|
+| blackscholes |      81.3 |    91.714 |
+| bodytrack    |      0.19 |     0.311 |
+| ferret       |    -0.053 |    -7.945 |
+| fluidanimate |           |     9.458 |
+| freqmine     |     0.092 |     3.247 |
+| swaptions    |      36.7 |    41.959 |
+| vips         |           |           |
+| x264         |     0.003 |     9.828 |
+|--------------+-----------+-----------|
+| mean         | 19.705333 | 21.224571 |
+#+TBLFM: @10$2=vmean(@2..@-1)::@10$3=vmean(@2..@-1)
+
 ** TODO ensure that annotation works as expected [5/7]
 Not getting the desired improvement from targeted mutation operations.
 
 *** TODO run with locations of minimized edits as fault localization
 *** TODO visually and interactively improve vips annotations
-Check annotations at each step along the way.
-- use ptrace
-- use perf annotate
-- propagate
+Visualize and then run each of the following
+- minimized edits
+- perf
+- ptrace
+- asm-trace
+- all w/propagation
+
+
 
 *** DONE more complete annotations
 1. use ptrace to annotate code portions
