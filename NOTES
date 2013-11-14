@@ -72,7 +72,7 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 | 998.specrand   |
 | 999.specrand   |
 
-* Tasks [40/46]
+* Tasks [41/45]
 ** TODO Application of the Breeders equation
 Apply the Breeders Equation to analyze the relations between software
 traits (e.g., HW counters, executable size, etc...) and predict
@@ -97,7 +97,7 @@ directions of software evolution.
 
 See file:src/neutral.lisp.
 
-** TODO higher mutation rate runs [3/5]
+** TODO higher mutation rate runs [3/4]
 For multiple values of =*mut-rate*=, see how effective optimization is
 at a simple runtime improvement task.
 
@@ -139,13 +139,12 @@ chance of destructive mutations as well.
   ./bin/plot results/parsec-more/swaptions-m{1,2,3,4}-r1*/stats.txt
 #+end_src
 
-*** TODO Run a higher mutation rate run on a program with poor coverage
 *** TODO Higher mutation rates may require more exploitative selection
 With larger tournament sizes.
 
 running on =real=
 
-** TODO fault localization runs
+** DONE fault localization runs
 | benchmark    | state     |
 |--------------+-----------|
 | blackscholes | annotated |
@@ -156,6 +155,8 @@ running on =real=
 | swaptions    | real      |
 | vips         | running   |
 | x264         | real      |
+
+no improvement, see [[*ensure%20that%20annotation%20works%20as%20expected][ensure that annotation works as expected {6/7}]]
 
 ** TODO heterogeneous sub-populations
 single fitness function, multiple heterogeneous sub-populations
@@ -2624,7 +2625,7 @@ failures at stages.
 
 Run with =make check=.
 
-* Issues [16/21]
+* Issues [17/21]
 ** TODO bug in tourny-more runs                                      :ATTACH:
    :PROPERTIES:
    :Attachments: bug
@@ -2709,10 +2710,16 @@ with
 | mean         | 19.705333 | 21.224571 |
 #+TBLFM: @10$2=vmean(@2..@-1)::@10$3=vmean(@2..@-1)
 
-** TODO ensure that annotation works as expected [5/7]
+** TODO ensure that annotation works as expected [6/7]
 Not getting the desired improvement from targeted mutation operations.
 
-*** TODO run with locations of minimized edits as fault localization
+*** DONE run with locations of minimized edits as fault localization :ATTACH:
+    :PROPERTIES:
+    :Attachments: min-help.svg
+    :ID:       593adb1f-fe35-49f5-84ab-d3a6b055b997
+    :END:
+This works, so the problem must be bad annotations.
+
 *** TODO visually and interactively improve vips annotations
 Visualize and then run each of the following
 - minimized edits
@@ -2720,8 +2727,6 @@ Visualize and then run each of the following
 - ptrace
 - asm-trace
 - all w/propagation
-
-
 
 *** DONE more complete annotations
 1. use ptrace to annotate code portions
