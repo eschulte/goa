@@ -1,6 +1,6 @@
 ;;; optimize.lisp --- optimize metrics in a population of software variants
 
-;; Copyright (C) 2012  Eric Schulte
+;; Copyright (C) 2012-2013  Eric Schulte
 
 ;;; Commentary:
 
