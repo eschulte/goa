@@ -52,4 +52,4 @@ bin/%: src/package.lisp src/optimize.lisp src/%.lisp
 	$(LC) $(LCFLAGS) --output $@ --entry "optimize:$*"
 
 clean:
-	rm -f etc/cl-launch.lisp $(C_BINS) $(LISP_BINS) **/*.fasl **/*.lx32fsl
+	rm -f $(C_BINS) $(LISP_BINS) **/*.fasl **/*.lx32fsl
