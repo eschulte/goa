@@ -72,7 +72,6 @@ will need to be installed.
    default `~/quicklisp`), there will be a `local-projects` directory.
    Clone the following git repositories into this directory.
 
-        git clone git://github.com/eschulte/curry-compose-reader-macros.git
         git clone git://github.com/eschulte/software-evolution.git
         git clone git://github.com/eschulte/delta-debug.git
         git clone git://github.com/eschulte/diff.git
