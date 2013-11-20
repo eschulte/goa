@@ -102,7 +102,7 @@
       (declare (ignorable stderr))
       (append (or (ignore-errors (list (cons :fitness (parse-number stdout))))
                   (ignore-errors (parse-stdout stdout)))
-              (list (cons :exit errno))))))
+              (list (cons :exit errno) (cons :error 0))))))
 
 (defun apply-fitness-function (fitness-function stats)
   "Apply FITNESS-FUNCTION to STATS."
