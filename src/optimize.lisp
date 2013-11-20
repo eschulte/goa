@@ -100,7 +100,8 @@
     (note 4 "running ~S~%" asm)
     (multiple-value-bind (stdout stderr errno) (shell *script* bin)
       (declare (ignorable stderr))
-      (append (ignore-errors (parse-stdout stdout))
+      (append (or (ignore-errors (list (cons :fitness (parse-number stdout))))
+                  (ignore-errors (parse-stdout stdout)))
               (list (cons :exit errno))))))
 
 (defun apply-fitness-function (fitness-function stats)
