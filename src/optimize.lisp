@@ -99,8 +99,9 @@
         (error "error [~a]: ~a" exit info)))
     (note 4 "running ~S~%" asm)
     (multiple-value-bind (stdout stderr errno) (shell *script* bin)
-      (declare (ignorable stderr) (ignorable errno))
-      (ignore-errors (parse-stdout stdout)))))
+      (declare (ignorable stderr))
+      (append (ignore-errors (parse-stdout stdout))
+              (list (cons :exit errno))))))
 
 (defun apply-fitness-function (fitness-function stats)
   "Apply FITNESS-FUNCTION to STATS."
