@@ -65,7 +65,7 @@
 (defvar *threads*   1          "Number of cores to use.")
 (defvar *evals*    (expt 2 18) "Maximum number of test evaluations.")
 (defvar *max-err*   0          "Maximum allowed error.")
-(defvar *fitness-function* 'fitness "Fitness function.")
+(defvar *fitness-function* fitness "Fitness function.")
 (setf *max-population-size* (expt 2 9)
       *fitness-predicate* #'<
       *cross-chance* 2/3
@@ -126,6 +126,11 @@
   #-(or sbcl ccl)
   (error "must specify a positive infinity value"))
 
+(declaim (inline worst))
+(defun worst ()
+  (cond ((equal #'< *fitness-predicate*) infinity)
+        ((equal #'> *fitness-predicate*) 0)))
+
 (defun test (asm)
   (note 4 "testing ~S~%" asm)
   (or (ignore-errors
@@ -134,7 +139,7 @@
         (when (and (zerop (aget :exit (stats asm)))
                    (<= (aget :error (stats asm)) *max-err*))
           (apply-fitness-function *fitness-function* (stats asm))))
-      infinity))
+      (worst)))
 
 (defun checkpoint ()
   (note 1 "checkpoint after ~a fitness evaluations" *fitness-evals*)
@@ -546,7 +551,7 @@ Options:
                      (:orig-fitness . ,(fitness *orig*))))
 
     ;; sanity check
-    (when (= (fitness *orig*) infinity)
+    (when (= (fitness *orig*) (worst))
       (throw-error "Original program has no fitness!"))
 
     ;; save the original

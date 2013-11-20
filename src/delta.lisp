@@ -70,7 +70,7 @@ Options:
     (unless out (setf out (if patch *standard-output* "minimized.store")))
 
     ;; sanity check
-    (when (= (retest orig) infinity)
+    (when (= (retest orig) (worst))
       (throw-error "Original program has no fitness!~%~S" (stats orig)))
 
     (let* ((base (lines orig))
