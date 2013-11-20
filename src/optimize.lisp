@@ -65,7 +65,7 @@
 (defvar *threads*   1          "Number of cores to use.")
 (defvar *evals*    (expt 2 18) "Maximum number of test evaluations.")
 (defvar *max-err*   0          "Maximum allowed error.")
-(defvar *fitness-function* fitness "Fitness function.")
+(defvar *fitness-function* 'fitness "Fitness function.")
 (setf *max-population-size* (expt 2 9)
       *fitness-predicate* #'<
       *cross-chance* 2/3
