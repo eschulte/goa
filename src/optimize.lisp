@@ -29,7 +29,7 @@
       :linker linker
       :genome (lines genome))))
 
-(defclass asm-range (range asm)
+(defclass asm-range (sw-range asm)
   ((stats :initarg :stats :accessor stats :initform nil)))
 
 (defun to-asm-range (asm)
