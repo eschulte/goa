@@ -71,7 +71,7 @@
       *cross-chance* 2/3
       *tournament-size* 2
       *tournament-eviction-size* 2)
-(defvar *git-version* "UNSET"  "Used in optimize version string.")
+(defvar *git-version* nil "Used in optimize version string.")
 
 (defun arch ()
   (let ((cpuinfo "/proc/cpuinfo"))
