@@ -71,6 +71,7 @@
       *cross-chance* 2/3
       *tournament-size* 2
       *tournament-eviction-size* 2)
+(defvar *git-version* "UNSET"  "Used in optimize version string.")
 
 (defun arch ()
   (let ((cpuinfo "/proc/cpuinfo"))
@@ -415,9 +416,7 @@ Options:
          (format nil
           #+ccl "optimize version ~a using Clozure Common Lisp (CCL)~%"
           #+sbcl "optimize version ~a using Steel Bank Common Lisp (SBCL)~%"
-          (eval-when (:compile-toplevel :load-toplevel :execute)
-            (let ((raw (shell "git describe --always")))
-              (subseq raw 0 (1- (length raw)))))))
+          *git-version*))
         (do-evolve
             (lambda ()
               #+ccl (note 1 "check in") ;; for ccl `*terminal-io*' sharing

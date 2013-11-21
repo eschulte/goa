@@ -26,7 +26,9 @@ QUIT+=\#+sbcl (sb-ext:exit :code 2) \#+ccl (quit 2))
 LCFLAGS=--manifest-file $(QUICK_LISP)/local-projects/system-index.txt \
 	--asdf-tree $(QUICK_LISP)/dists/quicklisp/software \
 	--eval "(setf *debugger-hook* $(QUIT))" \
-	$(LC_LIBS)
+	$(LC_LIBS) \
+	--eval "(setf optimize::*git-version* \"$$(git describe --always)\")"
+
 ifneq ($(LISP_STACK),)
 LCFLAGS+= --dynamic-space-size $(LISP_STACK)
 endif
