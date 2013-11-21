@@ -34,7 +34,10 @@ Options:
 
       (let ((obj (restore (arg-pop))))
         (getopts
-         ("-l" "--link"   (phenome obj :bin (arg-pop)))
+         ("-l" "--link" 
+               (multiple-value-bind (output errno) (phenome obj :bin (arg-pop))
+                 (format t "~a~&" output)
+                 (quit errno)))
          ("-s" "--stats"
                (mapc (lambda-bind ((counter . count))
                        (format t "~a ~a~%"
