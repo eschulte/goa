@@ -405,6 +405,7 @@ Options:
                          asm, light, or range (default)
  -s,--evict-size NUM --- eviction tournament size
                          default: 2
+ -S,--random-state FILE - load random state from FILE
  -t,--threads NUM ------ number of threads
  -T,--tourny-size NUM -- selection tournament size
                          default: 1 (i.e., random selection)
@@ -423,7 +424,7 @@ Options:
               (evolve #'test :max-evals *evals*
                       :period *period*
                       :period-fn (lambda () (mapc #'funcall *checkpoint-funcs*)))))
-        (*rep* 'range) linker flags)
+        (*rep* 'range) random-state linker flags)
     (setf *note-level* 1)
     ;; Set default GC threshold
     #+ccl (ccl:set-lisp-heap-gc-threshold (expt 2 30))
@@ -485,12 +486,14 @@ Options:
      ("-R" "--rep"       (setf *rep* (intern (string-upcase (pop args)))))
      ("-s" "--evict-size" (setf *tournament-eviction-size*
                                 (parse-integer (pop args))))
+     ("-S" "--random-state" (setf random-state (restore (pop args))))
      ("-t" "--threads"   (setf *threads* (parse-integer (pop args))))
      ("-T" "--tourny-size" (setf *tournament-size* (parse-integer (pop args))))
      ("-v" "--verbose"   (let ((lvl (parse-integer (pop args))))
                            (when (>= lvl 4) (setf *shell-debug* t))
                            (setf *note-level* lvl)))
      ("-w" "--work-dir"  (setf *work-dir* (pop args))))
+    (setf *random-state* (or random-state (make-random-state t)))
     (unless *period* (setf *period* (ceiling (/ *evals* (expt 2 10)))))
     (unless *orig*
       (setf *orig* (from-file (make-instance (case *rep*
