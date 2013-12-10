@@ -72,7 +72,65 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 | 998.specrand   |
 | 999.specrand   |
 
-* Tasks [41/45]
+* Tasks [42/47]
+** TODO nature of branch prediction improvement edits
+*** looking at frequently changed instructions
+#+name: swaptions-frequently-removed-instructions
+#+begin_src sh
+  diff -uN \
+      benchmarks/swaptions/swaptions.s \
+      benchmarks/swaptions/swaptions.minimized.s \
+      |grep "^-"|sed 's/^-//'|awk '{print $1}'|sort|uniq -c|sort -n|tail
+#+end_src
+
+#+RESULTS: swaptions-frequently-removed-instructions
+|  4 | mulsd    |
+|  4 | .value   |
+|  5 | .long    |
+|  6 | .loc     |
+|  7 | call     |
+|  9 | .uleb128 |
+| 13 | movsd    |
+| 19 | .byte    |
+| 21 | movq     |
+| 22 | .quad    |
+
+#+name: swaptions-frequently-added-instructions
+#+begin_src sh
+  diff -uN \
+      benchmarks/swaptions/swaptions.s \
+      benchmarks/swaptions/swaptions.minimized.s \
+      |grep "^+"|sed 's/^+//'|awk '{print $1}'|sort|uniq -c|sort -n|tail
+#+end_src
+
+#+RESULTS: swaptions-frequently-added-instructions
+|  3 | movhpd   |
+|  3 | movl     |
+|  4 | movsd    |
+|  4 | .sleb128 |
+|  5 | .long    |
+|  5 | .value   |
+| 11 | .quad    |
+| 12 | .uleb128 |
+| 22 | movq     |
+| 38 | .byte    |
+
+Maybe also try without just the first column.
+
+Lots of removed (and added) .quad directives, given the documentation
+on quad (from [[http://docs.oracle.com/cd/E19253-01/817-5477/ennab/index.html][here]]).
+#+begin_quote
+ .quad expression1, expression2, ..., expressionN
+
+    The .quad directive generates an initialized word (64-bit, two's
+    complement value) for each expression into the current
+    section. Each expression must be a 64-bit value, and must evaluate
+    to an integer value. The .quad directive is not valid for the .bss
+    section.
+#+end_quote
+
+I'd say these changes affect alignment.
+
 ** TODO Application of the Breeders equation
 Apply the Breeders Equation to analyze the relations between software
 traits (e.g., HW counters, executable size, etc...) and predict
