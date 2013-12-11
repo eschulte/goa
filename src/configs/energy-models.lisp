@@ -14,6 +14,7 @@
 (in-package :optimize)
 
 ;;; Models
+;; TODO: these should probably either use cycles or seconds, not both
 (defvar intel-sandybridge-power-model
   '(* seconds (+ 31.530
                (*   20.490 (/ instructions cycles))
