@@ -222,7 +222,7 @@ Footnotes
 
 [9]  http://www.cliki.net/cl-launch
 
-[10] https://github.com/eschulte/optimization/archive/energy-experiment.zip
+[10] https://github.com/eschulte/goa/archive/energy-experiment.zip
 
 [11] See NOTES for pointers to methodology and shell scripts for
      training an energy model.  A WattsUp?™ Pro is required to measure
