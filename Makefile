@@ -34,7 +34,7 @@ LCFLAGS+= --dynamic-space-size $(LISP_STACK)
 endif
 
 # Compiled lisp executables
-LISP_EXES=optimize objread annotate delta neutral
+LISP_EXES=goa objread annotate delta neutral
 LISP_BINS=$(addprefix bin/, $(LISP_EXES))
 
 # Compiled C executables

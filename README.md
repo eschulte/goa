@@ -1,5 +1,5 @@
-Evolutionary Program Optimization
-=================================
+Genetic Optimization Algorithm (GOA)
+====================================
 
 A post-compilation optimization tool capable of optimizing myriad
 aspects of program runtime behavior.  The three required inputs are
@@ -10,11 +10,12 @@ maintain program semantics and typically target only executable speed
 and size, this technique is capable of addressing any measurable
 aspect of runtime behavior and may change program semantics.
 
-Assembler code is modified using simply program transformations used
-in Genetic Programming yielding candidate optimizations.  The fitness
-of candidates are determined using a workload and fitness function.
-Due to the inherent mutational robustness of software [1], many of
-these mutations will change the runtime behavior of software without
+Assembler code is modified using generic program transformations,
+taken from Genetic Programming, yielding candidate optimizations.  The
+fitness of candidates are determined using by running on the workload
+and combining performance metrics with the fitness function.  Due to
+the inherent mutational robustness of software [1], many of these
+mutations will change the runtime behavior of software without
 changing the specification to which the software conforms.  Some
 candidates will have desirable non-functional properties such as
 faster running times, reduced energy consumption or a smaller
@@ -53,7 +54,7 @@ Clone this repository.  To avoid a downloading a large amount of
 historical data, use the `--single-branch` option to `git clone` as
 follows.
 
-    git clone --single-branch git://github.com/eschulte/optimization.git
+    git clone --single-branch git://github.com/eschulte/goa.git
 
 The evolution toolkit which we'll use to evolve programs is written in
 Common Lisp.  Each optimized program also requires a shell script test
@@ -124,20 +125,20 @@ The following variables may be used to control the behavior of make.
   installation directory.  The default value is `$HOME/quicklisp/`.
 
 - The `LISP_STACK` variable may be used to set the maximum amount of
-  memory available to the `optimize` executable when compiled with
-  SBCL.  Large programs, especially when annotated (e.g., with
+  memory available to the `goa` executable when compiled with SBCL.
+  Large programs, especially when annotated (e.g., with
   `src/configs/use-annotation.lisp`) may require large amounts of
-  memory.  For example run the following to build the `optimize`
-  executable with 30G of memory.
+  memory.  For example run the following to build the `goa` executable
+  with 30G of memory.
 
-         make bin/optimize LISP_STACK=$((30 * 1024))
+         make bin/goa LISP_STACK=$((30 * 1024))
 
 - The `LISP_LIBS` variable may be used to include additional packages
   into compiled executables.  For example to compile the `iolib`
-  package into the `optimize` executable for socket communication
-  (e.g., with `src/configs/by-flag.lisp`), run the following.
+  package into the `goa` executable for socket communication (e.g.,
+  with `src/configs/by-flag.lisp`), run the following.
 
-         make bin/optimize LISP_LIBS=iolib
+         make bin/goa LISP_LIBS=iolib
 
 Optimization at the Command Line
 --------------------------------
@@ -146,11 +147,11 @@ At this point everything needed has been installed.  The following
 steps walk through optimizing `nbody` from the command line to reduce
 energy consumption.
 
-1. Run the `optimize` executable once to view all of the optional
+1. Run the `goa` executable once to view all of the optional
    arguments.  All scripts and executables in the `./bin/` directory
    print help information in response to the `-h` flag.
 
-        ./bin/optimize -h
+        ./bin/goa -h
 
 2. Compile `nbody` to assembly and generate the test input and oracle
    output files.
@@ -164,7 +165,7 @@ energy consumption.
 
 4. Optimize `nbody` to reduce runtime.
 
-        ./bin/optimize "./bin/run nbody ~a -t" benchmarks/nbody/nbody.s \
+        ./bin/goa "./bin/run nbody ~a -t" benchmarks/nbody/nbody.s \
           -l gcc -L -lm -F real -f 256 -p 128 -P 64 -t 2
 
    The options specify that `gcc` should be used as the linker (this

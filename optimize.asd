@@ -17,6 +17,7 @@
   :components
   ((:file "src/package")
    (:file "src/optimize"       :depends-on ("src/package"))
+   (:file "src/goa"            :depends-on ("src/package" "src/optimize"))
    (:file "src/annotate"       :depends-on ("src/package" "src/optimize"))
    (:file "src/objread"        :depends-on ("src/package" "src/optimize"))
    (:file "src/delta"          :depends-on ("src/package" "src/optimize"))

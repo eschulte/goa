@@ -14,6 +14,7 @@
   (:import-from :statistics :t-test-two-sample-on-sequences)
   (:shadow :type :magic-number :optimize)
   (:export
+   :goa
    :optimize
    :objread
    :annotate
