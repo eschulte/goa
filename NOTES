@@ -2551,9 +2551,11 @@ We could use the "bubble" and the "reporter" from [[#mars2011bubble]].
 Measuring the values of HW counters against the bubble could give us
 coefficients for a memory linear model.
 
-* Code Tasks [10/13]
-** TODO assembler annotation
+* Code Tasks [11/13]
+** DONE assembler annotation
 printf just after each jump location and jump instruction
+
+didn't help
 
 ** DONE memory efficient annotations
 Need to figure out the best data structure to hold these efficiently.
@@ -2757,7 +2759,7 @@ failures at stages.
 
 Run with =make check=.
 
-* Issues [17/21]
+* Issues [19/21]
 ** TODO bug in tourny-more runs                                      :ATTACH:
    :PROPERTIES:
    :Attachments: bug
@@ -2842,7 +2844,7 @@ with
 | mean         | 19.705333 | 21.224571 |
 #+TBLFM: @10$2=vmean(@2..@-1)::@10$3=vmean(@2..@-1)
 
-** TODO ensure that annotation works as expected [6/7]
+** DONE ensure that annotation works as expected [7/7]
 Not getting the desired improvement from targeted mutation operations.
 
 *** DONE run with locations of minimized edits as fault localization :ATTACH:
@@ -2852,7 +2854,7 @@ Not getting the desired improvement from targeted mutation operations.
     :END:
 This works, so the problem must be bad annotations.
 
-*** TODO visually and interactively improve vips annotations
+*** CANCELED visually and interactively improve vips annotations
 Visualize and then run each of the following
 - minimized edits
 - perf
