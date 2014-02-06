@@ -101,9 +101,11 @@
     (note 4 "running ~S~%" asm)
     (multiple-value-bind (stdout stderr errno) (shell *script* bin)
       (declare (ignorable stderr))
-      (append (or (ignore-errors (list (cons :fitness (parse-number stdout))))
-                  (ignore-errors (parse-stdout stdout)))
-              (list (cons :exit errno) (cons :error 0))))))
+      (remove-duplicates
+       (append (or (ignore-errors (list (cons :fitness (parse-number stdout))))
+                   (ignore-errors (parse-stdout stdout)))
+               (list (cons :exit errno) (cons :error 0)))
+       :key #'car :from-end t))))
 
 (defun apply-fitness-function (fitness-function stats)
   "Apply FITNESS-FUNCTION to STATS."
