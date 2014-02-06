@@ -18,5 +18,4 @@
    :optimize
    :objread
    :annotate
-   :delta
-   :neutral))
+   :delta))
