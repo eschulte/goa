@@ -13,7 +13,7 @@ endif
 # Lisp Libraries to compile into executables
 #
 #  Set the LISP_LIBS env variable to load another lisp system into the
-#  compiled optimization executables.
+#  compiled goa executables.
 #
 LISP_LIBS+= optimize
 LC_LIBS:=$(addprefix --load-system , $(LISP_LIBS))
