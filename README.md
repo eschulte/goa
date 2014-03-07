@@ -117,10 +117,6 @@ will need to be installed.
 
 The following variables may be used to control the behavior of make.
 
-- The `LISP` variable may be set to `sbcl` or `ccl` to compile
-  executables with Steel Bank Common Lisp or Clozure Common Lisp
-  respectively.
-
 - The `QUICK_LISP` variable may be set to point to a custom quicklisp
   installation directory.  The default value is `$HOME/quicklisp/`.
 
