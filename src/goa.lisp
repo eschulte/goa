@@ -258,5 +258,6 @@ Options:
     ;; finish up
     (mapc #'funcall *final-funcs*)
     (note 1 "done after ~a fitness evaluations~%" *fitness-evals*)
-    (note 1 "results saved in ~a~%" *res-dir*)
+    (note 1 "results saved in ~S~%"
+          (namestring (make-pathname :directory *res-dir*)))
     (close (pop *note-out*))))
