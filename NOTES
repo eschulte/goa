@@ -82,6 +82,34 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
   README instructions saying what the results of the goa script will
   be (and maybe specifying how to get other results with =objread=)
 
+Example output currently (could be more informative)
+: 22:40 bagel:goa goa "./bin/run nbody ~a -t" benchmarks/nbody/nbody.s -l gcc -L -lm -F real -f 256 -p 128 -P 64 -t 2 -r nbody-opt
+: 2014.03.09.22.40.20: optimize version 6cb7ddb using Steel Bank Common Lisp (SBCL)
+: 
+: 2014.03.09.22.40.20: Parameters:
+: ((*PATH* . "benchmarks/nbody/nbody.s") (*SCRIPT* . "./bin/run nbody ~a -t")
+:  (*FITNESS-FUNCTION* . REAL) (*FITNESS-PREDICATE* . #<FUNCTION <>)
+:  ((LINKER *ORIG*) . "gcc") ((FLAGS *ORIG*) "-lm") (*THREADS* . 2) (*MCMC*)
+:  (*MUT-RATE* . 1) (*CROSS-CHANCE* . 2/3) (*EVALS* . 256)
+:  (*TOURNAMENT-SIZE* . 2) (*TOURNAMENT-EVICTION-SIZE* . 2) (*WORK-DIR*)
+:  (*MAX-ERR* . 0) (*MAX-POPULATION-SIZE* . 128) (*PERIOD* . 64) (*REP* . RANGE)
+:  (*NOTE-LEVEL* . 1) (*RES-DIR* :RELATIVE "nbody-opt"))
+: 
+: 2014.03.09.22.40.20: Evaluating the original.
+: 2014.03.09.22.40.22: ((:ORIG-STATS (:EXIT . 0) (:ERROR . 0) (:REAL . 1.72) (:USER . 1.72)
+:   (:SYS . 0.0))
+:  (:ORIG-FITNESS . 1.72))
+: 
+: 2014.03.09.22.40.22: Building the Population
+: 2014.03.09.22.40.22: Kicking off 2 optimization threads
+: 2014.03.09.22.41.10: checkpoint after 64 fitness evaluations
+: 2014.03.09.22.42.44: checkpoint after 128 fitness evaluations
+: 2014.03.09.22.43.59: checkpoint after 192 fitness evaluations
+: 2014.03.09.22.45.05: checkpoint after 256 fitness evaluations
+: 2014.03.09.22.45.07: done after 258 fitness evaluations
+: 
+: 2014.03.09.22.45.07: results saved in (RELATIVE nbody-opt)
+
 ** TODO nature of branch prediction improvement edits
 *** looking at frequently changed instructions
 #+name: swaptions-frequently-removed-instructions
