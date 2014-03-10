@@ -140,8 +140,10 @@ Optimization at the Command Line
 --------------------------------
 
 At this point everything needed has been installed.  The following
-steps walk through optimizing `nbody` from the command line to reduce
-energy consumption.
+steps walk through optimizing `swaptions` from the command line to
+reduce runtime.  To run this example either a `time` executable which
+supports the `-p` and `-o` options (*not* the shell built in), or
+`perf` is required.
 
 1. Run the `goa` executable once to view all of the optional
    arguments.  All scripts and executables in the `./bin/` directory
@@ -149,41 +151,55 @@ energy consumption.
 
         ./bin/goa -h
 
-2. Compile `nbody` to assembly and generate the test input and oracle
-   output files.
+2. Compile `swaptions` to assembly and generate the test input and
+   oracle output files.  Note, the first time this is run it will
+   download and unpack the PARSEC benchmarks which may take some time.
 
-        ./bin/mgmt output nbody
+        ./bin/mgmt output swaptions
 
-3. Run a test of the `nbody` executable to ensure everything is
+3. Run a test of the `swaptions` executable to ensure everything is
    working and to see the output available to our fitness function.
+   If using `time` run the following,
 
-        ./bin/run nbody ./benchmarks/nbody/nbody -t
+        ./bin/run swaptions ./benchmarks/swaptions/swaptions -t
 
-   The result should look like the following.
+   If using `perf` run the following.
 
-        0,exit
-        0,error
-        1.73,real
-        1.73,user
-        0.00,sys
+        ./bin/run swaptions ./benchmarks/swaptions/swaptions -p
 
-   If not it may be necessary to install a `time` executable which
-   supports the `-p` and `-o` options.
+4. Optimize `swaptions` to reduce runtime.  If using `time` run the
+   following.
 
-4. Optimize `nbody` to reduce runtime.
+        ./bin/goa "./bin/run swaptions ~a -t" \
+          benchmarks/swaptions/swaptions.s \
+          -l g++ -L "-lm -pthread -DENABLE_THREADS" \
+          -F real -f 256 -p 128 -P 64 -t 2 -r swap
 
-        ./bin/goa "./bin/run nbody ~a -t" benchmarks/nbody/nbody.s \
-          -l gcc -L -lm -F real -f 256 -p 128 -P 64 -t 2
+    If using `perf` run the following.
 
-   The options specify that `gcc` should be used as the linker (this
-   option could be omitted as `gcc` is the default linker), that the
-   `-lm` flag should be passed to `gcc` during linking.  By passing
-   `real` to `-F` we specify that we want to our fitness function to
-   minimize the real time taken to run this program.  The remaining
-   flags specify 256 total fitness evaluations should be run, a
-   population of size 128 should be used, periodic checkpoints should
-   be written every 64 fitness evaluations, and optimization should be
-   distributed across 2 threads.
+        ./bin/goa "./bin/run swaptions ~a -p" \
+          benchmarks/swaptions/swaptions.s \
+          -l g++ -L "-lm -pthread -DENABLE_THREADS" \
+          -F seconds -f 256 -p 128 -P 64 -t 2 -r swap
+
+   The `-l` option specifies that `g++` should be used as the linker
+   (`gcc` is the default linker), and that the flags `"-lm -pthread
+   -DENABLE_THREADS"` should be passed to `g++` during linking.  By
+   passing `real` (or `seconds`) to `-F` we specify that we want our
+   fitness function to minimize the time taken to run this program.
+   The remaining flags specify 256 total fitness evaluations should be
+   run (`-f`), a population of size 128 should be used (`-p`),
+   periodic checkpoints should be written every 64 fitness evaluations
+   (`-P`), optimization should be distributed across 2 threads (`-t`),
+   and results should be saved in a directory named `swap` (`-r`).
+
+5. When repair complete the name of the results directory will be
+   printed.  In this directory the `final-best.store` file holds the
+   optimized program.  This may be compiled to an optimized executable
+   with the following (see the `-h` output of `objread` for more ways
+   to use `.store` files).
+
+        ./bin/objread swap/final-best.store
 
 Interactive Optimization at the REPL
 ------------------------------------
