@@ -91,17 +91,6 @@ if [ ! -z $RAW ] && [ ! -z $PERF ];then
     error "can't print RAW and PERF results simultaneously"
 fi
 
-if [ -z $COUNTERS ];then
-    case $ARCH in
-        intel)
-            COUNTERS="cycles,instructions,r532010,r538010,cache-references,cache-misses"
-            ;;
-        amd)
-            COUNTERS="cycles,instructions,r533f00,cache-references,cache-misses"
-            ;;
-    esac
-fi
-
 PREFIX="$LIMIT"
 if [ ! -z $TOOL ];then
     if [ ! -z $PERF    ];then error "tool and perf are incompatible options"; fi
@@ -158,15 +147,18 @@ if [ -z $PERF ];then
             if [ ! -z "$tmp"   ];then rm -f $tmp;    fi
             if [ ! -z "$tmpd"  ];then rm -rf $tmpd;  fi
         else
-            echo "output keep at $OUT";
+            echo "output keept at $OUT";
         fi; }
 else
     # perf prefix to the command
     PERF_OUT=$(mktemp)
     if [ -z $ANNOTATE ] && [ -z $RECORD ];then
-        PREFIX+=" perf stat -e $COUNTERS -o $PERF_OUT"
+        PREFIX+=" perf stat -o $PERF_OUT"
     else
-        PREFIX+=" perf record -e $COUNTERS -o $PERF_OUT"
+        PREFIX+=" perf record -o $PERF_OUT"
+    fi
+    if [ ! -z $COUNTERS ];then
+        PREFIX+=" -e $COUNTERS"
     fi
     if [ ! -z "$REPEAT" ];then PREFIX+=" -r $REPEAT"; fi
     PREFIX+=" --"
