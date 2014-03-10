@@ -33,8 +33,8 @@ Options:
                   name (class-name class))))
 
       (let ((obj (restore (arg-pop))))
-        ;; default behavior should be to print the genome string
-        (when (null args) (push "-G" args))
+        ;; default behavior should be to compile an executable
+        (when (null args) (push "-l" args))
         (getopts
          ("-l" "--link" 
                (multiple-value-bind (output errno) (phenome obj :bin (arg-pop))
