@@ -11,7 +11,7 @@
 ;; correct and efficient.
 
 ;;; Code:
-(in-package :optimize)
+(in-package :goa)
 (defvar orig-energy 668.3218)
 (defvar opt-energy 601.47565)
 (defvar extended-test-penalty (/ (- orig-energy opt-energy) 2))

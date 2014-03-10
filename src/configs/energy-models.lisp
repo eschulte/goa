@@ -11,7 +11,7 @@
 ;; memory.
 
 ;;; Code:
-(in-package :optimize)
+(in-package :goa)
 
 ;;; Models
 ;; TODO: these should probably either use cycles or seconds, not both

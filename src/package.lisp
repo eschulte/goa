@@ -1,4 +1,4 @@
-(defpackage :optimize
+(defpackage :goa
   (:use :common-lisp
         :alexandria
         :metabang-bind
@@ -12,10 +12,9 @@
         :software-evolution
         :software-evolution-utility)
   (:import-from :statistics :t-test-two-sample-on-sequences)
-  (:shadow :type :magic-number :optimize)
+  (:shadow :type :magic-number)
   (:export
    :goa
-   :optimize
    :objread
    :annotate
    :delta))

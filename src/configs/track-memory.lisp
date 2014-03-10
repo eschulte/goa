@@ -6,7 +6,7 @@
 ;; debug information to the checkpoint function.
 
 ;;; Code:
-(in-package :optimize)
+(in-package :goa)
 
 (defun memory-checkpoint ()
   (with-open-file

@@ -7,6 +7,6 @@
 ;; the running lisp image.  See http://common-lisp.net/project/slime/.
 
 ;;; Code:
-(in-package :optimize)
+(in-package :goa)
 (require :swank)
 (swank:create-server :port 4005 :style :spawn :dont-close t)

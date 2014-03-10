@@ -3,10 +3,10 @@
 ;; Copyright (C) 2013  Eric Schulte
 
 ;;; Code:
-(in-package :optimize)
+(in-package :goa)
 
 (defun objread (args)
-  (in-package :optimize)
+  (in-package :goa)
   (flet ((arg-pop () (pop args)))
     (let ((help "Usage: ~a object.store [OPTIONS...]
  manipulate a stored software object

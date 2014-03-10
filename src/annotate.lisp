@@ -8,10 +8,10 @@
 ;; counters to which they contribute.
 
 ;;; Code:
-(in-package :optimize)
+(in-package :goa)
 
 (defun annotate (args)
-  (in-package :optimize)
+  (in-package :goa)
   (let ((help "Usage: ~a ANN-SCRIPT ASM-FILE [OPTIONS...]
  print the LOC of an ASM object annotated with perf
 

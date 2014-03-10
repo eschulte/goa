@@ -89,10 +89,10 @@ will need to be installed.
         (ql:register-local-projects)
 
 4. Once Quicklisp and these dependencies have all been installed, run
-   the following to install the OPTIMIZE package and all of its
+   the following to install the GOA package and all of its
    dependencies.
 
-        (ql:quickload :optimize)
+        (ql:quickload :goa)
 
    It may also be necessary to explicitly load some additional
    dependencies with the following.

@@ -8,7 +8,7 @@
 ;; portions of the genome.
 
 ;;; Code:
-(in-package :optimize)
+(in-package :goa)
 
 ;; Weight mutation location selection using the annotations, and
 ;; maintain annotation over mutations

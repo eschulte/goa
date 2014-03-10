@@ -3,7 +3,7 @@
 ;; Copyright (C) 2013  Eric Schulte
 
 ;;; Code:
-(in-package :optimize)
+(in-package :goa)
 (load "src/configs/use-annotation.lisp")
 (load "src/configs/energy-models.lisp")
 (load "src/repl/helpers.lisp")

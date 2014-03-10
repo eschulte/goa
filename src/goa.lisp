@@ -10,11 +10,11 @@
 ;; consumption etc...
 
 ;;; Code:
-(in-package :optimize)
+(in-package :goa)
 
 ;;; Main GOA executable
 (defun goa (args)
-  (in-package :optimize)
+  (in-package :goa)
   (let ((help "Usage: ~a TEST-SCRIPT ASM-FILE [OPTIONS...]
  Optimize the assembly code in ASM-FILE against TEST-SCRIPT.
 
@@ -67,8 +67,8 @@ Options:
         (self (pop args))
         (version
          (format nil
-          #+ccl "optimize version ~a using Clozure Common Lisp (CCL)~%"
-          #+sbcl "optimize version ~a using Steel Bank Common Lisp (SBCL)~%"
+          #+ccl "goa version ~a using Clozure Common Lisp (CCL)~%"
+          #+sbcl "goa version ~a using Steel Bank Common Lisp (SBCL)~%"
           *git-version*))
         (do-evolve
             (lambda ()
@@ -160,7 +160,7 @@ Options:
     (unless (ensure-directories-exist (make-pathname :directory *res-dir*))
       (throw-error "Unable to make result directory `~a'.~%" *res-dir*))
     (let ((log-name (make-pathname :directory *res-dir*
-                                   :name "optimize"
+                                   :name "goa"
                                    :type "log")))
       (if (probe-file log-name)
           (throw-error "Log file already exists ~S.~%" log-name)

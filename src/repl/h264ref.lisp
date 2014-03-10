@@ -1,4 +1,4 @@
-(in-package :optimize)
+(in-package :goa)
 
 (setf
  *orig* (from-file (make-instance 'asm-perf) "benchmarks/h264ref/h264ref.s")

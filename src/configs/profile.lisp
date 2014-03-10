@@ -9,7 +9,7 @@
 ;; profiling output at the end of the run.
 
 ;;; Code:
-(in-package :optimize)
+(in-package :goa)
 (require :sb-sprof)
 
 (defvar *start-time* (get-universal-time))

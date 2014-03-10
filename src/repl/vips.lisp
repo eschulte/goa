@@ -1,4 +1,4 @@
-(in-package :optimize)
+(in-package :goa)
 
 (setf *orig* (from-file (make-instance 'asm-perf) "benchmarks/vips/vips.s")
       *script* "run vips ~a -p"

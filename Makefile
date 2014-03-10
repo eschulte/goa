@@ -15,7 +15,7 @@ endif
 #  Set the LISP_LIBS env variable to load another lisp system into the
 #  compiled goa executables.
 #
-LISP_LIBS+= optimize
+LISP_LIBS+= goa
 LC_LIBS:=$(addprefix --load-system , $(LISP_LIBS))
 
 # Flags to buildapp
@@ -27,7 +27,7 @@ LCFLAGS=--manifest-file $(QUICK_LISP)/local-projects/system-index.txt \
 	--asdf-tree $(QUICK_LISP)/dists/quicklisp/software \
 	--eval "(setf *debugger-hook* $(QUIT))" \
 	$(LC_LIBS) \
-	--eval "(setf optimize::*git-version* \"$$(git describe --always)\")"
+	--eval "(setf goa::*git-version* \"$$(git describe --always)\")"
 
 ifneq ($(LISP_STACK),)
 LCFLAGS+= --dynamic-space-size $(LISP_STACK)
@@ -50,8 +50,8 @@ bin/limit: bin/limit.c
 bin/no-limit: bin/no-limit.c
 	$(CC) $< -o $@
 
-bin/%: src/package.lisp src/optimize.lisp src/%.lisp
-	$(LC) $(LCFLAGS) --output $@ --entry "optimize:$*"
+bin/%: src/package.lisp src/goa-core.lisp src/%.lisp
+	$(LC) $(LCFLAGS) --output $@ --entry "goa:$*"
 
 clean:
 	rm -f $(C_BINS) $(LISP_BINS) **/*.fasl **/*.lx32fsl

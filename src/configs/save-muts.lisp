@@ -6,7 +6,7 @@
 ;; written out to "muts.store" at the end of the run.
 
 ;;; Code:
-(in-package :optimize)
+(in-package :goa)
 
 
 ;;; Save applied mutations

@@ -4,7 +4,7 @@
 
 ;;; Code:
 (load "src/optimize.lisp")
-(in-package :optimize)
+(in-package :goa)
 
 (defun feedgnuplot (list &key domain lines histogram)
   (let ((proc

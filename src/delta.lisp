@@ -8,7 +8,7 @@
 ;; software objects while maintaining their phenotypic differences.
 
 ;;; Code:
-(in-package :optimize)
+(in-package :goa)
 
 (defun retest (asm)
   (setf (stats asm) nil)
@@ -22,7 +22,7 @@
         (t-test-two-sample-on-sequences seq1 seq2))))
 
 (defun delta (args)
-  (in-package :optimize)
+  (in-package :goa)
   (let ((help "Usage: ~a TEST-SCRIPT ORIG.store NEW.store [OPTIONS...]
  Minimize the genetic differences between ORIGINAL and NEW as
  much as possible such that TEST-SCRIPT continues to show a

@@ -12,7 +12,7 @@
 ;;     optimize bzip2.s bzip2 -e "(defvar flag 'O0)" -c by-flag.lisp
 
 ;;; Code:
-(in-package :optimize)
+(in-package :goa)
 (load "src/io.lisp")
 
 (defvar ports

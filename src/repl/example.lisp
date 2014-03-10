@@ -36,8 +36,8 @@
 ;;    may be run in many separate threads concurrently.
 
 ;;; Code:
-(load "src/optimize.lisp")
-(in-package :optimize)
+(load "src/goa-core.lisp")
+(in-package :goa)
 
 ;; (2)
 (setf *orig* (from-file (make-instance 'asm-perf) "path/to/variant.s"))

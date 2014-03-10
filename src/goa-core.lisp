@@ -1,4 +1,4 @@
-;;; optimize.lisp --- optimize metrics in a population of software variants
+;;; goa-core.lisp --- optimize metrics in a population of software variants
 
 ;; Copyright (C) 2012-2013  Eric Schulte
 
@@ -10,7 +10,7 @@
 ;; consumption etc...
 
 ;;; Code:
-(in-package :optimize)
+(in-package :goa)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (enable-curry-compose-reader-macros))
 
@@ -112,7 +112,7 @@
   "Apply FITNESS-FUNCTION to STATS."
   (flet ((key-to-sym (keyword)
            (if (keywordp keyword)
-               (intern (string-upcase (symbol-name keyword)) :optimize)
+               (intern (string-upcase (symbol-name keyword)) :goa)
                keyword)))
     (let ((*error-output* (make-broadcast-stream))
           (*standard-output* (make-broadcast-stream))
@@ -194,7 +194,7 @@
                     forms)))))
 
 (defun covariance (a b)
-  (declare (cl-user::optimize speed))
+  (declare (optimize speed))
   (let ((ma (mean a))
         (mb (mean b))
         (total 0))
@@ -271,7 +271,7 @@
       (when (not bin) (delete-file my-bin)))))
 
 (defun smooth (list)
-  (declare (cl-user::optimize speed))
+  (declare (optimize speed))
   (mapcar (lambda (b3 b2 b1 o a1 a2 a3)
             (+ (* 0.006 (+ b3 a3))
                (* 0.061 (+ b2 a2))

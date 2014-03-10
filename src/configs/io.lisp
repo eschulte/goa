@@ -7,7 +7,7 @@
 ;; Uses iolib instead of ZMQ.  This seems to be a little bit more reliable.
 
 ;;; Code:
-(in-package :optimize)
+(in-package :goa)
 (require :iolib)
 (use-package :iolib)
 
