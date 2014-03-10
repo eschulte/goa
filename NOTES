@@ -72,7 +72,16 @@ benchmark suites.  http://www.polyhedron.com/MFL6VW74649
 | 998.specrand   |
 | 999.specrand   |
 
-* Tasks [42/47]
+* Tasks [41/47]
+** TODO improve usability [0/3]
+- [ ] mention the =/bin/time= issue in the requirements (or at least
+  before the step that requires it)
+- [ ] make the results more obvious, save an optimized executable and
+  mentioned that it has been saved and where it lives
+- [ ] after the results are made more usable, add a sentence to the
+  README instructions saying what the results of the goa script will
+  be (and maybe specifying how to get other results with =objread=)
+
 ** TODO nature of branch prediction improvement edits
 *** looking at frequently changed instructions
 #+name: swaptions-frequently-removed-instructions
