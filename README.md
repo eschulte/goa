@@ -159,6 +159,17 @@ energy consumption.
 
         ./bin/run nbody ./benchmarks/nbody/nbody -t
 
+   The result should look like the following.
+
+        0,exit
+        0,error
+        1.73,real
+        1.73,user
+        0.00,sys
+
+   If not it may be necessary to install a `time` executable which
+   supports the `-p` and `-o` options.
+
 4. Optimize `nbody` to reduce runtime.
 
         ./bin/goa "./bin/run nbody ~a -t" benchmarks/nbody/nbody.s \
