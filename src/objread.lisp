@@ -32,9 +32,14 @@ Options:
           (format *error-output* "; slot-missing: (~s ~s)~%"
                   name (class-name class))))
 
-      (let ((obj (restore (arg-pop))))
+      (let* ((path (arg-pop))
+             (obj (restore path)))
         ;; default behavior should be to compile an executable
-        (when (null args) (push "-l" args))
+        (when (null args)
+          (push (make-pathname :directory (pathname-directory path)
+                               :name (pathname-name path))
+                args)
+          (push "-l" args))
         (getopts
          ("-l" "--link" 
                (multiple-value-bind (output errno) (phenome obj :bin (arg-pop))
