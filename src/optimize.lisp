@@ -83,7 +83,8 @@
         :darwin)))
 
 (defun parse-stdout (stdout)
-  (mapcar (lambda-bind ((val key))
+  (mapcar (lambda-bind ((val key . rest))
+            (declare (ignorable rest))  ; don't care about extra fields
             (cons (make-keyword (string-upcase key))
                   (ignore-errors (parse-number val))))
           (mapcar {split-sequence #\,}
