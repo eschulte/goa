@@ -75,7 +75,6 @@ will need to be installed.
 
         git clone git://github.com/eschulte/software-evolution.git
         git clone git://github.com/eschulte/delta-debug.git
-        git clone git://github.com/eschulte/diff.git
 
    You will also need to symlink this repository into your
    `local-projects` directory.
