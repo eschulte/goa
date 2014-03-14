@@ -2589,6 +2589,7 @@ Measuring the values of HW counters against the bubble could give us
 coefficients for a memory linear model.
 
 * Code Tasks [11/13]
+** TODO incorporate new heterogeneous crossover techniques
 ** DONE assembler annotation
 printf just after each jump location and jump instruction
 
@@ -2610,10 +2611,6 @@ sigma falls within some interval (or maybe just a set number of runs).
 - user supplied fitness function
   (lisp or nice equation format with HW counters)
 - user supplied program
-
-** TODO non-fixed point crossover
-- important for sub-population and between differently compiled code
-- https://en.wikipedia.org/wiki/Homologous_recombination#Facilitating_genetic_transfer
 
 ** DONE inefficient mgmt generated executables
 | benchmark    | Intel | AMD |
