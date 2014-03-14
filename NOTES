@@ -2793,7 +2793,24 @@ failures at stages.
 
 Run with =make check=.
 
-* Issues [19/21]
+* Issues [20/22]
+** DONE why was ferret slower and lower energy
+#+begin_src bash
+  DIR="results/parsec-amd"
+  AWK_SWP='BEGIN { FS="," } {print $2,$1}'
+  join <(cat $DIR/ferret.orig.perf|awk "$AWK_SWP") \
+       <(cat $DIR/ferret.min.perf|awk "$AWK_SWP") \
+       | awk '{if($2 != 0){print $1, 100*(($2-$3)/$2)}}'
+#+end_src
+
+#+RESULTS:
+| cycles           |  -7.21403 |
+| instructions     |  0.391972 |
+| r533f00          |   8.83123 |
+| cache-references |  -10.6102 |
+| cache-misses     | -0.655385 |
+| seconds          |  -7.94597 |
+
 ** TODO bug in tourny-more runs                                      :ATTACH:
    :PROPERTIES:
    :Attachments: bug
