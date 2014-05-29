@@ -33,16 +33,17 @@ Options:
                   name (class-name class))))
 
       (let* ((path (arg-pop))
+             (exe (make-pathname :directory (pathname-directory path)
+                                 :name (pathname-name path)))
              (obj (restore path)))
         ;; default behavior should be to compile an executable
         (when (null args)
-          (push (make-pathname :directory (pathname-directory path)
-                               :name (pathname-name path))
-                args)
+          (push exe args)
           (push "-l" args))
         (getopts
          ("-l" "--link" 
-               (multiple-value-bind (output errno) (phenome obj :bin (arg-pop))
+               (multiple-value-bind (output errno)
+                   (phenome obj :bin (or (arg-pop) exe))
                  (format t "~a~&" output)
                  (quit errno)))
          ("-s" "--stats"
